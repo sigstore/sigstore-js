@@ -1,0 +1,19 @@
+{
+  "name": "sigstore",
+  "version": "0.0.0",
+  "description": "code-signing for npm packages",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/github/sigstore-node.git"
+  },
+  "author": "bdehamer@github.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/github/sigstore-node/issues"
+  },
+  "homepage": "https://github.com/github/sigstore-node#readme"
+}
