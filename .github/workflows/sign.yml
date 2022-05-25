@@ -1,4 +1,4 @@
-name: cosign-sign
+name: build-sign-verify
 on: [push]
 jobs:
   build-package:
@@ -86,7 +86,7 @@ jobs:
         # Calculate artifact signature
         openssl dgst -sha256 -sign ec_private.pem sigstore-0.0.0.tgz > artifact.sig
 
-        echo "Artifact hash (SHA-256):"
+        echo "Artifact digest (SHA-256):"
         cat artifact.sha
 
         echo "Artifact signature (Base64-encoded):"
@@ -127,3 +127,86 @@ jobs:
       with:
         name: signature
         path: artifact.sig
+
+  verify-signature:
+    name: Verify Signature
+    needs: sign-package
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download package
+      uses: actions/download-artifact@v3
+      with:
+        name: package
+
+    - name: Download signature
+      uses: actions/download-artifact@v3
+      with:
+        name: signature
+
+    - name: Calculate artifact digest
+      run: |
+        sha256sum --binary sigstore-0.0.0.tgz | cut --delimiter=" " --fields=1 > artifact.sha
+
+        echo "Artifact digest:"
+        cat artifact.sha
+
+    - name: Locate Rekor entry
+      run: |
+        # Construct JSON payload for Rekor search
+        search_request=$(jq --null-input \
+          --arg sha "sha256:$(cat artifact.sha)" \
+          '{"hash":$sha}'
+        )
+
+        # Search Rekor by artifact hash
+        curl --silent \
+          --header "Accept: application/json" \
+          --header "Content-Type: application/json" \
+          --data "$search_request" \
+          https://rekor.sigstore.dev/api/v1/index/retrieve | jq --raw-output '.[]' > entries
+
+        echo "Found $(cat entries | wc -l | tr -d ' ') entries matching artifact digest"
+
+        while read entry_uuid; do
+          echo "Checking entry ${entry_uuid}"
+
+          # Get Entry by UUID
+          curl --silent \
+            "https://rekor.sigstore.dev/api/v1/log/entries/${entry_uuid}" | \
+          jq --raw-output '.[].body' | base64 --decode > entry
+
+          # Get signature from entry
+          entry_sig=$(cat entry | jq --raw-output '.spec.signature.content')
+
+          # Check entry for matching signature
+          if [ "$entry_sig" = "$(cat artifact.sig | base64 --wrap=0)" ]; then
+            echo "Entry matches artifact signature!"
+            cat entry | jq
+            break
+          else
+            echo "Entry does NOT match artifact signature"
+            rm entry
+          fi
+        done < entries
+
+        # Exit with error if no matching entries found
+        if [ ! -f entry ]; then
+          echo "No matching signature found in Rekor"
+          exit 1
+        fi
+
+    - name: Extract signing certificate
+      run: |
+        # Extract signing cert from Rekor entry
+        cat entry | jq --raw-output '.spec.signature.publicKey.content' | base64 --decode > signingcert.pem
+
+        # Dump signing cert
+        openssl x509 -in signingcert.pem -text
+
+    - name: Verify artifact signature
+      run: |
+        # Extract public key from signing certificate
+        openssl x509 -pubkey -noout -in signingcert.pem > pubkey.pem
+
+        # Verify signature against public key
+        openssl dgst -sha256 -verify pubkey.pem -signature artifact.sig sigstore-0.0.0.tgz
