@@ -53,7 +53,6 @@ jobs:
 
         echo "OIDC token:"
         cat id_token | jq --raw-input 'split(".") | .[0],.[1] | @base64d | fromjson'
-        # cat id_token | base64 --wrap=0
 
     - name: Request signing cert from Fulcio
       run: |
