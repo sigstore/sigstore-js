@@ -1,0 +1,211 @@
+name: build-sign-verify
+on: [push]
+jobs:
+  build-package:
+    name: Build Package
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v3
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+    - name: Create package
+      run: npm pack
+    - name: Archive package
+      uses: actions/upload-artifact@v3
+      with:
+        name: package
+        path: sigstore-0.0.0.tgz
+  sign-package:
+    name: Sign Package
+    needs: build-package
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+    - name: Download package
+      uses: actions/download-artifact@v3
+      with:
+        name: package
+
+    - name: Generate keypair
+      run: |
+        openssl ecparam -genkey -name prime256v1 > ec_private.pem
+        openssl ec -in ec_private.pem -pubout > ec_public.pem
+
+        echo "Public key:"
+        cat ec_public.pem
+
+    - name: Retrieve OIDC token
+      run: |
+        # Request OIDC token
+        curl --silent \
+          --header "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+          --header "Accept: application/json; api-version=2.0" \
+          --header "Content-Type: application/json" \
+          "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sigstore" | jq --raw-output '.value' > id_token
+
+        # Capture subject claim from OIDC token
+        cat id_token | jq --raw-input --raw-output 'split(".") | .[1] | @base64d | fromjson | .sub' | \
+          tr -d '\n' > subject
+
+        echo "OIDC token:"
+        cat id_token | jq --raw-input 'split(".") | .[0],.[1] | @base64d | fromjson'
+
+    - name: Request signing cert from Fulcio
+      run: |
+        # Calculate Fulcio challenge
+        challenge=$(openssl dgst -sha256 -sign ec_private.pem subject | base64 --wrap=0)
+
+        # Construct JSON payload for Fulcio request
+        cert_request=$(jq --null-input \
+          --arg challenge $challenge \
+          --arg pubkey $(base64 --wrap=0 ec_public.pem) \
+          '{"publicKey":{"content":$pubkey},"signedEmailAddress":$challenge}'
+        )
+
+        # Request signing cert from Fulcio
+        curl --silent \
+          --header "Accept: application/pem-certificate-chain" \
+          --header "Content-Type: application/json" \
+          --header "Authorization: Bearer $(cat id_token)" \
+          --data "$cert_request" \
+          https://fulcio.sigstore.dev/api/v1/signingCert > signingcert.pem
+
+        # Dump signing cert
+        openssl x509 -in signingcert.pem -text
+
+    - name: Sign package
+      run: |
+        # Calculate artifact hash
+        sha256sum --binary sigstore-0.0.0.tgz | cut --delimiter=" " --fields=1 > artifact.sha
+
+        # Calculate artifact signature
+        openssl dgst -sha256 -sign ec_private.pem sigstore-0.0.0.tgz > artifact.sig
+
+        echo "Artifact digest (SHA-256):"
+        cat artifact.sha
+
+        echo "Artifact signature (Base64-encoded):"
+        cat artifact.sig | base64 --wrap=0
+
+    - name: Delete keypair
+      run: |
+        rm ec_private.pem
+        rm ec_public.pem
+
+    - name: Publish signature to Rekor
+      run: |
+        # Construct JSON payload for Rekor entry
+        proposed_entry=$(jq --null-input \
+          --arg sha $(cat artifact.sha) \
+          --arg sig $(cat artifact.sig | base64 --wrap=0) \
+          --arg cert $(cat signingcert.pem | base64 --wrap=0) \
+          '{"kind":"hashedrekord","apiVersion":"0.0.1","spec":{"data":{"hash":{"algorithm":"sha256","value":$sha}},"signature":{"content":$sig,"format":"x509","publicKey":{"content":$cert}}}}'
+        )
+
+        # Post entry to Rekor
+        curl --silent \
+          --header 'Accept: application/json' \
+          --header 'Content-Type: application/json' \
+          --data "$proposed_entry" \
+          https://rekor.sigstore.dev/api/v1/log/entries > rekor_entry
+
+        entry_index=$(cat rekor_entry | jq '.[].logIndex')
+        entry_uuid=$(cat rekor_entry | jq --raw-output 'keys[0]')
+
+        echo "Created entry at index ${entry_index}, available at:"
+        echo "https://rekor.sigstore.dev/api/v1/log/entries/${entry_uuid}"
+        echo
+        cat rekor_entry | jq --raw-output '.[].body' | base64 --decode | jq
+
+    - name: Archive signature
+      uses: actions/upload-artifact@v3
+      with:
+        name: signature
+        path: artifact.sig
+
+  verify-signature:
+    name: Verify Signature
+    needs: sign-package
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download package
+      uses: actions/download-artifact@v3
+      with:
+        name: package
+
+    - name: Download signature
+      uses: actions/download-artifact@v3
+      with:
+        name: signature
+
+    - name: Calculate artifact digest
+      run: |
+        sha256sum --binary sigstore-0.0.0.tgz | cut --delimiter=" " --fields=1 > artifact.sha
+
+        echo "Artifact digest:"
+        cat artifact.sha
+
+    - name: Locate Rekor entry
+      run: |
+        # Construct JSON payload for Rekor search
+        search_request=$(jq --null-input \
+          --arg sha "sha256:$(cat artifact.sha)" \
+          '{"hash":$sha}'
+        )
+
+        # Search Rekor by artifact hash
+        curl --silent \
+          --header "Accept: application/json" \
+          --header "Content-Type: application/json" \
+          --data "$search_request" \
+          https://rekor.sigstore.dev/api/v1/index/retrieve | jq --raw-output '.[]' > entries
+
+        echo "Found $(cat entries | wc -l | tr -d ' ') entries matching artifact digest"
+
+        while read entry_uuid; do
+          echo "Checking entry ${entry_uuid}"
+
+          # Get Entry by UUID
+          curl --silent \
+            "https://rekor.sigstore.dev/api/v1/log/entries/${entry_uuid}" | \
+          jq --raw-output '.[].body' | base64 --decode > entry
+
+          # Get signature from entry
+          entry_sig=$(cat entry | jq --raw-output '.spec.signature.content')
+
+          # Check entry for matching signature
+          if [ "$entry_sig" = "$(cat artifact.sig | base64 --wrap=0)" ]; then
+            echo "Entry matches artifact signature!"
+            cat entry | jq
+            break
+          else
+            echo "Entry does NOT match artifact signature"
+            rm entry
+          fi
+        done < entries
+
+        # Exit with error if no matching entries found
+        if [ ! -f entry ]; then
+          echo "No matching signature found in Rekor"
+          exit 1
+        fi
+
+    - name: Extract signing certificate
+      run: |
+        # Extract signing cert from Rekor entry
+        cat entry | jq --raw-output '.spec.signature.publicKey.content' | base64 --decode > signingcert.pem
+
+        # Dump signing cert
+        openssl x509 -in signingcert.pem -text
+
+    - name: Verify artifact signature
+      run: |
+        # Extract public key from signing certificate
+        openssl x509 -pubkey -noout -in signingcert.pem > pubkey.pem
+
+        # Verify signature against public key
+        openssl dgst -sha256 -verify pubkey.pem -signature artifact.sig sigstore-0.0.0.tgz
