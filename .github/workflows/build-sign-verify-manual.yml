@@ -1,8 +1,8 @@
 name: build-sign-verify
 on: [push]
 jobs:
-  build-package:
-    name: Build Package
+  lint-source:
+    name: Lint code
     runs-on: ubuntu-latest
     steps:
     - name: Checkout source
@@ -11,6 +11,62 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 16
+        cache: npm
+    - name: Install dependencies
+      run: npm install
+    - name: Run linter
+      run: npm run lint:check
+
+  run-tests:
+    name: Run tests
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          - 12.13.0
+          - 12.x
+          - 14.15.0
+          - 14.x
+          - 16.0.0
+          - 16.x
+        platform:
+          - os: ubuntu-latest
+            shell: bash
+          - os: macos-latest
+            shell: bash
+          - os: windows-latest
+            shell: cmd
+    runs-on: ${{ matrix.platform.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.platform.shell }}
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v3
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: npm
+    - name: Install dependencies
+      run: npm install
+    - name: Run tests
+      run: npm run test:ci
+
+  build-package:
+    name: Build Package
+    needs: [lint-source, run-tests]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v3
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+        cache: npm
+    - name: Install dependencies
+      run: npm install
     - name: Create package
       run: npm pack
     - name: Archive package
@@ -18,6 +74,7 @@ jobs:
       with:
         name: package
         path: sigstore-0.0.0.tgz
+
   sign-package:
     name: Sign Package
     needs: build-package
