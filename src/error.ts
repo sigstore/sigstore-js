@@ -1,7 +1,10 @@
-import { Response } from 'node-fetch';
+import fetch from 'make-fetch-happen';
+
+// Convoluted way of getting at the Response type used by make-fetch-happen
+type Response = Awaited<ReturnType<typeof fetch>>;
 
 export class HTTPError extends Error {
-  private response: Response;
+  public response: Response;
   constructor(response: Response) {
     super(`HTTP Error: ${response.status} ${response.statusText}`);
     this.response = response;
