@@ -1,16 +1,15 @@
 import fs from 'fs';
-import fetch from 'make-fetch-happen';
-import { Sigstore } from '../index';
+import { Sigstore, getToken } from '../index';
 
 const sigstore = new Sigstore({});
 
 async function cli(args: string[]) {
   switch (args[0]) {
     case 'sign':
-      await sign(args[1], args[2]);
+      await sign(args[1]);
       break;
     case 'sign-dsse':
-      await signDSSE(args[1], args[2], args[3]);
+      await signDSSE(args[1], args[2]);
       break;
     case 'verify':
       await verify(args[1], args[2]);
@@ -23,8 +22,8 @@ async function cli(args: string[]) {
   }
 }
 
-async function sign(artifactPath: string, token?: string) {
-  token = token || process.env.OIDC_TOKEN || (await getGHToken());
+async function sign(artifactPath: string) {
+  const token = await getToken();
 
   if (!token) {
     throw 'Missing OIDC token';
@@ -35,12 +34,8 @@ async function sign(artifactPath: string, token?: string) {
   console.log(signature.base64Signature);
 }
 
-async function signDSSE(
-  artifactPath: string,
-  payloadType: string,
-  token?: string
-) {
-  token = token || process.env.OIDC_TOKEN || (await getGHToken());
+async function signDSSE(artifactPath: string, payloadType: string) {
+  const token = await getToken();
 
   if (!token) {
     throw 'Missing OIDC token';
@@ -74,27 +69,6 @@ async function verifyDSSE(artifactPath: string) {
   } else {
     throw 'Signature verification failed';
   }
-}
-
-async function getGHToken() {
-  let token;
-  if (
-    process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN &&
-    process.env.ACTIONS_ID_TOKEN_REQUEST_URL
-  ) {
-    const response = await fetch(
-      `${process.env.ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sigstore`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}`,
-          Accept: 'application/json',
-        },
-      }
-    );
-    const body = await response.json();
-    token = body.value;
-  }
-  return token;
 }
 
 export async function processArgv(): Promise<void> {
