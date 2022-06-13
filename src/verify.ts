@@ -59,8 +59,6 @@ export class Verifier {
     // If we have a cert here it means we found a matching entry
     if (b64Cert) {
       return base64Decode(b64Cert);
-    } else {
-      return undefined;
     }
   }
 }

@@ -90,7 +90,7 @@ export class Signer {
 
 function entryToBundle(entry: Entry): RekorBundle | undefined {
   if (!entry.verification) {
-    return undefined;
+    return;
   }
 
   return {
