@@ -12,10 +12,16 @@
     "lint:check": "eslint --max-warnings 0 --ext .ts src/**",
     "format": "prettier --write \"src/**/*\""
   },
+  "bin": {
+    "sigstore": "bin/sigstore.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/github/sigstore-node.git"
   },
+  "files": [
+    "dist"
+  ],
   "author": "bdehamer@github.com",
   "license": "ISC",
   "bugs": {

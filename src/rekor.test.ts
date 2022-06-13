@@ -37,7 +37,11 @@ describe('Rekor', () => {
       };
 
       beforeEach(() => {
-        nock(baseURL).post('/api/v1/log/entries').reply(201, responseBody);
+        nock(baseURL)
+          .matchHeader('Accept', 'application/json')
+          .matchHeader('Content-Type', 'application/json')
+          .post('/api/v1/log/entries')
+          .reply(201, responseBody);
       });
 
       it('returns the new entry', async () => {
@@ -122,22 +126,45 @@ describe('Rekor', () => {
         );
       });
     });
+
+    describe('when there are multiple entries in the response', () => {
+      const uuid =
+        '69e5a0c1663ee4452674a5c9d5050d866c2ee31e2faaf79913aea7cc27293cf6';
+      const responseBody = {
+        [uuid]: { body: 'foo' },
+        '456': { body: 'bar' },
+      };
+
+      beforeEach(() => {
+        nock(baseURL)
+          .get(`/api/v1/log/entries/${uuid}`)
+          .reply(200, responseBody);
+      });
+
+      it('returns an error', async () => {
+        await expect(subject.getEntry(uuid)).rejects.toThrow(
+          'Received multiple entries in Rekor response'
+        );
+      });
+    });
   });
 
   describe('#search', () => {
     describe('when matching entries exist', () => {
+      const sha =
+        'sha256:04c0c13721a28c60f38daf09a05326c301a2cf57ad2beb953eb29d61383db47e';
       const responseBody = ['deadbeef', 'abcd1234'];
 
       beforeEach(() => {
-        nock(baseURL).post('/api/v1/index/retrieve').reply(200, responseBody);
+        nock(baseURL)
+          .matchHeader('Accept', 'application/json')
+          .matchHeader('Content-Type', 'application/json')
+          .post('/api/v1/index/retrieve', { hash: sha })
+          .reply(200, responseBody);
       });
 
       it('returns matching entries', async () => {
-        const sha =
-          'sha256:04c0c13721a28c60f38daf09a05326c301a2cf57ad2beb953eb29d61383db47e';
-
         const response = await subject.searchLog({ hash: sha });
-
         expect(response).toEqual(responseBody);
       });
     });

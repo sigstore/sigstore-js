@@ -1,3 +1,1 @@
-const NAME = 'sigstore-node';
-
-export const getName = () => NAME;
+export { Sigstore, SigstoreOptions } from './sigstore';
