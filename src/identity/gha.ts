@@ -21,7 +21,7 @@ export class GHAProvider implements Provider {
       !process.env.ACTIONS_ID_TOKEN_REQUEST_URL ||
       !process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN
     ) {
-      return undefined;
+      return;
     }
 
     // Construct URL to request token w/ appropriate audience

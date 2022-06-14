@@ -1,9 +1,8 @@
 import http from 'http';
-import { AddressInfo } from 'net';
+import { AddressInfo, Socket } from 'net';
 import { URLSearchParams, URL } from 'url';
 import child_process from 'child_process';
 import assert from 'assert';
-import crypto from 'crypto';
 import fetch from 'make-fetch-happen';
 
 import { Provider } from './provider';
@@ -15,19 +14,19 @@ export class OAuthProvider implements Provider {
   private clientID: string;
   private clientSecret: string;
   private issuer: Issuer;
+  private codeVerifier: string;
   private state: string;
-  private codeVerifier?: string;
   private redirectURI?: string;
 
   constructor(clientID: string, clientSecret: string, issuer: Issuer) {
     this.clientID = clientID;
     this.clientSecret = clientSecret;
     this.issuer = issuer;
-    this.state = crypto.randomUUID();
+    this.codeVerifier = generateRandomString(32);
+    this.state = generateRandomString(16);
   }
 
   public async getToken(): Promise<string> {
-    this.codeVerifier = await this.generateCodeVerifier();
     const authCode = await this.initiateAuthRequest();
     return this.getIDToken(authCode);
   }
@@ -37,10 +36,19 @@ export class OAuthProvider implements Provider {
   // the provider's authorization page.
   private async initiateAuthRequest(): Promise<string> {
     const server = http.createServer();
+    const sockets = new Set<Socket>();
 
     // Start server and wait till it is listening
     await new Promise<void>((resolve) => {
       server.listen(0, resolve);
+    });
+
+    // Keep track of connections to the server so we can force a shutdown
+    server.on('connection', (socket) => {
+      sockets.add(socket);
+      socket.once('close', () => {
+        sockets.delete(socket);
+      });
     });
 
     // Get port the server is listening on and construct the server URL
@@ -68,13 +76,22 @@ export class OAuthProvider implements Provider {
         }
 
         const authCode = query.get('code');
-        if (!authCode) {
-          reject('authorization code not found');
-        } else {
-          resolve(authCode);
+
+        // Force-close any open connections to the server so we can get a
+        // clean shutdown
+        for (const socket of sockets) {
+          socket.destroy();
+          sockets.delete(socket);
         }
 
-        server.close();
+        // Return auth code once we've shutdown server
+        server.close(() => {
+          if (!authCode) {
+            reject('authorization code not found');
+          } else {
+            resolve(authCode);
+          }
+        });
       });
     });
 
@@ -90,7 +107,6 @@ export class OAuthProvider implements Provider {
   // provider
   private async getIDToken(authCode: string): Promise<string> {
     assert(this.redirectURI);
-    assert(this.codeVerifier);
 
     const tokenEndpointURL = await this.issuer.tokenEndpoint();
 
@@ -134,26 +150,20 @@ export class OAuthProvider implements Provider {
       code_challenge: codeChallenge,
       code_challenge_method: 'S256',
       state: this.state,
-      nonce: crypto.randomUUID(),
+      nonce: generateRandomString(16),
     });
   }
 
   // Generate code challenge for authorization request
   private getCodeChallenge(): string {
-    assert(this.codeVerifier);
-    return hash(this.codeVerifier, 'base64url');
-  }
-
-  // Generate random code verifier value
-  private async generateCodeVerifier(): Promise<string> {
-    return randomBytes(32).then((b) => b.toString('base64url'));
+    return base64URLEncode(hash(this.codeVerifier, 'base64'));
   }
 
   // Open the supplied URL in the user's default browser
   // TODO: probably not cross-platform
   private async openURL(url: string) {
     return new Promise<void>((resolve, reject) => {
-      child_process.exec(`open "${url}"`, (err) => {
+      child_process.exec(`open "${url}"`, undefined, (err) => {
         if (err) {
           reject(err);
         } else {
@@ -162,4 +172,15 @@ export class OAuthProvider implements Provider {
       });
     });
   }
+}
+
+// Generate random code verifier value
+function generateRandomString(len: number): string {
+  return base64URLEncode(randomBytes(len).toString('base64'));
+}
+
+// Older versions of node don't support 'base64url' encoding in Buffer's
+// toString() so we have to provide our own
+function base64URLEncode(str: string): string {
+  return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }

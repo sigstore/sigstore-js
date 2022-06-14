@@ -46,14 +46,6 @@ export function hash(
   return hash.digest(encoding);
 }
 
-export async function randomBytes(count: number): Promise<Buffer> {
-  return new Promise<Buffer>((resolve, reject) => {
-    randBytes(count, (err, buf) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(buf);
-      }
-    });
-  });
+export function randomBytes(count: number): Buffer {
+  return randBytes(count);
 }
