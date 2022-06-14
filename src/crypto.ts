@@ -3,9 +3,11 @@ import {
   createVerify,
   createHash,
   generateKeyPairSync,
+  randomBytes as randBytes,
   KeyPairKeyObjectResult,
   KeyLike,
   BinaryLike,
+  BinaryToTextEncoding,
 } from 'crypto';
 
 const EC_KEYPAIR_TYPE = 'ec';
@@ -35,8 +37,15 @@ export function verifyBlob(
   return verifier.verify(publicKey, signature, BASE64_ENCODING);
 }
 
-export function hash(blob: BinaryLike): string {
+export function hash(
+  blob: BinaryLike,
+  encoding: BinaryToTextEncoding = 'hex'
+): string {
   const hash = createHash(SHA256_ALGORITHM);
   hash.update(blob);
-  return hash.digest('hex');
+  return hash.digest(encoding);
+}
+
+export function randomBytes(count: number): Buffer {
+  return randBytes(count);
 }

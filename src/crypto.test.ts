@@ -1,4 +1,10 @@
-import { generateKeyPair, hash, signBlob, verifyBlob } from './crypto';
+import {
+  generateKeyPair,
+  hash,
+  signBlob,
+  verifyBlob,
+  randomBytes,
+} from './crypto';
 
 describe('generateKeyPair', () => {
   it('generates an EC keypair', () => {
@@ -15,11 +21,14 @@ describe('generateKeyPair', () => {
 describe('hash', () => {
   it('returns the SHA256 digest of the blob', () => {
     const blob = Buffer.from('hello world');
-    const digest = hash(blob);
+    const d1 = hash(blob);
 
-    expect(digest).toBe(
+    expect(d1).toBe(
       'b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9'
     );
+
+    const d2 = hash(blob, 'base64');
+    expect(d2).toBe('uU0nuZNNPgilLlLX2n2r+sSE7+N6U4DukIj3rOLvzek=');
   });
 });
 
@@ -49,5 +58,12 @@ describe('verifyBlob', () => {
     it('returns false', () => {
       expect(verifyBlob(key.publicKey, blob, signature)).toBe(false);
     });
+  });
+});
+
+describe('randomBytes', () => {
+  it('returns a buffer of the specified length', () => {
+    const buffer = randomBytes(10);
+    expect(buffer.length).toBe(10);
   });
 });
