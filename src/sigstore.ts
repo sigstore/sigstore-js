@@ -7,6 +7,9 @@ import { pae, Envelope } from './dsse';
 export interface SigstoreOptions {
   fulcioBaseURL?: string;
   rekorBaseURL?: string;
+  oidcIssuer?: string;
+  oidcClientID?: string;
+  oidcClientSecret?: string;
 }
 
 export class Sigstore {
@@ -17,24 +20,30 @@ export class Sigstore {
     const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
     const rekor = new Rekor({ baseURL: options.rekorBaseURL });
 
-    this.signer = new Signer({ fulcio, rekor });
+    this.signer = new Signer({
+      fulcio,
+      rekor,
+      oidcIssuer: options.oidcIssuer,
+      oidcClientID: options.oidcClientID,
+      oidcClientSecret: options.oidcClientSecret,
+    });
     this.verifier = new Verifier({ rekor });
   }
 
   public async signRaw(
     payload: Buffer,
-    oidcToken: string
+    identityToken?: string
   ): Promise<SignedPayload> {
-    return this.signer.sign(payload, oidcToken);
+    return this.signer.sign(payload, identityToken);
   }
 
   public async signDSSE(
     payload: Buffer,
     payloadType: string,
-    oidcToken: string
+    identityToken?: string
   ): Promise<Envelope> {
     const paeBuffer = pae(payloadType, payload);
-    const signedPayload = await this.signer.sign(paeBuffer, oidcToken);
+    const signedPayload = await this.signer.sign(paeBuffer, identityToken);
 
     const envelope: Envelope = {
       payloadType: payloadType,

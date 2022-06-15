@@ -1,21 +1,27 @@
-import { default as providers } from './provider';
-import { GHAProvider } from './gha';
-import { OAuthProvider } from './oauth';
+import { default as ciContextProvider } from './ci';
 import { Issuer } from './issuer';
+import { OAuthProvider } from './oauth';
+import { Provider } from './provider';
 
-// Register GitHub Actions provider
-providers.add(new GHAProvider());
-
-// Register Sigstore OAuth provider
-const sigstoreOAuthIssuer = new Issuer('https://oauth2.sigstore.dev/auth');
-providers.add(new OAuthProvider('sigstore', '', sigstoreOAuthIssuer));
-
-export async function getToken(): Promise<string | undefined> {
-  for (const p of providers.all()) {
-    const token = await p.getToken();
-
-    if (token) {
-      return token;
-    }
-  }
+/**
+ * oauthProvider returns a new OAuthProvider instance with the given config.
+ *
+ * @param issuer Base URL of the issuer
+ * @param clientID Client ID for the issuer
+ * @param clientSecret Client secret for the issuer (optional)
+ * @returns {Provider}
+ */
+function oauthProvider(
+  issuer: string,
+  clientID: string,
+  clientSecret?: string
+): Provider {
+  return new OAuthProvider(new Issuer(issuer), clientID, clientSecret);
 }
+
+export default {
+  ciContextProvider,
+  oauthProvider,
+};
+
+export { Provider } from './provider';

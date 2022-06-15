@@ -1,7 +1,10 @@
 import fs from 'fs';
-import { Sigstore, getToken } from '../index';
+import { Sigstore } from '../index';
 
-const sigstore = new Sigstore({});
+const sigstore = new Sigstore({
+  oidcClientID: 'sigstore',
+  oidcIssuer: 'https://oauth2.sigstore.dev/auth',
+});
 
 async function cli(args: string[]) {
   switch (args[0]) {
@@ -23,26 +26,14 @@ async function cli(args: string[]) {
 }
 
 async function sign(artifactPath: string) {
-  const token = await getToken();
-
-  if (!token) {
-    throw 'Missing OIDC token';
-  }
-
   const buffer = fs.readFileSync(artifactPath);
-  const signature = await sigstore.signRaw(buffer, token);
+  const signature = await sigstore.signRaw(buffer);
   console.log(signature.base64Signature);
 }
 
 async function signDSSE(artifactPath: string, payloadType: string) {
-  const token = await getToken();
-
-  if (!token) {
-    throw 'Missing OIDC token';
-  }
-
   const buffer = fs.readFileSync(artifactPath);
-  const envelope = await sigstore.signDSSE(buffer, payloadType, token);
+  const envelope = await sigstore.signDSSE(buffer, payloadType);
   console.log(JSON.stringify(envelope));
 }
 

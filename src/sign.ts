@@ -2,10 +2,14 @@ import { Fulcio } from './fulcio';
 import { Rekor, Entry } from './rekor';
 import { generateKeyPair, hash, signBlob } from './crypto';
 import { base64Decode, base64Encode, extractJWTSubject } from './util';
+import identity, { Provider } from './identity';
 
 export interface SignOptions {
   fulcio: Fulcio;
   rekor: Rekor;
+  oidcIssuer?: string;
+  oidcClientID?: string;
+  oidcClientSecret?: string;
 }
 
 export interface SignedPayload {
@@ -30,14 +34,28 @@ export class Signer {
   private fulcio: Fulcio;
   private rekor: Rekor;
 
+  private identityProviders: Provider[] = [];
+
   constructor(options: SignOptions) {
     this.fulcio = options.fulcio;
     this.rekor = options.rekor;
+
+    this.identityProviders.push(identity.ciContextProvider);
+
+    if (options.oidcIssuer && options.oidcClientID) {
+      this.identityProviders.push(
+        identity.oauthProvider(
+          options.oidcIssuer,
+          options.oidcClientID,
+          options.oidcClientSecret
+        )
+      );
+    }
   }
 
   public async sign(
     payload: Buffer,
-    oidcToken: string
+    identityToken?: string
   ): Promise<SignedPayload> {
     // Create emphemeral key pair
     const keypair = generateKeyPair();
@@ -47,15 +65,21 @@ export class Signer {
       .export({ type: 'spki', format: 'der' })
       .toString('base64');
 
+    // Use excplicitly provided oidc token or try to get one from the identity provider
+    identityToken = identityToken || (await this.getIdentityToken());
+    if (!identityToken) {
+      throw new Error('No identity token provided');
+    }
+
     // Extract challenge claim from OIDC token
-    const subject = extractJWTSubject(oidcToken);
+    const subject = extractJWTSubject(identityToken);
 
     // Construct challenge value by encrypting subject with private key
     const challenge = signBlob(keypair.privateKey, subject);
 
     // Create signing certificate
     const certificate = await this.fulcio.createSigningCertificate({
-      oidcToken,
+      identityToken,
       publicKey: publicKeyB64,
       challenge,
     });
@@ -85,6 +109,16 @@ export class Signer {
       bundle: entryToBundle(entry),
     };
     return signedPayload;
+  }
+
+  private async getIdentityToken(): Promise<string | undefined> {
+    for (const provider of this.identityProviders) {
+      const token = await provider.getToken();
+
+      if (token) {
+        return token;
+      }
+    }
   }
 }
 

@@ -12,7 +12,7 @@ describe('Fulcio', () => {
 
   describe('#createSigningCertificate', () => {
     const certRequest = {
-      oidcToken: `a.b.c`,
+      identityToken: `a.b.c`,
       publicKey:
         'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==',
       challenge: 'MEUCIEntw6QwoyDHb52HUIUVDnqFeGBI4oaCBMCoOtcbVKQ=',
@@ -25,7 +25,7 @@ describe('Fulcio', () => {
         nock(baseURL)
           .matchHeader('Accept', 'application/pem-certificate-chain')
           .matchHeader('Content-Type', 'application/json')
-          .matchHeader('Authorization', `Bearer ${certRequest.oidcToken}`)
+          .matchHeader('Authorization', `Bearer ${certRequest.identityToken}`)
           .post('/api/v1/signingCert', {
             publicKey: { content: certRequest.publicKey },
             signedEmailAddress: certRequest.challenge,

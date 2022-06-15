@@ -8,7 +8,7 @@ export interface FulcioOptions {
 }
 
 export interface CertificateRequest {
-  oidcToken: string;
+  identityToken: string;
   publicKey: string;
   challenge: string;
 }
@@ -44,7 +44,7 @@ export class Fulcio {
 
     const response = await this.fetch(url, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${request.oidcToken}` },
+      headers: { Authorization: `Bearer ${request.identityToken}` },
       body: JSON.stringify(body),
     });
     checkStatus(response);

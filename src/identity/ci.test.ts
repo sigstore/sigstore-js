@@ -1,11 +1,9 @@
 import nock from 'nock';
-import { GHAProvider } from './gha';
+import { default as ciContextProvider } from './ci';
 
-describe('GHAProvider', () => {
-  const subject = new GHAProvider();
-
-  it('should create an instance', () => {
-    expect(subject).toBeTruthy();
+describe('ciContextProvider', () => {
+  it('should exist', () => {
+    expect(ciContextProvider).toBeTruthy();
   });
 
   describe('#getToken', () => {
@@ -31,14 +29,14 @@ describe('GHAProvider', () => {
       });
 
       it('returns the token', async () => {
-        const token = await subject.getToken();
+        const token = await ciContextProvider.getToken();
         expect(token).toBe(oidcToken);
       });
     });
 
     describe('when the GHA environment variables are NOT set', () => {
       it('returns undefined', async () => {
-        const token = await subject.getToken();
+        const token = await ciContextProvider.getToken();
         expect(token).toBeUndefined();
       });
     });
