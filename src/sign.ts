@@ -2,14 +2,12 @@ import { Fulcio } from './fulcio';
 import { Rekor, Entry } from './rekor';
 import { generateKeyPair, hash, signBlob } from './crypto';
 import { base64Decode, base64Encode, extractJWTSubject } from './util';
-import identity, { Provider } from './identity';
+import { Provider } from './identity';
 
 export interface SignOptions {
   fulcio: Fulcio;
   rekor: Rekor;
-  oidcIssuer?: string;
-  oidcClientID?: string;
-  oidcClientSecret?: string;
+  identityProviders: Provider[];
 }
 
 export interface SignedPayload {
@@ -39,24 +37,10 @@ export class Signer {
   constructor(options: SignOptions) {
     this.fulcio = options.fulcio;
     this.rekor = options.rekor;
-
-    this.identityProviders.push(identity.ciContextProvider);
-
-    if (options.oidcIssuer && options.oidcClientID) {
-      this.identityProviders.push(
-        identity.oauthProvider(
-          options.oidcIssuer,
-          options.oidcClientID,
-          options.oidcClientSecret
-        )
-      );
-    }
+    this.identityProviders = options.identityProviders;
   }
 
-  public async sign(
-    payload: Buffer,
-    identityToken?: string
-  ): Promise<SignedPayload> {
+  public async sign(payload: Buffer): Promise<SignedPayload> {
     // Create emphemeral key pair
     const keypair = generateKeyPair();
 
@@ -65,8 +49,8 @@ export class Signer {
       .export({ type: 'spki', format: 'der' })
       .toString('base64');
 
-    // Use excplicitly provided oidc token or try to get one from the identity provider
-    identityToken = identityToken || (await this.getIdentityToken());
+    // Retrieve identity token from one of the supplied identity providers
+    const identityToken = await this.getIdentityToken();
     if (!identityToken) {
       throw new Error('No identity token provided');
     }

@@ -6,15 +6,21 @@ import { Signer } from './sign';
 describe('Signer', () => {
   const fulcioBaseURL = 'http://localhost:8001';
   const rekorBaseURL = 'http://localhost:8002';
-  const fulcio = new Fulcio({ baseURL: fulcioBaseURL });
-  const rekor = new Rekor({ baseURL: rekorBaseURL });
-  const subject = new Signer({ fulcio, rekor });
-
   const jwtPayload = {
     iss: 'https://example.com',
     sub: 'foo@bar.com',
   };
   const jwt = `.${Buffer.from(JSON.stringify(jwtPayload)).toString('base64')}.`;
+
+  const fulcio = new Fulcio({ baseURL: fulcioBaseURL });
+  const rekor = new Rekor({ baseURL: rekorBaseURL });
+  const idp = { getToken: () => Promise.resolve(jwt) };
+
+  const subject = new Signer({
+    fulcio,
+    rekor,
+    identityProviders: [idp],
+  });
 
   it('should create an instance', () => {
     expect(subject).toBeTruthy();
@@ -24,13 +30,27 @@ describe('Signer', () => {
     // Input
     const payload = Buffer.from('Hello, world!');
 
+    describe('when no identity provider returns a token', () => {
+      const noIDTokenSubject = new Signer({
+        fulcio,
+        rekor,
+        identityProviders: [],
+      });
+
+      it('throws an error', async () => {
+        await expect(noIDTokenSubject.sign(payload)).rejects.toThrow(
+          'No identity token provided'
+        );
+      });
+    });
+
     describe('when Fulcio returns an error', () => {
       beforeEach(() => {
         nock(fulcioBaseURL).post('/api/v1/signingCert').reply(500, {});
       });
 
       it('returns an error', async () => {
-        await expect(subject.sign(payload, jwt)).rejects.toThrow(
+        await expect(subject.sign(payload)).rejects.toThrow(
           'HTTP Error: 500 Internal Server Error'
         );
       });
@@ -95,7 +115,7 @@ describe('Signer', () => {
         });
 
         it('returns a signature bundle', async () => {
-          const signedPayload = await subject.sign(payload, jwt);
+          const signedPayload = await subject.sign(payload);
 
           expect(signedPayload).toBeTruthy();
           expect(signedPayload.base64Signature).toBeTruthy();
@@ -114,7 +134,7 @@ describe('Signer', () => {
         });
 
         it('returns an error', async () => {
-          await expect(subject.sign(payload, jwt)).rejects.toThrow(
+          await expect(subject.sign(payload)).rejects.toThrow(
             'HTTP Error: 500 Internal Server Error'
           );
         });

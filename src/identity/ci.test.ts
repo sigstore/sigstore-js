@@ -2,7 +2,7 @@ import nock from 'nock';
 import { default as ciContextProvider } from './ci';
 
 describe('ciContextProvider', () => {
-  it('should exist', () => {
+  it('exists', () => {
     expect(ciContextProvider).toBeTruthy();
   });
 

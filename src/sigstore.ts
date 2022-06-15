@@ -3,47 +3,49 @@ import { Rekor } from './rekor';
 import { Signer, SignedPayload } from './sign';
 import { Verifier } from './verify';
 import { pae, Envelope } from './dsse';
+import identity, { Provider } from './identity';
 
-export interface SigstoreOptions {
+export interface SignOptions {
   fulcioBaseURL?: string;
   rekorBaseURL?: string;
+  identityToken?: string;
   oidcIssuer?: string;
   oidcClientID?: string;
   oidcClientSecret?: string;
 }
 
-export class Sigstore {
-  private signer: Signer;
-  private verifier: Verifier;
+export interface VerifierOptions {
+  rekorBaseURL?: string;
+}
 
-  constructor(options: SigstoreOptions) {
+type IdentityProviderOptions = Pick<
+  SignOptions,
+  'identityToken' | 'oidcIssuer' | 'oidcClientID' | 'oidcClientSecret'
+>;
+
+export class Sigstore {
+  public async sign(
+    payload: Buffer,
+    options: SignOptions = {}
+  ): Promise<SignedPayload> {
     const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
     const rekor = new Rekor({ baseURL: options.rekorBaseURL });
+    const idps = this.configureIdentityProviders(options);
 
-    this.signer = new Signer({
+    return new Signer({
       fulcio,
       rekor,
-      oidcIssuer: options.oidcIssuer,
-      oidcClientID: options.oidcClientID,
-      oidcClientSecret: options.oidcClientSecret,
-    });
-    this.verifier = new Verifier({ rekor });
-  }
-
-  public async signRaw(
-    payload: Buffer,
-    identityToken?: string
-  ): Promise<SignedPayload> {
-    return this.signer.sign(payload, identityToken);
+      identityProviders: idps,
+    }).sign(payload);
   }
 
   public async signDSSE(
     payload: Buffer,
     payloadType: string,
-    identityToken?: string
+    options: SignOptions = {}
   ): Promise<Envelope> {
     const paeBuffer = pae(payloadType, payload);
-    const signedPayload = await this.signer.sign(paeBuffer, identityToken);
+    const signedPayload = await this.sign(paeBuffer, options);
 
     const envelope: Envelope = {
       payloadType: payloadType,
@@ -59,21 +61,55 @@ export class Sigstore {
     return envelope;
   }
 
-  public async verifyOnline(
+  public async verify(
     payload: Buffer,
-    signature: string
+    signature: string,
+    options: VerifierOptions = {}
   ): Promise<boolean> {
-    return this.verifier.verify(payload, signature);
+    const rekor = new Rekor({ baseURL: options.rekorBaseURL });
+
+    return new Verifier({ rekor }).verify(payload, signature);
   }
 
-  public async verifyDSSE(envelope: Envelope): Promise<boolean> {
+  public async verifyDSSE(
+    envelope: Envelope,
+    options: VerifierOptions = {}
+  ): Promise<boolean> {
     const payloadType = envelope.payloadType;
     const payload = Buffer.from(envelope.payload, 'base64');
     const signature = envelope.signatures[0].sig;
 
     const paeBuffer = pae(payloadType, payload);
-    const verified = await this.verifier.verify(paeBuffer, signature);
+    const verified = await this.verify(paeBuffer, signature, options);
 
     return verified;
+  }
+
+  // Translates the IdenityProviderOptions into a list of Providers which
+  // should be queried to retrieve an identity token.
+  private configureIdentityProviders(
+    options: IdentityProviderOptions
+  ): Provider[] {
+    const idps: Provider[] = [];
+
+    // If an explicit identity token is provided, use that. Setup a dummy
+    // provider that just returns the token. Otherwise, setup the CI context
+    // provider and (optionally) the OAuth provider.
+    if (options.identityToken) {
+      idps.push({ getToken: () => Promise.resolve(options.identityToken) });
+    } else {
+      idps.push(identity.ciContextProvider);
+      if (options.oidcIssuer && options.oidcClientID) {
+        idps.push(
+          identity.oauthProvider(
+            options.oidcIssuer,
+            options.oidcClientID,
+            options.oidcClientSecret
+          )
+        );
+      }
+    }
+
+    return idps;
   }
 }

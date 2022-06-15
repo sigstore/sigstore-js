@@ -1,1 +1,1 @@
-export { Sigstore, SigstoreOptions } from './sigstore';
+export { Sigstore, SignOptions, VerifierOptions } from './sigstore';
