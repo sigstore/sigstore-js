@@ -2,7 +2,6 @@ import { Verifier } from './verify';
 import { Signer } from './sign';
 import { Sigstore } from './sigstore';
 import { pae } from './dsse';
-import identity from './identity';
 
 jest.mock('./sign');
 
@@ -43,7 +42,6 @@ describe('Sigstore', () => {
       expect(options).toHaveProperty('fulcio', expect.anything());
       expect(options).toHaveProperty('rekor', expect.anything());
       expect(options.identityProviders).toHaveLength(1);
-      expect(options.identityProviders[0]).toBe(identity.ciContextProvider);
     });
 
     it('invokes the Signer instance with the correct params', async () => {

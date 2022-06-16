@@ -1,7 +1,8 @@
-import { Provider } from './provider';
 import fetch from 'make-fetch-happen';
+import { Provider } from './provider';
+import { promiseAny } from '../util';
 
-type ProviderFunc = () => Promise<string | undefined>;
+type ProviderFunc = (audience: string) => Promise<string>;
 
 // Collection of all the CI-specific providers we have implemented
 const providers: ProviderFunc[] = [getGHAToken];
@@ -9,17 +10,21 @@ const providers: ProviderFunc[] = [getGHAToken];
 /**
  * CIContextProvider is a composite identity provider which will iterate
  * over all of the CI-specific providers and return the token from the first
- * one that returns a non-undefined value.
+ * one that resolves.
  */
-class CIContextProvider implements Provider {
-  public async getToken() {
-    for (const provider of providers) {
-      const token = await provider();
+export class CIContextProvider implements Provider {
+  private audience: string;
 
-      if (token) {
-        return token;
-      }
-    }
+  constructor(audience: string) {
+    this.audience = audience;
+  }
+
+  // Invoke all registered ProviderFuncs and return the value of whichever one
+  // resolves first.
+  public async getToken() {
+    return promiseAny(
+      providers.map((getToken) => getToken(this.audience))
+    ).catch(() => Promise.reject('no tokens available'));
   }
 }
 
@@ -27,18 +32,18 @@ class CIContextProvider implements Provider {
  * getGHAToken can retrieve an OIDC token when running in a GitHub Actions
  * workflow
  */
-async function getGHAToken(): Promise<string | undefined> {
+async function getGHAToken(audience: string): Promise<string> {
   // Check to see if we're running in GitHub Actions
   if (
     !process.env.ACTIONS_ID_TOKEN_REQUEST_URL ||
     !process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN
   ) {
-    return;
+    return Promise.reject('no token available');
   }
 
   // Construct URL to request token w/ appropriate audience
   const url = new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
-  url.searchParams.append('audience', 'sigstore');
+  url.searchParams.append('audience', audience);
 
   const response = await fetch(url.href, {
     retry: 2,
@@ -50,5 +55,3 @@ async function getGHAToken(): Promise<string | undefined> {
 
   return response.json().then((data) => data.value);
 }
-
-export default new CIContextProvider();

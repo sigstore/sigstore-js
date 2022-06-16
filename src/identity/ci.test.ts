@@ -1,9 +1,11 @@
 import nock from 'nock';
-import { default as ciContextProvider } from './ci';
+import { CIContextProvider } from './ci';
 
-describe('ciContextProvider', () => {
-  it('exists', () => {
-    expect(ciContextProvider).toBeTruthy();
+describe('CIContextProvider', () => {
+  const subject = new CIContextProvider('sigstore');
+
+  it('creates an instance', () => {
+    expect(subject).toBeTruthy();
   });
 
   describe('#getToken', () => {
@@ -29,15 +31,15 @@ describe('ciContextProvider', () => {
       });
 
       it('returns the token', async () => {
-        const token = await ciContextProvider.getToken();
+        const token = await subject.getToken();
         expect(token).toBe(oidcToken);
       });
     });
 
     describe('when the GHA environment variables are NOT set', () => {
       it('returns undefined', async () => {
-        const token = await ciContextProvider.getToken();
-        expect(token).toBeUndefined();
+        const token = subject.getToken();
+        await expect(token).rejects.toBe('no tokens available');
       });
     });
   });

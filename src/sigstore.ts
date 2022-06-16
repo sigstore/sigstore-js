@@ -91,14 +91,15 @@ export class Sigstore {
     options: IdentityProviderOptions
   ): Provider[] {
     const idps: Provider[] = [];
+    const token = options.identityToken;
 
     // If an explicit identity token is provided, use that. Setup a dummy
     // provider that just returns the token. Otherwise, setup the CI context
     // provider and (optionally) the OAuth provider.
-    if (options.identityToken) {
-      idps.push({ getToken: () => Promise.resolve(options.identityToken) });
+    if (token) {
+      idps.push({ getToken: () => Promise.resolve(token) });
     } else {
-      idps.push(identity.ciContextProvider);
+      idps.push(identity.ciContextProvider());
       if (options.oidcIssuer && options.oidcClientID) {
         idps.push(
           identity.oauthProvider(

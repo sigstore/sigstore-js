@@ -51,9 +51,6 @@ export class Signer {
 
     // Retrieve identity token from one of the supplied identity providers
     const identityToken = await this.getIdentityToken();
-    if (!identityToken) {
-      throw new Error('No identity token provided');
-    }
 
     // Extract challenge claim from OIDC token
     const subject = extractJWTSubject(identityToken);
@@ -95,14 +92,16 @@ export class Signer {
     return signedPayload;
   }
 
-  private async getIdentityToken(): Promise<string | undefined> {
+  private async getIdentityToken(): Promise<string> {
     for (const provider of this.identityProviders) {
-      const token = await provider.getToken();
+      const token = await provider.getToken().catch(() => Promise.resolve());
 
       if (token) {
         return token;
       }
     }
+
+    throw new Error('No identity token provided');
   }
 }
 
