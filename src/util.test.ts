@@ -85,8 +85,8 @@ describe('extractJWTSubject', () => {
       });
     });
 
-    describe('when only no promises resolve', () => {
-      it('should return the first resolved promise', async () => {
+    describe('when all promises reject', () => {
+      it('should return all rejections', async () => {
         const promise1 = Promise.reject('err1');
         const promise2 = Promise.reject('err2');
         const promise3 = Promise.reject('err3');
