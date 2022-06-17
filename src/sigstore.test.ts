@@ -3,26 +3,13 @@ import { Signer } from './sign';
 import { Sigstore } from './sigstore';
 import { pae } from './dsse';
 
-// Mock Signer and Verifier classes
 jest.mock('./sign');
-jest.mock('./verify');
 
 describe('Sigstore', () => {
-  let subject: Sigstore;
-  const MockedVerifier = jest.mocked(Verifier, true);
-  const MockedSigner = jest.mocked(Signer, true);
+  const subject = new Sigstore();
 
-  beforeEach(() => {
-    MockedVerifier.mockClear();
-    MockedSigner.mockClear();
-
-    // Subject must be instantiated AFTER the mocks are cleared
-    subject = new Sigstore({});
-  });
-
-  describe('#signRaw', () => {
+  describe('#sign', () => {
     const payload = Buffer.from('Hello, world!');
-    const jwt = 'a.b.c';
 
     // Signer output
     const signedPayload = {
@@ -34,18 +21,37 @@ describe('Sigstore', () => {
 
     beforeEach(() => {
       mockSign.mockClear();
-      MockedSigner.mock.instances[0].sign =
-        mockSign.mockResolvedValueOnce(signedPayload);
+      mockSign.mockResolvedValueOnce(signedPayload);
+      jest.spyOn(Signer.prototype, 'sign').mockImplementation(mockSign);
+    });
+
+    it('constructs the Signer with the correct options', async () => {
+      const mockSigner = jest.mocked(Signer);
+
+      await subject.sign(payload);
+
+      // Signer was constructed
+      expect(mockSigner).toHaveBeenCalledTimes(1);
+      const args = mockSigner.mock.calls[0];
+
+      // Signer was constructed with options
+      expect(args).toHaveLength(1);
+      const options = args[0];
+
+      // Signer was constructed with the correct options
+      expect(options).toHaveProperty('fulcio', expect.anything());
+      expect(options).toHaveProperty('rekor', expect.anything());
+      expect(options.identityProviders).toHaveLength(1);
     });
 
     it('invokes the Signer instance with the correct params', async () => {
-      await subject.signRaw(payload, jwt);
+      await subject.sign(payload);
 
-      expect(mockSign).toHaveBeenCalledWith(payload, jwt);
+      expect(mockSign).toHaveBeenCalledWith(payload);
     });
 
     it('returns the correct envelope', async () => {
-      const sig = await subject.signRaw(payload, jwt);
+      const sig = await subject.sign(payload);
 
       expect(sig).toEqual(signedPayload);
     });
@@ -54,7 +60,6 @@ describe('Sigstore', () => {
   describe('#signDSSE', () => {
     const payload = Buffer.from('Hello, world!');
     const payloadType = 'test/plain';
-    const jwt = 'a.b.c';
 
     // Signer output
     const signedPayload = {
@@ -66,19 +71,19 @@ describe('Sigstore', () => {
 
     beforeEach(() => {
       mockSign.mockClear();
-      MockedSigner.mock.instances[0].sign =
-        mockSign.mockResolvedValueOnce(signedPayload);
+      mockSign.mockResolvedValueOnce(signedPayload);
+      jest.spyOn(Signer.prototype, 'sign').mockImplementation(mockSign);
     });
 
     it('invokes the Signer instance with the correct params', async () => {
-      await subject.signDSSE(payload, payloadType, jwt);
+      await subject.signDSSE(payload, payloadType);
 
       const paeBuffer = pae(payloadType, payload);
-      expect(mockSign).toHaveBeenCalledWith(paeBuffer, jwt);
+      expect(mockSign).toHaveBeenCalledWith(paeBuffer);
     });
 
     it('returns the correct envelope', async () => {
-      const envelope = await subject.signDSSE(payload, payloadType, jwt);
+      const envelope = await subject.signDSSE(payload, payloadType);
 
       expect(envelope).toEqual({
         payload: payload.toString('base64'),
@@ -88,7 +93,7 @@ describe('Sigstore', () => {
     });
   });
 
-  describe('#verifyOnline', () => {
+  describe('#verify', () => {
     const payload = Buffer.from('Hello, world!');
     const signature = 'a1b2c3';
 
@@ -96,18 +101,18 @@ describe('Sigstore', () => {
 
     beforeEach(() => {
       mockVerify.mockClear();
-      MockedVerifier.mock.instances[0].verify =
-        mockVerify.mockResolvedValueOnce(false);
+      mockVerify.mockResolvedValueOnce(false);
+      jest.spyOn(Verifier.prototype, 'verify').mockImplementation(mockVerify);
     });
 
     it('invokes the Verifier instance with the correct params', async () => {
-      await subject.verifyOnline(payload, signature);
+      await subject.verify(payload, signature);
 
       expect(mockVerify).toHaveBeenCalledWith(payload, signature);
     });
 
     it('returns the value returned by the verifier', async () => {
-      const result = await subject.verifyOnline(payload, signature);
+      const result = await subject.verify(payload, signature);
       expect(result).toBe(false);
     });
   });
@@ -123,8 +128,8 @@ describe('Sigstore', () => {
 
     beforeEach(() => {
       mockVerify.mockClear();
-      MockedVerifier.mock.instances[0].verify =
-        mockVerify.mockResolvedValueOnce(true);
+      mockVerify.mockResolvedValueOnce(true);
+      jest.spyOn(Verifier.prototype, 'verify').mockImplementation(mockVerify);
     });
 
     it('invokes the Verifier instance with the correct params', async () => {

@@ -1,10 +1,10 @@
 import nock from 'nock';
-import { GHAProvider } from './gha';
+import { CIContextProvider } from './ci';
 
-describe('GHAProvider', () => {
-  const subject = new GHAProvider();
+describe('CIContextProvider', () => {
+  const subject = new CIContextProvider('sigstore');
 
-  it('should create an instance', () => {
+  it('creates an instance', () => {
     expect(subject).toBeTruthy();
   });
 
@@ -38,8 +38,8 @@ describe('GHAProvider', () => {
 
     describe('when the GHA environment variables are NOT set', () => {
       it('returns undefined', async () => {
-        const token = await subject.getToken();
-        expect(token).toBeUndefined();
+        const token = subject.getToken();
+        await expect(token).rejects.toBe('no tokens available');
       });
     });
   });

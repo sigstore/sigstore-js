@@ -18,9 +18,9 @@ export class OAuthProvider implements Provider {
   private state: string;
   private redirectURI?: string;
 
-  constructor(clientID: string, clientSecret: string, issuer: Issuer) {
+  constructor(issuer: Issuer, clientID: string, clientSecret?: string) {
     this.clientID = clientID;
-    this.clientSecret = clientSecret;
+    this.clientSecret = clientSecret || '';
     this.issuer = issuer;
     this.codeVerifier = generateRandomString(32);
     this.state = generateRandomString(16);

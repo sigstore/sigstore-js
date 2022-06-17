@@ -2,10 +2,12 @@ import { Fulcio } from './fulcio';
 import { Rekor, Entry } from './rekor';
 import { generateKeyPair, hash, signBlob } from './crypto';
 import { base64Decode, base64Encode, extractJWTSubject } from './util';
+import { Provider } from './identity';
 
 export interface SignOptions {
   fulcio: Fulcio;
   rekor: Rekor;
+  identityProviders: Provider[];
 }
 
 export interface SignedPayload {
@@ -30,15 +32,15 @@ export class Signer {
   private fulcio: Fulcio;
   private rekor: Rekor;
 
+  private identityProviders: Provider[] = [];
+
   constructor(options: SignOptions) {
     this.fulcio = options.fulcio;
     this.rekor = options.rekor;
+    this.identityProviders = options.identityProviders;
   }
 
-  public async sign(
-    payload: Buffer,
-    oidcToken: string
-  ): Promise<SignedPayload> {
+  public async sign(payload: Buffer): Promise<SignedPayload> {
     // Create emphemeral key pair
     const keypair = generateKeyPair();
 
@@ -47,15 +49,18 @@ export class Signer {
       .export({ type: 'spki', format: 'der' })
       .toString('base64');
 
+    // Retrieve identity token from one of the supplied identity providers
+    const identityToken = await this.getIdentityToken();
+
     // Extract challenge claim from OIDC token
-    const subject = extractJWTSubject(oidcToken);
+    const subject = extractJWTSubject(identityToken);
 
     // Construct challenge value by encrypting subject with private key
     const challenge = signBlob(keypair.privateKey, subject);
 
     // Create signing certificate
     const certificate = await this.fulcio.createSigningCertificate({
-      oidcToken,
+      identityToken,
       publicKey: publicKeyB64,
       challenge,
     });
@@ -85,6 +90,18 @@ export class Signer {
       bundle: entryToBundle(entry),
     };
     return signedPayload;
+  }
+
+  private async getIdentityToken(): Promise<string> {
+    for (const provider of this.identityProviders) {
+      const token = await provider.getToken().catch(() => Promise.resolve());
+
+      if (token) {
+        return token;
+      }
+    }
+
+    throw new Error('No identity token provided');
   }
 }
 

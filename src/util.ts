@@ -21,3 +21,22 @@ export function extractJWTSubject(jwt: string): string {
       return payload.sub;
   }
 }
+
+// Implementation of Promise.any (not available until Node v15).
+// We're basically inverting the logic of Promise.all and taking advantage
+// of the fact that Promise.all will return early on the first rejection.
+// By reversing the resolve/reject logic we can use this to return early
+// on the first resolved promise.
+export const promiseAny = async <T>(
+  values: Iterable<PromiseLike<T>>
+): Promise<T> => {
+  return Promise.all<T>(
+    [...values].map(
+      (promise) =>
+        new Promise((resolve, reject) => promise.then(reject, resolve))
+    )
+  ).then(
+    (errors) => Promise.reject(errors),
+    (value) => Promise.resolve<T>(value)
+  );
+};

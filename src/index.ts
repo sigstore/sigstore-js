@@ -1,2 +1,1 @@
-export { Sigstore, SigstoreOptions } from './sigstore';
-export { getToken } from './identity';
+export { Sigstore, SignOptions, VerifierOptions } from './sigstore';
