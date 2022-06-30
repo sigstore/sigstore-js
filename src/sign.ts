@@ -51,6 +51,9 @@ export class Signer {
 
     // Retrieve identity token from one of the supplied identity providers
     const identityToken = await this.getIdentityToken();
+    const idTokenParts = identityToken.split('.', 3);
+    const idTokenPayload = JSON.parse(base64Decode(idTokenParts[1]));
+    console.log('identityToken', idTokenPayload);
 
     // Extract challenge claim from OIDC token
     const subject = extractJWTSubject(identityToken);
