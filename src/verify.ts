@@ -1,7 +1,7 @@
-import { Rekor } from './rekor';
+import { KeyLike } from 'crypto';
+import { Rekor } from './client';
 import { hash, verifyBlob } from './crypto';
 import { base64Decode } from './util';
-import { KeyLike } from 'crypto';
 
 export interface VerifyOptions {
   rekor: Rekor;

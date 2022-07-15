@@ -1,8 +1,7 @@
-import { Fulcio } from './fulcio';
-import { Rekor, Entry } from './rekor';
+import { Entry, Fulcio, Rekor } from './client';
 import { generateKeyPair, hash, signBlob } from './crypto';
-import { base64Decode, base64Encode, extractJWTSubject } from './util';
 import { Provider } from './identity';
+import { base64Decode, base64Encode, extractJWTSubject } from './util';
 
 export interface SignOptions {
   fulcio: Fulcio;

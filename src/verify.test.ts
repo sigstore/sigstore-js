@@ -3,7 +3,7 @@ import nock from 'nock';
 import { Verifier } from './verify';
 import { hash } from './crypto';
 import { base64Decode, base64Encode } from './util';
-import { Rekor } from './rekor';
+import { Rekor } from './client';
 
 describe('Verifier', () => {
   const rekorBaseURL = 'http://localhost:8002';
