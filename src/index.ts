@@ -1,1 +1,2 @@
-export { Sigstore, SignOptions, VerifierOptions } from './sigstore';
+export * as dsse from './dsse';
+export * as sigstore from './sigstore';
