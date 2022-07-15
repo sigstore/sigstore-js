@@ -1,7 +1,5 @@
 import fs from 'fs';
-import { Sigstore } from '../index';
-
-const sigstore = new Sigstore();
+import { sigstore, dsse } from '../index';
 
 async function cli(args: string[]) {
   switch (args[0]) {
@@ -35,7 +33,7 @@ async function sign(artifactPath: string) {
 
 async function signDSSE(artifactPath: string, payloadType: string) {
   const buffer = fs.readFileSync(artifactPath);
-  const envelope = await sigstore.signDSSE(buffer, payloadType, signOptions);
+  const envelope = await dsse.sign(buffer, payloadType, signOptions);
   console.log(JSON.stringify(envelope));
 }
 
@@ -53,9 +51,7 @@ async function verify(artifactPath: string, signaturePath: string) {
 
 async function verifyDSSE(artifactPath: string) {
   const envelope = fs.readFileSync(artifactPath);
-  const result = await sigstore.verifyDSSE(
-    JSON.parse(envelope.toString('utf-8'))
-  );
+  const result = await dsse.verify(JSON.parse(envelope.toString('utf-8')));
 
   if (result) {
     console.error('Verified OK');

@@ -1,153 +1,78 @@
 import { Verifier } from './verify';
 import { Signer } from './sign';
-import { Sigstore } from './sigstore';
-import { pae } from './dsse';
+import { sign, verify } from './sigstore';
 
 jest.mock('./sign');
 
-describe('Sigstore', () => {
-  const subject = new Sigstore();
+describe('sign', () => {
+  const payload = Buffer.from('Hello, world!');
 
-  describe('#sign', () => {
-    const payload = Buffer.from('Hello, world!');
+  // Signer output
+  const signedPayload = {
+    base64Signature: 'signature',
+    cert: 'cert',
+  };
 
-    // Signer output
-    const signedPayload = {
-      base64Signature: 'signature',
-      cert: 'cert',
-    };
+  const mockSign = jest.fn();
 
-    const mockSign = jest.fn();
-
-    beforeEach(() => {
-      mockSign.mockClear();
-      mockSign.mockResolvedValueOnce(signedPayload);
-      jest.spyOn(Signer.prototype, 'sign').mockImplementation(mockSign);
-    });
-
-    it('constructs the Signer with the correct options', async () => {
-      const mockSigner = jest.mocked(Signer);
-
-      await subject.sign(payload);
-
-      // Signer was constructed
-      expect(mockSigner).toHaveBeenCalledTimes(1);
-      const args = mockSigner.mock.calls[0];
-
-      // Signer was constructed with options
-      expect(args).toHaveLength(1);
-      const options = args[0];
-
-      // Signer was constructed with the correct options
-      expect(options).toHaveProperty('fulcio', expect.anything());
-      expect(options).toHaveProperty('rekor', expect.anything());
-      expect(options.identityProviders).toHaveLength(1);
-    });
-
-    it('invokes the Signer instance with the correct params', async () => {
-      await subject.sign(payload);
-
-      expect(mockSign).toHaveBeenCalledWith(payload);
-    });
-
-    it('returns the correct envelope', async () => {
-      const sig = await subject.sign(payload);
-
-      expect(sig).toEqual(signedPayload);
-    });
+  beforeEach(() => {
+    mockSign.mockClear();
+    mockSign.mockResolvedValueOnce(signedPayload);
+    jest.spyOn(Signer.prototype, 'sign').mockImplementation(mockSign);
   });
 
-  describe('#signDSSE', () => {
-    const payload = Buffer.from('Hello, world!');
-    const payloadType = 'test/plain';
+  it('constructs the Signer with the correct options', async () => {
+    const mockSigner = jest.mocked(Signer);
 
-    // Signer output
-    const signedPayload = {
-      base64Signature: 'signature',
-      cert: 'cert',
-    };
+    await sign(payload);
 
-    const mockSign = jest.fn();
+    // Signer was constructed
+    expect(mockSigner).toHaveBeenCalledTimes(1);
+    const args = mockSigner.mock.calls[0];
 
-    beforeEach(() => {
-      mockSign.mockClear();
-      mockSign.mockResolvedValueOnce(signedPayload);
-      jest.spyOn(Signer.prototype, 'sign').mockImplementation(mockSign);
-    });
+    // Signer was constructed with options
+    expect(args).toHaveLength(1);
+    const options = args[0];
 
-    it('invokes the Signer instance with the correct params', async () => {
-      await subject.signDSSE(payload, payloadType);
-
-      const paeBuffer = pae(payloadType, payload);
-      expect(mockSign).toHaveBeenCalledWith(paeBuffer);
-    });
-
-    it('returns the correct envelope', async () => {
-      const envelope = await subject.signDSSE(payload, payloadType);
-
-      expect(envelope).toEqual({
-        payload: payload.toString('base64'),
-        payloadType: payloadType,
-        signatures: [{ keyid: '', sig: signedPayload.base64Signature }],
-      });
-    });
+    // Signer was constructed with the correct options
+    expect(options).toHaveProperty('fulcio', expect.anything());
+    expect(options).toHaveProperty('rekor', expect.anything());
+    expect(options.identityProviders).toHaveLength(1);
   });
 
-  describe('#verify', () => {
-    const payload = Buffer.from('Hello, world!');
-    const signature = 'a1b2c3';
+  it('invokes the Signer instance with the correct params', async () => {
+    await sign(payload);
 
-    const mockVerify = jest.fn();
-
-    beforeEach(() => {
-      mockVerify.mockClear();
-      mockVerify.mockResolvedValueOnce(false);
-      jest.spyOn(Verifier.prototype, 'verify').mockImplementation(mockVerify);
-    });
-
-    it('invokes the Verifier instance with the correct params', async () => {
-      await subject.verify(payload, signature);
-
-      expect(mockVerify).toHaveBeenCalledWith(payload, signature);
-    });
-
-    it('returns the value returned by the verifier', async () => {
-      const result = await subject.verify(payload, signature);
-      expect(result).toBe(false);
-    });
+    expect(mockSign).toHaveBeenCalledWith(payload);
   });
 
-  describe('#verifyDSSE', () => {
-    const envelope = {
-      payloadType: 'text/plain',
-      payload: 'SGVsbG8sIFdvcmxkIQ==',
-      signatures: [{ keyid: '', sig: 'a1b2c3' }],
-    };
+  it('returns the correct envelope', async () => {
+    const sig = await sign(payload);
 
-    const mockVerify = jest.fn();
+    expect(sig).toEqual(signedPayload);
+  });
+});
 
-    beforeEach(() => {
-      mockVerify.mockClear();
-      mockVerify.mockResolvedValueOnce(true);
-      jest.spyOn(Verifier.prototype, 'verify').mockImplementation(mockVerify);
-    });
+describe('#verify', () => {
+  const payload = Buffer.from('Hello, world!');
+  const signature = 'a1b2c3';
 
-    it('invokes the Verifier instance with the correct params', async () => {
-      await subject.verifyDSSE(envelope);
+  const mockVerify = jest.fn();
 
-      // Calcualte the payload we expect to be passed to the verifier
-      const payload = Buffer.from(envelope.payload, 'base64');
-      const paeBuffer = pae(envelope.payloadType, payload);
+  beforeEach(() => {
+    mockVerify.mockClear();
+    mockVerify.mockResolvedValueOnce(false);
+    jest.spyOn(Verifier.prototype, 'verify').mockImplementation(mockVerify);
+  });
 
-      expect(mockVerify).toHaveBeenCalledWith(
-        paeBuffer,
-        envelope.signatures[0].sig
-      );
-    });
+  it('invokes the Verifier instance with the correct params', async () => {
+    await verify(payload, signature);
 
-    it('returns the value returned by the verifier', async () => {
-      const result = await subject.verifyDSSE(envelope);
-      expect(result).toBe(true);
-    });
+    expect(mockVerify).toHaveBeenCalledWith(payload, signature);
+  });
+
+  it('returns the value returned by the verifier', async () => {
+    const result = await verify(payload, signature);
+    expect(result).toBe(false);
   });
 });

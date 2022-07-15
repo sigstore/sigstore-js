@@ -1,13 +1,13 @@
 import {
-  createSign,
-  createVerify,
-  createHash,
-  generateKeyPairSync,
-  randomBytes as randBytes,
-  KeyPairKeyObjectResult,
-  KeyLike,
   BinaryLike,
   BinaryToTextEncoding,
+  createHash,
+  createSign,
+  createVerify,
+  generateKeyPairSync,
+  KeyLike,
+  KeyPairKeyObjectResult,
+  randomBytes as randBytes,
 } from 'crypto';
 
 const EC_KEYPAIR_TYPE = 'ec';

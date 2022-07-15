@@ -1,6 +1,5 @@
 import nock from 'nock';
-import { Fulcio } from './fulcio';
-import { Rekor } from './rekor';
+import { Fulcio, Rekor } from './client';
 import { Signer } from './sign';
 
 describe('Signer', () => {
