@@ -1,4 +1,4 @@
-# sigstore-node
+# sigstore-js
 
 **This project is not ready for general-purpose use!**
 
