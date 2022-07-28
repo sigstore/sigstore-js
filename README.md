@@ -160,7 +160,7 @@ Certificate:
                 keyid:DF:D3:E9:CF:56:24:11:96:F9:A8:D8:E9:28:55:A2:C6:2E:18:64:3F
 
             X509v3 Subject Alternative Name: critical
-                email:brian@dehamer.com
+                email:foo@bar.com
             1.3.6.1.4.1.57264.1.1:
                 https://github.com/login/oauth
             1.3.6.1.4.1.11129.2.4.2:
