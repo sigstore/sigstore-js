@@ -23,7 +23,7 @@
     "dist"
   ],
   "author": "bdehamer@github.com",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/github/sigstore-node/issues"
   },
