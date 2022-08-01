@@ -110,10 +110,16 @@ export class OAuthProvider implements Provider {
       });
     });
 
-    // Open browser to start authorization request
-    const authBaseURL = await this.issuer.authEndpoint();
-    const authURL = this.getAuthRequestURL(authBaseURL);
-    await this.openURL(authURL);
+    try {
+      // Open browser to start authorization request
+      const authBaseURL = await this.issuer.authEndpoint();
+      const authURL = this.getAuthRequestURL(authBaseURL);
+      await this.openURL(authURL);
+    } catch (err) {
+      // Prevent leaked server handler on error
+      server.close();
+      throw err;
+    }
 
     return result;
   }
@@ -175,10 +181,26 @@ export class OAuthProvider implements Provider {
   }
 
   // Open the supplied URL in the user's default browser
-  // TODO: probably not cross-platform
   private async openURL(url: string) {
     return new Promise<void>((resolve, reject) => {
-      child_process.exec(`open "${url}"`, undefined, (err) => {
+      let open = null;
+      let command = `"${url}"`;
+      switch (process.platform) {
+        case 'darwin':
+          open = 'open';
+          break;
+        case 'linux' || 'freebsd' || 'netbsd' || 'openbsd':
+          open = 'xdg-open';
+          break;
+        case 'win32':
+          open = 'start';
+          command = `"" ${command}`;
+          break;
+        default:
+          return reject(`OAuth: unsupported platform: ${process.platform}`);
+      }
+      console.error(`Your browser will now be opened to: ${url}`);
+      child_process.exec(`${open} ${command}`, undefined, (err) => {
         if (err) {
           reject(err);
         } else {

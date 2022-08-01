@@ -39,7 +39,7 @@ export class CIContextProvider implements Provider {
   public async getToken() {
     return promiseAny(
       providers.map((getToken) => getToken(this.audience))
-    ).catch(() => Promise.reject('no tokens available'));
+    ).catch(() => Promise.reject('CI: no tokens available'));
   }
 }
 

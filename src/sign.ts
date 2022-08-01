@@ -107,15 +107,20 @@ export class Signer {
   }
 
   private async getIdentityToken(): Promise<string> {
-    for (const provider of this.identityProviders) {
-      const token = await provider.getToken().catch(() => Promise.resolve());
+    const aggErrs = [];
 
-      if (token) {
-        return token;
+    for (const provider of this.identityProviders) {
+      try {
+        const token = await provider.getToken();
+        if (token) {
+          return token;
+        }
+      } catch (err) {
+        aggErrs.push(err);
       }
     }
 
-    throw new Error('No identity token provided');
+    throw new Error(`Identity token providers failed: ${aggErrs}`);
   }
 }
 
