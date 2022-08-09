@@ -1,5 +1,10 @@
 name: build-sign-verify-node
-on: [push]
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+  workflow_dispatch:
 jobs:
   lint-source:
     name: Lint code
