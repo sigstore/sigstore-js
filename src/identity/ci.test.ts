@@ -54,7 +54,7 @@ describe('CIContextProvider', () => {
     describe('when the GHA environment variables are NOT set', () => {
       it('returns undefined', async () => {
         const token = subject.getToken();
-        await expect(token).rejects.toBe('no tokens available');
+        await expect(token).rejects.toBe('CI: no tokens available');
       });
     });
   });

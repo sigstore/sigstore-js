@@ -71,6 +71,22 @@ describe('OAuthProvider', () => {
 
       expect(token).toBe(idToken);
     });
+
+    it('errors on unsupported platforms', async () => {
+      const platform = Object.getOwnPropertyDescriptor(process, 'platform');
+
+      Object.defineProperty(process, 'platform', { value: 'fakeos' });
+
+      await expect(subject.getToken()).rejects.toBe(
+        'OAuth: unsupported platform: fakeos'
+      );
+
+      Object.defineProperty(
+        process,
+        'platform',
+        platform as PropertyDescriptor
+      );
+    });
   });
 });
 

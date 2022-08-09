@@ -53,7 +53,7 @@ describe('Signer', () => {
 
       it('throws an error', async () => {
         await expect(noIDTokenSubject.sign(payload)).rejects.toThrow(
-          'No identity token provided'
+          'Identity token providers failed: '
         );
       });
     });
