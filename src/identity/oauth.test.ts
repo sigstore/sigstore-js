@@ -98,7 +98,11 @@ function sendFakeAuthResponse(
   return (command, _, cb): ChildProcess => {
     // Retrieve the redirect URL and the state value from the URL
     // that would have been used for the authorization request
-    const authRequestURL = new URL(command.split(' ')[1].replace(/"/g, ''));
+    let chunk = 1;
+    if (process.platform === 'win32') {
+      chunk = 2;
+    }
+    const authRequestURL = new URL(command.split(' ')[chunk].replace(/"/g, ''));
     const redirectURL = authRequestURL.searchParams.get('redirect_uri');
     const state = authRequestURL.searchParams.get('state');
 
