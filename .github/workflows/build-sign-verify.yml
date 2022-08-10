@@ -1,19 +1,21 @@
 name: build-sign-verify-node
+
 on:
   push:
     branches: ['main']
   pull_request:
     branches: ['main']
   workflow_dispatch:
+
 jobs:
   lint-source:
     name: Lint code
     runs-on: ubuntu-latest
     steps:
     - name: Checkout source
-      uses: actions/checkout@v3
+      uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
     - name: Setup node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93 # v3
       with:
         node-version: 16
         cache: npm
@@ -47,9 +49,9 @@ jobs:
         shell: ${{ matrix.platform.shell }}
     steps:
     - name: Checkout source
-      uses: actions/checkout@v3
+      uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
     - name: Setup node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93 # v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: npm
@@ -67,9 +69,9 @@ jobs:
       id-token: write
     steps:
     - name: Checkout source
-      uses: actions/checkout@v3
+      uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
     - name: Setup node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93 # v3
       with:
         node-version: 16
         cache: npm
@@ -83,12 +85,12 @@ jobs:
       run: |
         ./bin/sigstore.js sign sigstore-0.0.0.tgz > artifact.sig
     - name: Archive package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # v3
       with:
         name: package
         path: sigstore-0.0.0.tgz
     - name: Archive signature
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # v3
       with:
         name: signature
         path: artifact.sig
@@ -99,20 +101,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout source
-      uses: actions/checkout@v3
+      uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
     - name: Setup node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93 # v3
       with:
         node-version: 16
         cache: npm
     - name: Install dependencies
       run: npm install
     - name: Download package
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741 # v3
       with:
         name: package
     - name: Download signature
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741 # v3
       with:
         name: signature
     - name: Compile sigstore
