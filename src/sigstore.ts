@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { KeyLike } from 'crypto';
 import { Fulcio, Rekor } from './client';
 import identity, { Provider } from './identity';
 import { SignedPayload, Signer } from './sign';
@@ -54,11 +55,12 @@ export async function sign(
 export async function verify(
   payload: Buffer,
   signature: string,
+  certificate: KeyLike,
   options: VerifierOptions = {}
 ): Promise<boolean> {
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
 
-  return new Verifier({ rekor }).verify(payload, signature);
+  return new Verifier({ rekor }).verify(payload, signature, certificate);
 }
 
 // Translates the IdenityProviderOptions into a list of Providers which

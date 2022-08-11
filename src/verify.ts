@@ -32,22 +32,15 @@ export class Verifier {
   public async verify(
     payload: Buffer,
     signature: string,
-    certificate?: KeyLike
+    certificate: KeyLike
   ): Promise<boolean> {
     signature = signature.trim();
 
-    if (!certificate) {
-      certificate = await this.lookupCertificate(payload, signature);
-    }
-
-    if (certificate) {
-      return verifyBlob(certificate, payload, signature);
-    } else {
-      return false;
-    }
+    return verifyBlob(certificate, payload, signature);
   }
 
-  // Find certificate in Rekor log
+  // TODO: come back and clean this up. Currently unused but may be useful when
+  // we introduce verification against the Rekor log.
   private async lookupCertificate(
     payload: Buffer,
     signature: string

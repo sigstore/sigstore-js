@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { KeyLike } from 'crypto';
 import * as sigstore from './sigstore';
 
 export interface Signature {
@@ -50,6 +51,7 @@ export async function sign(
 
 export async function verify(
   envelope: Envelope,
+  certificate: KeyLike,
   options: sigstore.VerifierOptions = {}
 ): Promise<boolean> {
   const payloadType = envelope.payloadType;
@@ -57,7 +59,12 @@ export async function verify(
   const signature = envelope.signatures[0].sig;
 
   const paeBuffer = pae(payloadType, payload);
-  const verified = await sigstore.verify(paeBuffer, signature, options);
+  const verified = await sigstore.verify(
+    paeBuffer,
+    signature,
+    certificate,
+    options
+  );
 
   return verified;
 }
