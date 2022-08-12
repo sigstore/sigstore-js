@@ -17,18 +17,73 @@ import fetch, { FetchInterface } from 'make-fetch-happen';
 import { checkStatus } from './error';
 
 const DEFAULT_BASE_URL = 'https://rekor.sigstore.dev';
-const ENTRY_KIND = 'hashedrekord';
 const API_VERSION = '0.0.1';
+const INTOTO_KIND = 'intoto';
+const HASHEDREKORD_KIND = 'hashedrekord';
 
 // Client options
 export interface RekorOptions {
   baseURL?: string;
 }
 
-export interface ProposedEntry {
+interface ArtifactHash {
+  algorithm: 'sha256';
+  value: string;
+}
+
+interface BaseKind {
+  apiVersion: string;
+  kind: string;
+}
+
+export interface HashedRekordKind extends BaseKind {
+  kind: typeof HASHEDREKORD_KIND;
+  spec: {
+    data: {
+      hash: ArtifactHash;
+    };
+    signature: {
+      content: string;
+      publicKey: {
+        content: string;
+      };
+    };
+  };
+}
+
+export interface ProposedIntotoKind extends BaseKind {
+  kind: typeof INTOTO_KIND;
+  spec: {
+    content: {
+      envelope: string;
+    };
+    publicKey: string;
+  };
+}
+
+export interface IntotoKind extends BaseKind {
+  kind: typeof INTOTO_KIND;
+  spec: {
+    content: {
+      hash: ArtifactHash;
+      payloadHash: ArtifactHash;
+    };
+    publicKey: string;
+  };
+}
+
+export type EntryKind = HashedRekordKind | IntotoKind;
+export type ProposedEntryKind = HashedRekordKind | ProposedIntotoKind;
+
+export interface IntotoOptions {
+  envelope: string;
+  publicKey: string;
+}
+
+export interface HashedRekordOptions {
   artifactSignature: string;
   artifactDigest: string;
-  certificate: string;
+  publicKey: string;
 }
 
 export interface Entry {
@@ -58,6 +113,12 @@ export interface SearchIndex {
   hash?: string;
 }
 
+export interface SearchLogQuery {
+  entries?: HashedRekordOptions[];
+  entryUUIDs?: string[];
+  logIndexes: number[];
+}
+
 /**
  * Rekor API client.
  */
@@ -75,32 +136,62 @@ export class Rekor {
   }
 
   /**
-   * Create a new entry in the Rekor log.
-   * @param propsedEntry {ProposedEntry} Data to create a new entry
+   * Create a new intoto entry in the Rekor log.
+   * @param intoto {IntotoOptions} Data to create a new entry
    * @returns {Promise<Entry>} The created entry
    */
-  public async createEntry(propsedEntry: ProposedEntry): Promise<Entry> {
-    const url = `${this.baseUrl}/api/v1/log/entries`;
-
-    const body = {
-      kind: ENTRY_KIND,
+  public async createIntoEntry(intoto: IntotoOptions): Promise<Entry> {
+    const proposedEntry: ProposedIntotoKind = {
       apiVersion: API_VERSION,
+      kind: INTOTO_KIND,
+      spec: {
+        content: { envelope: intoto.envelope },
+        publicKey: intoto.publicKey,
+      },
+    };
+
+    return this.createEntry(proposedEntry);
+  }
+
+  /**
+   * Create a new hashedrekord entry in the Rekor log.
+   * @param hashedRekor {HashedRekordOptions} Data to create a new entry
+   * @returns {Promise<Entry>} The created entry
+   */
+  public async createHashedRekordEntry(
+    hashedRekord: HashedRekordOptions
+  ): Promise<Entry> {
+    const proposedEntry: HashedRekordKind = {
+      apiVersion: API_VERSION,
+      kind: HASHEDREKORD_KIND,
       spec: {
         data: {
-          hash: { algorithm: 'sha256', value: propsedEntry.artifactDigest },
+          hash: { algorithm: 'sha256', value: hashedRekord.artifactDigest },
         },
         signature: {
-          format: 'x509',
-          content: propsedEntry.artifactSignature,
-          publicKey: { content: propsedEntry.certificate },
+          content: hashedRekord.artifactSignature,
+          publicKey: {
+            content: hashedRekord.publicKey,
+          },
         },
       },
     };
 
+    return this.createEntry(proposedEntry);
+  }
+
+  /**
+   * Create a new entry in the Rekor log.
+   * @param propsedEntry {ProposedEntryKind} Data to create a new entry
+   * @returns {Promise<Entry>} The created entry
+   */
+  public async createEntry(propsedEntry: ProposedEntryKind): Promise<Entry> {
+    const url = `${this.baseUrl}/api/v1/log/entries`;
+
     const response = await this.fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify(propsedEntry),
     });
     checkStatus(response);
 
@@ -124,11 +215,11 @@ export class Rekor {
   }
 
   /**
-   * Search the Rekor log for entries matching the given query.
+   * Search the Rekor log index for entries matching the given query.
    * @param opts {SearchIndex} Options to search the Rekor log
    * @returns {Promise<string[]>} UUIDs of matching entries
    */
-  public async searchLog(opts: SearchIndex): Promise<string[]> {
+  public async searchIndex(opts: SearchIndex): Promise<string[]> {
     const url = `${this.baseUrl}/api/v1/index/retrieve`;
 
     const response = await this.fetch(url, {

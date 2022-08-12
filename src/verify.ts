@@ -56,7 +56,7 @@ export class Verifier {
     const digest = hash(payload);
 
     // Look-up Rekor entries by artifact digest
-    const uuids = await this.rekor.searchLog({ hash: `sha256:${digest}` });
+    const uuids = await this.rekor.searchIndex({ hash: `sha256:${digest}` });
 
     let b64Cert;
     // Find Rekor entry with matching artifact signature
