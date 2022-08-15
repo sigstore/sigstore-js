@@ -16,7 +16,7 @@ limitations under the License.
 import { KeyLike } from 'crypto';
 import { Fulcio, Rekor } from './client';
 import identity, { Provider } from './identity';
-import { SignedPayload, Signer } from './sign';
+import { Signer, SigstoreBundle } from './sign';
 import { Verifier } from './verify';
 
 export interface SignOptions {
@@ -40,7 +40,7 @@ type IdentityProviderOptions = Pick<
 export async function sign(
   payload: Buffer,
   options: SignOptions = {}
-): Promise<SignedPayload> {
+): Promise<SigstoreBundle> {
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
   const idps = configureIdentityProviders(options);

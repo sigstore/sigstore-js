@@ -15,7 +15,7 @@ limitations under the License.
 */
 import nock from 'nock';
 import * as dsse from './dsse';
-import { base64Decode } from './util';
+import { base64Decode, base64Encode } from './util';
 
 describe('sign', () => {
   const fulcioBaseURL = 'http://localhost:8001';
@@ -104,19 +104,24 @@ describe('sign', () => {
           .reply(201, rekorEntry);
       });
 
-      it('returns an envelope', async () => {
-        const envelope = await dsse.sign(payload, payloadType, options);
+      it('returns a DSSE bundle', async () => {
+        const bundle = await dsse.sign(payload, payloadType, options);
 
-        expect(envelope).toEqual({
-          payload: payload.toString('base64'),
-          payloadType: payloadType,
-          signatures: [
-            {
-              keyid: '',
-              sig: expect.any(String),
-            },
-          ],
+        expect(bundle.attestationType).toEqual('attestation/dsse');
+        expect(bundle.attestation.payload).toEqual(payload.toString('base64'));
+        expect(bundle.attestation.payloadType).toEqual(payloadType);
+        expect(bundle.attestation.signatures).toHaveLength(1);
+        expect(bundle.attestation.signatures[0]).toEqual({
+          keyid: '',
+          sig: expect.any(String),
         });
+        expect(bundle.cert).toEqual(base64Encode(certificate));
+        expect(bundle.integratedTime).toEqual(rekorEntry[uuid].integratedTime);
+        expect(bundle.signedEntryTimestamp).toEqual(
+          rekorEntry[uuid].verification.signedEntryTimestamp
+        );
+        expect(bundle.logID).toEqual(rekorEntry[uuid].logID);
+        expect(bundle.logIndex).toEqual(rekorEntry[uuid].logIndex);
       });
     });
 

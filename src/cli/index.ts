@@ -26,10 +26,10 @@ async function cli(args: string[]) {
       await signDSSE(args[1], args[2]);
       break;
     case 'verify':
-      await verify(args[1], args[2], args[3]);
+      await verify(args[1], args[2]);
       break;
     case 'verify-dsse':
-      await verifyDSSE(args[1], args[2]);
+      await verifyDSSE(args[1]);
       break;
     default:
       throw 'Unknown command';
@@ -43,27 +43,24 @@ const signOptions = {
 
 async function sign(artifactPath: string) {
   const buffer = fs.readFileSync(artifactPath);
-  const signature = await sigstore.sign(buffer, signOptions);
-  const cert = base64Decode(signature.cert);
-  await fs.writeFileSync('signingcert.pem', cert, { flag: 'wx' });
-  console.log(signature.base64Signature);
+  const bundle = await sigstore.sign(buffer, signOptions);
+  console.log(JSON.stringify(bundle));
 }
 
 async function signDSSE(artifactPath: string, payloadType: string) {
   const buffer = fs.readFileSync(artifactPath);
-  const envelope = await dsse.sign(buffer, payloadType, signOptions);
-  console.log(JSON.stringify(envelope));
+  const bundle = await dsse.sign(buffer, payloadType, signOptions);
+  console.log(JSON.stringify(bundle));
 }
 
-async function verify(
-  artifactPath: string,
-  signaturePath: string,
-  certPath: string
-) {
+async function verify(artifactPath: string, bundlePath: string) {
   const payload = fs.readFileSync(artifactPath);
-  const sig = fs.readFileSync(signaturePath);
-  const cert = fs.readFileSync(certPath);
-  const result = await sigstore.verify(payload, sig.toString('utf8'), cert);
+  const bundleFile = fs.readFileSync(bundlePath);
+  const bundle = JSON.parse(bundleFile.toString('utf-8'));
+
+  const sig = bundle.attestation.base64Signature;
+  const cert = base64Decode(bundle.cert);
+  const result = await sigstore.verify(payload, sig, cert);
 
   if (result) {
     console.error('Verified OK');
@@ -72,13 +69,11 @@ async function verify(
   }
 }
 
-async function verifyDSSE(artifactPath: string, certPath: string) {
-  const envelope = fs.readFileSync(artifactPath);
-  const cert = fs.readFileSync(certPath);
-  const result = await dsse.verify(
-    JSON.parse(envelope.toString('utf-8')),
-    cert
-  );
+async function verifyDSSE(bundlePath: string) {
+  const bundleFile = fs.readFileSync(bundlePath);
+  const bundle = JSON.parse(bundleFile.toString('utf-8'));
+  const cert = base64Decode(bundle.cert);
+  const result = await dsse.verify(bundle.attestation, cert);
 
   if (result) {
     console.error('Verified OK');

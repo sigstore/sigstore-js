@@ -16,6 +16,7 @@ limitations under the License.
 import nock from 'nock';
 import { Fulcio, Rekor } from './client';
 import { Signer } from './sign';
+import { base64Encode } from './util';
 
 describe('Signer', () => {
   const fulcioBaseURL = 'http://localhost:8001';
@@ -129,12 +130,20 @@ describe('Signer', () => {
         });
 
         it('returns a signature bundle', async () => {
-          const signedPayload = await subject.sign(payload);
+          const bundle = await subject.sign(payload);
 
-          expect(signedPayload).toBeTruthy();
-          expect(signedPayload.base64Signature).toBeTruthy();
-          expect(signedPayload.cert).toBe(b64Cert);
-          expect(signedPayload.bundle).toBeDefined();
+          expect(bundle).toBeTruthy();
+          expect(bundle.attestationType).toBe('attestation/blob');
+          expect(bundle.attestation.payloadHash).toBeTruthy();
+          expect(bundle.attestation.payloadAlgorithm).toBe('sha256');
+          expect(bundle.attestation.base64Signature).toBeTruthy();
+          expect(bundle.cert).toBe(base64Encode(certificate));
+          expect(bundle.integratedTime).toBe(rekorEntry[uuid].integratedTime);
+          expect(bundle.logIndex).toBe(rekorEntry[uuid].logIndex);
+          expect(bundle.logID).toBe(rekorEntry[uuid].logID);
+          expect(bundle.signedEntryTimestamp).toBe(
+            rekorEntry[uuid].verification.signedEntryTimestamp
+          );
         });
       });
 
