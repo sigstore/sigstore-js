@@ -102,7 +102,7 @@ describe('Rekor', () => {
     });
   });
 
-  describe('#createIntoEntry', () => {
+  describe('#createHashedRekordEntry', () => {
     const artifactDigest =
       '1c025a6e48ceb8bf10e01b367089732326eabe3541d03d348724c79040382c65';
     const artifactSignature =
@@ -153,7 +153,7 @@ describe('Rekor', () => {
     });
   });
 
-  describe('#createHashedRekordEntry', () => {
+  describe('#createIntoEntry', () => {
     const envelope = 'some envelope';
     const publicKey = 'a1b2c3';
 
