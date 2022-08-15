@@ -71,6 +71,7 @@ describe('sign', () => {
 describe('#verify', () => {
   const payload = Buffer.from('Hello, world!');
   const signature = 'a1b2c3';
+  const cert = 'cert';
 
   const mockVerify = jest.fn();
 
@@ -81,13 +82,13 @@ describe('#verify', () => {
   });
 
   it('invokes the Verifier instance with the correct params', async () => {
-    await verify(payload, signature);
+    await verify(payload, signature, cert);
 
-    expect(mockVerify).toHaveBeenCalledWith(payload, signature);
+    expect(mockVerify).toHaveBeenCalledWith(payload, signature, cert);
   });
 
   it('returns the value returned by the verifier', async () => {
-    const result = await verify(payload, signature);
+    const result = await verify(payload, signature, cert);
     expect(result).toBe(false);
   });
 });

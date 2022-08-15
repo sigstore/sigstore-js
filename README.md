@@ -83,6 +83,90 @@ $ cat signature
 MEUCIQC7Rrrjmrwdxuc2qvWiWzaoUdV8+VFv+fvDquvAGmxr3AIgaPEqQ5YvxjfeqgXYXvISzgyVA8y/Zw+G/LDYlt2RHMk=
 ```
 
+The Fulcio signing certificate will be written to a file named
+`signingcert.pem`. You can inspect the contents of the signing certificate with
+the following:
+
+```
+$ openssl x509 -in signingcert.pem -text
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            1a:8a:25:49:b9:86:46:1e:4a:4f:70:e8:5c:20:52:03:e6:04:ee:7b
+        Signature Algorithm: ecdsa-with-SHA384
+        Issuer: O = sigstore.dev, CN = sigstore-intermediate
+        Validity
+            Not Before: Jun 17 17:12:01 2022 GMT
+            Not After : Jun 17 17:22:01 2022 GMT
+        Subject:
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:77:55:0b:20:32:67:bb:a1:eb:9a:da:18:a7:11:
+                    30:d8:b2:0b:50:90:9f:7c:ef:31:8c:c3:09:4d:b4:
+                    17:6d:f2:ed:d4:36:90:15:8e:a1:21:35:aa:88:03:
+                    09:16:fb:07:f8:25:a1:6b:ae:47:db:df:08:a0:c3:
+                    42:3a:43:14:eb
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Digital Signature
+            X509v3 Extended Key Usage:
+                Code Signing
+            X509v3 Subject Key Identifier:
+                AD:4D:65:B1:5D:18:6C:E7:DA:E6:79:04:F3:83:DB:B0:AA:D8:C6:FF
+            X509v3 Authority Key Identifier:
+                DF:D3:E9:CF:56:24:11:96:F9:A8:D8:E9:28:55:A2:C6:2E:18:64:3F
+            X509v3 Subject Alternative Name: critical
+                email:foo@bar.com
+            1.3.6.1.4.1.57264.1.1:
+                https://github.com/login/oauth
+            CT Precertificate SCTs:
+                Signed Certificate Timestamp:
+                    Version   : v1 (0x0)
+                    Log ID    : 08:60:92:F0:28:52:FF:68:45:D1:D1:6B:27:84:9C:45:
+                                67:18:AC:16:3D:C3:38:D2:6D:E6:BC:22:06:36:6F:72
+                    Timestamp : Jun 17 17:12:01.084 2022 GMT
+                    Extensions: none
+                    Signature : ecdsa-with-SHA256
+                                30:45:02:20:27:19:2F:A7:20:53:8D:27:92:AC:F8:08:
+                                73:DC:F9:DB:9C:B7:1C:3C:77:90:C0:6E:CC:CA:1D:8A:
+                                79:55:4E:05:02:21:00:FF:70:1D:86:F1:7C:CB:A2:B2:
+                                ED:F5:16:0B:0D:C9:A1:7D:97:7A:31:62:DC:1B:3F:E9:
+                                E2:6B:EE:11:9C:20:2B
+    Signature Algorithm: ecdsa-with-SHA384
+    Signature Value:
+        30:65:02:30:30:d3:7c:0e:fc:6f:0f:8e:35:4c:ae:f6:5d:37:
+        51:da:1d:36:a7:33:ba:ab:5f:1f:e1:80:fa:1c:7f:b2:44:6c:
+        cd:4e:e0:21:ec:91:de:01:95:60:17:be:88:c8:8f:9c:02:31:
+        00:ee:d6:c6:23:ff:b6:6c:66:65:82:9f:9b:ca:f0:ed:cc:4d:
+        63:5d:70:58:b4:c2:1e:55:8f:21:b3:d7:27:16:6d:cb:22:0a:
+        92:37:d6:61:38:ff:bc:43:69:eb:28:9d:af
+-----BEGIN CERTIFICATE-----
+MIICoDCCAiagAwIBAgIUGoolSbmGRh5KT3DoXCBSA+YE7nswCgYIKoZIzj0EAwMw
+NzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRl
+cm1lZGlhdGUwHhcNMjIwNjE3MTcxMjAxWhcNMjIwNjE3MTcyMjAxWjAAMFkwEwYH
+KoZIzj0CAQYIKoZIzj0DAQcDQgAEd1ULIDJnu6HrmtoYpxEw2LILUJCffO8xjMMJ
+TbQXbfLt1DaQFY6hITWqiAMJFvsH+CWha65H298IoMNCOkMU66OCAUUwggFBMA4G
+A1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUrU1l
+sV0YbOfa5nkE84PbsKrYxv8wHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4Y
+ZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzAB
+AQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGKBgorBgEEAdZ5AgQC
+BHwEegB4AHYACGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3IAAAGBcqZ3
+PAAABAMARzBFAiAnGS+nIFONJ5Ks+Ahz3PnbnLccPHeQwG7Myh2KeVVOBQIhAP9w
+HYbxfMuisu31FgsNyaF9l3oxYtwbP+nia+4RnCArMAoGCCqGSM49BAMDA2gAMGUC
+MDDTfA78bw+ONUyu9l03UdodNqczuqtfH+GA+hx/skRszU7gIeyR3gGVYBe+iMiP
+nAIxAO7WxiP/tmxmZYKfm8rw7cxNY11wWLTCHlWPIbPXJxZtyyIKkjfWYTj/vENp
+6yidrw==
+-----END CERTIFICATE-----
+```
+
+The SAN in the certificate should match the identity that was used to
+authenticate with the OAuth provider.
+
 Using the Rekor URL displayed as part of the signing process you should also be
 able to retrieve the Rekor entry for this signature:
 
@@ -115,84 +199,6 @@ $ curl --silent https://rekor.sigstore.dev/api/v1/log/entries/43553c769cd0bd99ae
 Note that the `.spec.signature.content` value matches the signature that was
 saved locally.
 
-Furthermore, you can inspect the signing certificate attached to the Rekor
-entry with the following (remember to substitute the Rekor URL with the one
-displayed when signing the artifact):
-
-```
-$ curl --silent https://rekor.sigstore.dev/api/v1/log/entries/43553c769cd0bd99aee4350d2e78ca3fb015840a2f6f4cf31b475f588fc214e6 \
-  | jq --raw-output '.[].body' \
-  | base64 --decode \
-  | jq --raw-output '.spec.signature.publicKey.content' \
-  | base64 --decode \
-  | openssl x509 -text
-
-Certificate:
-    Data:
-        Version: 3 (0x2)
-        Serial Number:
-            1a:8a:25:49:b9:86:46:1e:4a:4f:70:e8:5c:20:52:03:e6:04:ee:7b
-    Signature Algorithm: ecdsa-with-SHA384
-        Issuer: O=sigstore.dev, CN=sigstore-intermediate
-        Validity
-            Not Before: Jun 17 17:12:01 2022 GMT
-            Not After : Jun 17 17:22:01 2022 GMT
-        Subject:
-        Subject Public Key Info:
-            Public Key Algorithm: id-ecPublicKey
-                Public-Key: (256 bit)
-                pub:
-                    04:77:55:0b:20:32:67:bb:a1:eb:9a:da:18:a7:11:
-                    30:d8:b2:0b:50:90:9f:7c:ef:31:8c:c3:09:4d:b4:
-                    17:6d:f2:ed:d4:36:90:15:8e:a1:21:35:aa:88:03:
-                    09:16:fb:07:f8:25:a1:6b:ae:47:db:df:08:a0:c3:
-                    42:3a:43:14:eb
-                ASN1 OID: prime256v1
-                NIST CURVE: P-256
-        X509v3 extensions:
-            X509v3 Key Usage: critical
-                Digital Signature
-            X509v3 Extended Key Usage:
-                Code Signing
-            X509v3 Subject Key Identifier:
-                AD:4D:65:B1:5D:18:6C:E7:DA:E6:79:04:F3:83:DB:B0:AA:D8:C6:FF
-            X509v3 Authority Key Identifier:
-                keyid:DF:D3:E9:CF:56:24:11:96:F9:A8:D8:E9:28:55:A2:C6:2E:18:64:3F
-
-            X509v3 Subject Alternative Name: critical
-                email:foo@bar.com
-            1.3.6.1.4.1.57264.1.1:
-                https://github.com/login/oauth
-            1.3.6.1.4.1.11129.2.4.2:
-                .z.x.v..`..(R.hE..k'..Eg...=.8.m..".6or....r.w<.....G0E. './. S.'....s......<w..n....yUN..!..p...|......}.z1b..?..k... +
-    Signature Algorithm: ecdsa-with-SHA384
-         30:65:02:30:30:d3:7c:0e:fc:6f:0f:8e:35:4c:ae:f6:5d:37:
-         51:da:1d:36:a7:33:ba:ab:5f:1f:e1:80:fa:1c:7f:b2:44:6c:
-         cd:4e:e0:21:ec:91:de:01:95:60:17:be:88:c8:8f:9c:02:31:
-         00:ee:d6:c6:23:ff:b6:6c:66:65:82:9f:9b:ca:f0:ed:cc:4d:
-         63:5d:70:58:b4:c2:1e:55:8f:21:b3:d7:27:16:6d:cb:22:0a:
-         92:37:d6:61:38:ff:bc:43:69:eb:28:9d:af
------BEGIN CERTIFICATE-----
-MIICoDCCAiagAwIBAgIUGoolSbmGRh5KT3DoXCBSA+YE7nswCgYIKoZIzj0EAwMw
-NzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRl
-cm1lZGlhdGUwHhcNMjIwNjE3MTcxMjAxWhcNMjIwNjE3MTcyMjAxWjAAMFkwEwYH
-KoZIzj0CAQYIKoZIzj0DAQcDQgAEd1ULIDJnu6HrmtoYpxEw2LILUJCffO8xjMMJ
-TbQXbfLt1DaQFY6hITWqiAMJFvsH+CWha65H298IoMNCOkMU66OCAUUwggFBMA4G
-A1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUrU1l
-sV0YbOfa5nkE84PbsKrYxv8wHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4Y
-ZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzAB
-AQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGKBgorBgEEAdZ5AgQC
-BHwEegB4AHYACGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3IAAAGBcqZ3
-PAAABAMARzBFAiAnGS+nIFONJ5Ks+Ahz3PnbnLccPHeQwG7Myh2KeVVOBQIhAP9w
-HYbxfMuisu31FgsNyaF9l3oxYtwbP+nia+4RnCArMAoGCCqGSM49BAMDA2gAMGUC
-MDDTfA78bw+ONUyu9l03UdodNqczuqtfH+GA+hx/skRszU7gIeyR3gGVYBe+iMiP
-nAIxAO7WxiP/tmxmZYKfm8rw7cxNY11wWLTCHlWPIbPXJxZtyyIKkjfWYTj/vENp
-6yidrw==
------END CERTIFICATE-----
-```
-
-The SAN in the certificate should match the identity that was used to
-authenticate with the OAuth provider.
 
 ### Verifying
 
@@ -200,16 +206,14 @@ Use the `verify` command to make sure that the saved signature matches
 the artifact:
 
 ```
-$ ./bin/sigstore.js verify sigstore-0.0.0.tgz signature
+$ ./bin/sigstore.js verify sigstore-0.0.0.tgz signature signingcert.pem
 
 Signature verified OK
 ```
 
-This will caulcuate the SHA256 digest of the package and use that
-value to look-up matching entries in the Rekor log. For each Rekor
-entry with a matching digest it will look at the signature stored in
-that entry to see if it matches the local signature. When a matching
-signature is found the associated signing certificate will be used to validate
-that the signature matches the artifact.
+This will use the signing certificate to ensure that the SHA256 digest
+encoded in the supplied signature matches the digest of the package itself.
+A future iteration of the verification logic will also find and verify
+the corresponding entry in the Rekor log.
 
 [1]: https://github.com/sigstore/rekor

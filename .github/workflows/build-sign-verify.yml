@@ -94,6 +94,11 @@ jobs:
       with:
         name: signature
         path: artifact.sig
+    - name: Archive certificate
+      uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # v3
+      with:
+        name: certificate
+        path: signingcert.pem
 
   verify-signature:
     name: Verify Signature
@@ -117,9 +122,13 @@ jobs:
       uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741 # v3
       with:
         name: signature
+    - name: Download certificate
+      uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741 # v3
+      with:
+        name: certificate
     - name: Compile sigstore
       run: |
         npm run build
     - name: Verify artifact signature
       run: |
-        ./bin/sigstore.js verify sigstore-0.0.0.tgz artifact.sig
+        ./bin/sigstore.js verify sigstore-0.0.0.tgz artifact.sig signingcert.pem

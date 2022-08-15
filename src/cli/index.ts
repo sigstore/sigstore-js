@@ -15,6 +15,7 @@ limitations under the License.
 */
 import fs from 'fs';
 import { sigstore, dsse } from '../index';
+import { base64Decode } from '../util';
 
 async function cli(args: string[]) {
   switch (args[0]) {
@@ -25,10 +26,10 @@ async function cli(args: string[]) {
       await signDSSE(args[1], args[2]);
       break;
     case 'verify':
-      await verify(args[1], args[2]);
+      await verify(args[1], args[2], args[3]);
       break;
     case 'verify-dsse':
-      await verifyDSSE(args[1]);
+      await verifyDSSE(args[1], args[2]);
       break;
     default:
       throw 'Unknown command';
@@ -43,6 +44,8 @@ const signOptions = {
 async function sign(artifactPath: string) {
   const buffer = fs.readFileSync(artifactPath);
   const signature = await sigstore.sign(buffer, signOptions);
+  const cert = base64Decode(signature.cert);
+  await fs.writeFileSync('signingcert.pem', cert, { flag: 'wx' });
   console.log(signature.base64Signature);
 }
 
@@ -52,10 +55,15 @@ async function signDSSE(artifactPath: string, payloadType: string) {
   console.log(JSON.stringify(envelope));
 }
 
-async function verify(artifactPath: string, signaturePath: string) {
+async function verify(
+  artifactPath: string,
+  signaturePath: string,
+  certPath: string
+) {
   const payload = fs.readFileSync(artifactPath);
   const sig = fs.readFileSync(signaturePath);
-  const result = await sigstore.verify(payload, sig.toString('utf8'));
+  const cert = fs.readFileSync(certPath);
+  const result = await sigstore.verify(payload, sig.toString('utf8'), cert);
 
   if (result) {
     console.error('Verified OK');
@@ -64,9 +72,13 @@ async function verify(artifactPath: string, signaturePath: string) {
   }
 }
 
-async function verifyDSSE(artifactPath: string) {
+async function verifyDSSE(artifactPath: string, certPath: string) {
   const envelope = fs.readFileSync(artifactPath);
-  const result = await dsse.verify(JSON.parse(envelope.toString('utf-8')));
+  const cert = fs.readFileSync(certPath);
+  const result = await dsse.verify(
+    JSON.parse(envelope.toString('utf-8')),
+    cert
+  );
 
   if (result) {
     console.error('Verified OK');
