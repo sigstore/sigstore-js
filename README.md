@@ -1,6 +1,6 @@
 # sigstore-js
 
-**This project is not ready for general-purpose use!**
+⚠️ This project is not ready for general-purpose use! ⚠️
 
 A tool for signing and verifying npm packages.
 
@@ -9,6 +9,14 @@ A tool for signing and verifying npm packages.
 * Support for signing npm packages using an OpenID Connect identity
 * Support for publishing signatures to a [Rekor][1] instance
 * Support for verifying signatures on npm packages
+
+## TODO
+
+* Verify signing certificate against the Fulcio certificate chain
+* Verification of Rekor response
+  * Verify the record's inclusion proof
+  * Verify the [Signed Certificate Timestamp]([url](https://datatracker.ietf.org/doc/html/rfc6962)) (SCT) against the transparency log's public key
+* Retrieve root cert and public keys via TUF client
 
 ## Demo
 
@@ -217,3 +225,24 @@ A future iteration of the verification logic will also find and verify
 the corresponding entry in the Rekor log.
 
 [1]: https://github.com/sigstore/rekor
+
+## Licensing
+
+`sigstore-js` is licensed under the Apache 2.0 License.
+
+## Contributing
+
+See [the contributing docs](https://github.com/sigstore/.github/blob/main/CONTRIBUTING.md) for details.
+
+## Code of Conduct
+Everyone interacting with this project is expected to follow the [sigstore Code of Conduct](https://github.com/sigstore/.github/blob/main/CODE_OF_CONDUCT.md).
+
+## Security
+
+Should you discover any security issues, please refer to sigstore's [security process](https://github.com/sigstore/.github/blob/main/SECURITY.md).
+
+## Info
+
+`sigstore-js` is developed as part of the [`sigstore`](https://sigstore.dev) project.
+
+We also use a [slack channel](https://sigstore.slack.com)! Click [here](https://join.slack.com/t/sigstore/shared_invite/zt-mhs55zh0-XmY3bcfWn4XEyMqUUutbUQ) for the invite link.
