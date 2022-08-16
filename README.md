@@ -12,10 +12,14 @@ A tool for signing and verifying npm packages.
 
 ## TODO
 
-* Verify signing certificate against the Fulcio certificate chain
+* Verify audience of received identity token
+* Verify signing certificate
+  * Verify against Fulcio certificate chain
+  * Verify the [Signed Certificate Timestamp]([url](https://datatracker.ietf.org/doc/html/rfc6962)) (SCT) against the transparency log's public key
 * Verification of Rekor response
   * Verify the record's inclusion proof
-  * Verify the [Signed Certificate Timestamp]([url](https://datatracker.ietf.org/doc/html/rfc6962)) (SCT) against the transparency log's public key
+  * Verify signed entry timestamp
+* Support offline and online signature verification
 * Retrieve root cert and public keys via TUF client
 
 ## Demo
