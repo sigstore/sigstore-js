@@ -58,8 +58,8 @@ async function verify(artifactPath: string, bundlePath: string) {
   const bundleFile = fs.readFileSync(bundlePath);
   const bundle = JSON.parse(bundleFile.toString('utf-8'));
 
-  const sig = bundle.attestation.base64Signature;
-  const cert = base64Decode(bundle.cert);
+  const sig = bundle.attestation.signature;
+  const cert = base64Decode(bundle.certificate);
   const result = await sigstore.verify(payload, sig, cert);
 
   if (result) {
@@ -72,7 +72,7 @@ async function verify(artifactPath: string, bundlePath: string) {
 async function verifyDSSE(bundlePath: string) {
   const bundleFile = fs.readFileSync(bundlePath);
   const bundle = JSON.parse(bundleFile.toString('utf-8'));
-  const cert = base64Decode(bundle.cert);
+  const cert = base64Decode(bundle.certificate);
   const result = await dsse.verify(bundle.attestation, cert);
 
   if (result) {

@@ -28,9 +28,9 @@ export interface Envelope {
 }
 
 export interface DSSEBundle {
-  attestationType: string;
+  attestationType: 'attestation/dsse';
   attestation: Envelope;
-  cert: string;
+  certificate: string;
   signedEntryTimestamp: string;
   integratedTime: number;
   logIndex: number;
@@ -51,7 +51,7 @@ export async function sign(
     signatures: [
       {
         keyid: '',
-        sig: bundle.attestation.base64Signature,
+        sig: bundle.attestation.signature,
       },
     ],
   };
@@ -59,7 +59,7 @@ export async function sign(
   const dsseBundle: DSSEBundle = {
     attestationType: 'attestation/dsse',
     attestation: envelope,
-    cert: bundle.cert,
+    certificate: bundle.certificate,
     signedEntryTimestamp: bundle.signedEntryTimestamp,
     integratedTime: bundle.integratedTime,
     logIndex: bundle.logIndex,

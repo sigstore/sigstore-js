@@ -115,7 +115,7 @@ describe('sign', () => {
           keyid: '',
           sig: expect.any(String),
         });
-        expect(bundle.cert).toEqual(base64Encode(certificate));
+        expect(bundle.certificate).toEqual(base64Encode(certificate));
         expect(bundle.integratedTime).toEqual(rekorEntry[uuid].integratedTime);
         expect(bundle.signedEntryTimestamp).toEqual(
           rekorEntry[uuid].verification.signedEntryTimestamp

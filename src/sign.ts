@@ -25,9 +25,13 @@ export interface SignOptions {
 }
 
 export interface SigstoreBundle {
-  attestationType: string;
-  attestation: Record<string, string>;
-  cert: string;
+  attestationType: 'attestation/blob';
+  attestation: {
+    payloadHash: string;
+    payloadHashAlgorithm: string;
+    signature: string;
+  };
+  certificate: string;
   signedEntryTimestamp: string;
   integratedTime: number;
   logIndex: number;
@@ -94,10 +98,10 @@ export class Signer {
       attestationType: 'attestation/blob',
       attestation: {
         payloadHash: digest,
-        payloadAlgorithm: 'sha256',
-        base64Signature: signature,
+        payloadHashAlgorithm: 'sha256',
+        signature: signature,
       },
-      cert: b64Certificate,
+      certificate: b64Certificate,
       signedEntryTimestamp: entry.verification.signedEntryTimestamp,
       integratedTime: entry.integratedTime,
       logID: entry.logID,

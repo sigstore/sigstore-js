@@ -135,9 +135,9 @@ describe('Signer', () => {
           expect(bundle).toBeTruthy();
           expect(bundle.attestationType).toBe('attestation/blob');
           expect(bundle.attestation.payloadHash).toBeTruthy();
-          expect(bundle.attestation.payloadAlgorithm).toBe('sha256');
-          expect(bundle.attestation.base64Signature).toBeTruthy();
-          expect(bundle.cert).toBe(base64Encode(certificate));
+          expect(bundle.attestation.payloadHashAlgorithm).toBe('sha256');
+          expect(bundle.attestation.signature).toBeTruthy();
+          expect(bundle.certificate).toBe(base64Encode(certificate));
           expect(bundle.integratedTime).toBe(rekorEntry[uuid].integratedTime);
           expect(bundle.logIndex).toBe(rekorEntry[uuid].logIndex);
           expect(bundle.logID).toBe(rekorEntry[uuid].logID);
