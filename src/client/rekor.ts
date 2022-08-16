@@ -15,6 +15,7 @@ limitations under the License.
 */
 import fetch, { FetchInterface } from 'make-fetch-happen';
 import { checkStatus } from './error';
+import { getUserAgent } from '../util';
 
 const DEFAULT_BASE_URL = 'https://rekor.sigstore.dev';
 const ENTRY_KIND = 'hashedrekord';
@@ -69,7 +70,10 @@ export class Rekor {
     this.fetch = fetch.defaults({
       retry: { retries: 2 },
       timeout: 5000,
-      headers: { Accept: 'application/json' },
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': getUserAgent(),
+      },
     });
     this.baseUrl = options.baseURL ?? DEFAULT_BASE_URL;
   }
