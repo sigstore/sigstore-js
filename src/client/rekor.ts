@@ -17,7 +17,7 @@ import fetch, { FetchInterface } from 'make-fetch-happen';
 import { checkStatus } from './error';
 import { getUserAgent } from '../util';
 
-const DEFAULT_BASE_URL = 'https://localhost:8080';
+const DEFAULT_BASE_URL = 'https://rekor.sigstore.dev';
 const ENTRY_KIND = 'hashedrekord';
 const API_VERSION = '0.0.1';
 
@@ -74,7 +74,6 @@ export class Rekor {
         Accept: 'application/json',
         'User-Agent': getUserAgent(),
       },
-      strictSSL: false
     });
     this.baseUrl = options.baseURL ?? DEFAULT_BASE_URL;
   }
