@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import os from 'os';
+
 const BASE64_ENCODING = 'base64';
 const UTF8_ENCODING = 'utf-8';
 
@@ -54,4 +56,13 @@ export const promiseAny = async <T>(
     (errors) => Promise.reject(errors),
     (value) => Promise.resolve<T>(value)
   );
+};
+
+// Format User-Agent: <product> / <product-version> (<platform>)
+// source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
+export const getUserAgent = (): string => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const packageVersion = require('../package.json').version;
+  const platformName = os.platform();
+  return `sigstore-js/${packageVersion} (${platformName})`;
 };

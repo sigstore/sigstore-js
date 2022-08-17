@@ -41,6 +41,7 @@ describe('Fulcio', () => {
           .matchHeader('Accept', 'application/pem-certificate-chain')
           .matchHeader('Content-Type', 'application/json')
           .matchHeader('Authorization', `Bearer ${certRequest.identityToken}`)
+          .matchHeader('User-Agent', new RegExp('sigstore-js\\/\\d+.\\d+.\\d+'))
           .post('/api/v1/signingCert', {
             publicKey: { content: certRequest.publicKey },
             signedEmailAddress: certRequest.challenge,

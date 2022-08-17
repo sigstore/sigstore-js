@@ -55,6 +55,7 @@ describe('Rekor', () => {
         nock(baseURL)
           .matchHeader('Accept', 'application/json')
           .matchHeader('Content-Type', 'application/json')
+          .matchHeader('User-Agent', new RegExp('sigstore-js\\/\\d+.\\d+.\\d+'))
           .post('/api/v1/log/entries')
           .reply(201, responseBody);
       });

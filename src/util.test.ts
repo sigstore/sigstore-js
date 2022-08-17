@@ -18,7 +18,14 @@ import {
   base64Encode,
   extractJWTSubject,
   promiseAny,
+  getUserAgent,
 } from './util';
+
+describe('getUserAgent', () => {
+  it('returns a user agent string', () => {
+    expect(getUserAgent()).toMatch(new RegExp('sigstore-js\\/\\d+.\\d+.\\d+'));
+  });
+});
 
 describe('base64Decode', () => {
   it('decodes a base64 string', () => {

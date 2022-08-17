@@ -15,6 +15,7 @@ limitations under the License.
 */
 import fetch, { FetchInterface } from 'make-fetch-happen';
 import { checkStatus } from './error';
+import { getUserAgent } from '../util';
 
 const DEFAULT_BASE_URL = 'https://fulcio.sigstore.dev';
 
@@ -42,6 +43,7 @@ export class Fulcio {
       headers: {
         Accept: 'application/pem-certificate-chain',
         'Content-Type': 'application/json',
+        'User-Agent': getUserAgent(),
       },
     });
     this.baseUrl = options.baseURL ?? DEFAULT_BASE_URL;
