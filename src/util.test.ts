@@ -23,7 +23,6 @@ import {
 
 describe('getUserAgent', () => {
   it('returns a user agent string', () => {
-    console.log('test', process.env.npm_package_version);
     expect(getUserAgent()).toMatch(new RegExp('sigstore-js\\/\\d+.\\d+.\\d+'));
   });
 });
