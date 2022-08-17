@@ -13,35 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import {
-  base64Decode,
-  base64Encode,
-  extractJWTSubject,
-  promiseAny,
-  getUserAgent,
-} from './util';
+import { extractJWTSubject, getUserAgent, promiseAny } from './util';
 
 describe('getUserAgent', () => {
   it('returns a user agent string', () => {
     expect(getUserAgent()).toMatch(new RegExp('sigstore-js\\/\\d+.\\d+.\\d+'));
-  });
-});
-
-describe('base64Decode', () => {
-  it('decodes a base64 string', () => {
-    const encoded = 'aGVsbG8gd29ybGQ=';
-    const decoded = base64Decode(encoded);
-
-    expect(decoded).toBe('hello world');
-  });
-});
-
-describe('base64Encode', () => {
-  it('encodes a string to base64', () => {
-    const decoded = 'hello world';
-    const encoded = base64Encode(decoded);
-
-    expect(encoded).toBe('aGVsbG8gd29ybGQ=');
   });
 });
 

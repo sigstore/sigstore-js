@@ -16,7 +16,7 @@ limitations under the License.
 import { KeyLike } from 'crypto';
 import { Rekor } from './client';
 import { hash, verifyBlob } from './crypto';
-import { base64Decode } from './util';
+import * as enc from './encoding';
 
 export interface VerifyOptions {
   rekor: Rekor;
@@ -56,7 +56,7 @@ export class Verifier {
     // TODO: purposefully doing this lookup serially for now -- consider parallelizing
     for (const uuid of uuids) {
       const entry = await this.rekor.getEntry(uuid);
-      const body = JSON.parse(base64Decode(entry.body));
+      const body = JSON.parse(enc.base64Decode(entry.body));
 
       if (body.spec.signature.content == signature) {
         b64Cert = body.spec.signature.publicKey.content;
@@ -66,7 +66,7 @@ export class Verifier {
 
     // If we have a cert here it means we found a matching entry
     if (b64Cert) {
-      return base64Decode(b64Cert);
+      return enc.base64Decode(b64Cert);
     }
   }
 }

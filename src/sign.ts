@@ -15,8 +15,9 @@ limitations under the License.
 */
 import { Fulcio, Rekor } from './client';
 import { generateKeyPair, hash, signBlob } from './crypto';
+import * as enc from './encoding';
 import { Provider } from './identity';
-import { base64Encode, extractJWTSubject } from './util';
+import { extractJWTSubject } from './util';
 
 export interface SignOptions {
   fulcio: Fulcio;
@@ -74,7 +75,7 @@ export class Signer {
       publicKey: publicKeyB64,
       challenge,
     });
-    const b64Certificate = base64Encode(certificate);
+    const b64Certificate = enc.base64Encode(certificate);
 
     // Generate artifact signature
     const signature = signBlob(keypair.privateKey, payload);
