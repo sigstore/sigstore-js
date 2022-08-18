@@ -13,10 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { Entry, Fulcio, Rekor } from './client';
+import { Fulcio, Rekor } from './client';
 import { generateKeyPair, hash, signBlob } from './crypto';
 import { Provider } from './identity';
-import { base64Decode, base64Encode, extractJWTSubject } from './util';
+import { base64Encode, extractJWTSubject } from './util';
 
 export interface SignOptions {
   fulcio: Fulcio;
@@ -24,19 +24,15 @@ export interface SignOptions {
   identityProviders: Provider[];
 }
 
-export interface SignedPayload {
-  base64Signature: string;
-  cert: string;
-  bundle?: RekorBundle;
-}
-
-export interface RekorBundle {
+export interface SigstoreBundle {
+  attestationType: 'attestation/blob';
+  attestation: {
+    payloadHash: string;
+    payloadHashAlgorithm: string;
+    signature: string;
+  };
+  certificate: string;
   signedEntryTimestamp: string;
-  payload: RekorPayload;
-}
-
-export interface RekorPayload {
-  body: object;
   integratedTime: number;
   logIndex: number;
   logID: string;
@@ -54,7 +50,7 @@ export class Signer {
     this.identityProviders = options.identityProviders;
   }
 
-  public async sign(payload: Buffer): Promise<SignedPayload> {
+  public async sign(payload: Buffer): Promise<SigstoreBundle> {
     // Create emphemeral key pair
     const keypair = generateKeyPair();
 
@@ -98,12 +94,21 @@ export class Signer {
       `https://rekor.sigstore.dev/api/v1/log/entries/${entry.uuid}`
     );
 
-    const signedPayload: SignedPayload = {
-      base64Signature: signature,
-      cert: b64Certificate,
-      bundle: entryToBundle(entry),
+    const bundle: SigstoreBundle = {
+      attestationType: 'attestation/blob',
+      attestation: {
+        payloadHash: digest,
+        payloadHashAlgorithm: 'sha256',
+        signature: signature,
+      },
+      certificate: b64Certificate,
+      signedEntryTimestamp: entry.verification.signedEntryTimestamp,
+      integratedTime: entry.integratedTime,
+      logID: entry.logID,
+      logIndex: entry.logIndex,
     };
-    return signedPayload;
+
+    return bundle;
   }
 
   private async getIdentityToken(): Promise<string> {
@@ -122,20 +127,4 @@ export class Signer {
 
     throw new Error(`Identity token providers failed: ${aggErrs}`);
   }
-}
-
-function entryToBundle(entry: Entry): RekorBundle | undefined {
-  if (!entry.verification) {
-    return;
-  }
-
-  return {
-    signedEntryTimestamp: entry.verification.signedEntryTimestamp,
-    payload: {
-      body: JSON.parse(base64Decode(entry.body)),
-      integratedTime: entry.integratedTime,
-      logIndex: entry.logIndex,
-      logID: entry.logID,
-    },
-  };
 }

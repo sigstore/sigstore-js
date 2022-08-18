@@ -27,13 +27,23 @@ export interface Envelope {
   signatures: Signature[];
 }
 
+export interface DSSEBundle {
+  attestationType: 'attestation/dsse';
+  attestation: Envelope;
+  certificate: string;
+  signedEntryTimestamp: string;
+  integratedTime: number;
+  logIndex: number;
+  logID: string;
+}
+
 export async function sign(
   payload: Buffer,
   payloadType: string,
   options: sigstore.SignOptions = {}
-): Promise<Envelope> {
+): Promise<DSSEBundle> {
   const paeBuffer = pae(payloadType, payload);
-  const signedPayload = await sigstore.sign(paeBuffer, options);
+  const bundle = await sigstore.sign(paeBuffer, options);
 
   const envelope: Envelope = {
     payloadType: payloadType,
@@ -41,12 +51,22 @@ export async function sign(
     signatures: [
       {
         keyid: '',
-        sig: signedPayload.base64Signature,
+        sig: bundle.attestation.signature,
       },
     ],
   };
 
-  return envelope;
+  const dsseBundle: DSSEBundle = {
+    attestationType: 'attestation/dsse',
+    attestation: envelope,
+    certificate: bundle.certificate,
+    signedEntryTimestamp: bundle.signedEntryTimestamp,
+    integratedTime: bundle.integratedTime,
+    logIndex: bundle.logIndex,
+    logID: bundle.logID,
+  };
+
+  return dsseBundle;
 }
 
 export async function verify(
