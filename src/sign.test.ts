@@ -16,7 +16,7 @@ limitations under the License.
 import nock from 'nock';
 import { Fulcio, Rekor } from './client';
 import { Signer } from './sign';
-import { base64Encode } from './util';
+import { base64Encode } from './encoding';
 
 describe('Signer', () => {
   const fulcioBaseURL = 'http://localhost:8001';

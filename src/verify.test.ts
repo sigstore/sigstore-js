@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { Rekor } from './client';
-import { base64Decode } from './util';
+import { base64Decode } from './encoding';
 import { Verifier } from './verify';
 
 describe('Verifier', () => {

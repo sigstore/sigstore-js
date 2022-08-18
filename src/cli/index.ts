@@ -15,7 +15,7 @@ limitations under the License.
 */
 import fs from 'fs';
 import { sigstore, dsse } from '../index';
-import { base64Decode } from '../util';
+import * as enc from '../encoding';
 
 async function cli(args: string[]) {
   switch (args[0]) {
@@ -59,7 +59,7 @@ async function verify(artifactPath: string, bundlePath: string) {
   const bundle = JSON.parse(bundleFile.toString('utf-8'));
 
   const sig = bundle.attestation.signature;
-  const cert = base64Decode(bundle.certificate);
+  const cert = enc.base64Decode(bundle.certificate);
   const result = await sigstore.verify(payload, sig, cert);
 
   if (result) {
@@ -72,7 +72,7 @@ async function verify(artifactPath: string, bundlePath: string) {
 async function verifyDSSE(bundlePath: string) {
   const bundleFile = fs.readFileSync(bundlePath);
   const bundle = JSON.parse(bundleFile.toString('utf-8'));
-  const cert = base64Decode(bundle.certificate);
+  const cert = enc.base64Decode(bundle.certificate);
   const result = await dsse.verify(bundle.attestation, cert);
 
   if (result) {

@@ -15,7 +15,7 @@ limitations under the License.
 */
 import nock from 'nock';
 import * as dsse from './dsse';
-import { base64Decode, base64Encode } from './util';
+import { base64Decode, base64Encode } from './encoding';
 
 describe('sign', () => {
   const fulcioBaseURL = 'http://localhost:8001';

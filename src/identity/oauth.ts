@@ -13,17 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import http from 'http';
-import { AddressInfo, Socket } from 'net';
-import { URLSearchParams, URL } from 'url';
-import child_process from 'child_process';
 import assert from 'assert';
+import child_process from 'child_process';
+import http from 'http';
 import fetch from 'make-fetch-happen';
+import { AddressInfo, Socket } from 'net';
+import { URL, URLSearchParams } from 'url';
 
-import { Provider } from './provider';
 import { hash, randomBytes } from '../crypto';
-import { base64Encode } from '../util';
+import * as enc from '../encoding';
 import { Issuer } from './issuer';
+import { Provider } from './provider';
 
 export class OAuthProvider implements Provider {
   private clientID: string;
@@ -148,7 +148,7 @@ export class OAuthProvider implements Provider {
 
   // Construct the basic auth header value from the client ID and secret
   private getBasicAuthHeaderValue(): string {
-    return base64Encode(`${this.clientID}:${this.clientSecret}`);
+    return enc.base64Encode(`${this.clientID}:${this.clientSecret}`);
   }
 
   // Generate starting URL for authorization request
@@ -177,7 +177,7 @@ export class OAuthProvider implements Provider {
 
   // Generate code challenge for authorization request
   private getCodeChallenge(): string {
-    return base64URLEncode(hash(this.codeVerifier, 'base64'));
+    return enc.base64URLEscape(hash(this.codeVerifier, 'base64'));
   }
 
   // Open the supplied URL in the user's default browser
@@ -213,11 +213,5 @@ export class OAuthProvider implements Provider {
 
 // Generate random code verifier value
 function generateRandomString(len: number): string {
-  return base64URLEncode(randomBytes(len).toString('base64'));
-}
-
-// Older versions of node don't support 'base64url' encoding in Buffer's
-// toString() so we have to provide our own
-function base64URLEncode(str: string): string {
-  return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  return enc.base64URLEscape(randomBytes(len).toString('base64'));
 }
