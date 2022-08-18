@@ -87,10 +87,10 @@ export class Signer {
     const digest = hash(payload);
 
     // Create Rekor entry
-    const entry = await this.rekor.createEntry({
+    const entry = await this.rekor.createHashedRekordEntry({
       artifactDigest: digest,
       artifactSignature: signature,
-      certificate: b64Certificate,
+      publicKey: b64Certificate,
     });
 
     console.error(`Created entry at index ${entry.logIndex}, available at`);

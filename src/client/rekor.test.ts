@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { ProposedEntry, Rekor } from './rekor';
 import nock from 'nock';
+import { HashedRekordKind, Rekor } from './rekor';
 
 describe('Rekor', () => {
   const baseURL = 'http://localhost:8080';
@@ -25,13 +25,26 @@ describe('Rekor', () => {
   });
 
   describe('#createEntry', () => {
-    const proposedEntry: ProposedEntry = {
-      artifactSignature:
-        'MEUCIDB2SWDabztSC8RrlfRCWUf04LBN0E2CEwiDZJLacDS8AiEA3bQHMBpodxA3dvJ+JK1SALkuzju/w4oCg3S89c8CtN8=',
-      artifactDigest:
-        '1c025a6e48ceb8bf10e01b367089732326eabe3541d03d348724c79040382c65',
-      certificate:
-        'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K',
+    const proposedEntry: HashedRekordKind = {
+      apiVersion: '0.0.1',
+      kind: 'hashedrekord',
+      spec: {
+        data: {
+          hash: {
+            algorithm: 'sha256',
+            value:
+              '1c025a6e48ceb8bf10e01b367089732326eabe3541d03d348724c79040382c65',
+          },
+        },
+        signature: {
+          content:
+            'MEUCIDB2SWDabztSC8RrlfRCWUf04LBN0E2CEwiDZJLacDS8AiEA3bQHMBpodxA3dvJ+JK1SALkuzju/w4oCg3S89c8CtN8=',
+          publicKey: {
+            content:
+              'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K',
+          },
+        },
+      },
     };
 
     describe('when the entry is successfully added', () => {
@@ -87,6 +100,90 @@ describe('Rekor', () => {
           'HTTP Error: 409 Conflict'
         );
       });
+    });
+  });
+
+  describe('#createHashedRekordEntry', () => {
+    const artifactDigest =
+      '1c025a6e48ceb8bf10e01b367089732326eabe3541d03d348724c79040382c65';
+    const artifactSignature =
+      'MEUCIDB2SWDabztSC8RrlfRCWUf04LBN0E2CEwiDZJLacDS8AiEA3bQHMBpodxA3dvJ+JK1SALkuzju/w4oCg3S89c8CtN8=';
+    const publicKey =
+      'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K';
+
+    const proposedEntry = {
+      apiVersion: '0.0.1',
+      kind: 'hashedrekord',
+      spec: {
+        data: {
+          hash: {
+            algorithm: 'sha256',
+            value: artifactDigest,
+          },
+        },
+        signature: {
+          content: artifactSignature,
+          publicKey: {
+            content: publicKey,
+          },
+        },
+      },
+    };
+
+    const uuid =
+      '69e5a0c1663ee4452674a5c9d5050d866c2ee31e2faaf79913aea7cc27293cf6';
+    const responseBody = {
+      [uuid]: {},
+    };
+
+    beforeEach(() => {
+      nock(baseURL)
+        .matchHeader('Accept', 'application/json')
+        .matchHeader('Content-Type', 'application/json')
+        .post('/api/v1/log/entries', proposedEntry)
+        .reply(201, responseBody);
+    });
+
+    it('submits a new hashedrekor entry', async () => {
+      const result = await subject.createHashedRekordEntry({
+        artifactDigest,
+        artifactSignature,
+        publicKey,
+      });
+      expect(result.uuid).toBe(uuid);
+    });
+  });
+
+  describe('#createIntoEntry', () => {
+    const envelope = 'some envelope';
+    const publicKey = 'a1b2c3';
+
+    const proposedEntry = {
+      apiVersion: '0.0.1',
+      kind: 'intoto',
+      spec: {
+        content: { envelope },
+        publicKey,
+      },
+    };
+
+    const uuid =
+      '69e5a0c1663ee4452674a5c9d5050d866c2ee31e2faaf79913aea7cc27293cf6';
+    const responseBody = {
+      [uuid]: {},
+    };
+
+    beforeEach(() => {
+      nock(baseURL)
+        .matchHeader('Accept', 'application/json')
+        .matchHeader('Content-Type', 'application/json')
+        .post('/api/v1/log/entries', proposedEntry)
+        .reply(201, responseBody);
+    });
+
+    it('submits a new intoto entry', async () => {
+      const result = await subject.createIntoEntry({ envelope, publicKey });
+      expect(result.uuid).toBe(uuid);
     });
   });
 
@@ -165,7 +262,7 @@ describe('Rekor', () => {
     });
   });
 
-  describe('#search', () => {
+  describe('#searchIndex', () => {
     describe('when matching entries exist', () => {
       const sha =
         'sha256:04c0c13721a28c60f38daf09a05326c301a2cf57ad2beb953eb29d61383db47e';
@@ -180,7 +277,7 @@ describe('Rekor', () => {
       });
 
       it('returns matching entries', async () => {
-        const response = await subject.searchLog({ hash: sha });
+        const response = await subject.searchIndex({ hash: sha });
         expect(response).toEqual(responseBody);
       });
     });
@@ -196,7 +293,7 @@ describe('Rekor', () => {
         const sha =
           'sha256:04c0c13721a28c60f38daf09a05326c301a2cf57ad2beb953eb29d61383db47e';
 
-        const response = await subject.searchLog({ hash: sha });
+        const response = await subject.searchIndex({ hash: sha });
 
         expect(response).toEqual([]);
       });
