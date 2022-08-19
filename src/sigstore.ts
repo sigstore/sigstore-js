@@ -14,9 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { KeyLike } from 'crypto';
+import { SigstoreBlobBundle, SigstoreDSSEBundle } from './bundle';
 import { Fulcio, Rekor } from './client';
 import identity, { Provider } from './identity';
-import { Signer, SigstoreBundle } from './sign';
+import { Signer } from './sign';
 import { Verifier } from './verify';
 
 export interface SignOptions {
@@ -40,7 +41,7 @@ type IdentityProviderOptions = Pick<
 export async function sign(
   payload: Buffer,
   options: SignOptions = {}
-): Promise<SigstoreBundle> {
+): Promise<SigstoreBlobBundle> {
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
   const idps = configureIdentityProviders(options);
@@ -49,7 +50,23 @@ export async function sign(
     fulcio,
     rekor,
     identityProviders: idps,
-  }).sign(payload);
+  }).signBlob(payload);
+}
+
+export async function signAttestation(
+  payload: Buffer,
+  payloadType: string,
+  options: SignOptions = {}
+): Promise<SigstoreDSSEBundle> {
+  const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
+  const rekor = new Rekor({ baseURL: options.rekorBaseURL });
+  const idps = configureIdentityProviders(options);
+
+  return new Signer({
+    fulcio,
+    rekor,
+    identityProviders: idps,
+  }).signAttestation(payload, payloadType);
 }
 
 export async function verify(
@@ -61,6 +78,14 @@ export async function verify(
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
 
   return new Verifier({ rekor }).verify(payload, signature, certificate);
+}
+
+export async function verifyDSSE(
+  bundle: SigstoreDSSEBundle,
+  options: VerifierOptions = {}
+): Promise<boolean> {
+  const rekor = new Rekor({ baseURL: options.rekorBaseURL });
+  return new Verifier({ rekor }).verifyDSSE(bundle);
 }
 
 // Translates the IdenityProviderOptions into a list of Providers which

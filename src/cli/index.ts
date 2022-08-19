@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import fs from 'fs';
-import { sigstore, dsse } from '../index';
+import { sigstore } from '../index';
 import * as enc from '../encoding';
 
 async function cli(args: string[]) {
@@ -49,7 +49,11 @@ async function sign(artifactPath: string) {
 
 async function signDSSE(artifactPath: string, payloadType: string) {
   const buffer = fs.readFileSync(artifactPath);
-  const bundle = await dsse.sign(buffer, payloadType, signOptions);
+  const bundle = await sigstore.signAttestation(
+    buffer,
+    payloadType,
+    signOptions
+  );
   console.log(JSON.stringify(bundle));
 }
 
@@ -72,8 +76,7 @@ async function verify(artifactPath: string, bundlePath: string) {
 async function verifyDSSE(bundlePath: string) {
   const bundleFile = fs.readFileSync(bundlePath);
   const bundle = JSON.parse(bundleFile.toString('utf-8'));
-  const cert = enc.base64Decode(bundle.certificate);
-  const result = await dsse.verify(bundle.attestation, cert);
+  const result = await sigstore.verifyDSSE(bundle);
 
   if (result) {
     console.error('Verified OK');

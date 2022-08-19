@@ -159,7 +159,7 @@ export class Rekor {
 
   /**
    * Create a new hashedrekord entry in the Rekor log.
-   * @param hashedRekor {HashedRekordOptions} Data to create a new entry
+   * @param hashedRekord {HashedRekordOptions} Data to create a new entry
    * @returns {Promise<Entry>} The created entry
    */
   public async createHashedRekordEntry(

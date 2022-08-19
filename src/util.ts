@@ -58,3 +58,12 @@ export const getUserAgent = (): string => {
   const archName = os.arch();
   return `sigstore-js/${packageVersion} (Node ${nodeVersion}) (${platformName}/${archName})`;
 };
+
+// DSSE Pre-Authentication Encoding
+export function pae(payloadType: string, payload: Buffer): Buffer {
+  const prefix = Buffer.from(
+    `DSSEv1 ${payloadType.length} ${payloadType} ${payload.length} `,
+    'ascii'
+  );
+  return Buffer.concat([prefix, payload]);
+}
