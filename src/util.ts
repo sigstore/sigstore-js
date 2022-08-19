@@ -53,7 +53,8 @@ export const promiseAny = async <T>(
 export const getUserAgent = (): string => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const packageVersion = require('../package.json').version;
-  const platformName = os.platform();
   const nodeVersion = process.version;
-  return `sigstore-js/${packageVersion} (Node ${nodeVersion}) (${platformName})`;
+  const platformName = os.platform();
+  const archName = os.arch();
+  return `sigstore-js/${packageVersion} (Node ${nodeVersion}) (${platformName}/${archName})`;
 };
