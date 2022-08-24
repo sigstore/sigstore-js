@@ -14,7 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import nock from 'nock';
-import { HashedRekordKind, Rekor } from './rekor';
+import { HashedRekordKind, Rekor } from '../rekor';
+import {
+  searchLogEntry,
+  searchLogIndex,
+  searchLogResponseBody,
+  searchLogURL,
+  searchLogEntryUUID,
+} from './constants';
 
 describe('Rekor', () => {
   const baseURL = 'http://localhost:8080';
@@ -313,6 +320,82 @@ describe('Rekor', () => {
         await expect(subject.getEntry('foo')).rejects.toThrow(
           'HTTP Error: 422 Unprocessable Entity'
         );
+      });
+    });
+  });
+
+  describe('#searchLog', () => {
+    describe('when matching by entry', () => {
+      const entries = [searchLogEntry];
+      const responseBody = searchLogResponseBody;
+
+      beforeEach(() => {
+        nock(baseURL)
+          .matchHeader('Accept', 'application/json')
+          .matchHeader('Content-Type', 'application/json')
+          .post(searchLogURL, { entries })
+          .reply(200, responseBody);
+      });
+
+      it('returns matching entries', async () => {
+        const response = await subject.searchLog({
+          entries: entries as HashedRekordKind[],
+        });
+
+        expect(response).toEqual(responseBody);
+      });
+    });
+
+    describe('when matching by log index', () => {
+      const logIndexes = [searchLogIndex];
+      const responseBody = searchLogResponseBody;
+
+      beforeEach(() => {
+        nock(baseURL)
+          .matchHeader('Accept', 'application/json')
+          .matchHeader('Content-Type', 'application/json')
+          .post(searchLogURL, { logIndexes })
+          .reply(200, responseBody);
+      });
+
+      it('returns matching entries', async () => {
+        const response = await subject.searchLog({ logIndexes });
+        expect(response).toEqual(responseBody);
+      });
+    });
+
+    describe('when matching by UUID', () => {
+      const entryUUIDs = [searchLogEntryUUID];
+
+      const responseBody = searchLogResponseBody;
+
+      beforeEach(() => {
+        nock(baseURL)
+          .matchHeader('Accept', 'application/json')
+          .matchHeader('Content-Type', 'application/json')
+          .post(searchLogURL, { entryUUIDs })
+          .reply(200, responseBody);
+      });
+
+      it('returns matching entries', async () => {
+        const response = await subject.searchLog({ entryUUIDs });
+        expect(response).toEqual(responseBody);
+      });
+    });
+
+    describe('when no matching entries exist', () => {
+      const responseBody = [] as string[];
+
+      beforeEach(() => {
+        nock(baseURL).post(searchLogURL).reply(200, responseBody);
+      });
+
+      it('returns an empty array', async () => {
+        const entryUUIDs = [searchLogEntryUUID];
+
+        const response = await subject.searchLog({ entryUUIDs });
+
+        expect(response).toEqual([]);
       });
     });
   });

@@ -15,7 +15,7 @@ limitations under the License.
 */
 import nock from 'nock';
 
-import { Fulcio } from './fulcio';
+import { Fulcio } from '../fulcio';
 
 describe('Fulcio', () => {
   const baseURL = 'http://localhost:8000';

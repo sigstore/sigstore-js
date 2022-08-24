@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import fetch from 'make-fetch-happen';
-import { checkStatus } from './error';
+import { checkStatus } from '../error';
 
 type Response = Awaited<ReturnType<typeof fetch>>;
 
