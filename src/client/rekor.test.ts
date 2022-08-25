@@ -14,14 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import nock from 'nock';
-import { HashedRekordKind, Rekor } from '../rekor';
-import {
-  searchLogEntry,
-  searchLogIndex,
-  searchLogResponseBody,
-  searchLogURL,
-  searchLogEntryUUID,
-} from './constants';
+import { HashedRekordKind, Rekor } from './rekor';
 
 describe('Rekor', () => {
   const baseURL = 'http://localhost:8080';
@@ -325,6 +318,109 @@ describe('Rekor', () => {
   });
 
   describe('#searchLog', () => {
+    const searchLogURL = '/api/v1/log/entries/retrieve';
+
+    const searchLogEntryUUID =
+      '5c1419ace1915869eef4426701d0763232da44d453e31ffc06d60ea61de36e25';
+    const searchLogIndex = 3244486;
+
+    const searchLogEntry = {
+      kind: 'hashedrekord',
+      apiVersion: '0.0.1',
+      spec: {
+        data: {
+          hash: {
+            value:
+              'c0afcf83aee6ee83b2ecfa226db62853fd77bcaf550e1b4bf277acbe38a67bca',
+            algorithm: 'sha256',
+          },
+        },
+        signature: {
+          content:
+            'MEYCIQDXxhsvLwEXG9HFrYyF/FgGbo0Ja25ADoaUhs+4DqaCQgIhAJziarK6mxXB5coQu75jpHSbXAGQyDE8tu8sTrcXndGV',
+          publicKey: {
+            content:
+              'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNvRENDQWlhZ0F3SUJBZ0lVZTR4VXljdWRlbW9sVG5tenpCVnM0MVNNQU9Jd0NnWUlLb1pJemowRUF3TXcKTnpFVk1CTUdBMVVFQ2hNTWMybG5jM1J2Y21VdVpHVjJNUjR3SEFZRFZRUURFeFZ6YVdkemRHOXlaUzFwYm5SbApjbTFsWkdsaGRHVXdIaGNOTWpJd09ESXlNVGd3T1RBeVdoY05Nakl3T0RJeU1UZ3hPVEF5V2pBQU1Ga3dFd1lICktvWkl6ajBDQVFZSUtvWkl6ajBEQVFjRFFnQUVDV3dEM1F6WUwwN2JDY0JrZURWU3hUOE9FQnM1MnJXcS9aZGYKMEZFSlZneng3cGpyZFFmOExBOEp6dkZkVnhKeXBGSDVVcythMkRRRWVUdytlZUNRcEtPQ0FVVXdnZ0ZCTUE0RwpBMVVkRHdFQi93UUVBd0lIZ0RBVEJnTlZIU1VFRERBS0JnZ3JCZ0VGQlFjREF6QWRCZ05WSFE0RUZnUVVodUt1CklsWFVHa3VrM2prbWJ3SlhpeDh1cFdrd0h3WURWUjBqQkJnd0ZvQVUzOVBwejFZa0VaYjVxTmpwS0ZXaXhpNFkKWkQ4d0h3WURWUjBSQVFIL0JCVXdFNEVSWW5KcFlXNUFaR1ZvWVcxbGNpNWpiMjB3TEFZS0t3WUJCQUdEdnpBQgpBUVFlYUhSMGNITTZMeTluYVhSb2RXSXVZMjl0TDJ4dloybHVMMjloZFhSb01JR0tCZ29yQmdFRUFkWjVBZ1FDCkJId0VlZ0I0QUhZQUNHQ1M4Q2hTLzJoRjBkRnJKNFNjUldjWXJCWTl3empTYmVhOElnWTJiM0lBQUFHQ3hyNWkKZ3dBQUJBTUFSekJGQWlCOEFPQ2t2VnA1bGRhVkVuMk96NlAzUE5YOGd2cGt2WmlqUEZ2SHY1ZHMvZ0loQUtWNAplK1lpKzVpa2VCYTU3UlV1alMrV3RIdklSeEJBVVRNK2hTOE5XWHFjTUFvR0NDcUdTTTQ5QkFNREEyZ0FNR1VDCk1RQ3JIK3krYkhDeCtBR0lsc3JOeXhOa2VsS3hSNDAwbEpzd1FBVDVOVk5aUmVSUDBhbDJKN1dmSHhyZVhqS0oKT2ZBQ01FTnpzUjhIeVZpOEJuZDBPd1YzOGswMGRnZW9PTGoycTgwZVdEbWJWN1ptVklyeDRpc2M4aFVnNHFHLwpKN2x4TEE9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==',
+          },
+        },
+      },
+    };
+
+    const searchLogResponseBody = [
+      {
+        [searchLogEntryUUID]: {
+          body: 'eyJhcGlWZXJzaW9uIjoiMC4wLjEiLCJraW5kIjoiaGFzaGVkcmVrb3JkIiwic3BlYyI6eyJkYXRhIjp7Imhhc2giOnsiYWxnb3JpdGhtIjoic2hhMjU2IiwidmFsdWUiOiJjMGFmY2Y4M2FlZTZlZTgzYjJlY2ZhMjI2ZGI2Mjg1M2ZkNzdiY2FmNTUwZTFiNGJmMjc3YWNiZTM4YTY3YmNhIn19LCJzaWduYXR1cmUiOnsiY29udGVudCI6Ik1FWUNJUURYeGhzdkx3RVhHOUhGcll5Ri9GZ0dibzBKYTI1QURvYVVocys0RHFhQ1FnSWhBSnppYXJLNm14WEI1Y29RdTc1anBIU2JYQUdReURFOHR1OHNUcmNYbmRHViIsInB1YmxpY0tleSI6eyJjb250ZW50IjoiTFMwdExTMUNSVWRKVGlCRFJWSlVTVVpKUTBGVVJTMHRMUzB0Q2sxSlNVTnZSRU5EUVdsaFowRjNTVUpCWjBsVlpUUjRWWGxqZFdSbGJXOXNWRzV0ZW5wQ1ZuTTBNVk5OUVU5SmQwTm5XVWxMYjFwSmVtb3dSVUYzVFhjS1RucEZWazFDVFVkQk1WVkZRMmhOVFdNeWJHNWpNMUoyWTIxVmRWcEhWakpOVWpSM1NFRlpSRlpSVVVSRmVGWjZZVmRrZW1SSE9YbGFVekZ3WW01U2JBcGpiVEZzV2tkc2FHUkhWWGRJYUdOT1RXcEpkMDlFU1hsTlZHZDNUMVJCZVZkb1kwNU5ha2wzVDBSSmVVMVVaM2hQVkVGNVYycEJRVTFHYTNkRmQxbElDa3R2V2tsNmFqQkRRVkZaU1V0dldrbDZhakJFUVZGalJGRm5RVVZEVjNkRU0xRjZXVXd3TjJKRFkwSnJaVVJXVTNoVU9FOUZRbk0xTW5KWGNTOWFaR1lLTUVaRlNsWm5lbmczY0dweVpGRm1PRXhCT0VwNmRrWmtWbmhLZVhCR1NEVlZjeXRoTWtSUlJXVlVkeXRsWlVOUmNFdFBRMEZWVlhkblowWkNUVUUwUndwQk1WVmtSSGRGUWk5M1VVVkJkMGxJWjBSQlZFSm5UbFpJVTFWRlJFUkJTMEpuWjNKQ1owVkdRbEZqUkVGNlFXUkNaMDVXU0ZFMFJVWm5VVlZvZFV0MUNrbHNXRlZIYTNWck0ycHJiV0ozU2xocGVEaDFjRmRyZDBoM1dVUldVakJxUWtKbmQwWnZRVlV6T1ZCd2VqRlphMFZhWWpWeFRtcHdTMFpYYVhocE5Ga0tXa1E0ZDBoM1dVUldVakJTUVZGSUwwSkNWWGRGTkVWU1dXNUtjRmxYTlVGYVIxWnZXVmN4YkdOcE5XcGlNakIzVEVGWlMwdDNXVUpDUVVkRWRucEJRZ3BCVVZGbFlVaFNNR05JVFRaTWVUbHVZVmhTYjJSWFNYVlpNamwwVERKNGRsb3liSFZNTWpsb1pGaFNiMDFKUjB0Q1oyOXlRbWRGUlVGa1dqVkJaMUZEQ2tKSWQwVmxaMEkwUVVoWlFVTkhRMU00UTJoVEx6Sm9SakJrUm5KS05GTmpVbGRqV1hKQ1dUbDNlbXBUWW1WaE9FbG5XVEppTTBsQlFVRkhRM2h5TldrS1ozZEJRVUpCVFVGU2VrSkdRV2xDT0VGUFEydDJWbkExYkdSaFZrVnVNazk2TmxBelVFNVlPR2QyY0d0MldtbHFVRVoyU0hZMVpITXZaMGxvUVV0V05BcGxLMWxwS3pWcGEyVkNZVFUzVWxWMWFsTXJWM1JJZGtsU2VFSkJWVlJOSzJoVE9FNVhXSEZqVFVGdlIwTkRjVWRUVFRRNVFrRk5SRUV5WjBGTlIxVkRDazFSUTNKSUsza3JZa2hEZUN0QlIwbHNjM0pPZVhoT2EyVnNTM2hTTkRBd2JFcHpkMUZCVkRWT1ZrNWFVbVZTVURCaGJESktOMWRtU0hoeVpWaHFTMG9LVDJaQlEwMUZUbnB6VWpoSWVWWnBPRUp1WkRCUGQxWXpPR3N3TUdSblpXOVBUR295Y1Rnd1pWZEViV0pXTjFwdFZrbHllRFJwYzJNNGFGVm5OSEZITHdwS04yeDRURUU5UFFvdExTMHRMVVZPUkNCRFJWSlVTVVpKUTBGVVJTMHRMUzB0Q2c9PSJ9fX19',
+          integratedTime: 1661191742,
+          logID:
+            'c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d',
+          logIndex: searchLogIndex,
+          verification: {
+            inclusionProof: {
+              hashes: [
+                'a95557f9140686a8232d87372d63f77d238b9b592546793122fee610a98bdc4a',
+                '755c2d4215b65ff1e89922eaf3d0b0c2a256bb73f01c9987d0baf7da6bd05ce9',
+                'a40ef3cc1d74b6c51d7f10bd27c3fdaf32a0ef5ff3b7d1a920e2cab3fd7b15fa',
+                'f13869de51fd02503c70fc7b60a0a45f63e5ac7f5e09e1f8481fb3c27dde3787',
+                '8f940f0ea5c5a2f851c0bb5a736a1be56a2fb823c5e805521ba7e354d0046e4a',
+                '7158f9f9011dae7f3ac2bd2ca20b3dc8994498ba16cf58d5be94586db4b7049b',
+                '7905df410a38ed98d7d3f84a2ec4aea550e1b958ccd767c0daefcee7a2b9037a',
+                '497906c322703a983d84cb7618b74ba0804b245c63ef0a276cf1db8b9cee487a',
+                'a547f0e05745e0594c9569c04e5d7eff0aed47f88eaf50e373b051ed465bd61d',
+                '0d7e8078654eb19540634cb8e1c5a864424e4b03e65f7fb139746a279fd0b3cc',
+                'a64451821ac29b58a6ced95c615e426fc339d3607b0001c4298c474b7fdaed59',
+                'b71e915675080279e58cdd0daa859a47da7e824ffc55df612becfcfb2fd9aae8',
+                '6d494b237648126525b08f975c736a55d1f7a64472fcc2782bbc16733c608d7b',
+                'efb36cfc54705d8cd921a621a9389ffa03956b15d68bfabadac2b4853852079b',
+              ],
+              logIndex: 3244486,
+              rootHash:
+                'ba3be49521f0cf6eed57b0e1ffe4b47a2f5b96bf43e9b6eb5ec3130f80e53c8d',
+              treeSize: 3244712,
+            },
+            signedEntryTimestamp:
+              'MEUCIQDLNuDkFSpqhFBpp3o1ApYu4WH0f4tP2OWZC/o+f79cQAIgFC6uELUYcUpPNACyu89pNynxmmrWMdzu08CNNYl83/c=',
+          },
+        },
+      },
+    ];
+
+    const searchLogReturnValue = [
+      {
+        uuid: searchLogEntryUUID,
+        body: 'eyJhcGlWZXJzaW9uIjoiMC4wLjEiLCJraW5kIjoiaGFzaGVkcmVrb3JkIiwic3BlYyI6eyJkYXRhIjp7Imhhc2giOnsiYWxnb3JpdGhtIjoic2hhMjU2IiwidmFsdWUiOiJjMGFmY2Y4M2FlZTZlZTgzYjJlY2ZhMjI2ZGI2Mjg1M2ZkNzdiY2FmNTUwZTFiNGJmMjc3YWNiZTM4YTY3YmNhIn19LCJzaWduYXR1cmUiOnsiY29udGVudCI6Ik1FWUNJUURYeGhzdkx3RVhHOUhGcll5Ri9GZ0dibzBKYTI1QURvYVVocys0RHFhQ1FnSWhBSnppYXJLNm14WEI1Y29RdTc1anBIU2JYQUdReURFOHR1OHNUcmNYbmRHViIsInB1YmxpY0tleSI6eyJjb250ZW50IjoiTFMwdExTMUNSVWRKVGlCRFJWSlVTVVpKUTBGVVJTMHRMUzB0Q2sxSlNVTnZSRU5EUVdsaFowRjNTVUpCWjBsVlpUUjRWWGxqZFdSbGJXOXNWRzV0ZW5wQ1ZuTTBNVk5OUVU5SmQwTm5XVWxMYjFwSmVtb3dSVUYzVFhjS1RucEZWazFDVFVkQk1WVkZRMmhOVFdNeWJHNWpNMUoyWTIxVmRWcEhWakpOVWpSM1NFRlpSRlpSVVVSRmVGWjZZVmRrZW1SSE9YbGFVekZ3WW01U2JBcGpiVEZzV2tkc2FHUkhWWGRJYUdOT1RXcEpkMDlFU1hsTlZHZDNUMVJCZVZkb1kwNU5ha2wzVDBSSmVVMVVaM2hQVkVGNVYycEJRVTFHYTNkRmQxbElDa3R2V2tsNmFqQkRRVkZaU1V0dldrbDZhakJFUVZGalJGRm5RVVZEVjNkRU0xRjZXVXd3TjJKRFkwSnJaVVJXVTNoVU9FOUZRbk0xTW5KWGNTOWFaR1lLTUVaRlNsWm5lbmczY0dweVpGRm1PRXhCT0VwNmRrWmtWbmhLZVhCR1NEVlZjeXRoTWtSUlJXVlVkeXRsWlVOUmNFdFBRMEZWVlhkblowWkNUVUUwUndwQk1WVmtSSGRGUWk5M1VVVkJkMGxJWjBSQlZFSm5UbFpJVTFWRlJFUkJTMEpuWjNKQ1owVkdRbEZqUkVGNlFXUkNaMDVXU0ZFMFJVWm5VVlZvZFV0MUNrbHNXRlZIYTNWck0ycHJiV0ozU2xocGVEaDFjRmRyZDBoM1dVUldVakJxUWtKbmQwWnZRVlV6T1ZCd2VqRlphMFZhWWpWeFRtcHdTMFpYYVhocE5Ga0tXa1E0ZDBoM1dVUldVakJTUVZGSUwwSkNWWGRGTkVWU1dXNUtjRmxYTlVGYVIxWnZXVmN4YkdOcE5XcGlNakIzVEVGWlMwdDNXVUpDUVVkRWRucEJRZ3BCVVZGbFlVaFNNR05JVFRaTWVUbHVZVmhTYjJSWFNYVlpNamwwVERKNGRsb3liSFZNTWpsb1pGaFNiMDFKUjB0Q1oyOXlRbWRGUlVGa1dqVkJaMUZEQ2tKSWQwVmxaMEkwUVVoWlFVTkhRMU00UTJoVEx6Sm9SakJrUm5KS05GTmpVbGRqV1hKQ1dUbDNlbXBUWW1WaE9FbG5XVEppTTBsQlFVRkhRM2h5TldrS1ozZEJRVUpCVFVGU2VrSkdRV2xDT0VGUFEydDJWbkExYkdSaFZrVnVNazk2TmxBelVFNVlPR2QyY0d0MldtbHFVRVoyU0hZMVpITXZaMGxvUVV0V05BcGxLMWxwS3pWcGEyVkNZVFUzVWxWMWFsTXJWM1JJZGtsU2VFSkJWVlJOSzJoVE9FNVhXSEZqVFVGdlIwTkRjVWRUVFRRNVFrRk5SRUV5WjBGTlIxVkRDazFSUTNKSUsza3JZa2hEZUN0QlIwbHNjM0pPZVhoT2EyVnNTM2hTTkRBd2JFcHpkMUZCVkRWT1ZrNWFVbVZTVURCaGJESktOMWRtU0hoeVpWaHFTMG9LVDJaQlEwMUZUbnB6VWpoSWVWWnBPRUp1WkRCUGQxWXpPR3N3TUdSblpXOVBUR295Y1Rnd1pWZEViV0pXTjFwdFZrbHllRFJwYzJNNGFGVm5OSEZITHdwS04yeDRURUU5UFFvdExTMHRMVVZPUkNCRFJWSlVTVVpKUTBGVVJTMHRMUzB0Q2c9PSJ9fX19',
+        integratedTime: 1661191742,
+        logID:
+          'c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d',
+        logIndex: searchLogIndex,
+        verification: {
+          inclusionProof: {
+            hashes: [
+              'a95557f9140686a8232d87372d63f77d238b9b592546793122fee610a98bdc4a',
+              '755c2d4215b65ff1e89922eaf3d0b0c2a256bb73f01c9987d0baf7da6bd05ce9',
+              'a40ef3cc1d74b6c51d7f10bd27c3fdaf32a0ef5ff3b7d1a920e2cab3fd7b15fa',
+              'f13869de51fd02503c70fc7b60a0a45f63e5ac7f5e09e1f8481fb3c27dde3787',
+              '8f940f0ea5c5a2f851c0bb5a736a1be56a2fb823c5e805521ba7e354d0046e4a',
+              '7158f9f9011dae7f3ac2bd2ca20b3dc8994498ba16cf58d5be94586db4b7049b',
+              '7905df410a38ed98d7d3f84a2ec4aea550e1b958ccd767c0daefcee7a2b9037a',
+              '497906c322703a983d84cb7618b74ba0804b245c63ef0a276cf1db8b9cee487a',
+              'a547f0e05745e0594c9569c04e5d7eff0aed47f88eaf50e373b051ed465bd61d',
+              '0d7e8078654eb19540634cb8e1c5a864424e4b03e65f7fb139746a279fd0b3cc',
+              'a64451821ac29b58a6ced95c615e426fc339d3607b0001c4298c474b7fdaed59',
+              'b71e915675080279e58cdd0daa859a47da7e824ffc55df612becfcfb2fd9aae8',
+              '6d494b237648126525b08f975c736a55d1f7a64472fcc2782bbc16733c608d7b',
+              'efb36cfc54705d8cd921a621a9389ffa03956b15d68bfabadac2b4853852079b',
+            ],
+            logIndex: 3244486,
+            rootHash:
+              'ba3be49521f0cf6eed57b0e1ffe4b47a2f5b96bf43e9b6eb5ec3130f80e53c8d',
+            treeSize: 3244712,
+          },
+          signedEntryTimestamp:
+            'MEUCIQDLNuDkFSpqhFBpp3o1ApYu4WH0f4tP2OWZC/o+f79cQAIgFC6uELUYcUpPNACyu89pNynxmmrWMdzu08CNNYl83/c=',
+        },
+      },
+    ];
+
     describe('when matching by entry', () => {
       const entries = [searchLogEntry];
       const responseBody = searchLogResponseBody;
@@ -342,7 +438,7 @@ describe('Rekor', () => {
           entries: entries as HashedRekordKind[],
         });
 
-        expect(response).toEqual(responseBody);
+        expect(response).toEqual(searchLogReturnValue);
       });
     });
 
@@ -360,7 +456,7 @@ describe('Rekor', () => {
 
       it('returns matching entries', async () => {
         const response = await subject.searchLog({ logIndexes });
-        expect(response).toEqual(responseBody);
+        expect(response).toEqual(searchLogReturnValue);
       });
     });
 
@@ -379,7 +475,7 @@ describe('Rekor', () => {
 
       it('returns matching entries', async () => {
         const response = await subject.searchLog({ entryUUIDs });
-        expect(response).toEqual(responseBody);
+        expect(response).toEqual(searchLogReturnValue);
       });
     });
 

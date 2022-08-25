@@ -252,7 +252,8 @@ export class Rekor {
     });
     checkStatus(response);
 
-    const data = await response.json();
+    const rawData = await response.json();
+    const data = rawData.map((d: object) => entryFromResponse(d));
     return data;
   }
 }
