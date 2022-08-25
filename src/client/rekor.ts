@@ -115,9 +115,9 @@ export interface SearchIndex {
 }
 
 export interface SearchLogQuery {
-  entries?: HashedRekordOptions[];
+  entries?: EntryKind[];
   entryUUIDs?: string[];
-  logIndexes: number[];
+  logIndexes?: number[];
 }
 
 /**
@@ -234,6 +234,26 @@ export class Rekor {
     checkStatus(response);
 
     const data = await response.json();
+    return data;
+  }
+
+  /**
+   * Search the Rekor logs for matching the given query.
+   * @param opts {SearchLogQuery} Query to search the Rekor log
+   * @returns {Promise<Entry[]>} List of matching entries
+   */
+  public async searchLog(opts: SearchLogQuery): Promise<Entry[]> {
+    const url = `${this.baseUrl}/api/v1/log/entries/retrieve`;
+
+    const response = await this.fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(opts),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    checkStatus(response);
+
+    const rawData = await response.json();
+    const data = rawData.map((d: object) => entryFromResponse(d));
     return data;
   }
 }
