@@ -60,7 +60,10 @@ export const getUserAgent = (): string => {
 };
 
 // DSSE Pre-Authentication Encoding
-export function pae(payloadType: string, payload: Buffer): Buffer {
+export function dssePreAuthEncoding(
+  payloadType: string,
+  payload: Buffer
+): Buffer {
   const prefix = Buffer.from(
     `DSSEv1 ${payloadType.length} ${payloadType} ${payload.length} `,
     'ascii'

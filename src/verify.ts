@@ -18,7 +18,7 @@ import { SigstoreDSSEBundle } from './bundle';
 import { Rekor } from './client';
 import * as crypto from './crypto';
 import * as enc from './encoding';
-import { pae } from './util';
+import { dssePreAuthEncoding } from './util';
 
 export interface VerifyOptions {
   rekor: Rekor;
@@ -44,8 +44,13 @@ export class Verifier {
   public async verifyDSSE(bundle: SigstoreDSSEBundle): Promise<boolean> {
     const payloadType = bundle.attestation.payloadType;
     const payload = Buffer.from(bundle.attestation.payload, 'base64');
-    const paeBuffer = pae(payloadType, payload);
+    const paeBuffer = dssePreAuthEncoding(payloadType, payload);
 
+    if (bundle.attestation.signatures.length < 1) {
+      throw new Error('No signatures found in bundle');
+    }
+
+    // TODO: Do we need to handle multiple signatures?
     const signature = bundle.attestation.signatures[0].sig;
     const certificate = enc.base64Decode(bundle.certificate);
 

@@ -17,6 +17,8 @@ import fs from 'fs';
 import { sigstore } from '../index';
 import * as enc from '../encoding';
 
+const INTOTO_PAYLOAD_TYPE = 'application/vnd.in-toto+json';
+
 async function cli(args: string[]) {
   switch (args[0]) {
     case 'sign':
@@ -47,7 +49,10 @@ async function sign(artifactPath: string) {
   console.log(JSON.stringify(bundle));
 }
 
-async function signDSSE(artifactPath: string, payloadType: string) {
+async function signDSSE(
+  artifactPath: string,
+  payloadType = INTOTO_PAYLOAD_TYPE
+) {
   const buffer = fs.readFileSync(artifactPath);
   const bundle = await sigstore.signAttestation(
     buffer,

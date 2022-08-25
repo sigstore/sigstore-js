@@ -24,7 +24,7 @@ import { Fulcio, Rekor } from './client';
 import * as crypto from './crypto';
 import * as enc from './encoding';
 import { Provider } from './identity';
-import { extractJWTSubject, pae } from './util';
+import { extractJWTSubject, dssePreAuthEncoding } from './util';
 
 export interface SignOptions {
   fulcio: Fulcio;
@@ -73,7 +73,7 @@ export class Signer {
     payloadType: string
   ): Promise<SigstoreDSSEBundle> {
     // Pre-authentication encoding to be signed
-    const paeBuffer = pae(payloadType, payload);
+    const paeBuffer = dssePreAuthEncoding(payloadType, payload);
 
     // Get signature and signing certificate for pae
     const { signature, certificate } = await this.sign(paeBuffer);
