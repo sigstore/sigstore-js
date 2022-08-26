@@ -10,7 +10,8 @@
     "test:ci": "jest --maxWorkers=2 --coverage",
     "lint": "eslint --fix --ext .ts src/**",
     "lint:check": "eslint --max-warnings 0 --ext .ts src/**",
-    "format": "prettier --write \"src/**/*\""
+    "format": "prettier --write \"src/**/*\"",
+    "codegen:bundle": "./bin/generate-bundle-types"
   },
   "bin": {
     "sigstore": "bin/sigstore.js"
@@ -42,6 +43,7 @@
     "nock": "^13.2.4",
     "prettier": "^2.6.2",
     "ts-jest": "^27.1.5",
+    "ts-proto": "^1.122.0",
     "typescript": "^4.7.2"
   },
   "dependencies": {
