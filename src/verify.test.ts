@@ -16,6 +16,7 @@ limitations under the License.
 import { Rekor } from './client';
 import { base64Decode } from './encoding';
 import { Verifier } from './verify';
+import { SigstoreDSSEBundle, DSSE } from './bundle';
 
 describe('Verifier', () => {
   const rekorBaseURL = 'http://localhost:8002';
@@ -50,6 +51,51 @@ describe('Verifier', () => {
           '',
           base64Decode(signingCert)
         );
+
+        expect(verified).toBe(false);
+      });
+    });
+  });
+
+  describe('#verifyDSSE', () => {
+    const payload = Buffer.from('hello world');
+    const payloadType = 'text/plain';
+    const signature =
+      'MEQCICI87pUJwMdF/AuTxb+i9OFWvzIOoxEnJx0oEqayXEBzAiAzjiZJ3FvcGINs+5oZrZNh36g3GKAnv6Ssr+J9eOGHHg==';
+
+    // Cert that could have generated the signature above
+    const signingCert =
+      'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNvakNDQWllZ0F3SUJBZ0lVSTBIWnd0ZWJ1bnNzWk5ob21xSkd2RjVXNXIwd0NnWUlLb1pJemowRUF3TXcKTnpFVk1CTUdBMVVFQ2hNTWMybG5jM1J2Y21VdVpHVjJNUjR3SEFZRFZRUURFeFZ6YVdkemRHOXlaUzFwYm5SbApjbTFsWkdsaGRHVXdIaGNOTWpJd09ERTVNVGMxTURVNVdoY05Nakl3T0RFNU1UZ3dNRFU1V2pBQU1Ga3dFd1lICktvWkl6ajBDQVFZSUtvWkl6ajBEQVFjRFFnQUUwQWUxU1hiWHZJN2UrY082NXlMR2k3ek0rR1R0NDllSTdkelAKNEpBYy9KRHVYYk50T3N6R3cydDNMc2R2N2t2NWZ4YTZ2R3UwMzYzdEl2NlF4QVo3WTZPQ0FVWXdnZ0ZDTUE0RwpBMVVkRHdFQi93UUVBd0lIZ0RBVEJnTlZIU1VFRERBS0JnZ3JCZ0VGQlFjREF6QWRCZ05WSFE0RUZnUVUzUHYwCnAzUEdxdWJ2TDc5Nm1EaVRJUlN5Q2xnd0h3WURWUjBqQkJnd0ZvQVUzOVBwejFZa0VaYjVxTmpwS0ZXaXhpNFkKWkQ4d0h3WURWUjBSQVFIL0JCVXdFNEVSWW5KcFlXNUFaR1ZvWVcxbGNpNWpiMjB3TEFZS0t3WUJCQUdEdnpBQgpBUVFlYUhSMGNITTZMeTluYVhSb2RXSXVZMjl0TDJ4dloybHVMMjloZFhSb01JR0xCZ29yQmdFRUFkWjVBZ1FDCkJIMEVld0I1QUhjQUNHQ1M4Q2hTLzJoRjBkRnJKNFNjUldjWXJCWTl3empTYmVhOElnWTJiM0lBQUFHQ3R6ckgKK0FBQUJBTUFTREJHQWlFQWl5aWx5S3lsb21reUxGaGtIYUoyOFBua0NIQ3RrRGNkQ3VRVHVRMTg4dTRDSVFEagpUTHdrd1NDdEdLUGw0S3BNTXh3YkpOUzVxcC9PL2FHcVUvT291TGtETFRBS0JnZ3Foa2pPUFFRREF3TnBBREJtCkFqRUE5UWk4RksvNDZXKytPRmFHVFdUakVCVDVGa0Q5cExnTmZrTU5ldzVzVm4yaVF5QTJmSTJGOTNNSkp2ckwKbE5HK0FqRUEvYm95eUl5QklqZC9OYzRzaFppSlVtdEJLSU44ZVJZZWtBRVM1QklrSHMrK1d1U0xUUDhBQVVQZQpPT3VDM3NHLwotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0t';
+
+    const envelope: DSSE = {
+      payload: payload.toString('base64'),
+      payloadType,
+      signatures: [{ keyid: '', sig: signature }],
+    };
+
+    const bundle: SigstoreDSSEBundle = {
+      attestationType: 'attestation/dsse',
+      attestation: envelope,
+      certificate: signingCert,
+      integratedTime: 0,
+      logID: '',
+      logIndex: 0,
+      signedEntryTimestamp: '',
+    };
+
+    describe('when the signature and the cert match', () => {
+      it('returns true', async () => {
+        const verified = await subject.verifyDSSE(bundle);
+        expect(verified).toBe(true);
+      });
+    });
+
+    describe('when the signature and the cert do NOT match', () => {
+      it('returns false', async () => {
+        const invalidBundle = { ...bundle };
+        invalidBundle.attestation.payloadType = 'text/html';
+
+        const verified = await subject.verifyDSSE(invalidBundle);
 
         expect(verified).toBe(false);
       });

@@ -144,7 +144,7 @@ describe('Rekor', () => {
         .reply(201, responseBody);
     });
 
-    it('submits a new hashedrekor entry', async () => {
+    it('submits a new hashedrekord entry', async () => {
       const result = await subject.createHashedRekordEntry({
         artifactDigest,
         artifactSignature,

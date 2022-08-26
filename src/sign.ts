@@ -13,11 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import {
+  buildBlobBundle,
+  buildDSSEBundle,
+  DSSE,
+  SigstoreBlobBundle,
+  SigstoreDSSEBundle,
+} from './bundle';
 import { Fulcio, Rekor } from './client';
-import { generateKeyPair, hash, signBlob } from './crypto';
+import * as crypto from './crypto';
 import * as enc from './encoding';
 import { Provider } from './identity';
-import { extractJWTSubject } from './util';
+import { extractJWTSubject, dssePreAuthEncoding } from './util';
 
 export interface SignOptions {
   fulcio: Fulcio;
@@ -25,18 +32,9 @@ export interface SignOptions {
   identityProviders: Provider[];
 }
 
-export interface SigstoreBundle {
-  attestationType: 'attestation/blob';
-  attestation: {
-    payloadHash: string;
-    payloadHashAlgorithm: string;
-    signature: string;
-  };
+interface SigCert {
+  signature: string;
   certificate: string;
-  signedEntryTimestamp: string;
-  integratedTime: number;
-  logIndex: number;
-  logID: string;
 }
 
 export class Signer {
@@ -51,9 +49,59 @@ export class Signer {
     this.identityProviders = options.identityProviders;
   }
 
-  public async sign(payload: Buffer): Promise<SigstoreBundle> {
+  public async signBlob(payload: Buffer): Promise<SigstoreBlobBundle> {
+    // Get signature and signing certificate for payload
+    const { signature, certificate } = await this.sign(payload);
+
+    // Calculate artifact digest
+    const digest = crypto.hash(payload);
+
+    const certificateB64 = enc.base64Encode(certificate);
+
+    // Create Rekor entry
+    const entry = await this.rekor.createHashedRekordEntry({
+      artifactDigest: digest,
+      artifactSignature: signature,
+      publicKey: certificateB64,
+    });
+
+    return buildBlobBundle(digest, signature, certificateB64, entry);
+  }
+
+  public async signAttestation(
+    payload: Buffer,
+    payloadType: string
+  ): Promise<SigstoreDSSEBundle> {
+    // Pre-authentication encoding to be signed
+    const paeBuffer = dssePreAuthEncoding(payloadType, payload);
+
+    // Get signature and signing certificate for pae
+    const { signature, certificate } = await this.sign(paeBuffer);
+
+    const dsse: DSSE = {
+      payloadType,
+      payload: payload.toString('base64'),
+      signatures: [
+        {
+          keyid: '',
+          sig: signature,
+        },
+      ],
+    };
+
+    const certificateB64 = enc.base64Encode(certificate);
+
+    const entry = await this.rekor.createIntoEntry({
+      envelope: JSON.stringify(dsse),
+      publicKey: certificateB64,
+    });
+
+    return buildDSSEBundle(dsse, certificateB64, entry);
+  }
+
+  private async sign(payload: Buffer): Promise<SigCert> {
     // Create emphemeral key pair
-    const keypair = generateKeyPair();
+    const keypair = crypto.generateKeyPair();
 
     // Extract public key as base64-encoded string
     const publicKeyB64 = keypair.publicKey
@@ -67,7 +115,7 @@ export class Signer {
     const subject = extractJWTSubject(identityToken);
 
     // Construct challenge value by encrypting subject with private key
-    const challenge = signBlob(keypair.privateKey, subject);
+    const challenge = crypto.signBlob(keypair.privateKey, subject);
 
     // Create signing certificate
     const certificate = await this.fulcio.createSigningCertificate({
@@ -75,41 +123,14 @@ export class Signer {
       publicKey: publicKeyB64,
       challenge,
     });
-    const b64Certificate = enc.base64Encode(certificate);
 
     // Generate artifact signature
-    const signature = signBlob(keypair.privateKey, payload);
+    const signature = crypto.signBlob(keypair.privateKey, payload);
 
-    // Calculate artifact digest
-    const digest = hash(payload);
-
-    // Create Rekor entry
-    const entry = await this.rekor.createHashedRekordEntry({
-      artifactDigest: digest,
-      artifactSignature: signature,
-      publicKey: b64Certificate,
-    });
-
-    console.error(`Created entry at index ${entry.logIndex}, available at`);
-    console.error(
-      `https://rekor.sigstore.dev/api/v1/log/entries/${entry.uuid}`
-    );
-
-    const bundle: SigstoreBundle = {
-      attestationType: 'attestation/blob',
-      attestation: {
-        payloadHash: digest,
-        payloadHashAlgorithm: 'sha256',
-        signature: signature,
-      },
-      certificate: b64Certificate,
-      signedEntryTimestamp: entry.verification.signedEntryTimestamp,
-      integratedTime: entry.integratedTime,
-      logID: entry.logID,
-      logIndex: entry.logIndex,
+    return {
+      signature,
+      certificate,
     };
-
-    return bundle;
   }
 
   private async getIdentityToken(): Promise<string> {

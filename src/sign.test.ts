@@ -15,8 +15,8 @@ limitations under the License.
 */
 import nock from 'nock';
 import { Fulcio, Rekor } from './client';
-import { Signer } from './sign';
 import { base64Encode } from './encoding';
+import { Signer } from './sign';
 
 describe('Signer', () => {
   const fulcioBaseURL = 'http://localhost:8001';
@@ -41,7 +41,7 @@ describe('Signer', () => {
     expect(subject).toBeTruthy();
   });
 
-  describe('#sign', () => {
+  describe('#signBlob', () => {
     // Input
     const payload = Buffer.from('Hello, world!');
 
@@ -53,7 +53,7 @@ describe('Signer', () => {
       });
 
       it('throws an error', async () => {
-        await expect(noIDTokenSubject.sign(payload)).rejects.toThrow(
+        await expect(noIDTokenSubject.signBlob(payload)).rejects.toThrow(
           'Identity token providers failed: '
         );
       });
@@ -65,7 +65,7 @@ describe('Signer', () => {
       });
 
       it('returns an error', async () => {
-        await expect(subject.sign(payload)).rejects.toThrow(
+        await expect(subject.signBlob(payload)).rejects.toThrow(
           'HTTP Error: 500 Internal Server Error'
         );
       });
@@ -130,7 +130,7 @@ describe('Signer', () => {
         });
 
         it('returns a signature bundle', async () => {
-          const bundle = await subject.sign(payload);
+          const bundle = await subject.signBlob(payload);
 
           expect(bundle).toBeTruthy();
           expect(bundle.attestationType).toBe('attestation/blob');
@@ -157,8 +157,93 @@ describe('Signer', () => {
         });
 
         it('returns an error', async () => {
-          await expect(subject.sign(payload)).rejects.toThrow(
+          await expect(subject.signBlob(payload)).rejects.toThrow(
             'HTTP Error: 500 Internal Server Error'
+          );
+        });
+      });
+    });
+  });
+
+  describe('#signAttestation', () => {
+    // Input
+    const payload = Buffer.from('Hello, world!');
+    const payloadType = 'text/plain';
+
+    describe('when Fulcio returns successfully', () => {
+      // Fulcio output
+      const certificate = `-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----`;
+
+      beforeEach(() => {
+        // Mock Fulcio request
+        nock(fulcioBaseURL)
+          .matchHeader('Accept', 'application/pem-certificate-chain')
+          .matchHeader('Content-Type', 'application/json')
+          .matchHeader('Authorization', `Bearer ${jwt}`)
+          .post('/api/v1/signingCert', {
+            publicKey: { content: /.+/i },
+            signedEmailAddress: /.+/i,
+          })
+          .reply(200, certificate);
+      });
+
+      describe('when Rekor returns successfully', () => {
+        // Rekor output
+        const signature = 'ABC123';
+        const b64Cert = Buffer.from(certificate).toString('base64');
+        const uuid =
+          '69e5a0c1663ee4452674a5c9d5050d866c2ee31e2faaf79913aea7cc27293cf6';
+
+        const signatureBundle = {
+          spec: {
+            signature: {
+              content: signature,
+              publicKey: { content: b64Cert },
+            },
+          },
+        };
+
+        const rekorEntry = {
+          [uuid]: {
+            body: Buffer.from(JSON.stringify(signatureBundle)).toString(
+              'base64'
+            ),
+            integratedTime: 1654015743,
+            logID:
+              'c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d',
+            logIndex: 2513258,
+            verification: {
+              signedEntryTimestamp:
+                'MEUCIQD6CD7ZNLUipFoxzmSL/L8Ewic4SRkXN77UjfJZ7d/wAAIgatokSuX9Rg0iWxAgSfHMtcsagtDCQalU5IvXdQ+yLEA=',
+            },
+          },
+        };
+
+        beforeEach(() => {
+          // Mock Rekor request
+          nock(rekorBaseURL)
+            .matchHeader('Accept', 'application/json')
+            .matchHeader('Content-Type', 'application/json')
+            .post('/api/v1/log/entries')
+            .reply(201, rekorEntry);
+        });
+
+        it('returns a signature bundle', async () => {
+          const bundle = await subject.signAttestation(payload, payloadType);
+
+          expect(bundle).toBeTruthy();
+          expect(bundle.attestationType).toBe('attestation/dsse');
+          expect(bundle.attestation).toBeTruthy();
+          expect(bundle.attestation.payloadType).toBe(payloadType);
+          expect(bundle.attestation.payload).toBe(payload.toString('base64'));
+          expect(bundle.attestation.signatures).toHaveLength(1);
+          expect(bundle.attestation.signatures[0].sig).toBeTruthy();
+          expect(bundle.certificate).toBe(base64Encode(certificate));
+          expect(bundle.integratedTime).toBe(rekorEntry[uuid].integratedTime);
+          expect(bundle.logIndex).toBe(rekorEntry[uuid].logIndex);
+          expect(bundle.logID).toBe(rekorEntry[uuid].logID);
+          expect(bundle.signedEntryTimestamp).toBe(
+            rekorEntry[uuid].verification.signedEntryTimestamp
           );
         });
       });
