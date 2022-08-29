@@ -47,6 +47,10 @@ async function sign(artifactPath: string) {
   const buffer = fs.readFileSync(artifactPath);
   const bundle = await sigstore.sign(buffer, signOptions);
   console.log(JSON.stringify(bundle));
+
+  const url = `${sigstore.getRekorBaseUrl(signOptions)}/api/v1/log/entries`;
+  console.error(`Created entry at index ${bundle.logIndex}, available at`);
+  console.error(`${url}?logIndex=${bundle.logIndex}`);
 }
 
 async function signDSSE(
