@@ -136,7 +136,11 @@ export class Rekor {
         'User-Agent': getUserAgent(),
       },
     });
-    this.baseUrl = options.baseURL ?? DEFAULT_BASE_URL;
+    this.baseUrl = Rekor.getBaseUrl(options.baseURL);
+  }
+
+  public static getBaseUrl(baseURL?: string) {
+    return baseURL ?? DEFAULT_BASE_URL;
   }
 
   /**

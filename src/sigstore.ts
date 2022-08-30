@@ -33,6 +33,10 @@ export interface VerifierOptions {
   rekorBaseURL?: string;
 }
 
+export function getRekorBaseUrl(options?: SignOptions) {
+  return Rekor.getBaseUrl(options?.rekorBaseURL);
+}
+
 type IdentityProviderOptions = Pick<
   SignOptions,
   'identityToken' | 'oidcIssuer' | 'oidcClientID' | 'oidcClientSecret'
