@@ -43,7 +43,7 @@ View [Docker install instructions](https://docs.docker.com/engine/install/) for 
 
 Update the Git `REF` in `Dockerfile.bundle-types` from the [sigstore/cosign](https://github.com/sigstore/cosign) repository.
 
-Generate TypeScript protobufs:
+Generate TypeScript protobufs (should update files in scr/bundle/__generated__):
 
 ```
 bin/generate-bundle-types
