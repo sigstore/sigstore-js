@@ -1,22 +1,22 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 set -ex
 
-REPO=sigstore/cosign
-REF=a8ea54021bb6f850b30ee22bd15e0477d623e00d
-PB_PATH=specs/dotsigstore_bundle/pb
+if [ -z "${IN_CONTAINER}" ]; then
+  cd $(dirname $0)/..
+  IMAGE_NAME="sigstore-js-docker"
+  DOCKER_BUILDKIT=1 docker build -f Dockerfile.bundle-types -t ${IMAGE_NAME} .
+  exec docker run --rm --net=none \
+    --env OUTPUT_DIR=/sigstore-js \
+    -v $(pwd):/sigstore-js ${IMAGE_NAME}
+fi
 
-mkdir -p /tmp/defs
+OUTPUT_DIR="${OUTPUT_DIR:-.}"
+DEFS_DIR="${DEFS_DIR:-./tmp/defs}"
 
-curl -L --silent --show-error \
-  -o /tmp/defs/envelope.proto \
-  https://raw.githubusercontent.com/${REPO}/${REF}/${PB_PATH}/envelope.proto
-
-curl -L --silent --show-error \
-  -o /tmp/defs/bundle.proto \
-  https://raw.githubusercontent.com/${REPO}/${REF}/${PB_PATH}/bundle.proto
+mkdir -p ${OUTPUT_DIR}/src/bundle/__generated__
 
 protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto \
-  --ts_proto_out=${PWD}/src/bundle/__generated__ \
+  --ts_proto_out=${OUTPUT_DIR}/src/bundle/__generated__ \
   --ts_proto_opt=forceLong=string \
   --ts_proto_opt=env=node \
   --ts_proto_opt=outputJsonMethods=true \
@@ -25,5 +25,5 @@ protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto \
   --ts_proto_opt=oneof=unions \
   --ts_proto_opt=unrecognizedEnum=false \
   --ts_proto_opt=exportCommonSymbols=false \
-  -I /tmp/defs \
-  /tmp/defs/bundle.proto
+  -I ${DEFS_DIR} \
+  ${DEFS_DIR}/bundle.proto

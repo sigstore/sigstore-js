@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Envelope } from './envelope';
+import { Envelope } from "./envelope";
 
 export enum HashAlgorithm {
   SHA2_224 = 0,
@@ -13,26 +13,26 @@ export enum HashAlgorithm {
 export function hashAlgorithmFromJSON(object: any): HashAlgorithm {
   switch (object) {
     case 0:
-    case 'SHA2_224':
+    case "SHA2_224":
       return HashAlgorithm.SHA2_224;
     case 1:
-    case 'SHA2_256':
+    case "SHA2_256":
       return HashAlgorithm.SHA2_256;
     case 2:
-    case 'SHA2_384':
+    case "SHA2_384":
       return HashAlgorithm.SHA2_384;
     case 3:
-    case 'SHA2_512':
+    case "SHA2_512":
       return HashAlgorithm.SHA2_512;
     case 4:
-    case 'SHA2_512_224':
+    case "SHA2_512_224":
       return HashAlgorithm.SHA2_512_224;
     case 5:
-    case 'SHA2_512_256':
+    case "SHA2_512_256":
       return HashAlgorithm.SHA2_512_256;
     default:
       throw new globalThis.Error(
-        'Unrecognized enum value ' + object + ' for enum HashAlgorithm'
+        "Unrecognized enum value " + object + " for enum HashAlgorithm"
       );
   }
 }
@@ -40,20 +40,20 @@ export function hashAlgorithmFromJSON(object: any): HashAlgorithm {
 export function hashAlgorithmToJSON(object: HashAlgorithm): string {
   switch (object) {
     case HashAlgorithm.SHA2_224:
-      return 'SHA2_224';
+      return "SHA2_224";
     case HashAlgorithm.SHA2_256:
-      return 'SHA2_256';
+      return "SHA2_256";
     case HashAlgorithm.SHA2_384:
-      return 'SHA2_384';
+      return "SHA2_384";
     case HashAlgorithm.SHA2_512:
-      return 'SHA2_512';
+      return "SHA2_512";
     case HashAlgorithm.SHA2_512_224:
-      return 'SHA2_512_224';
+      return "SHA2_512_224";
     case HashAlgorithm.SHA2_512_256:
-      return 'SHA2_512_256';
+      return "SHA2_512_256";
     default:
       throw new globalThis.Error(
-        'Unrecognized enum value ' + object + ' for enum HashAlgorithm'
+        "Unrecognized enum value " + object + " for enum HashAlgorithm"
       );
   }
 }
@@ -119,11 +119,11 @@ export interface Bundle {
   mediaType: string;
   rekorEntry?: RekorEntry | undefined;
   verificationMaterial?:
-    | { $case: 'publicKey'; publicKey: PublicKey }
-    | { $case: 'x509Cert'; x509Cert: X509Cert };
+    | { $case: "publicKey"; publicKey: PublicKey }
+    | { $case: "x509Cert"; x509Cert: X509Cert };
   attestation?:
-    | { $case: 'attestationBlob'; attestationBlob: AttestationBlob }
-    | { $case: 'attestationDsse'; attestationDsse: Envelope };
+    | { $case: "attestationBlob"; attestationBlob: AttestationBlob }
+    | { $case: "attestationDsse"; attestationDsse: Envelope };
 }
 
 function createBaseAttestationBlob(): AttestationBlob {
@@ -169,28 +169,28 @@ export const AttestationBlob = {
 
 function createBaseRekorEntry(): RekorEntry {
   return {
-    logIndex: '0',
-    logId: '',
-    kind: '',
-    version: '',
-    signedEntryTimestamp: '',
-    integratedTime: '0',
+    logIndex: "0",
+    logId: "",
+    kind: "",
+    version: "",
+    signedEntryTimestamp: "",
+    integratedTime: "0",
   };
 }
 
 export const RekorEntry = {
   fromJSON(object: any): RekorEntry {
     return {
-      logIndex: isSet(object.logIndex) ? String(object.logIndex) : '0',
-      logId: isSet(object.logId) ? String(object.logId) : '',
-      kind: isSet(object.kind) ? String(object.kind) : '',
-      version: isSet(object.version) ? String(object.version) : '',
+      logIndex: isSet(object.logIndex) ? String(object.logIndex) : "0",
+      logId: isSet(object.logId) ? String(object.logId) : "",
+      kind: isSet(object.kind) ? String(object.kind) : "",
+      version: isSet(object.version) ? String(object.version) : "",
       signedEntryTimestamp: isSet(object.signedEntryTimestamp)
         ? String(object.signedEntryTimestamp)
-        : '',
+        : "",
       integratedTime: isSet(object.integratedTime)
         ? String(object.integratedTime)
-        : '0',
+        : "0",
     };
   },
 
@@ -209,13 +209,13 @@ export const RekorEntry = {
 };
 
 function createBasePublicKey(): PublicKey {
-  return { keyId: '' };
+  return { keyId: "" };
 }
 
 export const PublicKey = {
   fromJSON(object: any): PublicKey {
     return {
-      keyId: isSet(object.keyId) ? String(object.keyId) : '',
+      keyId: isSet(object.keyId) ? String(object.keyId) : "",
     };
   },
 
@@ -227,14 +227,14 @@ export const PublicKey = {
 };
 
 function createBaseX509Cert(): X509Cert {
-  return { certificate: '', chain: '' };
+  return { certificate: "", chain: "" };
 }
 
 export const X509Cert = {
   fromJSON(object: any): X509Cert {
     return {
-      certificate: isSet(object.certificate) ? String(object.certificate) : '',
-      chain: isSet(object.chain) ? String(object.chain) : '',
+      certificate: isSet(object.certificate) ? String(object.certificate) : "",
+      chain: isSet(object.chain) ? String(object.chain) : "",
     };
   },
 
@@ -249,7 +249,7 @@ export const X509Cert = {
 
 function createBaseBundle(): Bundle {
   return {
-    mediaType: '',
+    mediaType: "",
     rekorEntry: undefined,
     verificationMaterial: undefined,
     attestation: undefined,
@@ -259,26 +259,26 @@ function createBaseBundle(): Bundle {
 export const Bundle = {
   fromJSON(object: any): Bundle {
     return {
-      mediaType: isSet(object.mediaType) ? String(object.mediaType) : '',
+      mediaType: isSet(object.mediaType) ? String(object.mediaType) : "",
       rekorEntry: isSet(object.rekorEntry)
         ? RekorEntry.fromJSON(object.rekorEntry)
         : undefined,
       verificationMaterial: isSet(object.publicKey)
         ? {
-            $case: 'publicKey',
+            $case: "publicKey",
             publicKey: PublicKey.fromJSON(object.publicKey),
           }
         : isSet(object.x509Cert)
-        ? { $case: 'x509Cert', x509Cert: X509Cert.fromJSON(object.x509Cert) }
+        ? { $case: "x509Cert", x509Cert: X509Cert.fromJSON(object.x509Cert) }
         : undefined,
       attestation: isSet(object.attestationBlob)
         ? {
-            $case: 'attestationBlob',
+            $case: "attestationBlob",
             attestationBlob: AttestationBlob.fromJSON(object.attestationBlob),
           }
         : isSet(object.attestationDsse)
         ? {
-            $case: 'attestationDsse',
+            $case: "attestationDsse",
             attestationDsse: Envelope.fromJSON(object.attestationDsse),
           }
         : undefined,
@@ -292,19 +292,19 @@ export const Bundle = {
       (obj.rekorEntry = message.rekorEntry
         ? RekorEntry.toJSON(message.rekorEntry)
         : undefined);
-    message.verificationMaterial?.$case === 'publicKey' &&
+    message.verificationMaterial?.$case === "publicKey" &&
       (obj.publicKey = message.verificationMaterial?.publicKey
         ? PublicKey.toJSON(message.verificationMaterial?.publicKey)
         : undefined);
-    message.verificationMaterial?.$case === 'x509Cert' &&
+    message.verificationMaterial?.$case === "x509Cert" &&
       (obj.x509Cert = message.verificationMaterial?.x509Cert
         ? X509Cert.toJSON(message.verificationMaterial?.x509Cert)
         : undefined);
-    message.attestation?.$case === 'attestationBlob' &&
+    message.attestation?.$case === "attestationBlob" &&
       (obj.attestationBlob = message.attestation?.attestationBlob
         ? AttestationBlob.toJSON(message.attestation?.attestationBlob)
         : undefined);
-    message.attestation?.$case === 'attestationDsse' &&
+    message.attestation?.$case === "attestationDsse" &&
       (obj.attestationDsse = message.attestation?.attestationDsse
         ? Envelope.toJSON(message.attestation?.attestationDsse)
         : undefined);
@@ -316,16 +316,16 @@ declare var self: any | undefined;
 declare var window: any | undefined;
 declare var global: any | undefined;
 var globalThis: any = (() => {
-  if (typeof globalThis !== 'undefined') return globalThis;
-  if (typeof self !== 'undefined') return self;
-  if (typeof window !== 'undefined') return window;
-  if (typeof global !== 'undefined') return global;
-  throw 'Unable to locate global object';
+  if (typeof globalThis !== "undefined") return globalThis;
+  if (typeof self !== "undefined") return self;
+  if (typeof window !== "undefined") return window;
+  if (typeof global !== "undefined") return global;
+  throw "Unable to locate global object";
 })();
 
 function bytesFromBase64(b64: string): Uint8Array {
   if (globalThis.Buffer) {
-    return Uint8Array.from(globalThis.Buffer.from(b64, 'base64'));
+    return Uint8Array.from(globalThis.Buffer.from(b64, "base64"));
   } else {
     const bin = globalThis.atob(b64);
     const arr = new Uint8Array(bin.length);
@@ -338,13 +338,13 @@ function bytesFromBase64(b64: string): Uint8Array {
 
 function base64FromBytes(arr: Uint8Array): string {
   if (globalThis.Buffer) {
-    return globalThis.Buffer.from(arr).toString('base64');
+    return globalThis.Buffer.from(arr).toString("base64");
   } else {
     const bin: string[] = [];
     arr.forEach((byte) => {
       bin.push(String.fromCharCode(byte));
     });
-    return globalThis.btoa(bin.join(''));
+    return globalThis.btoa(bin.join(""));
   }
 }
 
