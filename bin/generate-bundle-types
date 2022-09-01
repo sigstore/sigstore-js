@@ -3,7 +3,7 @@ set -ex
 
 if [ -z "${IN_CONTAINER}" ]; then
   cd $(dirname $0)/..
-  IMAGE_NAME="sigstore-js-docker"
+  IMAGE_NAME="sigstore-js-bundle-types"
   DOCKER_BUILDKIT=1 docker build -f Dockerfile.bundle-types -t ${IMAGE_NAME} .
   exec docker run --rm --net=none \
     --env OUTPUT_DIR=/sigstore-js \
