@@ -36,7 +36,7 @@ COPY --from=protoc /protoc/bin/protoc /usr/local/bin
 COPY ["package.json", "package-lock.json", "./"]
 COPY "bin/generate-bundle-types" "/bin/generate-bundle-types"
 
-# Install protoc-gen-ts
+# Install TypeScript protoc plugic (protoc-gen-ts)
 RUN npm ci
 ENV IN_CONTAINER=1
 ENTRYPOINT ["/bin/generate-bundle-types"]
