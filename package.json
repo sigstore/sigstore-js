@@ -1,8 +1,9 @@
 {
   "name": "sigstore",
-  "version": "0.0.0",
+  "version": "0.0.1-alpha.1",
   "description": "code-signing for npm packages",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jest",
@@ -17,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/github/sigstore-node.git"
+    "url": "git+https://github.com/sigstore/sigstore-js.git"
   },
   "files": [
     "dist"
@@ -25,9 +26,9 @@
   "author": "bdehamer@github.com",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/github/sigstore-node/issues"
+    "url": "https://github.com/sigstore/sigstore-js/issues"
   },
-  "homepage": "https://github.com/github/sigstore-node#readme",
+  "homepage": "https://github.com/sigstore/sigstore-js#readme",
   "devDependencies": {
     "@tsconfig/node12": "^1.0.9",
     "@types/jest": "^27.5.1",
