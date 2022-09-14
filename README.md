@@ -25,7 +25,6 @@ A tool for signing and verifying npm packages.
 ## Prerequisites
 
 - Node.js version 16+ (LTS)
-- Add `node_modules/.bin` to your `$PATH` to access the installed `tsc` bin
 
 ### Updating protobufs
 
@@ -41,12 +40,12 @@ View [Docker install instructions](https://docs.docker.com/engine/install/) for 
 
 ## Updating .sigstore bundle protobufs
 
-Update the Git `REF` in `Dockerfile.bundle-types` from the [sigstore/cosign](https://github.com/sigstore/cosign) repository.
+Update the Git `REF` in `hack/generate-bundle-types` from the [sigstore/cosign](https://github.com/sigstore/cosign) repository.
 
 Generate TypeScript protobufs (should update files in scr/bundle/__generated__):
 
 ```
-bin/generate-bundle-types
+npm run codegen:bundle
 ```
 
 ## Demo

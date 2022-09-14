@@ -1,4 +1,5 @@
 /* eslint-disable */
+
 /** https://raw.githubusercontent.com/secure-systems-lab/dsse/9c813476bd36de70a5738c72e784f123ecea16af/envelope.proto */
 
 /** An authenticated message of arbitrary type. */
@@ -47,28 +48,19 @@ function createBaseEnvelope(): Envelope {
 export const Envelope = {
   fromJSON(object: any): Envelope {
     return {
-      payload: isSet(object.payload)
-        ? Buffer.from(bytesFromBase64(object.payload))
-        : Buffer.alloc(0),
+      payload: isSet(object.payload) ? Buffer.from(bytesFromBase64(object.payload)) : Buffer.alloc(0),
       payloadType: isSet(object.payloadType) ? String(object.payloadType) : "",
-      signatures: Array.isArray(object?.signatures)
-        ? object.signatures.map((e: any) => Signature.fromJSON(e))
-        : [],
+      signatures: Array.isArray(object?.signatures) ? object.signatures.map((e: any) => Signature.fromJSON(e)) : [],
     };
   },
 
   toJSON(message: Envelope): unknown {
     const obj: any = {};
     message.payload !== undefined &&
-      (obj.payload = base64FromBytes(
-        message.payload !== undefined ? message.payload : Buffer.alloc(0)
-      ));
-    message.payloadType !== undefined &&
-      (obj.payloadType = message.payloadType);
+      (obj.payload = base64FromBytes(message.payload !== undefined ? message.payload : Buffer.alloc(0)));
+    message.payloadType !== undefined && (obj.payloadType = message.payloadType);
     if (message.signatures) {
-      obj.signatures = message.signatures.map((e) =>
-        e ? Signature.toJSON(e) : undefined
-      );
+      obj.signatures = message.signatures.map((e) => e ? Signature.toJSON(e) : undefined);
     } else {
       obj.signatures = [];
     }
@@ -83,19 +75,14 @@ function createBaseSignature(): Signature {
 export const Signature = {
   fromJSON(object: any): Signature {
     return {
-      sig: isSet(object.sig)
-        ? Buffer.from(bytesFromBase64(object.sig))
-        : Buffer.alloc(0),
+      sig: isSet(object.sig) ? Buffer.from(bytesFromBase64(object.sig)) : Buffer.alloc(0),
       keyid: isSet(object.keyid) ? String(object.keyid) : "",
     };
   },
 
   toJSON(message: Signature): unknown {
     const obj: any = {};
-    message.sig !== undefined &&
-      (obj.sig = base64FromBytes(
-        message.sig !== undefined ? message.sig : Buffer.alloc(0)
-      ));
+    message.sig !== undefined && (obj.sig = base64FromBytes(message.sig !== undefined ? message.sig : Buffer.alloc(0)));
     message.keyid !== undefined && (obj.keyid = message.keyid);
     return obj;
   },
@@ -105,10 +92,18 @@ declare var self: any | undefined;
 declare var window: any | undefined;
 declare var global: any | undefined;
 var globalThis: any = (() => {
-  if (typeof globalThis !== "undefined") return globalThis;
-  if (typeof self !== "undefined") return self;
-  if (typeof window !== "undefined") return window;
-  if (typeof global !== "undefined") return global;
+  if (typeof globalThis !== "undefined") {
+    return globalThis;
+  }
+  if (typeof self !== "undefined") {
+    return self;
+  }
+  if (typeof window !== "undefined") {
+    return window;
+  }
+  if (typeof global !== "undefined") {
+    return global;
+  }
   throw "Unable to locate global object";
 })();
 
