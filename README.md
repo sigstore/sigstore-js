@@ -22,6 +22,32 @@ A tool for signing and verifying npm packages.
 * Support offline and online signature verification
 * Retrieve root cert and public keys via TUF client
 
+## Prerequisites
+
+- Node.js version 16+ (LTS)
+
+### Updating protobufs
+
+[Docker](https://docs.docker.com/engine/install/) is required to generate protobufs for the `.sigstore` bundle format.
+
+Install Docker on MacOS using [Homebrew](https://brew.sh/):
+
+```
+brew install --cask docker && open -a Docker
+```
+
+View [Docker install instructions](https://docs.docker.com/engine/install/) for other platforms.
+
+## Updating .sigstore bundle protobufs
+
+Update the Git `REF` in `hack/generate-bundle-types` from the [sigstore/cosign](https://github.com/sigstore/cosign) repository.
+
+Generate TypeScript protobufs (should update files in scr/bundle/__generated__):
+
+```
+npm run codegen:bundle
+```
+
 ## Demo
 
 ### Set-up

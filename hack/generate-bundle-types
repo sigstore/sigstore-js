@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+set -ex
+
+# Set-up dir to receive generated files
+REPO_ROOT=$(git rev-parse --show-toplevel)
+OUTPUT_DIR=${REPO_ROOT}/src/bundle/__generated__
+mkdir -p ${OUTPUT_DIR}
+
+# Retrieve proto files
+REPO=sigstore/cosign
+REF=32e19067596d645fb00f6b87fa7621a2307e6cd7
+PB_PATH=specs/dotsigstore_bundle/pb
+
+DEFS_DIR=/tmp/defs
+mkdir -p ${DEFS_DIR}
+
+curl -L --silent --show-error \
+  -o ${DEFS_DIR}/envelope.proto \
+  https://raw.githubusercontent.com/${REPO}/${REF}/${PB_PATH}/envelope.proto
+
+curl -L --silent --show-error \
+  -o ${DEFS_DIR}/bundle.proto \
+  https://raw.githubusercontent.com/${REPO}/${REF}/${PB_PATH}/bundle.proto
+
+# Build image w/ protoc tools
+pushd ${REPO_ROOT}/hack/images/protoc
+IMAGE_NAME="sigstore-js-bundle-types"
+DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t ${IMAGE_NAME} .
+popd
+
+# Run codegen
+exec docker run --rm --net=none --platform linux/amd64 \
+  -v ${DEFS_DIR}:/in \
+  -v ${OUTPUT_DIR}:/out \
+  ${IMAGE_NAME} bundle.proto
