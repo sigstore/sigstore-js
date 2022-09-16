@@ -20,11 +20,12 @@ import {
   SigstoreBlobBundle,
   SigstoreDSSEBundle,
 } from './bundle';
+import { splitPEM } from './certificate';
 import { Fulcio, Rekor } from './client';
 import * as crypto from './crypto';
 import * as enc from './encoding';
 import { Provider } from './identity';
-import { extractJWTSubject, dssePreAuthEncoding } from './util';
+import { dssePreAuthEncoding, extractJWTSubject } from './util';
 
 export interface SignOptions {
   fulcio: Fulcio;
@@ -34,7 +35,7 @@ export interface SignOptions {
 
 interface SigCert {
   signature: string;
-  certificate: string;
+  certificate: string[];
 }
 
 export class Signer {
@@ -56,7 +57,7 @@ export class Signer {
     // Calculate artifact digest
     const digest = crypto.hash(payload);
 
-    const certificateB64 = enc.base64Encode(certificate);
+    const certificateB64 = enc.base64Encode(certificate[0]);
 
     // Create Rekor entry
     const entry = await this.rekor.createHashedRekordEntry({
@@ -89,7 +90,7 @@ export class Signer {
       ],
     };
 
-    const certificateB64 = enc.base64Encode(certificate);
+    const certificateB64 = enc.base64Encode(certificate[0]);
 
     const entry = await this.rekor.createIntoEntry({
       envelope: JSON.stringify(dsse),
@@ -129,7 +130,7 @@ export class Signer {
 
     return {
       signature,
-      certificate,
+      certificate: splitPEM(certificate),
     };
   }
 
