@@ -19,7 +19,7 @@ const PEM_FOOTER_PREFIX = '-----END';
 // Given a set of PEM-encoded certificates bundled in a single string, returns
 // an array of certificates.
 export function splitPEM(certificate: string): string[] {
-  let certs: string[] = [];
+  const certs: string[] = [];
   let cert: string[] = [];
 
   certificate.split('\n').forEach((line) => {

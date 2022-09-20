@@ -57,16 +57,17 @@ export class Signer {
     // Calculate artifact digest
     const digest = crypto.hash(payload);
 
-    const certificateB64 = enc.base64Encode(certificate[0]);
+    const leafCertificate = certificate[0];
+    const leafCertificateB64 = enc.base64Encode(leafCertificate);
 
     // Create Rekor entry
     const entry = await this.rekor.createHashedRekordEntry({
       artifactDigest: digest,
       artifactSignature: signature,
-      publicKey: certificateB64,
+      publicKey: leafCertificateB64,
     });
 
-    return buildBlobBundle(digest, signature, certificateB64, entry);
+    return buildBlobBundle(digest, signature, leafCertificateB64, entry);
   }
 
   public async signAttestation(
