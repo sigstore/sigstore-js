@@ -73,7 +73,9 @@ describe('Signer', () => {
 
     describe('when Fulcio returns successfully', () => {
       // Fulcio output
-      const certificate = `-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----`;
+      const leafCertificate = `-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----`;
+      const rootCertificate = `-----BEGIN CERTIFICATE-----\nxyz\n-----END CERTIFICATE-----`;
+      const certificate = [leafCertificate, rootCertificate].join('\n');
 
       beforeEach(() => {
         // Mock Fulcio request
@@ -137,7 +139,7 @@ describe('Signer', () => {
           expect(bundle.attestation.payloadHash).toBeTruthy();
           expect(bundle.attestation.payloadHashAlgorithm).toBe('sha256');
           expect(bundle.attestation.signature).toBeTruthy();
-          expect(bundle.certificate).toBe(base64Encode(certificate));
+          expect(bundle.certificate).toBe(base64Encode(leafCertificate));
           expect(bundle.integratedTime).toBe(rekorEntry[uuid].integratedTime);
           expect(bundle.logIndex).toBe(rekorEntry[uuid].logIndex);
           expect(bundle.logID).toBe(rekorEntry[uuid].logID);
