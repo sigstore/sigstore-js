@@ -21,7 +21,9 @@ import {
   SigstoreDSSEBundle,
 } from './bundle';
 import { splitPEM } from './certificate';
-import { Fulcio, Rekor } from './client';
+import { Fulcio } from './client';
+import { Rekor } from './client/rekor';
+import { request as rekorRequest } from './converter/rekor';
 import * as crypto from './crypto';
 import * as enc from './encoding';
 import { Provider } from './identity';
@@ -60,12 +62,12 @@ export class Signer {
     const leafCertificate = certificate[0];
     const leafCertificateB64 = enc.base64Encode(leafCertificate);
 
-    // Create Rekor entry
-    const entry = await this.rekor.createHashedRekordEntry({
-      artifactDigest: digest,
-      artifactSignature: signature,
-      publicKey: leafCertificateB64,
-    });
+    const proposedEntry = rekorRequest.toProposedHashedRekordEntry(
+      digest,
+      signature,
+      leafCertificate
+    );
+    const entry = await this.rekor.createEntry(proposedEntry);
 
     return buildBlobBundle(digest, signature, leafCertificateB64, entry);
   }
@@ -91,14 +93,16 @@ export class Signer {
       ],
     };
 
-    const certificateB64 = enc.base64Encode(certificate[0]);
+    const leafCertificate = certificate[0];
+    const leafCertificateB64 = enc.base64Encode(leafCertificate);
 
-    const entry = await this.rekor.createIntoEntry({
-      envelope: JSON.stringify(dsse),
-      publicKey: certificateB64,
-    });
+    const proposedEntry = rekorRequest.toProposedIntotoEntry(
+      dsse,
+      leafCertificate
+    );
+    const entry = await this.rekor.createEntry(proposedEntry);
 
-    return buildDSSEBundle(dsse, certificateB64, entry);
+    return buildDSSEBundle(dsse, leafCertificateB64, entry);
   }
 
   private async sign(payload: Buffer): Promise<SigCert> {
