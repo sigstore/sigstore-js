@@ -12,7 +12,8 @@
     "lint": "eslint --fix --ext .ts src/**",
     "lint:check": "eslint --max-warnings 0 --ext .ts src/**",
     "format": "prettier --write \"src/**/*\"",
-    "codegen:bundle": "./hack/generate-bundle-types"
+    "codegen:bundle": "./hack/generate-bundle-types",
+    "codegen:rekor": "./hack/generate-rekor-types"
   },
   "bin": {
     "sigstore": "bin/sigstore.js"
@@ -41,6 +42,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.5.1",
+    "json-schema-to-typescript": "^11.0.2",
     "nock": "^13.2.4",
     "prettier": "^2.6.2",
     "ts-jest": "^27.1.5",
