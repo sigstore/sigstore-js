@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import fetch, { FetchInterface } from 'make-fetch-happen';
-import { checkStatus } from './error';
-import { getUserAgent } from '../util';
+import { getUserAgent } from '../../util';
+import { checkStatus } from '../error';
+import { HashedRekorV001Schema } from './__generated__/hashedrekord';
+import { IntotoV001Schema, IntotoV002Schema } from './__generated__/intoto';
 
 const DEFAULT_BASE_URL = 'https://rekor.sigstore.dev';
-const API_VERSION = '0.0.1';
 const INTOTO_KIND = 'intoto';
 const HASHEDREKORD_KIND = 'hashedrekord';
 
@@ -27,65 +28,25 @@ export interface RekorOptions {
   baseURL?: string;
 }
 
-interface ArtifactHash {
-  algorithm: 'sha256';
-  value: string;
-}
-
-interface BaseKind {
-  apiVersion: string;
-  kind: string;
-}
-
-export interface HashedRekordKind extends BaseKind {
+export type HashedRekordKind = {
+  apiVersion: '0.0.1';
   kind: typeof HASHEDREKORD_KIND;
-  spec: {
-    data: {
-      hash: ArtifactHash;
-    };
-    signature: {
-      content: string;
-      publicKey: {
-        content: string;
-      };
-    };
-  };
-}
+  spec: HashedRekorV001Schema;
+};
 
-export interface ProposedIntotoKind extends BaseKind {
-  kind: typeof INTOTO_KIND;
-  spec: {
-    content: {
-      envelope: string;
+export type IntotoKind =
+  | {
+      apiVersion: '0.0.1';
+      kind: typeof INTOTO_KIND;
+      spec: IntotoV001Schema;
+    }
+  | {
+      apiVersion: '0.0.2';
+      kind: typeof INTOTO_KIND;
+      spec: IntotoV002Schema;
     };
-    publicKey: string;
-  };
-}
-
-export interface IntotoKind extends BaseKind {
-  kind: typeof INTOTO_KIND;
-  spec: {
-    content: {
-      hash: ArtifactHash;
-      payloadHash: ArtifactHash;
-    };
-    publicKey: string;
-  };
-}
 
 export type EntryKind = HashedRekordKind | IntotoKind;
-export type ProposedEntryKind = HashedRekordKind | ProposedIntotoKind;
-
-export interface IntotoOptions {
-  envelope: string;
-  publicKey: string;
-}
-
-export interface HashedRekordOptions {
-  artifactSignature: string;
-  artifactDigest: string;
-  publicKey: string;
-}
 
 export interface Entry {
   uuid: string;
@@ -144,56 +105,11 @@ export class Rekor {
   }
 
   /**
-   * Create a new intoto entry in the Rekor log.
-   * @param intoto {IntotoOptions} Data to create a new entry
-   * @returns {Promise<Entry>} The created entry
-   */
-  public async createIntoEntry(intoto: IntotoOptions): Promise<Entry> {
-    const proposedEntry: ProposedIntotoKind = {
-      apiVersion: API_VERSION,
-      kind: INTOTO_KIND,
-      spec: {
-        content: { envelope: intoto.envelope },
-        publicKey: intoto.publicKey,
-      },
-    };
-
-    return this.createEntry(proposedEntry);
-  }
-
-  /**
-   * Create a new hashedrekord entry in the Rekor log.
-   * @param hashedRekord {HashedRekordOptions} Data to create a new entry
-   * @returns {Promise<Entry>} The created entry
-   */
-  public async createHashedRekordEntry(
-    hashedRekord: HashedRekordOptions
-  ): Promise<Entry> {
-    const proposedEntry: HashedRekordKind = {
-      apiVersion: API_VERSION,
-      kind: HASHEDREKORD_KIND,
-      spec: {
-        data: {
-          hash: { algorithm: 'sha256', value: hashedRekord.artifactDigest },
-        },
-        signature: {
-          content: hashedRekord.artifactSignature,
-          publicKey: {
-            content: hashedRekord.publicKey,
-          },
-        },
-      },
-    };
-
-    return this.createEntry(proposedEntry);
-  }
-
-  /**
    * Create a new entry in the Rekor log.
-   * @param propsedEntry {ProposedEntryKind} Data to create a new entry
+   * @param propsedEntry {EntryKind} Data to create a new entry
    * @returns {Promise<Entry>} The created entry
    */
-  public async createEntry(propsedEntry: ProposedEntryKind): Promise<Entry> {
+  public async createEntry(propsedEntry: EntryKind): Promise<Entry> {
     const url = `${this.baseUrl}/api/v1/log/entries`;
 
     const response = await this.fetch(url, {

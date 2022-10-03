@@ -42,10 +42,20 @@ View [Docker install instructions](https://docs.docker.com/engine/install/) for 
 
 Update the Git `REF` in `hack/generate-bundle-types` from the [sigstore/cosign](https://github.com/sigstore/cosign) repository.
 
-Generate TypeScript protobufs (should update files in scr/bundle/__generated__):
+Generate TypeScript protobufs (should update files in scr/bundle/\_\_generated\_\_):
 
 ```
 npm run codegen:bundle
+```
+
+## Updating Rekor Types
+
+Update the git `REF` in `hack/generate-rekor-types` from the [sigstore/rekor](https://github.com/sigstore/rekor) repository.
+
+Generate TypeScript types (should update files in scr/client/rekor/\_\_generated\_\_):
+
+```
+npm run codegen:rekor
 ```
 
 ## Demo

@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+set -ex
+
+# Check-out Rekor repo
+REF=4bb6f441c1b27ccc7e625c721c7d3203acc7b313
+REKOR_DIR=/tmp/rekor
+
+rm -rf ${REKOR_DIR}
+git clone https://github.com/sigstore/rekor.git ${REKOR_DIR}
+pushd ${REKOR_DIR}
+git checkout ${REF}
+popd
+
+# Run json2ts on schemas
+KINDS=( intoto hashedrekord )
+for KIND in "${KINDS[@]}"
+do
+  TYPE_PATH=${REKOR_DIR}/pkg/types/${KIND}
+  npx json2ts --input ${TYPE_PATH}/${KIND}_schema.json \
+    --cwd ${TYPE_PATH} \
+    --output src/client/rekor/__generated__/${KIND}.d.ts \
+    --no-additionalProperties
+done
+
