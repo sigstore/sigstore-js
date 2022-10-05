@@ -42,7 +42,7 @@ View [Docker install instructions](https://docs.docker.com/engine/install/) for 
 
 Update the Git `REF` in `hack/generate-bundle-types` from the [sigstore/cosign](https://github.com/sigstore/cosign) repository.
 
-Generate TypeScript protobufs (should update files in scr/bundle/\_\_generated\_\_):
+Generate TypeScript protobufs (should update files in scr/types/bundle/\_\_generated\_\_):
 
 ```
 npm run codegen:bundle
@@ -52,7 +52,7 @@ npm run codegen:bundle
 
 Update the git `REF` in `hack/generate-rekor-types` from the [sigstore/rekor](https://github.com/sigstore/rekor) repository.
 
-Generate TypeScript types (should update files in scr/client/rekor/\_\_generated\_\_):
+Generate TypeScript types (should update files in scr/types/rekor/\_\_generated\_\_):
 
 ```
 npm run codegen:rekor
@@ -115,10 +115,10 @@ sigstore-0.0.0.tgz
 Generate a signature for the package with the following:
 
 ```
-$ ./bin/sigstore.js sign ./sigstore-0.0.0.tgz > signature
+$ ./bin/sigstore.js sign ./sigstore-0.0.0.tgz > bundle.sigstore
 
-Created entry at index 2698234, available at
-https://rekor.sigstore.dev/api/v1/log/entries/43553c769cd0bd99aee4350d2e78ca3fb015840a2f6f4cf31b475f588fc214e6
+Created entry at index 4524464, available at
+https://rekor.sigstore.dev/api/v1/log/entries?logIndex=4524464
 ```
 
 You should see that a browser window is opened to the Sigstore OAuth page.
@@ -126,20 +126,41 @@ After authenticating with one of the available idenity providers, a signature
 bundle will be generated and written to the file named "signature".
 
 ```
-$ cat signature | jq
+$ cat bundle.sigstore | jq
 
 {
-  "attestationType": "attestation/blob",
-  "attestation": {
-    "payloadHash": "3ad055f2b0d850290fbe0ce63f8c60adf492901c5950ac01e0893ebb47bea4d8",
-    "payloadHashAlgorithm": "sha256",
-    "signature": "MEUCIQC7Rrrjmrwdxuc2qvWiWzaoUdV8+VFv+fvDquvAGmxr3AIgaPEqQ5YvxjfeqgXYXvISzgyVA8y/Zw+G/LDYlt2RHMk="
+  "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.1",
+  "timestampVerificationData": {
+    "tlogEntries": [
+      {
+        "logIndex": "4524464",
+        "logId": "wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0=",
+        "kindVersion": {
+          "kind": "hashedrekord",
+          "version": "0.0.1"
+        },
+        "integratedTime": "1665008899",
+        "inclusionPromise": "MEQCIEI1EN2M0ShxStSBfoaS+mmDnk0Yhl68pjyMZ77WJrdNAiB7MDvTJ6+YbznLR1BhwKANUH1PtoorXnsjBnSDvs943Q=="
+      }
+    ],
+    "rfc3161Timestamps": []
   },
-  "certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNvakNDQWllZ0F3SUJBZ0lVQkswdTBRdWF3dkVJWm82YS9keGVzbEthZU9jd0NnWUlLb1pJemowRUF3TXcKTnpFVk1CTUdBMVVFQ2hNTWMybG5jM1J2Y21VdVpHVjJNUjR3SEFZRFZRUURFeFZ6YVdkemRHOXlaUzFwYm5SbApjbTFsWkdsaGRHVXdIaGNOTWpJd09ERTJNVFEwTVRJd1doY05Nakl3T0RFMk1UUTFNVEl3V2pBQU1Ga3dFd1lICktvWkl6ajBDQVFZSUtvWkl6ajBEQVFjRFFnQUVFRWlrR2hsMXdzSzFLMStSYTBQRU9SQzh5SXE4bTBWM0VXSSsKbDIrY2w3aUFyM0xrc292Nk5qUmtyc3VjUVVpMmRmSi9uUlZlYi9rREw1WTJYbS9VTGFPQ0FVWXdnZ0ZDTUE0RwpBMVVkRHdFQi93UUVBd0lIZ0RBVEJnTlZIU1VFRERBS0JnZ3JCZ0VGQlFjREF6QWRCZ05WSFE0RUZnUVVnNUtlCk9JWnRvRktnd3ZKVjZSSHB6M2hWcTFjd0h3WURWUjBqQkJnd0ZvQVUzOVBwejFZa0VaYjVxTmpwS0ZXaXhpNFkKWkQ4d0h3WURWUjBSQVFIL0JCVXdFNEVSWW5KcFlXNUFaR1ZvWVcxbGNpNWpiMjB3TEFZS0t3WUJCQUdEdnpBQgpBUVFlYUhSMGNITTZMeTluYVhSb2RXSXVZMjl0TDJ4dloybHVMMjloZFhSb01JR0xCZ29yQmdFRUFkWjVBZ1FDCkJIMEVld0I1QUhjQUNHQ1M4Q2hTLzJoRjBkRnJKNFNjUldjWXJCWTl3empTYmVhOElnWTJiM0lBQUFHQ3B4b1YKNVFBQUJBTUFTREJHQWlFQWtSZ1kxczlQajNFbjI1d3o0aHpXbEQzeStBYXVBSmRXd2tvWFdUZmlYd2NDSVFEMgo2a1JBU1BPbzBhdDIzNy9zTVVrd1YvSEhEQ0lBNkVnZzl2eG1pUEJqbURBS0JnZ3Foa2pPUFFRREF3TnBBREJtCkFqRUF6eDBYU3hMSkdKT29OWjN6Zk02RkUxbUZZZ3daQUJIRTFBb2xFd3ZYdTdZNUdFMkU2RWxzVjRHVDR2YlkKd2FOVUFqRUFqZzhaZlA3WXR0L1RIOVBXV1hqYkhpR3laamlpMHFpVVpTZGthTVJseGx0aC9QNXpGaHdkRTN2cQpoL1Z0UUNCdwotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlDR2pDQ0FhR2dBd0lCQWdJVUFMblZpVmZuVTBickphc21Sa0hybi9VbmZhUXdDZ1lJS29aSXpqMEVBd013CktqRVZNQk1HQTFVRUNoTU1jMmxuYzNSdmNtVXVaR1YyTVJFd0R3WURWUVFERXdoemFXZHpkRzl5WlRBZUZ3MHkKTWpBME1UTXlNREEyTVRWYUZ3MHpNVEV3TURVeE16VTJOVGhhTURjeEZUQVRCZ05WQkFvVERITnBaM04wYjNKbApMbVJsZGpFZU1Cd0dBMVVFQXhNVmMybG5jM1J2Y21VdGFXNTBaWEp0WldScFlYUmxNSFl3RUFZSEtvWkl6ajBDCkFRWUZLNEVFQUNJRFlnQUU4UlZTL3lzSCtOT3Z1RFp5UEladGlsZ1VGOU5sYXJZcEFkOUhQMXZCQkgxVTVDVjcKN0xTUzdzMFppSDRuRTdIdjdwdFM2THZ2Ui9TVGs3OThMVmdNekxsSjRIZUlmRjN0SFNhZXhMY1lwU0FTcjFrUwowTi9SZ0JKei85aldDaVhubzNzd2VUQU9CZ05WSFE4QkFmOEVCQU1DQVFZd0V3WURWUjBsQkF3d0NnWUlLd1lCCkJRVUhBd013RWdZRFZSMFRBUUgvQkFnd0JnRUIvd0lCQURBZEJnTlZIUTRFRmdRVTM5UHB6MVlrRVpiNXFOanAKS0ZXaXhpNFlaRDh3SHdZRFZSMGpCQmd3Rm9BVVdNQWVYNUZGcFdhcGVzeVFvWk1pMENyRnhmb3dDZ1lJS29aSQp6ajBFQXdNRFp3QXdaQUl3UENzUUs0RFlpWllEUElhRGk1SEZLbmZ4WHg2QVNTVm1FUmZzeW5ZQmlYMlg2U0pSCm5aVTg0LzlEWmRuRnZ2eG1BakJPdDZRcEJsYzRKLzBEeHZrVENxcGNsdnppTDZCQ0NQbmpkbElCM1B1M0J4c1AKbXlnVVk3SWkyemJkQ2RsaWlvdz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJQjl6Q0NBWHlnQXdJQkFnSVVBTFpOQVBGZHhIUHdqZURsb0R3eVlDaEFPLzR3Q2dZSUtvWkl6ajBFQXdNdwpLakVWTUJNR0ExVUVDaE1NYzJsbmMzUnZjbVV1WkdWMk1SRXdEd1lEVlFRREV3aHphV2R6ZEc5eVpUQWVGdzB5Ck1URXdNRGN4TXpVMk5UbGFGdzB6TVRFd01EVXhNelUyTlRoYU1Db3hGVEFUQmdOVkJBb1RESE5wWjNOMGIzSmwKTG1SbGRqRVJNQThHQTFVRUF4TUljMmxuYzNSdmNtVXdkakFRQmdjcWhrak9QUUlCQmdVcmdRUUFJZ05pQUFUNwpYZUZUNHJiM1BRR3dTNElhanRMazMvT2xucGdhbmdhQmNsWXBzWUJyNWkrNHluQjA3Y2ViM0xQME9JT1pkeGV4Clg2OWM1aVZ1eUpSUStIejA1eWkrVUYzdUJXQWxIcGlTNXNoMCtIMkdIRTdTWHJrMUVDNW0xVHIxOUw5Z2c5MmoKWXpCaE1BNEdBMVVkRHdFQi93UUVBd0lCQmpBUEJnTlZIUk1CQWY4RUJUQURBUUgvTUIwR0ExVWREZ1FXQkJSWQp3QjVma1VXbFpxbDZ6SkNoa3lMUUtzWEYrakFmQmdOVkhTTUVHREFXZ0JSWXdCNWZrVVdsWnFsNnpKQ2hreUxRCktzWEYrakFLQmdncWhrak9QUVFEQXdOcEFEQm1BakVBajFuSGVYWnArMTNOV0JOYStFRHNEUDhHMVdXZzF0Q00KV1AvV0hQcXBhVm8wamhzd2VORlpnU3MwZUU3d1lJNHFBakVBMldCOW90OThzSWtvRjN2WllkZDMvVnRXQjViOQpUTk1lYTdJeC9zdEo1VGZjTExlQUJMRTRCTkpPc1E0dm5CSEoKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQ==",
-  "signedEntryTimestamp": "MEUCIQDLVDIXVubRBoS6tXXWptNEQNUuwPpnflrd93uBCsm3QAIgPZA5pyWhPpv9hftq0dk8b7ipjNCBzM5yIaSVXyokXbU=",
-  "integratedTime": 1655485921,
-  "logID": "c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d",
-  "logIndex": 2698234
+  "verificationMaterial": {
+    "x509CertificateChain": {
+      "certificates": [
+        "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"
+      ]
+    }
+  },
+  "messageSignature": {
+    "messageDigest": {
+      "algorithm": "SHA2_256",
+      "digest": "FArN5VHf77/gtqmyQJ3vaL8t7LskOE8ThkOZlGJHaTw="
+    },
+    "signature": "MEUCID/iVOISFCfZXEFW3IrcWXQgLDfPHRxPZBWlgDOGmXmlAiEAgi02Imw+bFQlIKeyKKpk0i60KRw7djRkA/NY6LKhI5A="
+  }
 }
 ```
 
@@ -149,80 +170,80 @@ entry which was made in Rekor.
 
 You can extract and view the signing certificate with the following:
 ```
-$ cat signature | jq --raw-output '.certificate' | base64 -d | openssl x509 -text
+$ cat bundle.sigstore | jq --raw-output '.verificationMaterial.x509CertificateChain.certificates[0]' | base64 -d | openssl x509 -inform der -text
 
 Certificate:
     Data:
         Version: 3 (0x2)
         Serial Number:
-            1a:8a:25:49:b9:86:46:1e:4a:4f:70:e8:5c:20:52:03:e6:04:ee:7b
+            46:4d:7a:bf:65:b1:59:7f:97:c2:d9:9d:91:48:7e:1b:e5:08:b4:fa
         Signature Algorithm: ecdsa-with-SHA384
         Issuer: O = sigstore.dev, CN = sigstore-intermediate
         Validity
-            Not Before: Jun 17 17:12:01 2022 GMT
-            Not After : Jun 17 17:22:01 2022 GMT
-        Subject:
+            Not Before: Oct  5 22:28:19 2022 GMT
+            Not After : Oct  5 22:38:19 2022 GMT
+        Subject: 
         Subject Public Key Info:
             Public Key Algorithm: id-ecPublicKey
                 Public-Key: (256 bit)
                 pub:
-                    04:77:55:0b:20:32:67:bb:a1:eb:9a:da:18:a7:11:
-                    30:d8:b2:0b:50:90:9f:7c:ef:31:8c:c3:09:4d:b4:
-                    17:6d:f2:ed:d4:36:90:15:8e:a1:21:35:aa:88:03:
-                    09:16:fb:07:f8:25:a1:6b:ae:47:db:df:08:a0:c3:
-                    42:3a:43:14:eb
+                    04:8d:f5:3a:26:c9:e2:7d:24:cc:99:1d:d1:52:81:
+                    67:c9:51:09:d9:05:1a:a7:5b:66:a3:27:84:0b:4d:
+                    9e:fc:dc:03:f4:9f:c1:d7:88:e7:d5:08:a8:a5:0a:
+                    47:fd:f9:9b:d8:ef:ce:7c:d0:5c:2d:56:30:f7:fc:
+                    01:13:04:76:fc
                 ASN1 OID: prime256v1
                 NIST CURVE: P-256
         X509v3 extensions:
             X509v3 Key Usage: critical
                 Digital Signature
-            X509v3 Extended Key Usage:
+            X509v3 Extended Key Usage: 
                 Code Signing
-            X509v3 Subject Key Identifier:
-                AD:4D:65:B1:5D:18:6C:E7:DA:E6:79:04:F3:83:DB:B0:AA:D8:C6:FF
-            X509v3 Authority Key Identifier:
+            X509v3 Subject Key Identifier: 
+                AE:CD:A1:C5:18:1C:64:25:74:6C:B9:8D:F6:AD:E0:25:1B:27:2B:71
+            X509v3 Authority Key Identifier: 
                 DF:D3:E9:CF:56:24:11:96:F9:A8:D8:E9:28:55:A2:C6:2E:18:64:3F
             X509v3 Subject Alternative Name: critical
-                email:foo@bar.com
-            1.3.6.1.4.1.57264.1.1:
+                email:brian@dehamer.com
+            1.3.6.1.4.1.57264.1.1: 
                 https://github.com/login/oauth
-            CT Precertificate SCTs:
+            CT Precertificate SCTs: 
                 Signed Certificate Timestamp:
                     Version   : v1 (0x0)
                     Log ID    : 08:60:92:F0:28:52:FF:68:45:D1:D1:6B:27:84:9C:45:
                                 67:18:AC:16:3D:C3:38:D2:6D:E6:BC:22:06:36:6F:72
-                    Timestamp : Jun 17 17:12:01.084 2022 GMT
+                    Timestamp : Oct  5 22:28:19.234 2022 GMT
                     Extensions: none
                     Signature : ecdsa-with-SHA256
-                                30:45:02:20:27:19:2F:A7:20:53:8D:27:92:AC:F8:08:
-                                73:DC:F9:DB:9C:B7:1C:3C:77:90:C0:6E:CC:CA:1D:8A:
-                                79:55:4E:05:02:21:00:FF:70:1D:86:F1:7C:CB:A2:B2:
-                                ED:F5:16:0B:0D:C9:A1:7D:97:7A:31:62:DC:1B:3F:E9:
-                                E2:6B:EE:11:9C:20:2B
+                                30:46:02:21:00:83:8B:17:2E:4A:D6:E3:D6:D4:90:25:
+                                19:52:74:8E:81:72:4F:8F:A6:0D:4E:27:DE:58:65:63:
+                                0D:0D:92:EC:75:02:21:00:8A:83:15:8B:0D:86:D6:87:
+                                9C:99:A9:8E:44:43:E3:93:3F:23:55:BC:73:4B:45:FA:
+                                CF:76:07:65:15:15:C3:B8
     Signature Algorithm: ecdsa-with-SHA384
     Signature Value:
-        30:65:02:30:30:d3:7c:0e:fc:6f:0f:8e:35:4c:ae:f6:5d:37:
-        51:da:1d:36:a7:33:ba:ab:5f:1f:e1:80:fa:1c:7f:b2:44:6c:
-        cd:4e:e0:21:ec:91:de:01:95:60:17:be:88:c8:8f:9c:02:31:
-        00:ee:d6:c6:23:ff:b6:6c:66:65:82:9f:9b:ca:f0:ed:cc:4d:
-        63:5d:70:58:b4:c2:1e:55:8f:21:b3:d7:27:16:6d:cb:22:0a:
-        92:37:d6:61:38:ff:bc:43:69:eb:28:9d:af
+        30:66:02:31:00:c1:da:2a:2a:2a:4e:8a:3e:20:f6:37:87:99:
+        fb:8e:5a:9e:40:d2:d4:84:04:de:5f:1e:58:da:c4:68:2c:0a:
+        ac:cc:68:f1:67:e5:31:e3:11:5c:85:a1:5e:42:44:ff:3a:02:
+        31:00:be:eb:da:c9:39:58:a3:5b:c0:84:4a:8a:c3:a1:b6:a4:
+        34:2e:e1:1a:f7:4c:03:40:bc:11:90:7f:ff:93:e1:be:72:af:
+        39:bc:60:00:6a:6c:56:98:a3:1f:4e:b9:12:77
 -----BEGIN CERTIFICATE-----
-MIICoDCCAiagAwIBAgIUGoolSbmGRh5KT3DoXCBSA+YE7nswCgYIKoZIzj0EAwMw
+MIICojCCAiegAwIBAgIURk16v2WxWX+XwtmdkUh+G+UItPowCgYIKoZIzj0EAwMw
 NzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRl
-cm1lZGlhdGUwHhcNMjIwNjE3MTcxMjAxWhcNMjIwNjE3MTcyMjAxWjAAMFkwEwYH
-KoZIzj0CAQYIKoZIzj0DAQcDQgAEd1ULIDJnu6HrmtoYpxEw2LILUJCffO8xjMMJ
-TbQXbfLt1DaQFY6hITWqiAMJFvsH+CWha65H298IoMNCOkMU66OCAUUwggFBMA4G
-A1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUrU1l
-sV0YbOfa5nkE84PbsKrYxv8wHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4Y
+cm1lZGlhdGUwHhcNMjIxMDA1MjIyODE5WhcNMjIxMDA1MjIzODE5WjAAMFkwEwYH
+KoZIzj0CAQYIKoZIzj0DAQcDQgAEjfU6JsnifSTMmR3RUoFnyVEJ2QUap1tmoyeE
+C02e/NwD9J/B14jn1QiopQpH/fmb2O/OfNBcLVYw9/wBEwR2/KOCAUYwggFCMA4G
+A1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUrs2h
+xRgcZCV0bLmN9q3gJRsnK3EwHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4Y
 ZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzAB
-AQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGKBgorBgEEAdZ5AgQC
-BHwEegB4AHYACGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3IAAAGBcqZ3
-PAAABAMARzBFAiAnGS+nIFONJ5Ks+Ahz3PnbnLccPHeQwG7Myh2KeVVOBQIhAP9w
-HYbxfMuisu31FgsNyaF9l3oxYtwbP+nia+4RnCArMAoGCCqGSM49BAMDA2gAMGUC
-MDDTfA78bw+ONUyu9l03UdodNqczuqtfH+GA+hx/skRszU7gIeyR3gGVYBe+iMiP
-nAIxAO7WxiP/tmxmZYKfm8rw7cxNY11wWLTCHlWPIbPXJxZtyyIKkjfWYTj/vENp
-6yidrw==
+AQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGLBgorBgEEAdZ5AgQC
+BH0EewB5AHcACGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3IAAAGDqkOU
+ogAABAMASDBGAiEAg4sXLkrW49bUkCUZUnSOgXJPj6YNTifeWGVjDQ2S7HUCIQCK
+gxWLDYbWh5yZqY5EQ+OTPyNVvHNLRfrPdgdlFRXDuDAKBggqhkjOPQQDAwNpADBm
+AjEAwdoqKipOij4g9jeHmfuOWp5A0tSEBN5fHljaxGgsCqzMaPFn5THjEVyFoV5C
+RP86AjEAvuvayTlYo1vAhEqKw6G2pDQu4Rr3TANAvBGQf/+T4b5yrzm8YABqbFaY
+ox9OuRJ3
 -----END CERTIFICATE-----
 ```
 
@@ -233,7 +254,7 @@ Using the Rekor URL displayed as part of the signing process you should also be
 able to retrieve the Rekor entry for this signature:
 
 ```
-$ curl --silent https://rekor.sigstore.dev/api/v1/log/entries/43553c769cd0bd99aee4350d2e78ca3fb015840a2f6f4cf31b475f588fc214e6 \
+$ curl --silent "https://rekor.sigstore.dev/api/v1/log/entries?logIndex=4524464" \
   | jq --raw-output '.[].body' \
   | base64 --decode \
   | jq
@@ -245,13 +266,13 @@ $ curl --silent https://rekor.sigstore.dev/api/v1/log/entries/43553c769cd0bd99ae
     "data": {
       "hash": {
         "algorithm": "sha256",
-        "value": "3ad055f2b0d850290fbe0ce63f8c60adf492901c5950ac01e0893ebb47bea4d8"
+        "value": "140acde551dfefbfe0b6a9b2409def68bf2decbb24384f13864399946247693c"
       }
     },
     "signature": {
-      "content": "MEUCIQC7Rrrjmrwdxuc2qvWiWzaoUdV8+VFv+fvDquvAGmxr3AIgaPEqQ5YvxjfeqgXYXvISzgyVA8y/Zw+G/LDYlt2RHMk=",
+      "content": "MEUCID/iVOISFCfZXEFW3IrcWXQgLDfPHRxPZBWlgDOGmXmlAiEAgi02Imw+bFQlIKeyKKpk0i60KRw7djRkA/NY6LKhI5A=",
       "publicKey": {
-        "content": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNvRENDQWlhZ0F3SUJBZ0lVR29vbFNibUdSaDVLVDNEb1hDQlNBK1lFN25zd0NnWUlLb1pJemowRUF3TXcKTnpFVk1CTUdBMVVFQ2hNTWMybG5jM1J2Y21VdVpHVjJNUjR3SEFZRFZRUURFeFZ6YVdkemRHOXlaUzFwYm5SbApjbTFsWkdsaGRHVXdIaGNOTWpJd05qRTNNVGN4TWpBeFdoY05Nakl3TmpFM01UY3lNakF4V2pBQU1Ga3dFd1lICktvWkl6ajBDQVFZSUtvWkl6ajBEQVFjRFFnQUVkMVVMSURKbnU2SHJtdG9ZcHhFdzJMSUxVSkNmZk84eGpNTUoKVGJRWGJmTHQxRGFRRlk2aElUV3FpQU1KRnZzSCtDV2hhNjVIMjk4SW9NTkNPa01VNjZPQ0FVVXdnZ0ZCTUE0RwpBMVVkRHdFQi93UUVBd0lIZ0RBVEJnTlZIU1VFRERBS0JnZ3JCZ0VGQlFjREF6QWRCZ05WSFE0RUZnUVVyVTFsCnNWMFliT2ZhNW5rRTg0UGJzS3JZeHY4d0h3WURWUjBqQkJnd0ZvQVUzOVBwejFZa0VaYjVxTmpwS0ZXaXhpNFkKWkQ4d0h3WURWUjBSQVFIL0JCVXdFNEVSWW5KcFlXNUFaR1ZvWVcxbGNpNWpiMjB3TEFZS0t3WUJCQUdEdnpBQgpBUVFlYUhSMGNITTZMeTluYVhSb2RXSXVZMjl0TDJ4dloybHVMMjloZFhSb01JR0tCZ29yQmdFRUFkWjVBZ1FDCkJId0VlZ0I0QUhZQUNHQ1M4Q2hTLzJoRjBkRnJKNFNjUldjWXJCWTl3empTYmVhOElnWTJiM0lBQUFHQmNxWjMKUEFBQUJBTUFSekJGQWlBbkdTK25JRk9OSjVLcytBaHozUG5ibkxjY1BIZVF3RzdNeWgyS2VWVk9CUUloQVA5dwpIWWJ4Zk11aXN1MzFGZ3NOeWFGOWwzb3hZdHdiUCtuaWErNFJuQ0FyTUFvR0NDcUdTTTQ5QkFNREEyZ0FNR1VDCk1ERFRmQTc4YncrT05VeXU5bDAzVWRvZE5xY3p1cXRmSCtHQStoeC9za1JzelU3Z0lleVIzZ0dWWUJlK2lNaVAKbkFJeEFPN1d4aVAvdG14bVpZS2ZtOHJ3N2N4TlkxMXdXTFRDSGxXUEliUFhKeFp0eXlJS2tqZldZVGovdkVOcAo2eWlkcnc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlDR2pDQ0FhR2dBd0lCQWdJVUFMblZpVmZuVTBickphc21Sa0hybi9VbmZhUXdDZ1lJS29aSXpqMEVBd013CktqRVZNQk1HQTFVRUNoTU1jMmxuYzNSdmNtVXVaR1YyTVJFd0R3WURWUVFERXdoemFXZHpkRzl5WlRBZUZ3MHkKTWpBME1UTXlNREEyTVRWYUZ3MHpNVEV3TURVeE16VTJOVGhhTURjeEZUQVRCZ05WQkFvVERITnBaM04wYjNKbApMbVJsZGpFZU1Cd0dBMVVFQXhNVmMybG5jM1J2Y21VdGFXNTBaWEp0WldScFlYUmxNSFl3RUFZSEtvWkl6ajBDCkFRWUZLNEVFQUNJRFlnQUU4UlZTL3lzSCtOT3Z1RFp5UEladGlsZ1VGOU5sYXJZcEFkOUhQMXZCQkgxVTVDVjcKN0xTUzdzMFppSDRuRTdIdjdwdFM2THZ2Ui9TVGs3OThMVmdNekxsSjRIZUlmRjN0SFNhZXhMY1lwU0FTcjFrUwowTi9SZ0JKei85aldDaVhubzNzd2VUQU9CZ05WSFE4QkFmOEVCQU1DQVFZd0V3WURWUjBsQkF3d0NnWUlLd1lCCkJRVUhBd013RWdZRFZSMFRBUUgvQkFnd0JnRUIvd0lCQURBZEJnTlZIUTRFRmdRVTM5UHB6MVlrRVpiNXFOanAKS0ZXaXhpNFlaRDh3SHdZRFZSMGpCQmd3Rm9BVVdNQWVYNUZGcFdhcGVzeVFvWk1pMENyRnhmb3dDZ1lJS29aSQp6ajBFQXdNRFp3QXdaQUl3UENzUUs0RFlpWllEUElhRGk1SEZLbmZ4WHg2QVNTVm1FUmZzeW5ZQmlYMlg2U0pSCm5aVTg0LzlEWmRuRnZ2eG1BakJPdDZRcEJsYzRKLzBEeHZrVENxcGNsdnppTDZCQ0NQbmpkbElCM1B1M0J4c1AKbXlnVVk3SWkyemJkQ2RsaWlvdz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJQjl6Q0NBWHlnQXdJQkFnSVVBTFpOQVBGZHhIUHdqZURsb0R3eVlDaEFPLzR3Q2dZSUtvWkl6ajBFQXdNdwpLakVWTUJNR0ExVUVDaE1NYzJsbmMzUnZjbVV1WkdWMk1SRXdEd1lEVlFRREV3aHphV2R6ZEc5eVpUQWVGdzB5Ck1URXdNRGN4TXpVMk5UbGFGdzB6TVRFd01EVXhNelUyTlRoYU1Db3hGVEFUQmdOVkJBb1RESE5wWjNOMGIzSmwKTG1SbGRqRVJNQThHQTFVRUF4TUljMmxuYzNSdmNtVXdkakFRQmdjcWhrak9QUUlCQmdVcmdRUUFJZ05pQUFUNwpYZUZUNHJiM1BRR3dTNElhanRMazMvT2xucGdhbmdhQmNsWXBzWUJyNWkrNHluQjA3Y2ViM0xQME9JT1pkeGV4Clg2OWM1aVZ1eUpSUStIejA1eWkrVUYzdUJXQWxIcGlTNXNoMCtIMkdIRTdTWHJrMUVDNW0xVHIxOUw5Z2c5MmoKWXpCaE1BNEdBMVVkRHdFQi93UUVBd0lCQmpBUEJnTlZIUk1CQWY4RUJUQURBUUgvTUIwR0ExVWREZ1FXQkJSWQp3QjVma1VXbFpxbDZ6SkNoa3lMUUtzWEYrakFmQmdOVkhTTUVHREFXZ0JSWXdCNWZrVVdsWnFsNnpKQ2hreUxRCktzWEYrakFLQmdncWhrak9QUVFEQXdOcEFEQm1BakVBajFuSGVYWnArMTNOV0JOYStFRHNEUDhHMVdXZzF0Q00KV1AvV0hQcXBhVm8wamhzd2VORlpnU3MwZUU3d1lJNHFBakVBMldCOW90OThzSWtvRjN2WllkZDMvVnRXQjViOQpUTk1lYTdJeC9zdEo1VGZjTExlQUJMRTRCTkpPc1E0dm5CSEoKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+        "content": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNvakNDQWllZ0F3SUJBZ0lVUmsxNnYyV3hXWCtYd3RtZGtVaCtHK1VJdFBvd0NnWUlLb1pJemowRUF3TXcKTnpFVk1CTUdBMVVFQ2hNTWMybG5jM1J2Y21VdVpHVjJNUjR3SEFZRFZRUURFeFZ6YVdkemRHOXlaUzFwYm5SbApjbTFsWkdsaGRHVXdIaGNOTWpJeE1EQTFNakl5T0RFNVdoY05Nakl4TURBMU1qSXpPREU1V2pBQU1Ga3dFd1lICktvWkl6ajBDQVFZSUtvWkl6ajBEQVFjRFFnQUVqZlU2SnNuaWZTVE1tUjNSVW9GbnlWRUoyUVVhcDF0bW95ZUUKQzAyZS9Od0Q5Si9CMTRqbjFRaW9wUXBIL2ZtYjJPL09mTkJjTFZZdzkvd0JFd1IyL0tPQ0FVWXdnZ0ZDTUE0RwpBMVVkRHdFQi93UUVBd0lIZ0RBVEJnTlZIU1VFRERBS0JnZ3JCZ0VGQlFjREF6QWRCZ05WSFE0RUZnUVVyczJoCnhSZ2NaQ1YwYkxtTjlxM2dKUnNuSzNFd0h3WURWUjBqQkJnd0ZvQVUzOVBwejFZa0VaYjVxTmpwS0ZXaXhpNFkKWkQ4d0h3WURWUjBSQVFIL0JCVXdFNEVSWW5KcFlXNUFaR1ZvWVcxbGNpNWpiMjB3TEFZS0t3WUJCQUdEdnpBQgpBUVFlYUhSMGNITTZMeTluYVhSb2RXSXVZMjl0TDJ4dloybHVMMjloZFhSb01JR0xCZ29yQmdFRUFkWjVBZ1FDCkJIMEVld0I1QUhjQUNHQ1M4Q2hTLzJoRjBkRnJKNFNjUldjWXJCWTl3empTYmVhOElnWTJiM0lBQUFHRHFrT1UKb2dBQUJBTUFTREJHQWlFQWc0c1hMa3JXNDliVWtDVVpVblNPZ1hKUGo2WU5UaWZlV0dWakRRMlM3SFVDSVFDSwpneFdMRFliV2g1eVpxWTVFUStPVFB5TlZ2SE5MUmZyUGRnZGxGUlhEdURBS0JnZ3Foa2pPUFFRREF3TnBBREJtCkFqRUF3ZG9xS2lwT2lqNGc5amVIbWZ1T1dwNUEwdFNFQk41ZkhsamF4R2dzQ3F6TWFQRm41VEhqRVZ5Rm9WNUMKUlA4NkFqRUF2dXZheVRsWW8xdkFoRXFLdzZHMnBEUXU0UnIzVEFOQXZCR1FmLytUNGI1eXJ6bThZQUJxYkZhWQpveDlPdVJKMwotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg=="
       }
     }
   }
@@ -268,7 +289,7 @@ Use the `verify` command to make sure that the saved signature matches
 the artifact:
 
 ```
-$ ./bin/sigstore.js verify sigstore-0.0.0.tgz signature signingcert.pem
+$ ./bin/sigstore.js verify bundle.sigstore sigstore-0.0.0.tgz
 
 Signature verified OK
 ```
