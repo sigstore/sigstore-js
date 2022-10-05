@@ -13,17 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-const PEM_HEADER_PREFIX = '-----BEGIN';
-const PEM_FOOTER_PREFIX = '-----END';
+const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
+const PEM_FOOTER = '-----END CERTIFICATE-----';
 
 // Given a set of PEM-encoded certificates bundled in a single string, returns
 // an array of certificates.
-export function splitPEM(certificate: string): string[] {
+export function split(certificate: string): string[] {
   const certs: string[] = [];
   let cert: string[] = [];
 
   certificate.split('\n').forEach((line) => {
-    if (line.startsWith(PEM_HEADER_PREFIX)) {
+    line.includes;
+    if (line === PEM_HEADER) {
       cert = [];
     }
 
@@ -31,10 +32,28 @@ export function splitPEM(certificate: string): string[] {
       cert.push(line);
     }
 
-    if (line.startsWith(PEM_FOOTER_PREFIX)) {
+    if (line === PEM_FOOTER) {
       certs.push(cert.join('\n'));
     }
   });
 
   return certs;
+}
+
+export function toDER(certificate: string): Buffer {
+  let der = '';
+
+  certificate.split('\n').forEach((line) => {
+    if (line === PEM_HEADER || line === PEM_FOOTER) {
+      return;
+    }
+
+    der += line;
+  });
+
+  return Buffer.from(der, 'base64');
+}
+
+export function fromDER(certificate: Buffer): string {
+  return `${PEM_HEADER}\n${certificate.toString('base64')}\n${PEM_FOOTER}`;
 }
