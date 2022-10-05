@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import nock from 'nock';
-import { HashedRekordKind, Rekor } from './index';
+import { HashedRekordKind } from '../types/rekor';
+import { Rekor } from './index';
 
 describe('Rekor', () => {
   const baseURL = 'http://localhost:8080';

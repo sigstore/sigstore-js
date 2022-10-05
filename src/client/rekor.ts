@@ -14,60 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import fetch, { FetchInterface } from 'make-fetch-happen';
-import { getUserAgent } from '../../util';
-import { checkStatus } from '../error';
-import { HashedRekorV001Schema } from './__generated__/hashedrekord';
-import { IntotoV001Schema, IntotoV002Schema } from './__generated__/intoto';
+import { Entry, EntryKind } from '../types/rekor';
+import { ua } from '../util';
+import { checkStatus } from './error';
 
 const DEFAULT_BASE_URL = 'https://rekor.sigstore.dev';
-const INTOTO_KIND = 'intoto';
-const HASHEDREKORD_KIND = 'hashedrekord';
 
 // Client options
 export interface RekorOptions {
   baseURL?: string;
-}
-
-export type HashedRekordKind = {
-  apiVersion: '0.0.1';
-  kind: typeof HASHEDREKORD_KIND;
-  spec: HashedRekorV001Schema;
-};
-
-export type IntotoKind =
-  | {
-      apiVersion: '0.0.1';
-      kind: typeof INTOTO_KIND;
-      spec: IntotoV001Schema;
-    }
-  | {
-      apiVersion: '0.0.2';
-      kind: typeof INTOTO_KIND;
-      spec: IntotoV002Schema;
-    };
-
-export type EntryKind = HashedRekordKind | IntotoKind;
-
-export interface Entry {
-  uuid: string;
-  body: string;
-  integratedTime: number;
-  logID: string;
-  logIndex: number;
-  verification: EntryVerification;
-  attestation?: object;
-}
-
-export interface EntryVerification {
-  inclusionProof: InclusionProof;
-  signedEntryTimestamp: string;
-}
-
-export interface InclusionProof {
-  hashes: string[];
-  logIndex: number;
-  rootHash: string;
-  treeSize: number;
 }
 
 export interface SearchIndex {
@@ -94,7 +49,7 @@ export class Rekor {
       timeout: 5000,
       headers: {
         Accept: 'application/json',
-        'User-Agent': getUserAgent(),
+        'User-Agent': ua.getUserAgent(),
       },
     });
     this.baseUrl = Rekor.getBaseUrl(options.baseURL);

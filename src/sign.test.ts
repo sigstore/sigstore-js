@@ -14,9 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import nock from 'nock';
+import { pem } from './util';
 import { Fulcio, Rekor } from './client';
-import { base64Encode } from './encoding';
 import { Signer } from './sign';
+import { HashAlgorithm } from './types/bundle';
 
 describe('Signer', () => {
   const fulcioBaseURL = 'http://localhost:8001';
@@ -98,6 +99,8 @@ describe('Signer', () => {
           '69e5a0c1663ee4452674a5c9d5050d866c2ee31e2faaf79913aea7cc27293cf6';
 
         const signatureBundle = {
+          kind: 'hashedrekord',
+          apiVersion: '0.0.1',
           spec: {
             signature: {
               content: signature,
@@ -135,17 +138,54 @@ describe('Signer', () => {
           const bundle = await subject.signBlob(payload);
 
           expect(bundle).toBeTruthy();
-          expect(bundle.attestationType).toBe('attestation/blob');
-          expect(bundle.attestation.payloadHash).toBeTruthy();
-          expect(bundle.attestation.payloadHashAlgorithm).toBe('sha256');
-          expect(bundle.attestation.signature).toBeTruthy();
-          expect(bundle.certificate).toBe(base64Encode(leafCertificate));
-          expect(bundle.integratedTime).toBe(rekorEntry[uuid].integratedTime);
-          expect(bundle.logIndex).toBe(rekorEntry[uuid].logIndex);
-          expect(bundle.logID).toBe(rekorEntry[uuid].logID);
-          expect(bundle.signedEntryTimestamp).toBe(
+          expect(bundle.mediaType).toEqual(
+            'application/vnd.dev.sigstore.bundle+json;version=0.1'
+          );
+
+          if (bundle.content?.$case === 'messageSignature') {
+            const ms = bundle.content.messageSignature;
+            expect(ms.messageDigest).toBeTruthy();
+            expect(ms.messageDigest?.algorithm).toEqual(HashAlgorithm.SHA2_256);
+            expect(ms.messageDigest?.digest).toBeTruthy();
+            expect(ms.signature).toBeTruthy();
+          } else {
+            fail('Expected messageSignature');
+          }
+
+          // Verification material
+          if (
+            bundle.verificationMaterial?.content?.$case ===
+            'x509CertificateChain'
+          ) {
+            const chain =
+              bundle.verificationMaterial.content.x509CertificateChain;
+            expect(chain).toBeTruthy();
+            expect(chain.certificates).toHaveLength(2);
+            expect(chain.certificates[0]).toEqual(pem.toDER(leafCertificate));
+            expect(chain.certificates[1]).toEqual(pem.toDER(rootCertificate));
+          } else {
+            fail('Expected x509CertificateChain');
+          }
+
+          // Timestamp verification data
+          expect(bundle.timestampVerificationData).toBeTruthy();
+          expect(
+            bundle.timestampVerificationData?.rfc3161Timestamps
+          ).toHaveLength(0);
+          expect(bundle.timestampVerificationData?.tlogEntries).toHaveLength(1);
+
+          const tlog = bundle.timestampVerificationData?.tlogEntries[0];
+          expect(tlog?.inclusionPromise.toString('base64')).toEqual(
             rekorEntry[uuid].verification.signedEntryTimestamp
           );
+          expect(tlog?.integratedTime).toEqual(
+            rekorEntry[uuid].integratedTime.toString()
+          );
+          expect(tlog?.logId.toString('hex')).toEqual(rekorEntry[uuid].logID);
+          expect(tlog?.logIndex).toEqual(rekorEntry[uuid].logIndex.toString());
+          expect(tlog?.inclusionProof).toBeFalsy();
+          expect(tlog?.kindVersion?.kind).toEqual('hashedrekord');
+          expect(tlog?.kindVersion?.version).toEqual('0.0.1');
         });
       });
 
@@ -197,6 +237,8 @@ describe('Signer', () => {
           '69e5a0c1663ee4452674a5c9d5050d866c2ee31e2faaf79913aea7cc27293cf6';
 
         const signatureBundle = {
+          kind: 'intoto',
+          apiVersion: '0.0.2',
           spec: {
             signature: {
               content: signature,
@@ -234,19 +276,55 @@ describe('Signer', () => {
           const bundle = await subject.signAttestation(payload, payloadType);
 
           expect(bundle).toBeTruthy();
-          expect(bundle.attestationType).toBe('attestation/dsse');
-          expect(bundle.attestation).toBeTruthy();
-          expect(bundle.attestation.payloadType).toBe(payloadType);
-          expect(bundle.attestation.payload).toBe(payload.toString('base64'));
-          expect(bundle.attestation.signatures).toHaveLength(1);
-          expect(bundle.attestation.signatures[0].sig).toBeTruthy();
-          expect(bundle.certificate).toBe(base64Encode(certificate));
-          expect(bundle.integratedTime).toBe(rekorEntry[uuid].integratedTime);
-          expect(bundle.logIndex).toBe(rekorEntry[uuid].logIndex);
-          expect(bundle.logID).toBe(rekorEntry[uuid].logID);
-          expect(bundle.signedEntryTimestamp).toBe(
+          expect(bundle.mediaType).toEqual(
+            'application/vnd.dev.sigstore.bundle+json;version=0.1'
+          );
+
+          if (bundle.content?.$case === 'dsseEnvelope') {
+            const env = bundle.content.dsseEnvelope;
+            expect(env.payloadType).toEqual(payloadType);
+            expect(env.payload.toString('base64')).toEqual(
+              payload.toString('base64')
+            );
+            expect(env.signatures).toHaveLength(1);
+            expect(env.signatures[0].keyid).toEqual('');
+          } else {
+            fail('Expected dsseEnvelope');
+          }
+
+          // Verification material
+          if (
+            bundle.verificationMaterial?.content?.$case ===
+            'x509CertificateChain'
+          ) {
+            const chain =
+              bundle.verificationMaterial.content.x509CertificateChain;
+            expect(chain).toBeTruthy();
+            expect(chain.certificates).toHaveLength(1);
+            expect(chain.certificates[0]).toEqual(pem.toDER(certificate));
+          } else {
+            fail('Expected x509CertificateChain');
+          }
+
+          // Timestamp verification data
+          expect(bundle.timestampVerificationData).toBeTruthy();
+          expect(
+            bundle.timestampVerificationData?.rfc3161Timestamps
+          ).toHaveLength(0);
+          expect(bundle.timestampVerificationData?.tlogEntries).toHaveLength(1);
+
+          const tlog = bundle.timestampVerificationData?.tlogEntries[0];
+          expect(tlog?.inclusionPromise.toString('base64')).toEqual(
             rekorEntry[uuid].verification.signedEntryTimestamp
           );
+          expect(tlog?.integratedTime).toEqual(
+            rekorEntry[uuid].integratedTime.toString()
+          );
+          expect(tlog?.logId.toString('hex')).toEqual(rekorEntry[uuid].logID);
+          expect(tlog?.logIndex).toEqual(rekorEntry[uuid].logIndex.toString());
+          expect(tlog?.inclusionProof).toBeFalsy();
+          expect(tlog?.kindVersion?.kind).toEqual('intoto');
+          expect(tlog?.kindVersion?.version).toEqual('0.0.2');
         });
       });
     });

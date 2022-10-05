@@ -13,11 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { KeyLike } from 'crypto';
-import { SigstoreBlobBundle, SigstoreDSSEBundle } from './bundle';
 import { Fulcio, Rekor } from './client';
 import identity, { Provider } from './identity';
 import { Signer } from './sign';
+import { Bundle } from './types/bundle';
 import { Verifier } from './verify';
 
 export interface SignOptions {
@@ -45,7 +44,7 @@ type IdentityProviderOptions = Pick<
 export async function sign(
   payload: Buffer,
   options: SignOptions = {}
-): Promise<SigstoreBlobBundle> {
+): Promise<Bundle> {
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
   const idps = configureIdentityProviders(options);
@@ -61,7 +60,7 @@ export async function signAttestation(
   payload: Buffer,
   payloadType: string,
   options: SignOptions = {}
-): Promise<SigstoreDSSEBundle> {
+): Promise<Bundle> {
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
   const idps = configureIdentityProviders(options);
@@ -74,22 +73,12 @@ export async function signAttestation(
 }
 
 export async function verify(
-  payload: Buffer,
-  signature: string,
-  certificate: KeyLike,
+  bundle: Bundle,
+  data?: Buffer,
   options: VerifierOptions = {}
 ): Promise<boolean> {
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
-
-  return new Verifier({ rekor }).verify(payload, signature, certificate);
-}
-
-export async function verifyDSSE(
-  bundle: SigstoreDSSEBundle,
-  options: VerifierOptions = {}
-): Promise<boolean> {
-  const rekor = new Rekor({ baseURL: options.rekorBaseURL });
-  return new Verifier({ rekor }).verifyDSSE(bundle);
+  return new Verifier({ rekor }).verify(bundle, data);
 }
 
 // Translates the IdenityProviderOptions into a list of Providers which

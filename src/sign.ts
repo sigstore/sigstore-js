@@ -13,21 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import {
-  buildBlobBundle,
-  buildDSSEBundle,
-  DSSE,
-  SigstoreBlobBundle,
-  SigstoreDSSEBundle,
-} from './bundle';
-import { splitPEM } from './certificate';
-import { Fulcio } from './client';
-import { Rekor } from './client/rekor';
-import { request as rekorRequest } from './converter/rekor';
-import * as crypto from './crypto';
-import * as enc from './encoding';
+import { Fulcio, Rekor } from './client';
 import { Provider } from './identity';
-import { dssePreAuthEncoding, extractJWTSubject } from './util';
+import { Bundle, bundle, Envelope } from './types/bundle';
+import { fulcio } from './types/fulcio';
+import { rekor } from './types/rekor';
+import { crypto, dsse, oidc, pem } from './util';
 
 export interface SignOptions {
   fulcio: Fulcio;
@@ -36,8 +27,8 @@ export interface SignOptions {
 }
 
 interface SigCert {
-  signature: string;
-  certificate: string[];
+  signature: Buffer;
+  certificates: string[];
 }
 
 export class Signer {
@@ -52,39 +43,44 @@ export class Signer {
     this.identityProviders = options.identityProviders;
   }
 
-  public async signBlob(payload: Buffer): Promise<SigstoreBlobBundle> {
+  public async signBlob(payload: Buffer): Promise<Bundle> {
     // Get signature and signing certificate for payload
-    const { signature, certificate } = await this.sign(payload);
+    const { signature, certificates } = await this.sign(payload);
 
     // Calculate artifact digest
     const digest = crypto.hash(payload);
 
-    const leafCertificate = certificate[0];
-    const leafCertificateB64 = enc.base64Encode(leafCertificate);
+    const leafCertificate = certificates[0];
 
-    const proposedEntry = rekorRequest.toProposedHashedRekordEntry(
+    // Create Rekor entry
+    const proposedEntry = rekor.toProposedHashedRekordEntry(
       digest,
       signature,
       leafCertificate
     );
     const entry = await this.rekor.createEntry(proposedEntry);
 
-    return buildBlobBundle(digest, signature, leafCertificateB64, entry);
+    return bundle.toMessageSignatureBundle(
+      digest,
+      signature,
+      certificates,
+      entry
+    );
   }
 
   public async signAttestation(
     payload: Buffer,
     payloadType: string
-  ): Promise<SigstoreDSSEBundle> {
+  ): Promise<Bundle> {
     // Pre-authentication encoding to be signed
-    const paeBuffer = dssePreAuthEncoding(payloadType, payload);
+    const paeBuffer = dsse.preAuthEncoding(payloadType, payload);
 
     // Get signature and signing certificate for pae
-    const { signature, certificate } = await this.sign(paeBuffer);
+    const { signature, certificates } = await this.sign(paeBuffer);
 
-    const dsse: DSSE = {
+    const envelope: Envelope = {
       payloadType,
-      payload: payload.toString('base64'),
+      payload: payload,
       signatures: [
         {
           keyid: '',
@@ -93,49 +89,42 @@ export class Signer {
       ],
     };
 
-    const leafCertificate = certificate[0];
-    const leafCertificateB64 = enc.base64Encode(leafCertificate);
+    const signingCertificate = certificates[0];
 
-    const proposedEntry = rekorRequest.toProposedIntotoEntry(
-      dsse,
-      leafCertificate
+    const proposedEntry = rekor.toProposedIntotoEntry(
+      envelope,
+      signingCertificate
     );
     const entry = await this.rekor.createEntry(proposedEntry);
 
-    return buildDSSEBundle(dsse, leafCertificateB64, entry);
+    return bundle.toDSSEBundle(envelope, certificates, entry);
   }
 
   private async sign(payload: Buffer): Promise<SigCert> {
     // Create emphemeral key pair
     const keypair = crypto.generateKeyPair();
 
-    // Extract public key as base64-encoded string
-    const publicKeyB64 = keypair.publicKey
-      .export({ type: 'spki', format: 'der' })
-      .toString('base64');
-
     // Retrieve identity token from one of the supplied identity providers
     const identityToken = await this.getIdentityToken();
 
     // Extract challenge claim from OIDC token
-    const subject = extractJWTSubject(identityToken);
+    const subject = oidc.extractJWTSubject(identityToken);
 
     // Construct challenge value by encrypting subject with private key
-    const challenge = crypto.signBlob(keypair.privateKey, subject);
+    const challenge = crypto.signBlob(Buffer.from(subject), keypair.privateKey);
 
     // Create signing certificate
-    const certificate = await this.fulcio.createSigningCertificate({
+    const certificate = await this.fulcio.createSigningCertificate(
       identityToken,
-      publicKey: publicKeyB64,
-      challenge,
-    });
+      fulcio.toCertificateRequest(keypair.publicKey, challenge)
+    );
 
     // Generate artifact signature
-    const signature = crypto.signBlob(keypair.privateKey, payload);
+    const signature = crypto.signBlob(payload, keypair.privateKey);
 
     return {
       signature,
-      certificate: splitPEM(certificate),
+      certificates: pem.split(certificate),
     };
   }
 

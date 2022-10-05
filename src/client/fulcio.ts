@@ -14,19 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import fetch, { FetchInterface } from 'make-fetch-happen';
+import { CertificateRequest } from '../types/fulcio';
+import { ua } from '../util';
 import { checkStatus } from './error';
-import { getUserAgent } from '../util';
 
 const DEFAULT_BASE_URL = 'https://fulcio.sigstore.dev';
 
 export interface FulcioOptions {
   baseURL?: string;
-}
-
-export interface CertificateRequest {
-  identityToken: string;
-  publicKey: string;
-  challenge: string;
 }
 
 /**
@@ -43,26 +38,22 @@ export class Fulcio {
       headers: {
         Accept: 'application/pem-certificate-chain',
         'Content-Type': 'application/json',
-        'User-Agent': getUserAgent(),
+        'User-Agent': ua.getUserAgent(),
       },
     });
     this.baseUrl = options.baseURL ?? DEFAULT_BASE_URL;
   }
 
   public async createSigningCertificate(
+    idToken: string,
     request: CertificateRequest
   ): Promise<string> {
     const url = `${this.baseUrl}/api/v1/signingCert`;
 
-    const body = {
-      publicKey: { content: request.publicKey },
-      signedEmailAddress: request.challenge,
-    };
-
     const response = await this.fetch(url, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${request.identityToken}` },
-      body: JSON.stringify(body),
+      headers: { Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify(request),
     });
     checkStatus(response);
 

@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { Rekor } from './client';
-import { base64Decode } from './encoding';
+import { Bundle, Envelope, HashAlgorithm } from './types/bundle';
+import { crypto } from './util';
 import { Verifier } from './verify';
-import { SigstoreDSSEBundle, DSSE } from './bundle';
 
 describe('Verifier', () => {
   const rekorBaseURL = 'http://localhost:8002';
@@ -24,80 +24,121 @@ describe('Verifier', () => {
   const subject = new Verifier({ rekor });
 
   describe('#verify', () => {
-    const payload = Buffer.from('Hello, world!');
-    const signature =
-      'MEUCIFRsQUBCo06j+lKpCx2XaaVS0N+f6czW8aBsgek5aeoZAiEA/A2KUxPCvxFjFu184a1256IGVmiFfZagq5Pm0yUgQLU=';
+    describe('when bundle type is messageSignature', () => {
+      const payload = Buffer.from('Hello, world!');
 
-    // Cert that could have generated the signature above
-    const signingCert =
-      'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN1RENDQWoyZ0F3SUJBZ0lVVmV0U01RemZUbXVrTTlDSnV0KytId3AvWThzd0NnWUlLb1pJemowRUF3TXcKTnpFVk1CTUdBMVVFQ2hNTWMybG5jM1J2Y21VdVpHVjJNUjR3SEFZRFZRUURFeFZ6YVdkemRHOXlaUzFwYm5SbApjbTFsWkdsaGRHVXdIaGNOTWpJd05qQTRNVGN3TXpFeVdoY05Nakl3TmpBNE1UY3hNekV5V2pBQU1Ga3dFd1lICktvWkl6ajBDQVFZSUtvWkl6ajBEQVFjRFFnQUV0T2N5a0lMREVTVDNwN2JkZ24zMjYyS1pWSXlHL0F2SDl6ZG0KUVdDMXlpR2tVV2ZqVVF5aCtWSTVselEyQXFxdVR3QlFYZDdCcDRlaFFwYzRYaVpqQTZPQ0FWd3dnZ0ZZTUE0RwpBMVVkRHdFQi93UUVBd0lIZ0RBVEJnTlZIU1VFRERBS0JnZ3JCZ0VGQlFjREF6QWRCZ05WSFE0RUZnUVVKWi8xCmRpTEhENDNvdUhneWhrcnF6QnRFTGt3d0h3WURWUjBqQkJnd0ZvQVUzOVBwejFZa0VaYjVxTmpwS0ZXaXhpNFkKWkQ4d09RWURWUjBSQVFIL0JDOHdMWUVyWVhKMGMybG5ibVZ5UUdSbGFHRnRaWEl5TkM1cFlXMHVaM05sY25acApZMlZoWTJOdmRXNTBMbU52YlRBcEJnb3JCZ0VFQVlPL01BRUJCQnRvZEhSd2N6b3ZMMkZqWTI5MWJuUnpMbWR2CmIyZHNaUzVqYjIwd2dZb0dDaXNHQVFRQjFua0NCQUlFZkFSNkFIZ0FkZ0FJWUpMd0tGTC9hRVhSMFdzbmhKeEYKWnhpc0ZqM0RPTkp0NXJ3aUJqWnZjZ0FBQVlGRVJTak1BQUFFQXdCSE1FVUNJUURRYUNLYlhtTnBqWDExSVVhZwpoNk5DbWtsaURwR3pBTXdEY0xaWHYzVUdyd0lnY29zNGZqR1RiOGFEb2NhNk9FOEowNEJWYko1VzB1OHNyU1FjCjF6bDdhd0F3Q2dZSUtvWkl6ajBFQXdNRGFRQXdaZ0l4QUpERlc4bGJDVUhPL1Qzb0Z2TVc3WXhYQlBWdXM2UjkKN0xhY0N4aE9zbHpYWUFhMXdtWks0VXlnTHZFS3pITER1Z0l4QVBpRlI2RWtBRWtCYkJzQ2Q4aU1xZ3R0Rmp1QQpaQURrWjFiTGdaU1VPSEVyVjUvMGluZDFaSGtNcnE1ZHJDeFpvUT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K';
+      const signature = Buffer.from(
+        'MEUCIFRsQUBCo06j+lKpCx2XaaVS0N+f6czW8aBsgek5aeoZAiEA/A2KUxPCvxFjFu184a1256IGVmiFfZagq5Pm0yUgQLU=',
+        'base64'
+      );
+      // Cert that could have generated the signature above
+      const signingCert = Buffer.from(
+        'MIICuDCCAj2gAwIBAgIUVetSMQzfTmukM9CJut++Hwp/Y8swCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjIwNjA4MTcwMzEyWhcNMjIwNjA4MTcxMzEyWjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEtOcykILDEST3p7bdgn3262KZVIyG/AvH9zdmQWC1yiGkUWfjUQyh+VI5lzQ2AqquTwBQXd7Bp4ehQpc4XiZjA6OCAVwwggFYMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUJZ/1diLHD43ouHgyhkrqzBtELkwwHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wOQYDVR0RAQH/BC8wLYErYXJ0c2lnbmVyQGRlaGFtZXIyNC5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbTApBgorBgEEAYO/MAEBBBtodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20wgYoGCisGAQQB1nkCBAIEfAR6AHgAdgAIYJLwKFL/aEXR0WsnhJxFZxisFj3DONJt5rwiBjZvcgAAAYFERSjMAAAEAwBHMEUCIQDQaCKbXmNpjX11IUagh6NCmkliDpGzAMwDcLZXv3UGrwIgcos4fjGTb8aDoca6OE8J04BVbJ5W0u8srSQc1zl7awAwCgYIKoZIzj0EAwMDaQAwZgIxAJDFW8lbCUHO/T3oFvMW7YxXBPVus6R97LacCxhOslzXYAa1wmZK4UygLvEKzHLDugIxAPiFR6EkAEkBbBsCd8iMqgttFjuAZADkZ1bLgZSUOHErV5/0ind1ZHkMrq5drCxZoQ==',
+        'base64'
+      );
 
-    describe('when the signature and the cert match', () => {
-      it('returns true', async () => {
-        const verified = await subject.verify(
-          payload,
-          signature,
-          base64Decode(signingCert)
-        );
+      const bundle: Bundle = {
+        mediaType: 'application/vnd.in-toto+json',
+        content: {
+          $case: 'messageSignature',
+          messageSignature: {
+            signature: signature,
+            messageDigest: {
+              algorithm: HashAlgorithm.SHA2_256,
+              digest: crypto.hash(payload),
+            },
+          },
+        },
+        verificationMaterial: {
+          content: {
+            $case: 'x509CertificateChain',
+            x509CertificateChain: {
+              certificates: [signingCert],
+            },
+          },
+        },
+        timestampVerificationData: {
+          rfc3161Timestamps: [],
+          tlogEntries: [],
+        },
+      };
 
-        expect(verified).toBe(true);
+      describe('when the signature and the cert match', () => {
+        it('returns true', async () => {
+          const verified = await subject.verify(bundle, payload);
+
+          expect(verified).toBe(true);
+        });
+      });
+
+      describe('when the signature and the cert do NOT match', () => {
+        it('returns false', async () => {
+          const verified = await subject.verify(bundle, Buffer.from(''));
+
+          expect(verified).toBe(false);
+        });
       });
     });
 
-    describe('when the signature and the cert do NOT match', () => {
-      it('returns false', async () => {
-        const verified = await subject.verify(
-          payload,
-          '',
-          base64Decode(signingCert)
-        );
+    describe('when bundle type is dsseEnvelope', () => {
+      const payload = Buffer.from('hello world');
+      const payloadType = 'text/plain';
+      const signature = Buffer.from(
+        'MEQCICI87pUJwMdF/AuTxb+i9OFWvzIOoxEnJx0oEqayXEBzAiAzjiZJ3FvcGINs+5oZrZNh36g3GKAnv6Ssr+J9eOGHHg==',
+        'base64'
+      );
 
-        expect(verified).toBe(false);
+      // Cert that could have generated the signature above
+      const signingCert = Buffer.from(
+        'MIICojCCAiegAwIBAgIUI0HZwtebunssZNhomqJGvF5W5r0wCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjIwODE5MTc1MDU5WhcNMjIwODE5MTgwMDU5WjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE0Ae1SXbXvI7e+cO65yLGi7zM+GTt49eI7dzP4JAc/JDuXbNtOszGw2t3Lsdv7kv5fxa6vGu0363tIv6QxAZ7Y6OCAUYwggFCMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQU3Pv0p3PGqubvL796mDiTIRSyClgwHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGLBgorBgEEAdZ5AgQCBH0EewB5AHcACGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3IAAAGCtzrH+AAABAMASDBGAiEAiyilyKylomkyLFhkHaJ28PnkCHCtkDcdCuQTuQ188u4CIQDjTLwkwSCtGKPl4KpMMxwbJNS5qp/O/aGqU/OouLkDLTAKBggqhkjOPQQDAwNpADBmAjEA9Qi8FK/46W++OFaGTWTjEBT5FkD9pLgNfkMNew5sVn2iQyA2fI2F93MJJvrLlNG+AjEA/boyyIyBIjd/Nc4shZiJUmtBKIN8eRYekAES5BIkHs++WuSLTP8AAUPeOOuC3sG/',
+        'base64'
+      );
+
+      const envelope: Envelope = {
+        payload: payload,
+        payloadType,
+        signatures: [{ keyid: '', sig: signature }],
+      };
+
+      const bundle: Bundle = {
+        mediaType: 'application/vnd.dev.cosign.simplesigning.v1+json',
+        content: {
+          $case: 'dsseEnvelope',
+          dsseEnvelope: envelope,
+        },
+        verificationMaterial: {
+          content: {
+            $case: 'x509CertificateChain',
+            x509CertificateChain: {
+              certificates: [signingCert],
+            },
+          },
+        },
+        timestampVerificationData: {
+          tlogEntries: [],
+          rfc3161Timestamps: [],
+        },
+      };
+
+      describe('when the signature and the cert match', () => {
+        it('returns true', async () => {
+          const verified = await subject.verify(bundle);
+          expect(verified).toBe(true);
+        });
       });
-    });
-  });
 
-  describe('#verifyDSSE', () => {
-    const payload = Buffer.from('hello world');
-    const payloadType = 'text/plain';
-    const signature =
-      'MEQCICI87pUJwMdF/AuTxb+i9OFWvzIOoxEnJx0oEqayXEBzAiAzjiZJ3FvcGINs+5oZrZNh36g3GKAnv6Ssr+J9eOGHHg==';
+      describe('when the signature and the cert do NOT match', () => {
+        it('returns false', async () => {
+          const invalidBundle = { ...bundle };
+          if (invalidBundle.content?.$case !== 'dsseEnvelope') {
+            fail('invalid bundle');
+          }
+          invalidBundle.content.dsseEnvelope.payloadType = 'invalid';
 
-    // Cert that could have generated the signature above
-    const signingCert =
-      'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNvakNDQWllZ0F3SUJBZ0lVSTBIWnd0ZWJ1bnNzWk5ob21xSkd2RjVXNXIwd0NnWUlLb1pJemowRUF3TXcKTnpFVk1CTUdBMVVFQ2hNTWMybG5jM1J2Y21VdVpHVjJNUjR3SEFZRFZRUURFeFZ6YVdkemRHOXlaUzFwYm5SbApjbTFsWkdsaGRHVXdIaGNOTWpJd09ERTVNVGMxTURVNVdoY05Nakl3T0RFNU1UZ3dNRFU1V2pBQU1Ga3dFd1lICktvWkl6ajBDQVFZSUtvWkl6ajBEQVFjRFFnQUUwQWUxU1hiWHZJN2UrY082NXlMR2k3ek0rR1R0NDllSTdkelAKNEpBYy9KRHVYYk50T3N6R3cydDNMc2R2N2t2NWZ4YTZ2R3UwMzYzdEl2NlF4QVo3WTZPQ0FVWXdnZ0ZDTUE0RwpBMVVkRHdFQi93UUVBd0lIZ0RBVEJnTlZIU1VFRERBS0JnZ3JCZ0VGQlFjREF6QWRCZ05WSFE0RUZnUVUzUHYwCnAzUEdxdWJ2TDc5Nm1EaVRJUlN5Q2xnd0h3WURWUjBqQkJnd0ZvQVUzOVBwejFZa0VaYjVxTmpwS0ZXaXhpNFkKWkQ4d0h3WURWUjBSQVFIL0JCVXdFNEVSWW5KcFlXNUFaR1ZvWVcxbGNpNWpiMjB3TEFZS0t3WUJCQUdEdnpBQgpBUVFlYUhSMGNITTZMeTluYVhSb2RXSXVZMjl0TDJ4dloybHVMMjloZFhSb01JR0xCZ29yQmdFRUFkWjVBZ1FDCkJIMEVld0I1QUhjQUNHQ1M4Q2hTLzJoRjBkRnJKNFNjUldjWXJCWTl3empTYmVhOElnWTJiM0lBQUFHQ3R6ckgKK0FBQUJBTUFTREJHQWlFQWl5aWx5S3lsb21reUxGaGtIYUoyOFBua0NIQ3RrRGNkQ3VRVHVRMTg4dTRDSVFEagpUTHdrd1NDdEdLUGw0S3BNTXh3YkpOUzVxcC9PL2FHcVUvT291TGtETFRBS0JnZ3Foa2pPUFFRREF3TnBBREJtCkFqRUE5UWk4RksvNDZXKytPRmFHVFdUakVCVDVGa0Q5cExnTmZrTU5ldzVzVm4yaVF5QTJmSTJGOTNNSkp2ckwKbE5HK0FqRUEvYm95eUl5QklqZC9OYzRzaFppSlVtdEJLSU44ZVJZZWtBRVM1QklrSHMrK1d1U0xUUDhBQVVQZQpPT3VDM3NHLwotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0t';
+          const verified = await subject.verify(invalidBundle);
 
-    const envelope: DSSE = {
-      payload: payload.toString('base64'),
-      payloadType,
-      signatures: [{ keyid: '', sig: signature }],
-    };
-
-    const bundle: SigstoreDSSEBundle = {
-      attestationType: 'attestation/dsse',
-      attestation: envelope,
-      certificate: signingCert,
-      integratedTime: 0,
-      logID: '',
-      logIndex: 0,
-      signedEntryTimestamp: '',
-    };
-
-    describe('when the signature and the cert match', () => {
-      it('returns true', async () => {
-        const verified = await subject.verifyDSSE(bundle);
-        expect(verified).toBe(true);
-      });
-    });
-
-    describe('when the signature and the cert do NOT match', () => {
-      it('returns false', async () => {
-        const invalidBundle = { ...bundle };
-        invalidBundle.attestation.payloadType = 'text/html';
-
-        const verified = await subject.verifyDSSE(invalidBundle);
-
-        expect(verified).toBe(false);
+          expect(verified).toBe(false);
+        });
       });
     });
   });

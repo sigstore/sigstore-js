@@ -26,11 +26,13 @@ describe('Fulcio', () => {
   });
 
   describe('#createSigningCertificate', () => {
+    const identityToken = `a.b.c`;
     const certRequest = {
-      identityToken: `a.b.c`,
-      publicKey:
-        'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==',
-      challenge: 'MEUCIEntw6QwoyDHb52HUIUVDnqFeGBI4oaCBMCoOtcbVKQ=',
+      publicKey: {
+        content:
+          'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==',
+      },
+      signedEmailAddress: 'MEUCIEntw6QwoyDHb52HUIUVDnqFeGBI4oaCBMCoOtcbVKQ=',
     };
 
     describe('when the certificate request is valid', () => {
@@ -40,17 +42,17 @@ describe('Fulcio', () => {
         nock(baseURL)
           .matchHeader('Accept', 'application/pem-certificate-chain')
           .matchHeader('Content-Type', 'application/json')
-          .matchHeader('Authorization', `Bearer ${certRequest.identityToken}`)
+          .matchHeader('Authorization', `Bearer ${identityToken}`)
           .matchHeader('User-Agent', new RegExp('sigstore-js\\/\\d+.\\d+.\\d+'))
-          .post('/api/v1/signingCert', {
-            publicKey: { content: certRequest.publicKey },
-            signedEmailAddress: certRequest.challenge,
-          })
+          .post('/api/v1/signingCert', certRequest)
           .reply(200, certificate);
       });
 
       it('returns the signing certificate', async () => {
-        const result = await subject.createSigningCertificate(certRequest);
+        const result = await subject.createSigningCertificate(
+          identityToken,
+          certRequest
+        );
         expect(result).toBe(certificate);
       });
     });
@@ -67,7 +69,7 @@ describe('Fulcio', () => {
 
       it('returns an error', async () => {
         await expect(
-          subject.createSigningCertificate(certRequest)
+          subject.createSigningCertificate(identityToken, certRequest)
         ).rejects.toThrow('HTTP Error: 400 Bad Request');
       });
     });
