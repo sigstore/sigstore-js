@@ -122,4 +122,4 @@ jobs:
         npm run build
     - name: Verify artifact signature
       run: |
-        ./bin/sigstore.js verify sigstore-0.0.1-alpha.1.tgz bundle.sigstore
+        ./bin/sigstore.js verify bundle.sigstore sigstore-0.0.1-alpha.1.tgz
