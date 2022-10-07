@@ -15,7 +15,13 @@ limitations under the License.
 */
 import { TLog } from './tlog';
 import { Bundle } from './types/bundle';
-import { crypto, dsse, pem } from './util';
+import { rekor } from './types/rekor';
+import { crypto, json, dsse, pem } from './util';
+
+const key = `-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2G2Y+2tabdTV5BcGiBIx0a9fAFwr
+kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
+-----END PUBLIC KEY-----`;
 
 export interface VerifyOptions {
   tlog: TLog;
@@ -45,6 +51,19 @@ export class Verifier {
       }
       case 'messageSignature':
         signature = bundle.content.messageSignature.signature;
+        const v = rekor.toVerificationPayload(bundle);
+        const cv = json.canonicalize(v);
+        console.log(cv);
+
+        const hh = crypto.verifyBlob(
+          Buffer.from(cv, 'utf8'),
+          key,
+          bundle.timestampVerificationData?.tlogEntries[0].inclusionPromise ||
+            Buffer.from('')
+        );
+        console.log('-------------------------');
+        console.log(hh);
+        console.log('-------------------------');
         break;
       default:
         throw new Error('Bundle is invalid');

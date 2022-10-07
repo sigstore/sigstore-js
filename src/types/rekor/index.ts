@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { crypto, encoding as enc } from '../../util';
-import { Envelope } from '../bundle';
+import { crypto, encoding as enc, json, pem } from '../../util';
+import { Bundle, Envelope } from '../bundle';
 import { SignatureMaterial } from '../signature';
 import { HashedRekorV001Schema } from './__generated__/hashedrekord';
 import { IntotoV001Schema, IntotoV002Schema } from './__generated__/intoto';
@@ -64,6 +64,13 @@ export interface InclusionProof {
   treeSize: number;
 }
 
+export interface VerificationPayload {
+  body: any;
+  integratedTime: number;
+  logIndex: number;
+  logID: string;
+}
+
 export const rekor = {
   toProposedIntotoEntry: (
     envelope: Envelope,
@@ -96,7 +103,7 @@ export const rekor = {
     digest: Buffer,
     signature: SignatureMaterial
   ): HashedRekordKind => {
-    const b64Digest = digest.toString('hex');
+    const hexDigest = digest.toString('hex');
     const b64Signature = signature.signature.toString('base64');
     const b64Key = enc.base64Encode(toPublicKey(signature));
 
@@ -107,7 +114,7 @@ export const rekor = {
         data: {
           hash: {
             algorithm: 'sha256',
-            value: b64Digest,
+            value: hexDigest,
           },
         },
         signature: {
@@ -117,6 +124,60 @@ export const rekor = {
           },
         },
       },
+    };
+  },
+
+  toVerificationPayload: (bundle: Bundle): VerificationPayload => {
+    // Ensure bundle as tlog entries
+    const entries = bundle.verificationData?.tlogEntries;
+    if (!entries || entries.length == 0) {
+      throw new Error('No tlog entries found in bundle');
+    }
+
+    const { integratedTime, logIndex, logId } = entries[0];
+
+    let cert = '';
+    // Ensure there is a certificate
+    switch (bundle.verificationMaterial?.content?.$case) {
+      case 'x509CertificateChain': {
+        const der =
+          bundle.verificationMaterial.content.x509CertificateChain
+            .certificates[0];
+        cert = pem.fromDER(der.derBytes);
+        break;
+      }
+      default:
+        throw new Error('No certificate found in bundle');
+    }
+
+    let body = undefined;
+    switch (bundle.content?.$case) {
+      case 'messageSignature': {
+        const digest =
+          bundle.content.messageSignature.messageDigest?.digest ||
+          Buffer.from('');
+        const sig = bundle.content.messageSignature.signature;
+        const sigMaterial: SignatureMaterial = {
+          certificates: [cert],
+          signature: sig,
+          key: undefined,
+        };
+        body = rekor.toProposedHashedRekordEntry(digest, sigMaterial);
+        break;
+      }
+      default:
+        throw new Error('Unsupported bundle type');
+    }
+
+    if (!logId) {
+      throw new Error('No log ID found in bundle');
+    }
+
+    return {
+      body: enc.base64Encode(json.canonicalize(body)),
+      integratedTime: Number(integratedTime),
+      logIndex: Number(logIndex),
+      logID: logId.keyId.toString('hex'),
     };
   },
 };
