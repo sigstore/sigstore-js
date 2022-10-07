@@ -13,5 +13,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-export * as sigstore from './sigstore';
-export { Bundle } from './types/bundle';
+import { KeyObject } from 'crypto';
+
+export interface CertificateRequest {
+  publicKey: { content: string };
+  signedEmailAddress: string;
+}
+
+export const fulcio = {
+  toCertificateRequest: (
+    publicKey: KeyObject,
+    challenge: Buffer
+  ): CertificateRequest => ({
+    publicKey: {
+      content: publicKey
+        .export({ type: 'spki', format: 'der' })
+        .toString('base64'),
+    },
+    signedEmailAddress: challenge.toString('base64'),
+  }),
+};

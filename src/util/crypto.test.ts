@@ -16,9 +16,9 @@ limitations under the License.
 import {
   generateKeyPair,
   hash,
+  randomBytes,
   signBlob,
   verifyBlob,
-  randomBytes,
 } from './crypto';
 
 describe('generateKeyPair', () => {
@@ -36,14 +36,10 @@ describe('generateKeyPair', () => {
 describe('hash', () => {
   it('returns the SHA256 digest of the blob', () => {
     const blob = Buffer.from('hello world');
-    const d1 = hash(blob);
-
-    expect(d1).toBe(
+    const digest = hash(blob);
+    expect(digest.toString('hex')).toBe(
       'b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9'
     );
-
-    const d2 = hash(blob, 'base64');
-    expect(d2).toBe('uU0nuZNNPgilLlLX2n2r+sSE7+N6U4DukIj3rOLvzek=');
   });
 });
 
@@ -51,7 +47,7 @@ describe('signBlob', () => {
   const key = generateKeyPair();
   it('returns the signature of the blob', () => {
     const blob = Buffer.from('hello world');
-    const signature = signBlob(key.privateKey, blob);
+    const signature = signBlob(blob, key.privateKey);
 
     expect(signature).toBeTruthy();
   });
@@ -60,18 +56,19 @@ describe('signBlob', () => {
 describe('verifyBlob', () => {
   const key = generateKeyPair();
   const blob = Buffer.from('hello world');
+  const signature = signBlob(blob, key.privateKey);
 
   describe('when the signature is valid', () => {
-    const signature = signBlob(key.privateKey, blob);
     it('returns true', () => {
-      expect(verifyBlob(key.publicKey, blob, signature)).toBe(true);
+      expect(verifyBlob(blob, key.publicKey, signature)).toBe(true);
     });
   });
 
   describe('when the signature is invalid', () => {
-    const signature = 'ABCXYZ';
     it('returns false', () => {
-      expect(verifyBlob(key.publicKey, blob, signature)).toBe(false);
+      expect(verifyBlob(Buffer.from('foo'), key.publicKey, signature)).toBe(
+        false
+      );
     });
   });
 });

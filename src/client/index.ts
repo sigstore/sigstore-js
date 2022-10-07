@@ -14,4 +14,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 export { Fulcio } from './fulcio';
-export { Rekor, Entry } from './rekor';
+export { Rekor } from './rekor';

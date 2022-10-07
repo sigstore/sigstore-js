@@ -20,8 +20,7 @@ import fetch from 'make-fetch-happen';
 import { AddressInfo, Socket } from 'net';
 import { URL, URLSearchParams } from 'url';
 
-import { hash, randomBytes } from '../crypto';
-import * as enc from '../encoding';
+import { crypto, encoding as enc } from '../util';
 import { Issuer } from './issuer';
 import { Provider } from './provider';
 
@@ -177,7 +176,9 @@ export class OAuthProvider implements Provider {
 
   // Generate code challenge for authorization request
   private getCodeChallenge(): string {
-    return enc.base64URLEscape(hash(this.codeVerifier, 'base64'));
+    return enc.base64URLEscape(
+      crypto.hash(this.codeVerifier).toString('base64')
+    );
   }
 
   // Open the supplied URL in the user's default browser
@@ -213,5 +214,5 @@ export class OAuthProvider implements Provider {
 
 // Generate random code verifier value
 function generateRandomString(len: number): string {
-  return enc.base64URLEscape(randomBytes(len).toString('base64'));
+  return enc.base64URLEscape(crypto.randomBytes(len).toString('base64'));
 }

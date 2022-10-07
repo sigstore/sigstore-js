@@ -13,5 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-export * as sigstore from './sigstore';
-export { Bundle } from './types/bundle';
+import { preAuthEncoding } from './dsse';
+
+describe('preAuthEncoding', () => {
+  const payloadType = 'text/plain';
+  const payload = Buffer.from('Hello, World!', 'utf8');
+
+  it('should return the correct pre-auth encoding', () => {
+    const pae = preAuthEncoding(payloadType, payload);
+    expect(pae).toEqual(Buffer.from('DSSEv1 10 text/plain 13 Hello, World!'));
+  });
+});

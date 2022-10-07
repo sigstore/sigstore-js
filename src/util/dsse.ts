@@ -13,5 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-export * as sigstore from './sigstore';
-export { Bundle } from './types/bundle';
+const PAE_PREFIX = 'DSSEv1';
+
+// DSSE Pre-Authentication Encoding
+export function preAuthEncoding(payloadType: string, payload: Buffer): Buffer {
+  const prefix = Buffer.from(
+    `${PAE_PREFIX} ${payloadType.length} ${payloadType} ${payload.length} `,
+    'ascii'
+  );
+  return Buffer.concat([prefix, payload]);
+}

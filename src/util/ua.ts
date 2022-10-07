@@ -13,5 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-export * as sigstore from './sigstore';
-export { Bundle } from './types/bundle';
+import os from 'os';
+
+// Format User-Agent: <product> / <product-version> (<platform>)
+// source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
+export const getUserAgent = (): string => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const packageVersion = require('../../package.json').version;
+  const nodeVersion = process.version;
+  const platformName = os.platform();
+  const archName = os.arch();
+  return `sigstore-js/${packageVersion} (Node ${nodeVersion}) (${platformName}/${archName})`;
+};

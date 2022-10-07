@@ -18,7 +18,7 @@ do
   TYPE_PATH=${REKOR_DIR}/pkg/types/${KIND}
   npx json2ts --input ${TYPE_PATH}/${KIND}_schema.json \
     --cwd ${TYPE_PATH} \
-    --output src/client/rekor/__generated__/${KIND}.d.ts \
+    --output src/types/rekor/__generated__/${KIND}.d.ts \
     --no-additionalProperties
 done
 

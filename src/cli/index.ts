@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import fs from 'fs';
+import { Bundle } from '../types/bundle';
 import { sigstore } from '../index';
-import * as enc from '../encoding';
 
 const INTOTO_PAYLOAD_TYPE = 'application/vnd.in-toto+json';
 
@@ -30,9 +30,6 @@ async function cli(args: string[]) {
     case 'verify':
       await verify(args[1], args[2]);
       break;
-    case 'verify-dsse':
-      await verifyDSSE(args[1]);
-      break;
     default:
       throw 'Unknown command';
   }
@@ -46,11 +43,13 @@ const signOptions = {
 async function sign(artifactPath: string) {
   const buffer = fs.readFileSync(artifactPath);
   const bundle = await sigstore.sign(buffer, signOptions);
-  console.log(JSON.stringify(bundle));
 
   const url = `${sigstore.getRekorBaseUrl(signOptions)}/api/v1/log/entries`;
-  console.error(`Created entry at index ${bundle.logIndex}, available at`);
-  console.error(`${url}?logIndex=${bundle.logIndex}`);
+  const logIndex = bundle.timestampVerificationData?.tlogEntries[0].logIndex;
+  console.error(`Created entry at index ${logIndex}, available at`);
+  console.error(`${url}?logIndex=${logIndex}`);
+
+  console.log(JSON.stringify(Bundle.toJSON(bundle)));
 }
 
 async function signDSSE(
@@ -63,29 +62,20 @@ async function signDSSE(
     payloadType,
     signOptions
   );
-  console.log(JSON.stringify(bundle));
+  console.log(JSON.stringify(Bundle.toJSON(bundle)));
 }
 
-async function verify(artifactPath: string, bundlePath: string) {
-  const payload = fs.readFileSync(artifactPath);
-  const bundleFile = fs.readFileSync(bundlePath);
-  const bundle = JSON.parse(bundleFile.toString('utf-8'));
+async function verify(bundlePath: string, artifactPath: string) {
+  let payload: Buffer | undefined = undefined;
 
-  const sig = bundle.attestation.signature;
-  const cert = enc.base64Decode(bundle.certificate);
-  const result = await sigstore.verify(payload, sig, cert);
-
-  if (result) {
-    console.error('Verified OK');
-  } else {
-    throw 'Signature verification failed';
+  if (artifactPath) {
+    payload = fs.readFileSync(artifactPath);
   }
-}
 
-async function verifyDSSE(bundlePath: string) {
   const bundleFile = fs.readFileSync(bundlePath);
-  const bundle = JSON.parse(bundleFile.toString('utf-8'));
-  const result = await sigstore.verifyDSSE(bundle);
+  const bundle = Bundle.fromJSON(JSON.parse(bundleFile.toString('utf-8')));
+
+  const result = await sigstore.verify(bundle, payload);
 
   if (result) {
     console.error('Verified OK');

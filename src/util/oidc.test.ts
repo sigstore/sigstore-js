@@ -13,13 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { extractJWTSubject, getUserAgent, promiseAny } from './util';
-
-describe('getUserAgent', () => {
-  it('returns a user agent string', () => {
-    expect(getUserAgent()).toMatch(new RegExp('sigstore-js\\/\\d+.\\d+.\\d+'));
-  });
-});
+import { extractJWTSubject } from './oidc';
 
 describe('extractJWTSubject', () => {
   describe('when the JWT is issued by accounts.google.com', () => {
@@ -57,41 +51,6 @@ describe('extractJWTSubject', () => {
 
     it('should return the subject', () => {
       expect(extractJWTSubject(jwt)).toBe(payload.sub);
-    });
-  });
-
-  describe('promiseAny', () => {
-    describe('when all promises resolve', () => {
-      it('should return the first resolved promise', async () => {
-        const promise1 = Promise.resolve('foo');
-        const promise2 = Promise.resolve('bar');
-        const promise3 = Promise.resolve('baz');
-
-        const result = await promiseAny([promise1, promise2, promise3]);
-        expect(result).toBe('foo');
-      });
-    });
-
-    describe('when only one promise resolves', () => {
-      it('should return the first resolved promise', async () => {
-        const promise1 = Promise.reject('err');
-        const promise2 = Promise.resolve('bar');
-        const promise3 = Promise.reject('err');
-
-        const result = await promiseAny([promise1, promise2, promise3]);
-        expect(result).toBe('bar');
-      });
-    });
-
-    describe('when all promises reject', () => {
-      it('should return all rejections', async () => {
-        const promise1 = Promise.reject('err1');
-        const promise2 = Promise.reject('err2');
-        const promise3 = Promise.reject('err3');
-
-        const result = promiseAny([promise1, promise2, promise3]);
-        await expect(result).rejects.toEqual(['err1', 'err2', 'err3']);
-      });
     });
   });
 });

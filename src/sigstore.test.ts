@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { SigstoreDSSEBundle } from './bundle';
 import { Signer } from './sign';
-import { sign, signAttestation, verify, verifyDSSE } from './sigstore';
+import { sign, signAttestation, verify } from './sigstore';
+import { Bundle, HashAlgorithm } from './types/bundle';
 import { Verifier } from './verify';
 
 jest.mock('./sign');
@@ -124,9 +124,31 @@ describe('signAttestation', () => {
 });
 
 describe('#verify', () => {
-  const payload = Buffer.from('Hello, world!');
-  const signature = 'a1b2c3';
-  const cert = 'cert';
+  const bundle: Bundle = {
+    mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.1',
+    content: {
+      $case: 'messageSignature',
+      messageSignature: {
+        messageDigest: {
+          algorithm: HashAlgorithm.SHA2_256,
+          digest: Buffer.from(''),
+        },
+        signature: Buffer.from(''),
+      },
+    },
+    timestampVerificationData: {
+      rfc3161Timestamps: [],
+      tlogEntries: [],
+    },
+    verificationMaterial: {
+      content: {
+        $case: 'x509CertificateChain',
+        x509CertificateChain: {
+          certificates: [],
+        },
+      },
+    },
+  };
 
   const mockVerify = jest.fn();
 
@@ -137,48 +159,12 @@ describe('#verify', () => {
   });
 
   it('invokes the Verifier instance with the correct params', async () => {
-    await verify(payload, signature, cert);
-
-    expect(mockVerify).toHaveBeenCalledWith(payload, signature, cert);
+    await verify(bundle);
+    expect(mockVerify).toHaveBeenCalledWith(bundle, undefined);
   });
 
   it('returns the value returned by the verifier', async () => {
-    const result = await verify(payload, signature, cert);
-    expect(result).toBe(false);
-  });
-});
-
-describe('#verifyDSSE', () => {
-  const bundle: SigstoreDSSEBundle = {
-    attestationType: 'attestation/dsse',
-    attestation: {
-      payload: '',
-      payloadType: '',
-      signatures: [],
-    },
-    certificate: '',
-    integratedTime: 0,
-    signedEntryTimestamp: '',
-    logIndex: 0,
-    logID: '',
-  };
-
-  const mockVerify = jest.fn();
-
-  beforeEach(() => {
-    mockVerify.mockClear();
-    mockVerify.mockResolvedValueOnce(false);
-    jest.spyOn(Verifier.prototype, 'verifyDSSE').mockImplementation(mockVerify);
-  });
-
-  it('invokes the Verifier instance with the correct params', async () => {
-    await verifyDSSE(bundle);
-
-    expect(mockVerify).toHaveBeenCalledWith(bundle);
-  });
-
-  it('returns the value returned by the verifier', async () => {
-    const result = await verifyDSSE(bundle);
+    const result = await verify(bundle);
     expect(result).toBe(false);
   });
 });

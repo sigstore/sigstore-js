@@ -13,5 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-export * as sigstore from './sigstore';
-export { Bundle } from './types/bundle';
+import { getUserAgent } from './ua';
+
+describe('getUserAgent', () => {
+  it('returns a user agent string', () => {
+    expect(getUserAgent()).toMatch(new RegExp('sigstore-js\\/\\d+.\\d+.\\d+'));
+  });
+});
