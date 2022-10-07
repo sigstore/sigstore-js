@@ -51,11 +51,14 @@ describe('pem', () => {
   });
 
   describe('fromDER', () => {
-    const der = Buffer.from('ABCD', 'base64');
+    const cert =
+      '-----BEGIN CERTIFICATE-----\nMIICoTCCAiagAwIBAgIUDnU0n6QHoPRvPj6b2Ee38VOD4TswCgYIKoZIzj0EAwMw\ncm1l\n-----END CERTIFICATE-----\n';
+
+    const der = toDER(cert);
 
     it('returns a PEM-encoded certificate', () => {
       const pem = fromDER(der);
-      expect(pem).toEqual(cert1);
+      expect(pem).toEqual(cert);
     });
   });
 });
