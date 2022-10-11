@@ -52,11 +52,7 @@ export async function sign(
 
   return new Signer({ fulcio, rekor, identityProviders: idps })
     .signBlob(payload)
-    .then((bundle: Bundle) => {
-      console.log('Signed bundle: ', bundle);
-
-      return JSON.stringify(Bundle.toJSON(bundle))
-    });
+    .then((bundle: Bundle) => JSON.stringify(Bundle.toJSON(bundle)));
 }
 
 export async function signAttestation(
@@ -70,11 +66,7 @@ export async function signAttestation(
 
   return new Signer({ fulcio, rekor, identityProviders: idps })
     .signAttestation(payload, payloadType)
-    .then((bundle: Bundle) => {
-      console.log('Signed bundle: ', JSON.stringify(Bundle.toJSON(bundle)));
-
-      return JSON.stringify(Bundle.toJSON(bundle))
-    });
+    .then((bundle: Bundle) => JSON.stringify(Bundle.toJSON(bundle)));
 }
 
 export async function verify(
