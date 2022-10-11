@@ -24,9 +24,30 @@ describe('sign', () => {
   const payload = Buffer.from('Hello, world!');
 
   // Signer output
-  const signedPayload = {
-    base64Signature: 'signature',
-    cert: 'cert',
+  const signedPayload: Bundle = {
+    mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.1',
+    content: {
+      $case: 'messageSignature',
+      messageSignature: {
+        messageDigest: {
+          algorithm: HashAlgorithm.SHA2_256,
+          digest: Buffer.from(''),
+        },
+        signature: Buffer.from(''),
+      },
+    },
+    timestampVerificationData: {
+      rfc3161Timestamps: [],
+      tlogEntries: [],
+    },
+    verificationMaterial: {
+      content: {
+        $case: 'x509CertificateChain',
+        x509CertificateChain: {
+          certificates: [],
+        },
+      },
+    },
   };
 
   const mockSigner = jest.mocked(Signer);
@@ -65,8 +86,7 @@ describe('sign', () => {
 
   it('returns the correct envelope', async () => {
     const sig = await sign(payload);
-
-    expect(sig).toEqual(signedPayload);
+    expect(sig).toMatchSnapshot();
   });
 });
 
@@ -76,8 +96,32 @@ describe('signAttestation', () => {
 
   // Signer output
   const signedPayload = {
-    base64Signature: 'signature',
-    cert: 'cert',
+    mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.1',
+    content: {
+      $case: 'dsseEnvelope',
+      dsseEnvelope: {
+        payload: Buffer.from(''),
+        payloadType: 'text/json',
+        signatures: [
+          {
+            sig: Buffer.from(''),
+            keyid: 'key-123',
+          },
+        ],
+      },
+    },
+    timestampVerificationData: {
+      rfc3161Timestamps: [],
+      tlogEntries: [],
+    },
+    verificationMaterial: {
+      content: {
+        $case: 'x509CertificateChain',
+        x509CertificateChain: {
+          certificates: [],
+        },
+      },
+    },
   };
 
   const mockSigner = jest.mocked(Signer);
@@ -118,8 +162,7 @@ describe('signAttestation', () => {
 
   it('returns the correct envelope', async () => {
     const sig = await signAttestation(payload, payloadType);
-
-    expect(sig).toEqual(signedPayload);
+    expect(sig).toMatchSnapshot();
   });
 });
 
@@ -149,6 +192,7 @@ describe('#verify', () => {
       },
     },
   };
+  const bundleJson = JSON.stringify(Bundle.toJSON(bundle));
 
   const mockVerify = jest.fn();
 
@@ -159,12 +203,12 @@ describe('#verify', () => {
   });
 
   it('invokes the Verifier instance with the correct params', async () => {
-    await verify(bundle);
+    await verify(bundleJson);
     expect(mockVerify).toHaveBeenCalledWith(bundle, undefined);
   });
 
   it('returns the value returned by the verifier', async () => {
-    const result = await verify(bundle);
+    const result = await verify(bundleJson);
     expect(result).toBe(false);
   });
 });

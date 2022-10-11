@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`sign returns the correct envelope 1`] = `"{\\"mediaType\\":\\"application/vnd.dev.sigstore.bundle+json;version=0.1\\",\\"timestampVerificationData\\":{\\"tlogEntries\\":[],\\"rfc3161Timestamps\\":[]},\\"verificationMaterial\\":{\\"x509CertificateChain\\":{\\"certificates\\":[]}},\\"messageSignature\\":{\\"messageDigest\\":{\\"algorithm\\":\\"SHA2_256\\",\\"digest\\":\\"\\"},\\"signature\\":\\"\\"}}"`;
+
+exports[`signAttestation returns the correct envelope 1`] = `"{\\"mediaType\\":\\"application/vnd.dev.sigstore.bundle+json;version=0.1\\",\\"timestampVerificationData\\":{\\"tlogEntries\\":[],\\"rfc3161Timestamps\\":[]},\\"verificationMaterial\\":{\\"x509CertificateChain\\":{\\"certificates\\":[]}},\\"dsseEnvelope\\":{\\"payload\\":\\"\\",\\"payloadType\\":\\"text/json\\",\\"signatures\\":[{\\"sig\\":\\"\\",\\"keyid\\":\\"key-123\\"}]}}"`;

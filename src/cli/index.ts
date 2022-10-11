@@ -42,14 +42,15 @@ const signOptions = {
 
 async function sign(artifactPath: string) {
   const buffer = fs.readFileSync(artifactPath);
-  const bundle = await sigstore.sign(buffer, signOptions);
+  const bundleJson = await sigstore.sign(buffer, signOptions);
 
   const url = `${sigstore.getRekorBaseUrl(signOptions)}/api/v1/log/entries`;
+  const bundle = Bundle.fromJSON(JSON.parse(bundleJson));
   const logIndex = bundle.timestampVerificationData?.tlogEntries[0].logIndex;
   console.error(`Created entry at index ${logIndex}, available at`);
   console.error(`${url}?logIndex=${logIndex}`);
 
-  console.log(JSON.stringify(Bundle.toJSON(bundle)));
+  console.log(bundleJson);
 }
 
 async function signDSSE(
@@ -57,12 +58,12 @@ async function signDSSE(
   payloadType = INTOTO_PAYLOAD_TYPE
 ) {
   const buffer = fs.readFileSync(artifactPath);
-  const bundle = await sigstore.signAttestation(
+  const bundleJson = await sigstore.signAttestation(
     buffer,
     payloadType,
     signOptions
   );
-  console.log(JSON.stringify(Bundle.toJSON(bundle)));
+  console.log(bundleJson);
 }
 
 async function verify(bundlePath: string, artifactPath: string) {
@@ -73,9 +74,7 @@ async function verify(bundlePath: string, artifactPath: string) {
   }
 
   const bundleFile = fs.readFileSync(bundlePath);
-  const bundle = Bundle.fromJSON(JSON.parse(bundleFile.toString('utf-8')));
-
-  const result = await sigstore.verify(bundle, payload);
+  const result = await sigstore.verify(bundleFile.toString('utf-8'), payload);
 
   if (result) {
     console.error('Verified OK');

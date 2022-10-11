@@ -44,41 +44,49 @@ type IdentityProviderOptions = Pick<
 export async function sign(
   payload: Buffer,
   options: SignOptions = {}
-): Promise<Bundle> {
+): Promise<string> {
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
   const idps = configureIdentityProviders(options);
+  console.log('Signed payload: ', payload);
 
-  return new Signer({
-    fulcio,
-    rekor,
-    identityProviders: idps,
-  }).signBlob(payload);
+  return new Signer({ fulcio, rekor, identityProviders: idps })
+    .signBlob(payload)
+    .then((bundle: Bundle) => {
+      console.log('Signed bundle: ', bundle);
+
+      return JSON.stringify(Bundle.toJSON(bundle))
+    });
 }
 
 export async function signAttestation(
   payload: Buffer,
   payloadType: string,
   options: SignOptions = {}
-): Promise<Bundle> {
+): Promise<string> {
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
   const idps = configureIdentityProviders(options);
 
-  return new Signer({
-    fulcio,
-    rekor,
-    identityProviders: idps,
-  }).signAttestation(payload, payloadType);
+  return new Signer({ fulcio, rekor, identityProviders: idps })
+    .signAttestation(payload, payloadType)
+    .then((bundle: Bundle) => {
+      console.log('Signed bundle: ', JSON.stringify(Bundle.toJSON(bundle)));
+
+      return JSON.stringify(Bundle.toJSON(bundle))
+    });
 }
 
 export async function verify(
-  bundle: Bundle,
+  bundle: string,
   data?: Buffer,
   options: VerifierOptions = {}
 ): Promise<boolean> {
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
-  return new Verifier({ rekor }).verify(bundle, data);
+  return new Verifier({ rekor }).verify(
+    Bundle.fromJSON(JSON.parse(bundle)),
+    data
+  );
 }
 
 // Translates the IdenityProviderOptions into a list of Providers which
