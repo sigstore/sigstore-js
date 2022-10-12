@@ -48,7 +48,6 @@ export async function sign(
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
   const idps = configureIdentityProviders(options);
-  console.log('Signed payload: ', payload);
 
   return new Signer({ fulcio, rekor, identityProviders: idps })
     .signBlob(payload)
