@@ -1,4 +1,5 @@
 // JSON canonicalization per https://github.com/cyberphone/json-canonicalization
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function canonicalize(object: any): string {
   let buffer = '';
 
