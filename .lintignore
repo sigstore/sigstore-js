@@ -1,0 +1,4 @@
+**/__generated__
+dist
+node_modules
+src/__snapshots__
