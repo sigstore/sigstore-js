@@ -55,5 +55,10 @@ export function toDER(certificate: string): Buffer {
 }
 
 export function fromDER(certificate: Buffer): string {
-  return `${PEM_HEADER}\n${certificate.toString('base64')}\n${PEM_FOOTER}`;
+  // Base64-encode the certificate.
+  const der = certificate.toString('base64');
+  // Split the certificate into lines of 64 characters.
+  const lines = der.match(/.{1,64}/g) || '';
+
+  return [PEM_HEADER, ...lines, PEM_FOOTER].join('\n') + '\n';
 }
