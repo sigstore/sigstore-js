@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import fs from 'fs';
-import { Bundle } from '../types/bundle';
 import { sigstore } from '../index';
 
 const INTOTO_PAYLOAD_TYPE = 'application/vnd.in-toto+json';
@@ -42,15 +41,14 @@ const signOptions = {
 
 async function sign(artifactPath: string) {
   const buffer = fs.readFileSync(artifactPath);
-  const bundleJson = await sigstore.sign(buffer, signOptions);
+  const bundle: any = await sigstore.sign(buffer, signOptions); //eslint-disable-line @typescript-eslint/no-explicit-any
 
   const url = `${sigstore.getRekorBaseUrl(signOptions)}/api/v1/log/entries`;
-  const bundle = Bundle.fromJSON(JSON.parse(bundleJson));
   const logIndex = bundle.timestampVerificationData?.tlogEntries[0].logIndex;
   console.error(`Created entry at index ${logIndex}, available at`);
   console.error(`${url}?logIndex=${logIndex}`);
 
-  console.log(bundleJson);
+  console.log(JSON.stringify(bundle));
 }
 
 async function signDSSE(
@@ -74,7 +72,10 @@ async function verify(bundlePath: string, artifactPath: string) {
   }
 
   const bundleFile = fs.readFileSync(bundlePath);
-  const result = await sigstore.verify(bundleFile.toString('utf-8'), payload);
+  const result = await sigstore.verify(
+    JSON.parse(bundleFile.toString('utf-8')),
+    payload
+  );
 
   if (result) {
     console.error('Verified OK');

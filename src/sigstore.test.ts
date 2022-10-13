@@ -86,7 +86,7 @@ describe('sign', () => {
 
   it('returns the correct envelope', async () => {
     const sig = await sign(payload);
-    expect(sig).toMatchSnapshot();
+    expect(JSON.stringify(sig)).toMatchSnapshot();
   });
 });
 
@@ -162,7 +162,7 @@ describe('signAttestation', () => {
 
   it('returns the correct envelope', async () => {
     const sig = await signAttestation(payload, payloadType);
-    expect(sig).toMatchSnapshot();
+    expect(JSON.stringify(sig)).toMatchSnapshot();
   });
 });
 
@@ -192,7 +192,6 @@ describe('#verify', () => {
       },
     },
   };
-  const bundleJson = JSON.stringify(Bundle.toJSON(bundle));
 
   const mockVerify = jest.fn();
 
@@ -203,12 +202,13 @@ describe('#verify', () => {
   });
 
   it('invokes the Verifier instance with the correct params', async () => {
-    await verify(bundleJson);
+    const b = Bundle.toJSON(bundle);
+    await verify(b);
     expect(mockVerify).toHaveBeenCalledWith(bundle, undefined);
   });
 
   it('returns the value returned by the verifier', async () => {
-    const result = await verify(bundleJson);
+    const result = await verify(Bundle.toJSON(bundle));
     expect(result).toBe(false);
   });
 });
