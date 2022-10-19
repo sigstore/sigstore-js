@@ -41,9 +41,11 @@ export const bundle = {
       $case: 'dsseEnvelope',
       dsseEnvelope: envelope,
     },
-    timestampVerificationData: {
+    verificationData: {
       tlogEntries: [toTransparencyLogEntry(rekorEntry)],
-      rfc3161Timestamps: [],
+      timestampVerificationData: {
+        rfc3161Timestamps: [],
+      },
     },
     verificationMaterial: toVerificationMaterial(certificate),
   }),
@@ -65,19 +67,18 @@ export const bundle = {
         signature: signature,
       },
     },
-    timestampVerificationData: {
+    verificationData: {
       tlogEntries: [toTransparencyLogEntry(rekorEntry)],
-      rfc3161Timestamps: [],
+      timestampVerificationData: {
+        rfc3161Timestamps: [],
+      },
     },
     verificationMaterial: toVerificationMaterial(certificate),
   }),
 };
 
 function toTransparencyLogEntry(entry: Entry): TransparencyLogEntry {
-  const inclusionPromise = Buffer.from(
-    entry.verification.signedEntryTimestamp,
-    'base64'
-  );
+  const set = Buffer.from(entry.verification.signedEntryTimestamp, 'base64');
   const logID = Buffer.from(entry.logID, 'hex');
 
   // Parse entry body so we can extract the kind and version.
@@ -85,9 +86,13 @@ function toTransparencyLogEntry(entry: Entry): TransparencyLogEntry {
   const entryBody: EntryKind = JSON.parse(bodyJSON);
 
   return {
-    inclusionPromise: inclusionPromise,
+    inclusionPromise: {
+      signedEntryTimestamp: set,
+    },
     logIndex: entry.logIndex.toString(),
-    logId: logID,
+    logId: {
+      keyId: logID,
+    },
     integratedTime: entry.integratedTime.toString(),
     kindVersion: {
       kind: entryBody.kind,
@@ -102,7 +107,9 @@ function toVerificationMaterial(certificates: string[]): VerificationMaterial {
     content: {
       $case: 'x509CertificateChain',
       x509CertificateChain: {
-        certificates: certificates.map((c) => pem.toDER(c)),
+        certificates: certificates.map((c) => ({
+          derBytes: pem.toDER(c),
+        })),
       },
     },
   };

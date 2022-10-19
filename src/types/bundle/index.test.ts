@@ -73,24 +73,30 @@ describe('bundle', () => {
         const chain = b.verificationMaterial.content.x509CertificateChain;
         expect(chain).toBeTruthy();
         expect(chain.certificates).toHaveLength(1);
-        expect(chain.certificates[0]).toEqual(pem.toDER(certificate));
+        expect(chain.certificates[0].derBytes).toEqual(pem.toDER(certificate));
       } else {
         fail('Expected x509CertificateChain');
       }
 
       // Timestamp verification data
-      expect(b.timestampVerificationData).toBeTruthy();
-      expect(b.timestampVerificationData?.rfc3161Timestamps).toHaveLength(0);
-      expect(b.timestampVerificationData?.tlogEntries).toHaveLength(1);
+      expect(b.verificationData).toBeTruthy();
+      expect(b.verificationData?.timestampVerificationData).toBeTruthy();
+      expect(
+        b.verificationData?.timestampVerificationData?.rfc3161Timestamps
+      ).toHaveLength(0);
+      expect(b.verificationData?.tlogEntries).toHaveLength(1);
 
-      const tlog = b.timestampVerificationData?.tlogEntries[0];
-      expect(tlog?.inclusionPromise.toString('base64')).toEqual(
-        rekorEntry.verification.signedEntryTimestamp
-      );
+      const tlog = b.verificationData?.tlogEntries[0];
+      expect(tlog?.inclusionPromise).toBeTruthy();
+      expect(
+        tlog?.inclusionPromise?.signedEntryTimestamp.toString('base64')
+      ).toEqual(rekorEntry.verification.signedEntryTimestamp);
       expect(tlog?.integratedTime).toEqual(
         rekorEntry.integratedTime.toString()
       );
-      expect(tlog?.logId.toString('hex')).toEqual(rekorEntry.logID);
+      expect(tlog?.logId).toBeTruthy();
+      expect(tlog?.logId?.keyId).toBeTruthy();
+      expect(tlog?.logId?.keyId.toString('hex')).toEqual(rekorEntry.logID);
       expect(tlog?.logIndex).toEqual(rekorEntry.logIndex.toString());
       expect(tlog?.inclusionProof).toBeFalsy();
       expect(tlog?.kindVersion?.kind).toEqual(entryKind.kind);
@@ -153,24 +159,30 @@ describe('bundle', () => {
         const chain = b.verificationMaterial.content.x509CertificateChain;
         expect(chain).toBeTruthy();
         expect(chain.certificates).toHaveLength(1);
-        expect(chain.certificates[0]).toEqual(pem.toDER(certificate));
+        expect(chain.certificates[0].derBytes).toEqual(pem.toDER(certificate));
       } else {
         fail('Expected x509CertificateChain');
       }
 
       // Timestamp verification data
-      expect(b.timestampVerificationData).toBeTruthy();
-      expect(b.timestampVerificationData?.rfc3161Timestamps).toHaveLength(0);
-      expect(b.timestampVerificationData?.tlogEntries).toHaveLength(1);
+      expect(b.verificationData).toBeTruthy();
+      expect(b.verificationData?.timestampVerificationData).toBeTruthy();
+      expect(
+        b.verificationData?.timestampVerificationData?.rfc3161Timestamps
+      ).toHaveLength(0);
+      expect(b.verificationData?.tlogEntries).toHaveLength(1);
 
-      const tlog = b.timestampVerificationData?.tlogEntries[0];
-      expect(tlog?.inclusionPromise.toString('base64')).toEqual(
-        rekorEntry.verification.signedEntryTimestamp
-      );
+      const tlog = b.verificationData?.tlogEntries[0];
+      expect(tlog?.inclusionPromise).toBeTruthy();
+      expect(
+        tlog?.inclusionPromise?.signedEntryTimestamp.toString('base64')
+      ).toEqual(rekorEntry.verification.signedEntryTimestamp);
       expect(tlog?.integratedTime).toEqual(
         rekorEntry.integratedTime.toString()
       );
-      expect(tlog?.logId.toString('hex')).toEqual(rekorEntry.logID);
+      expect(tlog?.logId).toBeTruthy();
+      expect(tlog?.logId?.keyId).toBeTruthy();
+      expect(tlog?.logId?.keyId.toString('hex')).toEqual(rekorEntry.logID);
       expect(tlog?.logIndex).toEqual(rekorEntry.logIndex.toString());
       expect(tlog?.inclusionProof).toBeFalsy();
       expect(tlog?.kindVersion?.kind).toEqual(entryKind.kind);

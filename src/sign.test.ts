@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import nock from 'nock';
-import { pem } from './util';
 import { Fulcio, Rekor } from './client';
 import { Signer } from './sign';
 import { HashAlgorithm } from './types/bundle';
+import { pem } from './util';
 
 describe('Signer', () => {
   const fulcioBaseURL = 'http://localhost:8001';
@@ -161,27 +161,41 @@ describe('Signer', () => {
               bundle.verificationMaterial.content.x509CertificateChain;
             expect(chain).toBeTruthy();
             expect(chain.certificates).toHaveLength(2);
-            expect(chain.certificates[0]).toEqual(pem.toDER(leafCertificate));
-            expect(chain.certificates[1]).toEqual(pem.toDER(rootCertificate));
+            expect(chain.certificates[0].derBytes).toEqual(
+              pem.toDER(leafCertificate)
+            );
+            expect(chain.certificates[1].derBytes).toEqual(
+              pem.toDER(rootCertificate)
+            );
           } else {
             fail('Expected x509CertificateChain');
           }
 
           // Timestamp verification data
-          expect(bundle.timestampVerificationData).toBeTruthy();
+          expect(bundle.verificationData).toBeTruthy();
           expect(
-            bundle.timestampVerificationData?.rfc3161Timestamps
+            bundle.verificationData?.timestampVerificationData
+          ).toBeTruthy();
+          expect(
+            bundle.verificationData?.timestampVerificationData
+              ?.rfc3161Timestamps
           ).toHaveLength(0);
-          expect(bundle.timestampVerificationData?.tlogEntries).toHaveLength(1);
+          expect(bundle.verificationData?.tlogEntries).toHaveLength(1);
 
-          const tlog = bundle.timestampVerificationData?.tlogEntries[0];
-          expect(tlog?.inclusionPromise.toString('base64')).toEqual(
-            rekorEntry[uuid].verification.signedEntryTimestamp
-          );
+          const tlog = bundle.verificationData?.tlogEntries[0];
+          expect(tlog?.inclusionPromise).toBeTruthy();
+          expect(tlog?.inclusionPromise?.signedEntryTimestamp).toBeTruthy();
+          expect(
+            tlog?.inclusionPromise?.signedEntryTimestamp.toString('base64')
+          ).toEqual(rekorEntry[uuid].verification.signedEntryTimestamp);
           expect(tlog?.integratedTime).toEqual(
             rekorEntry[uuid].integratedTime.toString()
           );
-          expect(tlog?.logId.toString('hex')).toEqual(rekorEntry[uuid].logID);
+          expect(tlog?.logId).toBeTruthy();
+          expect(tlog?.logId?.keyId).toBeTruthy();
+          expect(tlog?.logId?.keyId.toString('hex')).toEqual(
+            rekorEntry[uuid].logID
+          );
           expect(tlog?.logIndex).toEqual(rekorEntry[uuid].logIndex.toString());
           expect(tlog?.inclusionProof).toBeFalsy();
           expect(tlog?.kindVersion?.kind).toEqual('hashedrekord');
@@ -301,26 +315,38 @@ describe('Signer', () => {
               bundle.verificationMaterial.content.x509CertificateChain;
             expect(chain).toBeTruthy();
             expect(chain.certificates).toHaveLength(1);
-            expect(chain.certificates[0]).toEqual(pem.toDER(certificate));
+            expect(chain.certificates[0].derBytes).toEqual(
+              pem.toDER(certificate)
+            );
           } else {
             fail('Expected x509CertificateChain');
           }
 
           // Timestamp verification data
-          expect(bundle.timestampVerificationData).toBeTruthy();
+          expect(bundle.verificationData).toBeTruthy();
           expect(
-            bundle.timestampVerificationData?.rfc3161Timestamps
+            bundle.verificationData?.timestampVerificationData
+          ).toBeTruthy();
+          expect(
+            bundle.verificationData?.timestampVerificationData
+              ?.rfc3161Timestamps
           ).toHaveLength(0);
-          expect(bundle.timestampVerificationData?.tlogEntries).toHaveLength(1);
+          expect(bundle.verificationData?.tlogEntries).toHaveLength(1);
 
-          const tlog = bundle.timestampVerificationData?.tlogEntries[0];
-          expect(tlog?.inclusionPromise.toString('base64')).toEqual(
-            rekorEntry[uuid].verification.signedEntryTimestamp
-          );
+          const tlog = bundle.verificationData?.tlogEntries[0];
+          expect(tlog?.inclusionPromise).toBeTruthy();
+          expect(tlog?.inclusionPromise?.signedEntryTimestamp).toBeTruthy();
+          expect(
+            tlog?.inclusionPromise?.signedEntryTimestamp.toString('base64')
+          ).toEqual(rekorEntry[uuid].verification.signedEntryTimestamp);
           expect(tlog?.integratedTime).toEqual(
             rekorEntry[uuid].integratedTime.toString()
           );
-          expect(tlog?.logId.toString('hex')).toEqual(rekorEntry[uuid].logID);
+          expect(tlog?.logId).toBeTruthy();
+          expect(tlog?.logId?.keyId).toBeTruthy();
+          expect(tlog?.logId?.keyId.toString('hex')).toEqual(
+            rekorEntry[uuid].logID
+          );
           expect(tlog?.logIndex).toEqual(rekorEntry[uuid].logIndex.toString());
           expect(tlog?.inclusionProof).toBeFalsy();
           expect(tlog?.kindVersion?.kind).toEqual('intoto');

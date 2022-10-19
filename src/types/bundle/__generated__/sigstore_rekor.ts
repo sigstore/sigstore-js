@@ -12,6 +12,20 @@ export interface KindVersion {
 }
 
 /**
+ * The checkpoint contains a signature of the tree head (root hash),
+ * size of the tree, the transparency log's unique identifier (log ID),
+ * hostname and the current time.
+ * The result is a string, the format is described here
+ * https://github.com/transparency-dev/formats/blob/main/log/README.md
+ * The details are here https://github.com/sigstore/rekor/blob/main/pkg/util/signed_note.go#L114.
+ * The signature has the same format as
+ * TransparencyLogEntry.inclusion_proof. See below for more details.
+ */
+export interface Checkpoint {
+  envelope: string;
+}
+
+/**
  * InclusionProof is the proof returned from the transparency log. Can
  * be used for on line verification against the log.
  */
@@ -30,17 +44,34 @@ export interface InclusionProof {
    * in order from leaf to root.
    */
   hashes: Buffer[];
+  /** Signature of the current tree head. See above for more details. */
+  checkpoint: Checkpoint | undefined;
+}
+
+/**
+ * The inclusion promise is calculated by Rekor. It's calculated as a
+ * signature over a canonical JSON serialization of the persisted entry, the
+ * log ID, log index and the integration timestamp.
+ * See https://github.com/sigstore/rekor/blob/main/pkg/api/entries.go#L54
+ * The format of the signature depends on the transparency log's public key.
+ * If the signature algorithm requires a hash function and/or a signature
+ * scheme (e.g. RSA) those has to be retrieved out-of-band from the log's
+ * operators, together with the public key.
+ * This is primarily used to verify the integration timestamp's value.
+ */
+export interface InclusionPromise {
+  signedEntryTimestamp: Buffer;
+}
+
+/** LogId captures the identity of a transparceny log. */
+export interface LogId {
   /**
-   * The checkpoint contains a signature of the tree head (root hash),
-   * size of the tree, the transparency log's unique identifier
-   * (log ID), hostname and the current time.
-   * The result is a string, the format is described here
-   * https://github.com/transparency-dev/formats/blob/main/log/README.md
-   * The details are here https://github.com/sigstore/rekor/blob/main/pkg/util/signed_note.go#L114.
-   * The signature has the same format as
-   * TransparencyLogEntry.inclusion_proof. See below for more details.
+   * The unique id of the log, represented as the SHA-256 hash
+   * of the log's public key, computed over the DER encoding.
+   * This is similar to how it works for certificate transparency logs:
+   * https://www.rfc-editor.org/rfc/rfc6962#section-3.2
    */
-  checkpoint: string;
+  keyId: Buffer;
 }
 
 /**
@@ -56,8 +87,10 @@ export interface InclusionProof {
 export interface TransparencyLogEntry {
   /** The index of the entry in the log. */
   logIndex: string;
-  /** The unique (binary) identifier of the log. */
-  logId: Buffer;
+  /** The unique identifier of the log. */
+  logId:
+    | LogId
+    | undefined;
   /**
    * The kind (type) and version of the object associated with this
    * entry. These values are required to construct the entry during
@@ -68,21 +101,10 @@ export interface TransparencyLogEntry {
     | undefined;
   /** The UNIX timestamp from the log when the entry was persisted. */
   integratedTime: string;
-  /**
-   * The inclusion promise is calculated by Rekor. It's calculated as a
-   * signature over a canonical JSON serialization of the persisted
-   * entry, the log ID, log index and the integration timestamp.
-   * See https://github.com/sigstore/rekor/blob/main/pkg/api/entries.go#L54
-   * The format of the signature depends on the transparency log's
-   * public key. If the signature algorithm requires a hash function
-   * and/or a signature scheme (e.g. RSA) those has to be retrieved
-   * out-of-band from the log's operators, together with the public
-   * key.
-   * This is primarily used to verify the integration timestamp's
-   * value. This is commonly also referred to as the
-   * 'SignedEntryTimestamp', or just SET in short.
-   */
-  inclusionPromise: Buffer;
+  /** The inclusion promise/signed entry timestamp from the log. */
+  inclusionPromise:
+    | InclusionPromise
+    | undefined;
   /**
    * The inclusion proof can be used for online verification that the
    * entry was appended to the log, and that the log has not been
@@ -111,8 +133,24 @@ export const KindVersion = {
   },
 };
 
+function createBaseCheckpoint(): Checkpoint {
+  return { envelope: "" };
+}
+
+export const Checkpoint = {
+  fromJSON(object: any): Checkpoint {
+    return { envelope: isSet(object.envelope) ? String(object.envelope) : "" };
+  },
+
+  toJSON(message: Checkpoint): unknown {
+    const obj: any = {};
+    message.envelope !== undefined && (obj.envelope = message.envelope);
+    return obj;
+  },
+};
+
 function createBaseInclusionProof(): InclusionProof {
-  return { logIndex: "0", rootHash: Buffer.alloc(0), treeSize: "0", hashes: [], checkpoint: "" };
+  return { logIndex: "0", rootHash: Buffer.alloc(0), treeSize: "0", hashes: [], checkpoint: undefined };
 }
 
 export const InclusionProof = {
@@ -122,7 +160,7 @@ export const InclusionProof = {
       rootHash: isSet(object.rootHash) ? Buffer.from(bytesFromBase64(object.rootHash)) : Buffer.alloc(0),
       treeSize: isSet(object.treeSize) ? String(object.treeSize) : "0",
       hashes: Array.isArray(object?.hashes) ? object.hashes.map((e: any) => Buffer.from(bytesFromBase64(e))) : [],
-      checkpoint: isSet(object.checkpoint) ? String(object.checkpoint) : "",
+      checkpoint: isSet(object.checkpoint) ? Checkpoint.fromJSON(object.checkpoint) : undefined,
     };
   },
 
@@ -137,7 +175,48 @@ export const InclusionProof = {
     } else {
       obj.hashes = [];
     }
-    message.checkpoint !== undefined && (obj.checkpoint = message.checkpoint);
+    message.checkpoint !== undefined &&
+      (obj.checkpoint = message.checkpoint ? Checkpoint.toJSON(message.checkpoint) : undefined);
+    return obj;
+  },
+};
+
+function createBaseInclusionPromise(): InclusionPromise {
+  return { signedEntryTimestamp: Buffer.alloc(0) };
+}
+
+export const InclusionPromise = {
+  fromJSON(object: any): InclusionPromise {
+    return {
+      signedEntryTimestamp: isSet(object.signedEntryTimestamp)
+        ? Buffer.from(bytesFromBase64(object.signedEntryTimestamp))
+        : Buffer.alloc(0),
+    };
+  },
+
+  toJSON(message: InclusionPromise): unknown {
+    const obj: any = {};
+    message.signedEntryTimestamp !== undefined &&
+      (obj.signedEntryTimestamp = base64FromBytes(
+        message.signedEntryTimestamp !== undefined ? message.signedEntryTimestamp : Buffer.alloc(0),
+      ));
+    return obj;
+  },
+};
+
+function createBaseLogId(): LogId {
+  return { keyId: Buffer.alloc(0) };
+}
+
+export const LogId = {
+  fromJSON(object: any): LogId {
+    return { keyId: isSet(object.keyId) ? Buffer.from(bytesFromBase64(object.keyId)) : Buffer.alloc(0) };
+  },
+
+  toJSON(message: LogId): unknown {
+    const obj: any = {};
+    message.keyId !== undefined &&
+      (obj.keyId = base64FromBytes(message.keyId !== undefined ? message.keyId : Buffer.alloc(0)));
     return obj;
   },
 };
@@ -145,10 +224,10 @@ export const InclusionProof = {
 function createBaseTransparencyLogEntry(): TransparencyLogEntry {
   return {
     logIndex: "0",
-    logId: Buffer.alloc(0),
+    logId: undefined,
     kindVersion: undefined,
     integratedTime: "0",
-    inclusionPromise: Buffer.alloc(0),
+    inclusionPromise: undefined,
     inclusionProof: undefined,
   };
 }
@@ -157,12 +236,10 @@ export const TransparencyLogEntry = {
   fromJSON(object: any): TransparencyLogEntry {
     return {
       logIndex: isSet(object.logIndex) ? String(object.logIndex) : "0",
-      logId: isSet(object.logId) ? Buffer.from(bytesFromBase64(object.logId)) : Buffer.alloc(0),
+      logId: isSet(object.logId) ? LogId.fromJSON(object.logId) : undefined,
       kindVersion: isSet(object.kindVersion) ? KindVersion.fromJSON(object.kindVersion) : undefined,
       integratedTime: isSet(object.integratedTime) ? String(object.integratedTime) : "0",
-      inclusionPromise: isSet(object.inclusionPromise)
-        ? Buffer.from(bytesFromBase64(object.inclusionPromise))
-        : Buffer.alloc(0),
+      inclusionPromise: isSet(object.inclusionPromise) ? InclusionPromise.fromJSON(object.inclusionPromise) : undefined,
       inclusionProof: isSet(object.inclusionProof) ? InclusionProof.fromJSON(object.inclusionProof) : undefined,
     };
   },
@@ -170,15 +247,12 @@ export const TransparencyLogEntry = {
   toJSON(message: TransparencyLogEntry): unknown {
     const obj: any = {};
     message.logIndex !== undefined && (obj.logIndex = message.logIndex);
-    message.logId !== undefined &&
-      (obj.logId = base64FromBytes(message.logId !== undefined ? message.logId : Buffer.alloc(0)));
+    message.logId !== undefined && (obj.logId = message.logId ? LogId.toJSON(message.logId) : undefined);
     message.kindVersion !== undefined &&
       (obj.kindVersion = message.kindVersion ? KindVersion.toJSON(message.kindVersion) : undefined);
     message.integratedTime !== undefined && (obj.integratedTime = message.integratedTime);
     message.inclusionPromise !== undefined &&
-      (obj.inclusionPromise = base64FromBytes(
-        message.inclusionPromise !== undefined ? message.inclusionPromise : Buffer.alloc(0),
-      ));
+      (obj.inclusionPromise = message.inclusionPromise ? InclusionPromise.toJSON(message.inclusionPromise) : undefined);
     message.inclusionProof !== undefined &&
       (obj.inclusionProof = message.inclusionProof ? InclusionProof.toJSON(message.inclusionProof) : undefined);
     return obj;

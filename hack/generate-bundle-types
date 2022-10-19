@@ -8,7 +8,7 @@ mkdir -p ${OUTPUT_DIR}
 
 # Retrieve proto files
 REPO=sigstore/cosign
-REF=29f29f284e59f09a5b562c2d2285688734a98995
+REF=dd6037afdfd4a8310a0e5041a93ff4224344bded
 PB_PATH=specs/dotsigstore_bundle/pb
 
 DEFS_DIR=/tmp/defs

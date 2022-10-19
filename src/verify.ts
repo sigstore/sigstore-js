@@ -58,7 +58,7 @@ export class Verifier {
 
     const certificate =
       bundle.verificationMaterial.content.x509CertificateChain.certificates[0];
-    const cert = pem.fromDER(certificate);
+    const cert = pem.fromDER(certificate.derBytes);
 
     if (!data) {
       throw new Error('No data to verify');
