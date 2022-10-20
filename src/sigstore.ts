@@ -16,7 +16,12 @@ limitations under the License.
 import { Fulcio, Rekor } from './client';
 import identity, { Provider } from './identity';
 import { Signer } from './sign';
-import { Bundle } from './types/bundle';
+import {
+  Bundle as BundleSerializer,
+  SerializedBundle,
+  SerializedDSSEBundle,
+  SerializedMessageSignatureBundle,
+} from './types/bundle';
 import { Verifier } from './verify';
 
 export interface SignOptions {
@@ -36,6 +41,10 @@ export function getRekorBaseUrl(options?: SignOptions) {
   return Rekor.getBaseUrl(options?.rekorBaseURL);
 }
 
+export type DSSEBundle = SerializedDSSEBundle;
+export type MessageSignatureBundle = SerializedMessageSignatureBundle;
+export type Bundle = SerializedBundle;
+
 type IdentityProviderOptions = Pick<
   SignOptions,
   'identityToken' | 'oidcIssuer' | 'oidcClientID' | 'oidcClientSecret'
@@ -44,32 +53,36 @@ type IdentityProviderOptions = Pick<
 export async function sign(
   payload: Buffer,
   options: SignOptions = {}
-): Promise<Bundle> {
+): Promise<MessageSignatureBundle> {
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
   const idps = configureIdentityProviders(options);
-
-  return new Signer({
+  const signer = new Signer({
     fulcio,
     rekor,
     identityProviders: idps,
-  }).signBlob(payload);
+  });
+
+  const bundle = await signer.signBlob(payload);
+  return BundleSerializer.toJSON(bundle) as MessageSignatureBundle;
 }
 
 export async function signAttestation(
   payload: Buffer,
   payloadType: string,
   options: SignOptions = {}
-): Promise<Bundle> {
+): Promise<DSSEBundle> {
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
   const idps = configureIdentityProviders(options);
-
-  return new Signer({
+  const signer = new Signer({
     fulcio,
     rekor,
     identityProviders: idps,
-  }).signAttestation(payload, payloadType);
+  });
+
+  const bundle = await signer.signAttestation(payload, payloadType);
+  return BundleSerializer.toJSON(bundle) as DSSEBundle;
 }
 
 export async function verify(
@@ -78,7 +91,10 @@ export async function verify(
   options: VerifierOptions = {}
 ): Promise<boolean> {
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
-  return new Verifier({ rekor }).verify(bundle, data);
+  const verifier = new Verifier({ rekor });
+
+  const b = BundleSerializer.fromJSON(bundle);
+  return verifier.verify(b, data);
 }
 
 // Translates the IdenityProviderOptions into a list of Providers which

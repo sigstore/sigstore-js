@@ -15,7 +15,7 @@ limitations under the License.
 */
 import { Signer } from './sign';
 import { sign, signAttestation, verify } from './sigstore';
-import { Bundle, HashAlgorithm } from './types/bundle';
+import { Bundle, SerializedBundle } from './types/bundle';
 import { Verifier } from './verify';
 
 jest.mock('./sign');
@@ -24,9 +24,8 @@ describe('sign', () => {
   const payload = Buffer.from('Hello, world!');
 
   // Signer output
-  const signedPayload = {
-    base64Signature: 'signature',
-    cert: 'cert',
+  const bundle = {
+    mediaType: 'test/output',
   };
 
   const mockSigner = jest.mocked(Signer);
@@ -36,7 +35,7 @@ describe('sign', () => {
     mockSigner.mockClear();
 
     mockSign.mockClear();
-    mockSign.mockResolvedValueOnce(signedPayload);
+    mockSign.mockResolvedValueOnce(bundle);
     jest.spyOn(Signer.prototype, 'signBlob').mockImplementation(mockSign);
   });
 
@@ -66,7 +65,7 @@ describe('sign', () => {
   it('returns the correct envelope', async () => {
     const sig = await sign(payload);
 
-    expect(sig).toEqual(signedPayload);
+    expect(sig).toEqual(bundle);
   });
 });
 
@@ -75,9 +74,8 @@ describe('signAttestation', () => {
   const payloadType = 'text/plain';
 
   // Signer output
-  const signedPayload = {
-    base64Signature: 'signature',
-    cert: 'cert',
+  const bundle = {
+    mediaType: 'test/output',
   };
 
   const mockSigner = jest.mocked(Signer);
@@ -87,7 +85,7 @@ describe('signAttestation', () => {
     mockSigner.mockClear();
 
     mockSign.mockClear();
-    mockSign.mockResolvedValueOnce(signedPayload);
+    mockSign.mockResolvedValueOnce(bundle);
     jest
       .spyOn(Signer.prototype, 'signAttestation')
       .mockImplementation(mockSign);
@@ -119,22 +117,20 @@ describe('signAttestation', () => {
   it('returns the correct envelope', async () => {
     const sig = await signAttestation(payload, payloadType);
 
-    expect(sig).toEqual(signedPayload);
+    expect(sig).toEqual(bundle);
   });
 });
 
 describe('#verify', () => {
-  const bundle: Bundle = {
+  const bundle: SerializedBundle = {
     mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.1',
-    content: {
-      $case: 'messageSignature',
-      messageSignature: {
-        messageDigest: {
-          algorithm: HashAlgorithm.SHA2_256,
-          digest: Buffer.from(''),
-        },
-        signature: Buffer.from(''),
+    messageSignature: {
+      messageDigest: {
+        algorithm: 'SHA2_256',
+        digest: '1o51L/K0DEbwMF440I3k26pgNTMNwppInpR+aU+a0Hw=',
       },
+      signature:
+        'MEUCIEBnPQyP/nzkuBZcdX6faw8TpDGkxMJ+EiCgy4IrZ0kHAiEA8j+nFFNiI5JN36yNynao6uLw0Z5DE99Gi+mnP7QV+Uk=',
     },
     verificationData: {
       timestampVerificationData: {
@@ -143,11 +139,8 @@ describe('#verify', () => {
       tlogEntries: [],
     },
     verificationMaterial: {
-      content: {
-        $case: 'x509CertificateChain',
-        x509CertificateChain: {
-          certificates: [],
-        },
+      x509CertificateChain: {
+        certificates: [{ derBytes: '' }],
       },
     },
   };
@@ -162,7 +155,7 @@ describe('#verify', () => {
 
   it('invokes the Verifier instance with the correct params', async () => {
     await verify(bundle);
-    expect(mockVerify).toHaveBeenCalledWith(bundle, undefined);
+    expect(mockVerify).toHaveBeenCalledWith(Bundle.fromJSON(bundle), undefined);
   });
 
   it('returns the value returned by the verifier', async () => {

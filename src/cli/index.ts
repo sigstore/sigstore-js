@@ -15,7 +15,6 @@ limitations under the License.
 */
 import fs from 'fs';
 import { sigstore } from '../index';
-import { Bundle } from '../types/bundle';
 
 const INTOTO_PAYLOAD_TYPE = 'application/vnd.in-toto+json';
 
@@ -75,7 +74,7 @@ async function sign(artifactPath: string) {
   console.error(`Created entry at index ${logIndex}, available at`);
   console.error(`${url}?logIndex=${logIndex}`);
 
-  console.log(JSON.stringify(Bundle.toJSON(bundle)));
+  console.log(JSON.stringify(bundle));
 }
 
 async function signDSSE(
@@ -88,7 +87,7 @@ async function signDSSE(
     payloadType,
     signOptions
   );
-  console.log(JSON.stringify(Bundle.toJSON(bundle)));
+  console.log(JSON.stringify(bundle));
 }
 
 async function verify(bundlePath: string, artifactPath: string) {
@@ -99,7 +98,7 @@ async function verify(bundlePath: string, artifactPath: string) {
   }
 
   const bundleFile = fs.readFileSync(bundlePath);
-  const bundle = Bundle.fromJSON(JSON.parse(bundleFile.toString('utf-8')));
+  const bundle = JSON.parse(bundleFile.toString('utf-8'));
 
   const result = await sigstore.verify(bundle, payload);
 
