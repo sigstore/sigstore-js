@@ -30,9 +30,35 @@ async function cli(args: string[]) {
     case 'verify':
       await verify(args[1], args[2]);
       break;
+    case 'version':
+    case '-version':
+    case '--version':
+    case '-v':
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      console.log(require('../../package.json').version);
+      break;
+    case 'help':
+    case '--help':
+    case '-h':
+    case '-?':
+      printUsage();
+      break;
     default:
       throw 'Unknown command';
   }
+}
+
+function printUsage() {
+  console.log(`sigstore <command> <artifact>
+
+  Usage:
+
+  sigstore sign         sign an artifact
+  sigstore sign-dsse    sign an artifact using dsse (Dead Simple Signing Envelope)
+  sigstore verify       verify an artifact
+  sigstore version      print version information
+  sigstore help         print help information
+  `);
 }
 
 const signOptions = {
