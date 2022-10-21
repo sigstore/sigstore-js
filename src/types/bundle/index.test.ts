@@ -16,10 +16,18 @@ limitations under the License.
 import { encoding as enc, pem } from '../../util';
 import { Envelope, HashAlgorithm } from '../bundle';
 import { Entry } from '../rekor';
+import { SignatureMaterial } from '../signature';
 import { bundle } from './index';
 
 describe('bundle', () => {
+  const signature = Buffer.from('signature');
   const certificate = `-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----`;
+
+  const sigMaterial: SignatureMaterial = {
+    signature,
+    certificates: [certificate],
+    key: undefined,
+  };
 
   describe('toDSSEBundle', () => {
     const envelope: Envelope = {
@@ -28,7 +36,7 @@ describe('bundle', () => {
       signatures: [
         {
           keyid: '',
-          sig: Buffer.from('signature'),
+          sig: signature,
         },
       ],
     };
@@ -56,7 +64,7 @@ describe('bundle', () => {
     };
 
     it('returns a valid DSSE bundle', () => {
-      const b = bundle.toDSSEBundle(envelope, [certificate], rekorEntry);
+      const b = bundle.toDSSEBundle(envelope, sigMaterial, rekorEntry);
 
       expect(b).toBeTruthy();
       expect(b.mediaType).toEqual(
@@ -106,7 +114,6 @@ describe('bundle', () => {
 
   describe('toMessageSignatureBundle', () => {
     const digest = Buffer.from('digest');
-    const signature = Buffer.from('signature');
 
     const entryKind = {
       kind: 'hashedrekord',
@@ -133,8 +140,7 @@ describe('bundle', () => {
     it('returns a valid message signature bundle', () => {
       const b = bundle.toMessageSignatureBundle(
         digest,
-        signature,
-        [certificate],
+        sigMaterial,
         rekorEntry
       );
 

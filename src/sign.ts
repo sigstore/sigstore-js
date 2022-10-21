@@ -18,22 +18,20 @@ import { Provider } from './identity';
 import { Bundle, bundle, Envelope } from './types/bundle';
 import { fulcio } from './types/fulcio';
 import { rekor } from './types/rekor';
+import { SignatureMaterial, SignerFunc } from './types/signature';
 import { crypto, dsse, oidc, pem } from './util';
 
 export interface SignOptions {
   fulcio: Fulcio;
   rekor: Rekor;
   identityProviders: Provider[];
-}
-
-interface SigCert {
-  signature: Buffer;
-  certificates: string[];
+  signer?: SignerFunc;
 }
 
 export class Signer {
   private fulcio: Fulcio;
   private rekor: Rekor;
+  private signer: SignerFunc;
 
   private identityProviders: Provider[] = [];
 
@@ -41,31 +39,24 @@ export class Signer {
     this.fulcio = options.fulcio;
     this.rekor = options.rekor;
     this.identityProviders = options.identityProviders;
+    this.signer = options.signer || this.signWithEphemeralKey.bind(this);
   }
 
   public async signBlob(payload: Buffer): Promise<Bundle> {
-    // Get signature and signing certificate for payload
-    const { signature, certificates } = await this.sign(payload);
+    // Get signature and verification material for payload
+    const sigMaterial = await this.signer(payload);
 
     // Calculate artifact digest
     const digest = crypto.hash(payload);
 
-    const leafCertificate = certificates[0];
-
     // Create Rekor entry
     const proposedEntry = rekor.toProposedHashedRekordEntry(
       digest,
-      signature,
-      leafCertificate
+      sigMaterial
     );
     const entry = await this.rekor.createEntry(proposedEntry);
 
-    return bundle.toMessageSignatureBundle(
-      digest,
-      signature,
-      certificates,
-      entry
-    );
+    return bundle.toMessageSignatureBundle(digest, sigMaterial, entry);
   }
 
   public async signAttestation(
@@ -75,32 +66,29 @@ export class Signer {
     // Pre-authentication encoding to be signed
     const paeBuffer = dsse.preAuthEncoding(payloadType, payload);
 
-    // Get signature and signing certificate for pae
-    const { signature, certificates } = await this.sign(paeBuffer);
+    // Get signature and verification material for pae
+    const sigMaterial = await this.signer(paeBuffer);
 
     const envelope: Envelope = {
       payloadType,
       payload: payload,
       signatures: [
         {
-          keyid: '',
-          sig: signature,
+          keyid: sigMaterial.key?.id || '',
+          sig: sigMaterial.signature,
         },
       ],
     };
 
-    const signingCertificate = certificates[0];
-
-    const proposedEntry = rekor.toProposedIntotoEntry(
-      envelope,
-      signingCertificate
-    );
+    const proposedEntry = rekor.toProposedIntotoEntry(envelope, sigMaterial);
     const entry = await this.rekor.createEntry(proposedEntry);
 
-    return bundle.toDSSEBundle(envelope, certificates, entry);
+    return bundle.toDSSEBundle(envelope, sigMaterial, entry);
   }
 
-  private async sign(payload: Buffer): Promise<SigCert> {
+  private async signWithEphemeralKey(
+    payload: Buffer
+  ): Promise<SignatureMaterial> {
     // Create emphemeral key pair
     const keypair = crypto.generateKeyPair();
 
@@ -125,6 +113,7 @@ export class Signer {
     return {
       signature,
       certificates: pem.split(certificate),
+      key: undefined,
     };
   }
 

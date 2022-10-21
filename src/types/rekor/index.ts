@@ -15,6 +15,7 @@ limitations under the License.
 */
 import { crypto, encoding as enc } from '../../util';
 import { Envelope } from '../bundle';
+import { SignatureMaterial } from '../signature';
 import { HashedRekorV001Schema } from './__generated__/hashedrekord';
 import { IntotoV001Schema, IntotoV002Schema } from './__generated__/intoto';
 
@@ -66,14 +67,13 @@ export interface InclusionProof {
 export const rekor = {
   toProposedIntotoEntry: (
     envelope: Envelope,
-    certificate: string
+    signature: SignatureMaterial
   ): IntotoKind => {
     // Double-encode payload and signature cause that's what Rekor expects
     const payload = enc.base64Encode(envelope.payload.toString('base64'));
-    const signature = enc.base64Encode(
-      envelope.signatures[0].sig.toString('base64')
-    );
-    const b64Certificate = enc.base64Encode(certificate);
+    const sig = enc.base64Encode(envelope.signatures[0].sig.toString('base64'));
+    const keyid = signature.key?.id || '';
+    const publicKey = enc.base64Encode(toPublicKey(signature));
     const hash = crypto.hash(JSON.stringify(envelope.payload)).toString('hex');
 
     return {
@@ -84,9 +84,7 @@ export const rekor = {
           envelope: {
             payloadType: envelope.payloadType,
             payload: payload,
-            signatures: [
-              { keyid: '', sig: signature, publicKey: b64Certificate },
-            ],
+            signatures: [{ sig, keyid, publicKey }],
           },
           hash: { algorithm: 'sha256', value: hash },
         },
@@ -96,12 +94,11 @@ export const rekor = {
 
   toProposedHashedRekordEntry: (
     digest: Buffer,
-    signature: Buffer,
-    certificate: string
+    signature: SignatureMaterial
   ): HashedRekordKind => {
     const b64Digest = digest.toString('hex');
-    const b64Signature = signature.toString('base64');
-    const b64Certificate = enc.base64Encode(certificate);
+    const b64Signature = signature.signature.toString('base64');
+    const b64Key = enc.base64Encode(toPublicKey(signature));
 
     return {
       apiVersion: '0.0.1',
@@ -116,10 +113,16 @@ export const rekor = {
         signature: {
           content: b64Signature,
           publicKey: {
-            content: b64Certificate,
+            content: b64Key,
           },
         },
       },
     };
   },
 };
+
+function toPublicKey(signature: SignatureMaterial): string {
+  return signature.certificates
+    ? signature.certificates[0]
+    : signature.key.value;
+}

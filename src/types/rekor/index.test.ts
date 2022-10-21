@@ -15,10 +15,17 @@ limitations under the License.
 */
 import { crypto, encoding as enc } from '../../util';
 import { Envelope } from '../bundle';
+import { SignatureMaterial } from '../signature';
 import { rekor } from './index';
 
 describe('request', () => {
   const cert = '-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----';
+  const signature = Buffer.from('signature');
+  const sigMaterial: SignatureMaterial = {
+    signature: signature,
+    certificates: [cert],
+    key: undefined,
+  };
 
   describe('toProposedIntotoEntry', () => {
     const envelope: Envelope = {
@@ -27,13 +34,13 @@ describe('request', () => {
       signatures: [
         {
           keyid: '',
-          sig: Buffer.from('signature'),
+          sig: signature,
         },
       ],
     };
 
     it('returns a valid intoto entry', () => {
-      const entry = rekor.toProposedIntotoEntry(envelope, cert);
+      const entry = rekor.toProposedIntotoEntry(envelope, sigMaterial);
 
       expect(entry.apiVersion).toEqual('0.0.2');
       expect(entry.kind).toEqual('intoto');
@@ -70,7 +77,7 @@ describe('request', () => {
     const signature = Buffer.from('signature');
 
     it('returns a valid hashedrekord entry', () => {
-      const entry = rekor.toProposedHashedRekordEntry(digest, signature, cert);
+      const entry = rekor.toProposedHashedRekordEntry(digest, sigMaterial);
 
       expect(entry.apiVersion).toEqual('0.0.1');
       expect(entry.kind).toEqual('hashedrekord');
