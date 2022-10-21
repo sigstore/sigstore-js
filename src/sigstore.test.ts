@@ -15,17 +15,75 @@ limitations under the License.
 */
 import { Signer } from './sign';
 import { sign, signAttestation, verify } from './sigstore';
-import { Bundle, SerializedBundle } from './types/bundle';
+import {
+  Bundle,
+  HashAlgorithm,
+  SerializedBundle,
+  VerificationData,
+  X509CertificateChain,
+} from './types/bundle';
 import { Verifier } from './verify';
 
 jest.mock('./sign');
+
+const verificationData: VerificationData = {
+  tlogEntries: [
+    {
+      logIndex: '0',
+      logId: {
+        keyId: Buffer.from('logId'),
+      },
+      kindVersion: {
+        kind: 'kind',
+        version: 'version',
+      },
+      integratedTime: '2021-01-01T00:00:00Z',
+      inclusionPromise: {
+        signedEntryTimestamp: Buffer.from('inclusionPromise'),
+      },
+      inclusionProof: {
+        logIndex: '0',
+        rootHash: Buffer.from('rootHash'),
+        treeSize: '0',
+        hashes: [Buffer.from('hash')],
+        checkpoint: {
+          envelope: 'checkpoint',
+        },
+      },
+    },
+  ],
+  timestampVerificationData: {
+    rfc3161Timestamps: [{ signedTimestamp: Buffer.from('signedTimestamp') }],
+  },
+};
+
+const x509CertificateChain: X509CertificateChain = {
+  certificates: [{ derBytes: Buffer.from('certificate') }],
+};
 
 describe('sign', () => {
   const payload = Buffer.from('Hello, world!');
 
   // Signer output
-  const bundle = {
+  const bundle: Bundle = {
     mediaType: 'test/output',
+    verificationData: verificationData,
+    verificationMaterial: {
+      content: {
+        $case: 'x509CertificateChain',
+        x509CertificateChain: x509CertificateChain,
+      },
+    },
+    content: {
+      $case: 'messageSignature',
+      messageSignature: {
+        messageDigest: {
+          algorithm: HashAlgorithm.SHA2_256,
+          digest: Buffer.from('messageDigest'),
+        },
+        signature: Buffer.from('signature'),
+      },
+    },
   };
 
   const mockSigner = jest.mocked(Signer);
@@ -65,7 +123,7 @@ describe('sign', () => {
   it('returns the correct envelope', async () => {
     const sig = await sign(payload);
 
-    expect(sig).toEqual(bundle);
+    expect(sig).toEqual(Bundle.toJSON(bundle));
   });
 });
 
@@ -74,8 +132,28 @@ describe('signAttestation', () => {
   const payloadType = 'text/plain';
 
   // Signer output
-  const bundle = {
+  const bundle: Bundle = {
     mediaType: 'test/output',
+    verificationData: verificationData,
+    verificationMaterial: {
+      content: {
+        $case: 'x509CertificateChain',
+        x509CertificateChain: x509CertificateChain,
+      },
+    },
+    content: {
+      $case: 'dsseEnvelope',
+      dsseEnvelope: {
+        payload: payload,
+        payloadType: payloadType,
+        signatures: [
+          {
+            keyid: 'keyid',
+            sig: Buffer.from('signature'),
+          },
+        ],
+      },
+    },
   };
 
   const mockSigner = jest.mocked(Signer);
@@ -117,13 +195,14 @@ describe('signAttestation', () => {
   it('returns the correct envelope', async () => {
     const sig = await signAttestation(payload, payloadType);
 
-    expect(sig).toEqual(bundle);
+    expect(sig).toEqual(Bundle.toJSON(bundle));
   });
 });
 
 describe('#verify', () => {
   const bundle: SerializedBundle = {
     mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.1',
+    dsseEnvelope: undefined,
     messageSignature: {
       messageDigest: {
         algorithm: 'SHA2_256',
@@ -139,6 +218,7 @@ describe('#verify', () => {
       tlogEntries: [],
     },
     verificationMaterial: {
+      publicKey: undefined,
       x509CertificateChain: {
         certificates: [{ derBytes: '' }],
       },

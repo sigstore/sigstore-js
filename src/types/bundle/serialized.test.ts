@@ -1,7 +1,19 @@
-import {
-  SerializedDSSEBundle,
-  SerializedMessageSignatureBundle,
-} from './serialized';
+/*
+Copyright 2022 The Sigstore Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+import { SerializedBundle } from './serialized';
 import { Envelope } from './__generated__/envelope';
 import { Bundle, VerificationData } from './__generated__/sigstore_bundle';
 import {
@@ -75,17 +87,17 @@ describe('Serialized Types', () => {
     };
 
     it('matches the serialized form of the Bundle', () => {
-      const json = Bundle.toJSON(dsseBundle) as SerializedDSSEBundle;
+      const json = Bundle.toJSON(dsseBundle) as SerializedBundle;
 
       expect(json.mediaType).toEqual(dsseBundle.mediaType);
       expect(json.verificationMaterial).toBeTruthy();
       expect(json.verificationMaterial?.x509CertificateChain).toBeTruthy();
       expect(
-        json.verificationMaterial?.x509CertificateChain.certificates
+        json.verificationMaterial?.x509CertificateChain?.certificates
       ).toHaveLength(x509CertificateChain.certificates.length);
 
       const cert =
-        json.verificationMaterial?.x509CertificateChain.certificates[0];
+        json.verificationMaterial?.x509CertificateChain?.certificates[0];
       expect(cert?.derBytes).toEqual(
         Buffer.from(x509CertificateChain.certificates[0].derBytes).toString(
           'base64'
@@ -201,19 +213,17 @@ describe('Serialized Types', () => {
     };
 
     it('matches the serialized form of the Bundle', () => {
-      const json = Bundle.toJSON(
-        messageSignatureBundle
-      ) as SerializedMessageSignatureBundle;
+      const json = Bundle.toJSON(messageSignatureBundle) as SerializedBundle;
 
       expect(json.mediaType).toEqual(messageSignatureBundle.mediaType);
       expect(json.verificationMaterial).toBeTruthy();
       expect(json.verificationMaterial?.x509CertificateChain).toBeTruthy();
       expect(
-        json.verificationMaterial?.x509CertificateChain.certificates
+        json.verificationMaterial?.x509CertificateChain?.certificates
       ).toHaveLength(x509CertificateChain.certificates.length);
 
       const cert =
-        json.verificationMaterial?.x509CertificateChain.certificates[0];
+        json.verificationMaterial?.x509CertificateChain?.certificates[0];
       expect(cert?.derBytes).toEqual(
         Buffer.from(x509CertificateChain.certificates[0].derBytes).toString(
           'base64'
@@ -289,11 +299,11 @@ describe('Serialized Types', () => {
       );
 
       expect(json.messageSignature).toBeTruthy();
-      expect(json.messageSignature.messageDigest).toBeTruthy();
+      expect(json.messageSignature?.messageDigest).toBeTruthy();
       expect(json.messageSignature?.messageDigest?.digest).toEqual(
         (messageSignature.messageDigest?.digest as Buffer).toString('base64')
       );
-      expect(json.messageSignature.messageDigest?.algorithm).toEqual(
+      expect(json.messageSignature?.messageDigest?.algorithm).toEqual(
         hashAlgorithmToJSON(
           messageSignature.messageDigest?.algorithm as HashAlgorithm
         )

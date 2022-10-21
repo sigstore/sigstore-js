@@ -16,12 +16,7 @@ limitations under the License.
 import { Fulcio, Rekor } from './client';
 import identity, { Provider } from './identity';
 import { Signer } from './sign';
-import {
-  Bundle as BundleSerializer,
-  SerializedBundle,
-  SerializedDSSEBundle,
-  SerializedMessageSignatureBundle,
-} from './types/bundle';
+import { Bundle as BundleSerializer, SerializedBundle } from './types/bundle';
 import { Verifier } from './verify';
 
 export interface SignOptions {
@@ -41,8 +36,6 @@ export function getRekorBaseUrl(options?: SignOptions) {
   return Rekor.getBaseUrl(options?.rekorBaseURL);
 }
 
-export type DSSEBundle = SerializedDSSEBundle;
-export type MessageSignatureBundle = SerializedMessageSignatureBundle;
 export type Bundle = SerializedBundle;
 
 type IdentityProviderOptions = Pick<
@@ -53,7 +46,7 @@ type IdentityProviderOptions = Pick<
 export async function sign(
   payload: Buffer,
   options: SignOptions = {}
-): Promise<MessageSignatureBundle> {
+): Promise<Bundle> {
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
   const idps = configureIdentityProviders(options);
@@ -64,14 +57,14 @@ export async function sign(
   });
 
   const bundle = await signer.signBlob(payload);
-  return BundleSerializer.toJSON(bundle) as MessageSignatureBundle;
+  return BundleSerializer.toJSON(bundle) as Bundle;
 }
 
 export async function signAttestation(
   payload: Buffer,
   payloadType: string,
   options: SignOptions = {}
-): Promise<DSSEBundle> {
+): Promise<Bundle> {
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
   const idps = configureIdentityProviders(options);
@@ -82,7 +75,7 @@ export async function signAttestation(
   });
 
   const bundle = await signer.signAttestation(payload, payloadType);
-  return BundleSerializer.toJSON(bundle) as DSSEBundle;
+  return BundleSerializer.toJSON(bundle) as Bundle;
 }
 
 export async function verify(
