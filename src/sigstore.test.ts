@@ -136,8 +136,10 @@ describe('#verify', () => {
         signature: Buffer.from(''),
       },
     },
-    timestampVerificationData: {
-      rfc3161Timestamps: [],
+    verificationData: {
+      timestampVerificationData: {
+        rfc3161Timestamps: [],
+      },
       tlogEntries: [],
     },
     verificationMaterial: {

@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import fs from 'fs';
-import { Bundle } from '../types/bundle';
 import { sigstore } from '../index';
+import { Bundle } from '../types/bundle';
 
 const INTOTO_PAYLOAD_TYPE = 'application/vnd.in-toto+json';
 
@@ -71,7 +71,7 @@ async function sign(artifactPath: string) {
   const bundle = await sigstore.sign(buffer, signOptions);
 
   const url = `${sigstore.getRekorBaseUrl(signOptions)}/api/v1/log/entries`;
-  const logIndex = bundle.timestampVerificationData?.tlogEntries[0].logIndex;
+  const logIndex = bundle.verificationData?.tlogEntries[0].logIndex;
   console.error(`Created entry at index ${logIndex}, available at`);
   console.error(`${url}?logIndex=${logIndex}`);
 

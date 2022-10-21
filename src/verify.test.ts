@@ -53,12 +53,14 @@ describe('Verifier', () => {
           content: {
             $case: 'x509CertificateChain',
             x509CertificateChain: {
-              certificates: [signingCert],
+              certificates: [{ derBytes: signingCert }],
             },
           },
         },
-        timestampVerificationData: {
-          rfc3161Timestamps: [],
+        verificationData: {
+          timestampVerificationData: {
+            rfc3161Timestamps: [],
+          },
           tlogEntries: [],
         },
       };
@@ -110,13 +112,15 @@ describe('Verifier', () => {
           content: {
             $case: 'x509CertificateChain',
             x509CertificateChain: {
-              certificates: [signingCert],
+              certificates: [{ derBytes: signingCert }],
             },
           },
         },
-        timestampVerificationData: {
+        verificationData: {
           tlogEntries: [],
-          rfc3161Timestamps: [],
+          timestampVerificationData: {
+            rfc3161Timestamps: [],
+          },
         },
       };
 

@@ -101,16 +101,21 @@ export interface PublicKeyIdentifier {
   hint: string;
 }
 
+export interface X509Certificate {
+  /** DER encoded X509 certificate. */
+  derBytes: Buffer;
+}
+
 /** A chain of X509 certificates. */
 export interface X509CertificateChain {
   /**
-   * DER encoded certificate(s), with indices 0 to n.
+   * The chain of certificates, with indices 0 to n.
    * The first certificate in the array  must be the leaf
    * certificate used for signing. Any intermediate certificates
    * must be stored as offset 1 to n-1, and the root certificate at
    * position n.
    */
-  certificates: Buffer[];
+  certificates: X509Certificate[];
 }
 
 /**
@@ -206,6 +211,23 @@ export const PublicKeyIdentifier = {
   },
 };
 
+function createBaseX509Certificate(): X509Certificate {
+  return { derBytes: Buffer.alloc(0) };
+}
+
+export const X509Certificate = {
+  fromJSON(object: any): X509Certificate {
+    return { derBytes: isSet(object.derBytes) ? Buffer.from(bytesFromBase64(object.derBytes)) : Buffer.alloc(0) };
+  },
+
+  toJSON(message: X509Certificate): unknown {
+    const obj: any = {};
+    message.derBytes !== undefined &&
+      (obj.derBytes = base64FromBytes(message.derBytes !== undefined ? message.derBytes : Buffer.alloc(0)));
+    return obj;
+  },
+};
+
 function createBaseX509CertificateChain(): X509CertificateChain {
   return { certificates: [] };
 }
@@ -214,7 +236,7 @@ export const X509CertificateChain = {
   fromJSON(object: any): X509CertificateChain {
     return {
       certificates: Array.isArray(object?.certificates)
-        ? object.certificates.map((e: any) => Buffer.from(bytesFromBase64(e)))
+        ? object.certificates.map((e: any) => X509Certificate.fromJSON(e))
         : [],
     };
   },
@@ -222,7 +244,7 @@ export const X509CertificateChain = {
   toJSON(message: X509CertificateChain): unknown {
     const obj: any = {};
     if (message.certificates) {
-      obj.certificates = message.certificates.map((e) => base64FromBytes(e !== undefined ? e : Buffer.alloc(0)));
+      obj.certificates = message.certificates.map((e) => e ? X509Certificate.toJSON(e) : undefined);
     } else {
       obj.certificates = [];
     }
