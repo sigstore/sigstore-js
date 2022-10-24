@@ -16,7 +16,7 @@ limitations under the License.
 import { Fulcio, Rekor } from './client';
 import identity, { Provider } from './identity';
 import { Signer } from './sign';
-import { Bundle } from './types/bundle';
+import { Bundle as BundleSerializer, SerializedBundle } from './types/bundle';
 import { Verifier } from './verify';
 
 export interface SignOptions {
@@ -36,6 +36,8 @@ export function getRekorBaseUrl(options?: SignOptions) {
   return Rekor.getBaseUrl(options?.rekorBaseURL);
 }
 
+export type Bundle = SerializedBundle;
+
 type IdentityProviderOptions = Pick<
   SignOptions,
   'identityToken' | 'oidcIssuer' | 'oidcClientID' | 'oidcClientSecret'
@@ -48,12 +50,14 @@ export async function sign(
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
   const idps = configureIdentityProviders(options);
-
-  return new Signer({
+  const signer = new Signer({
     fulcio,
     rekor,
     identityProviders: idps,
-  }).signBlob(payload);
+  });
+
+  const bundle = await signer.signBlob(payload);
+  return BundleSerializer.toJSON(bundle) as Bundle;
 }
 
 export async function signAttestation(
@@ -64,12 +68,14 @@ export async function signAttestation(
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
   const idps = configureIdentityProviders(options);
-
-  return new Signer({
+  const signer = new Signer({
     fulcio,
     rekor,
     identityProviders: idps,
-  }).signAttestation(payload, payloadType);
+  });
+
+  const bundle = await signer.signAttestation(payload, payloadType);
+  return BundleSerializer.toJSON(bundle) as Bundle;
 }
 
 export async function verify(
@@ -78,7 +84,10 @@ export async function verify(
   options: VerifierOptions = {}
 ): Promise<boolean> {
   const rekor = new Rekor({ baseURL: options.rekorBaseURL });
-  return new Verifier({ rekor }).verify(bundle, data);
+  const verifier = new Verifier({ rekor });
+
+  const b = BundleSerializer.fromJSON(bundle);
+  return verifier.verify(b, data);
 }
 
 // Translates the IdenityProviderOptions into a list of Providers which
