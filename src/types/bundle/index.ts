@@ -15,6 +15,7 @@ limitations under the License.
 */
 import { encoding as enc, pem } from '../../util';
 import { Entry, EntryKind } from '../rekor';
+import { SignatureMaterial } from '../signature';
 import { Envelope } from './__generated__/envelope';
 import { Bundle } from './__generated__/sigstore_bundle';
 import {
@@ -34,7 +35,7 @@ const BUNDLE_MEDIA_TYPE =
 export const bundle = {
   toDSSEBundle: (
     envelope: Envelope,
-    certificate: string[],
+    signature: SignatureMaterial,
     rekorEntry: Entry
   ): Bundle => ({
     mediaType: BUNDLE_MEDIA_TYPE,
@@ -48,13 +49,12 @@ export const bundle = {
         rfc3161Timestamps: [],
       },
     },
-    verificationMaterial: toVerificationMaterial(certificate),
+    verificationMaterial: toVerificationMaterial(signature),
   }),
 
   toMessageSignatureBundle: (
     digest: Buffer,
-    signature: Buffer,
-    certificate: string[],
+    signature: SignatureMaterial,
     rekorEntry: Entry
   ): Bundle => ({
     mediaType: BUNDLE_MEDIA_TYPE,
@@ -65,7 +65,7 @@ export const bundle = {
           algorithm: HashAlgorithm.SHA2_256,
           digest: digest,
         },
-        signature: signature,
+        signature: signature.signature,
       },
     },
     verificationData: {
@@ -74,7 +74,7 @@ export const bundle = {
         rfc3161Timestamps: [],
       },
     },
-    verificationMaterial: toVerificationMaterial(certificate),
+    verificationMaterial: toVerificationMaterial(signature),
   }),
 };
 
@@ -103,7 +103,17 @@ function toTransparencyLogEntry(entry: Entry): TransparencyLogEntry {
   };
 }
 
-function toVerificationMaterial(certificates: string[]): VerificationMaterial {
+function toVerificationMaterial(
+  signature: SignatureMaterial
+): VerificationMaterial {
+  return signature.certificates
+    ? toVerificationMaterialx509CertificateChain(signature.certificates)
+    : toVerificationMaterialPublicKey(signature.key.id || '');
+}
+
+function toVerificationMaterialx509CertificateChain(
+  certificates: string[]
+): VerificationMaterial {
   return {
     content: {
       $case: 'x509CertificateChain',
@@ -112,6 +122,15 @@ function toVerificationMaterial(certificates: string[]): VerificationMaterial {
           derBytes: pem.toDER(c),
         })),
       },
+    },
+  };
+}
+
+function toVerificationMaterialPublicKey(hint: string): VerificationMaterial {
+  return {
+    content: {
+      $case: 'publicKey',
+      publicKey: { hint },
     },
   };
 }
