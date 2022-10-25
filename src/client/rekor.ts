@@ -18,11 +18,9 @@ import { Entry, EntryKind } from '../types/rekor';
 import { ua } from '../util';
 import { checkStatus } from './error';
 
-const DEFAULT_BASE_URL = 'https://rekor.sigstore.dev';
-
 // Client options
 export interface RekorOptions {
-  baseURL?: string;
+  baseURL: string;
 }
 
 export interface SearchIndex {
@@ -52,11 +50,8 @@ export class Rekor {
         'User-Agent': ua.getUserAgent(),
       },
     });
-    this.baseUrl = Rekor.getBaseUrl(options.baseURL);
-  }
 
-  public static getBaseUrl(baseURL?: string) {
-    return baseURL ?? DEFAULT_BASE_URL;
+    this.baseUrl = options.baseURL;
   }
 
   /**

@@ -13,15 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { Rekor } from './client';
+import { TLogClient } from './tlog';
 import { Bundle, Envelope, HashAlgorithm } from './types/bundle';
 import { crypto } from './util';
 import { Verifier } from './verify';
 
 describe('Verifier', () => {
   const rekorBaseURL = 'http://localhost:8002';
-  const rekor = new Rekor({ baseURL: rekorBaseURL });
-  const subject = new Verifier({ rekor });
+  const tlog = new TLogClient({ rekorBaseURL });
+  const subject = new Verifier({ tlog });
 
   describe('#verify', () => {
     describe('when bundle type is messageSignature', () => {

@@ -13,19 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { Rekor } from './client';
+import { TLog } from './tlog';
 import { Bundle } from './types/bundle';
 import { crypto, dsse, pem } from './util';
 
 export interface VerifyOptions {
-  rekor: Rekor;
+  tlog: TLog;
 }
 
 export class Verifier {
-  private rekor: Rekor;
+  private tlog: TLog;
 
   constructor(options: VerifyOptions) {
-    this.rekor = options.rekor;
+    this.tlog = options.tlog;
   }
 
   public async verify(bundle: Bundle, data?: Buffer): Promise<boolean> {

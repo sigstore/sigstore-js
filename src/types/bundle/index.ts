@@ -29,6 +29,9 @@ export * from './__generated__/envelope';
 export * from './__generated__/sigstore_bundle';
 export * from './__generated__/sigstore_common';
 
+export const bundleToJSON = Bundle.toJSON;
+export const bundleFromJSON = Bundle.fromJSON;
+
 const BUNDLE_MEDIA_TYPE =
   'application/vnd.dev.sigstore.bundle+json;version=0.1';
 

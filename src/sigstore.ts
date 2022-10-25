@@ -13,28 +13,34 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { Fulcio, Rekor } from './client';
+import { Fulcio } from './client';
 import identity, { Provider } from './identity';
 import { Signer } from './sign';
-import { Bundle as BundleSerializer, SerializedBundle } from './types/bundle';
+import { TLog, TLogClient } from './tlog';
+import {
+  bundleFromJSON,
+  bundleToJSON,
+  Envelope,
+  SerializedBundle,
+} from './types/bundle';
 import { Verifier } from './verify';
 
-export interface SignOptions {
+export const DEFAULT_REKOR_BASE_URL = 'https://rekor.sigstore.dev';
+
+interface TLogOptions {
+  rekorBaseURL?: string;
+}
+
+export type SignOptions = {
   fulcioBaseURL?: string;
   rekorBaseURL?: string;
   identityToken?: string;
   oidcIssuer?: string;
   oidcClientID?: string;
   oidcClientSecret?: string;
-}
+} & TLogOptions;
 
-export interface VerifierOptions {
-  rekorBaseURL?: string;
-}
-
-export function getRekorBaseUrl(options?: SignOptions) {
-  return Rekor.getBaseUrl(options?.rekorBaseURL);
-}
+export type VerifierOptions = TLogOptions;
 
 export type Bundle = SerializedBundle;
 
@@ -43,21 +49,27 @@ type IdentityProviderOptions = Pick<
   'identityToken' | 'oidcIssuer' | 'oidcClientID' | 'oidcClientSecret'
 >;
 
+function newTLogClient(options: { rekorBaseURL?: string }): TLog {
+  return new TLogClient({
+    rekorBaseURL: options.rekorBaseURL || DEFAULT_REKOR_BASE_URL,
+  });
+}
+
 export async function sign(
   payload: Buffer,
   options: SignOptions = {}
 ): Promise<Bundle> {
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
-  const rekor = new Rekor({ baseURL: options.rekorBaseURL });
+  const tlog = newTLogClient(options);
   const idps = configureIdentityProviders(options);
   const signer = new Signer({
     fulcio,
-    rekor,
+    tlog,
     identityProviders: idps,
   });
 
   const bundle = await signer.signBlob(payload);
-  return BundleSerializer.toJSON(bundle) as Bundle;
+  return bundleToJSON(bundle) as Bundle;
 }
 
 export async function signAttestation(
@@ -66,16 +78,16 @@ export async function signAttestation(
   options: SignOptions = {}
 ): Promise<Bundle> {
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
-  const rekor = new Rekor({ baseURL: options.rekorBaseURL });
+  const tlog = newTLogClient(options);
   const idps = configureIdentityProviders(options);
   const signer = new Signer({
     fulcio,
-    rekor,
+    tlog,
     identityProviders: idps,
   });
 
   const bundle = await signer.signAttestation(payload, payloadType);
-  return BundleSerializer.toJSON(bundle) as Bundle;
+  return bundleToJSON(bundle) as Bundle;
 }
 
 export async function verify(
@@ -83,11 +95,23 @@ export async function verify(
   data?: Buffer,
   options: VerifierOptions = {}
 ): Promise<boolean> {
-  const rekor = new Rekor({ baseURL: options.rekorBaseURL });
-  const verifier = new Verifier({ rekor });
+  const tlog = newTLogClient(options);
+  const verifier = new Verifier({ tlog });
 
-  const b = BundleSerializer.fromJSON(bundle);
+  const b = bundleFromJSON(bundle);
   return verifier.verify(b, data);
+}
+
+// Accepts a signed DSSE envelope and a PEM-encoded public key to be added to the
+// transparency log. Returns a Sigstore bundle suitable for offline verification.
+export async function addEnvelopeToTransparencyLog(
+  envelope: Envelope,
+  key: string,
+  options: SignOptions = {}
+): Promise<Bundle> {
+  const tlog = newTLogClient(options);
+  const bundle = await tlog.createDSSEEntry(envelope, key);
+  return bundleToJSON(bundle) as Bundle;
 }
 
 // Translates the IdenityProviderOptions into a list of Providers which
