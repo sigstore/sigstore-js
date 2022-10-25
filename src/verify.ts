@@ -14,75 +14,102 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { TLog } from './tlog';
+import { KeyObject } from 'crypto';
+import { VerificationError } from './error';
+import { verifyTLogSET } from './tlog/verify';
 import { Bundle } from './types/bundle';
-import { rekor } from './types/rekor';
-import { crypto, json, dsse, pem } from './util';
-
-const key = `-----BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2G2Y+2tabdTV5BcGiBIx0a9fAFwr
-kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
------END PUBLIC KEY-----`;
+import { crypto, dsse, pem } from './util';
 
 export interface VerifyOptions {
   tlog: TLog;
+  tlogKeys: Record<string, KeyObject>;
 }
 
 export class Verifier {
   private tlog: TLog;
+  private tlogKeys: Record<string, KeyObject>;
 
   constructor(options: VerifyOptions) {
     this.tlog = options.tlog;
+    this.tlogKeys = options.tlogKeys;
   }
 
-  public async verify(bundle: Bundle, data?: Buffer): Promise<boolean> {
-    let signature: Buffer;
-    switch (bundle.content?.$case) {
-      case 'dsseEnvelope': {
-        const payloadType = bundle.content.dsseEnvelope.payloadType;
-        const payload = bundle.content.dsseEnvelope.payload;
-        data = dsse.preAuthEncoding(payloadType, payload);
+  public async verify(bundle: Bundle, data?: Buffer): Promise<void> {
+    verifyArtifactSignature(bundle, data);
+    verifyTLogSET(bundle, this.tlogKeys);
+  }
+}
 
-        if (bundle.content.dsseEnvelope.signatures.length !== 1) {
-          throw new Error('No signatures found in bundle');
-        }
-
-        signature = bundle.content.dsseEnvelope.signatures[0].sig;
-        break;
-      }
-      case 'messageSignature':
-        signature = bundle.content.messageSignature.signature;
-        const v = rekor.toVerificationPayload(bundle);
-        const cv = json.canonicalize(v);
-        console.log(cv);
-
-        const hh = crypto.verifyBlob(
-          Buffer.from(cv, 'utf8'),
-          key,
-          bundle.timestampVerificationData?.tlogEntries[0].inclusionPromise ||
-            Buffer.from('')
+function verifyArtifactSignature(bundle: Bundle, data?: Buffer): void {
+  switch (bundle.content?.$case) {
+    case 'dsseEnvelope':
+      verifyDSSESignature(bundle);
+      break;
+    case 'messageSignature':
+      if (!data) {
+        throw new VerificationError(
+          'No data provided for message signature verification'
         );
-        console.log('-------------------------');
-        console.log(hh);
-        console.log('-------------------------');
-        break;
-      default:
-        throw new Error('Bundle is invalid');
-    }
-
-    if (
-      bundle.verificationMaterial?.content?.$case !== 'x509CertificateChain'
-    ) {
-      throw new Error('No certificate found in bundle');
-    }
-
-    const certificate =
-      bundle.verificationMaterial.content.x509CertificateChain.certificates[0];
-    const cert = pem.fromDER(certificate.derBytes);
-
-    if (!data) {
-      throw new Error('No data to verify');
-    }
-
-    return crypto.verifyBlob(data, cert, signature);
+      }
+      verifyMessageSignature(bundle, data);
+      break;
+    default:
+      throw new VerificationError('Bundle is invalid');
   }
+}
+
+function verifyDSSESignature(bundle: Bundle): void {
+  if (bundle.content?.$case !== 'dsseEnvelope') {
+    throw new VerificationError('Bundle is not a DSSE envelope');
+  }
+
+  // Construct payload over which the signature was originally created
+  const payloadType = bundle.content.dsseEnvelope.payloadType;
+  const payload = bundle.content.dsseEnvelope.payload;
+  const data = dsse.preAuthEncoding(payloadType, payload);
+
+  // Extract signature from DSSE envelope
+  if (bundle.content.dsseEnvelope.signatures.length < 1) {
+    throw new VerificationError('No signatures found in DSSE envelope');
+  }
+
+  const signature = bundle.content.dsseEnvelope.signatures[0].sig;
+
+  // Get signing certificate containing public key
+  const publicKey = getSigningCertificate(bundle);
+
+  if (!crypto.verifyBlob(data, publicKey, signature)) {
+    throw new VerificationError('Artifact signature verification failed');
+  }
+}
+
+function verifyMessageSignature(bundle: Bundle, data: Buffer): void {
+  if (bundle.content?.$case !== 'messageSignature') {
+    throw new VerificationError('No message signature found in bundle');
+  }
+
+  // Extract signature for message
+  const signature = bundle.content.messageSignature.signature;
+
+  // Get signing certificate containing public key
+  const publicKey = getSigningCertificate(bundle);
+
+  if (!crypto.verifyBlob(data, publicKey, signature)) {
+    throw new VerificationError('Artifact signature verification failed');
+  }
+}
+
+function getSigningCertificate(bundle: Bundle): string {
+  if (bundle.verificationMaterial?.content?.$case !== 'x509CertificateChain') {
+    throw new VerificationError('No certificate found in bundle');
+  }
+
+  const signingCert =
+    bundle.verificationMaterial.content.x509CertificateChain.certificates[0];
+
+  if (!signingCert) {
+    throw new VerificationError('No certificate found in bundle');
+  }
+
+  return pem.fromDER(signingCert.derBytes);
 }

@@ -1,9 +1,10 @@
-import { getKey } from './keys';
+import { getKeys } from './keys';
 
-describe('getKey', () => {
+describe('getKeys', () => {
   it('foo', () => {
+    const keys = getKeys();
     expect(
-      getKey('c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d')
+      keys['c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d']
     ).toBeTruthy();
   });
 });

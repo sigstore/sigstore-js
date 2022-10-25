@@ -136,6 +136,10 @@ export const rekor = {
 
     const { integratedTime, logIndex, logId } = entries[0];
 
+    if (!logId) {
+      throw new Error('No logId found in bundle');
+    }
+
     let cert = '';
     // Ensure there is a certificate
     switch (bundle.verificationMaterial?.content?.$case) {

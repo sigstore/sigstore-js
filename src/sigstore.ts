@@ -24,6 +24,7 @@ import {
   SerializedBundle,
 } from './types/bundle';
 import { extractSignatureMaterial } from './types/signature';
+import { getKeys } from './tlog/keys';
 import { Verifier } from './verify';
 
 export const DEFAULT_REKOR_BASE_URL = 'https://rekor.sigstore.dev';
@@ -95,12 +96,13 @@ export async function verify(
   bundle: Bundle,
   data?: Buffer,
   options: VerifierOptions = {}
-): Promise<boolean> {
+): Promise<void> {
   const tlog = createTLogClient(options);
-  const verifier = new Verifier({ tlog });
+  const tlogKeys = getKeys();
+  const verifier = new Verifier({ tlog, tlogKeys });
 
   const b = bundleFromJSON(bundle);
-  return verifier.verify(b, data);
+  verifier.verify(b, data);
 }
 
 // Accepts a signed DSSE envelope and a PEM-encoded public key to be added to the

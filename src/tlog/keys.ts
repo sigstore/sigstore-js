@@ -1,6 +1,6 @@
 import { createPublicKey, KeyObject } from 'crypto';
-import { crypto } from '../util';
 import fs from 'fs';
+import { crypto } from '../util';
 
 export function getKeys(): Record<string, KeyObject> {
   const pem = fs.readFileSync('store/rekor.pub', 'utf-8');
