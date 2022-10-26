@@ -110,7 +110,7 @@ describe('sign', () => {
 
     // Signer was constructed with the correct options
     expect(options).toHaveProperty('fulcio', expect.anything());
-    expect(options).toHaveProperty('rekor', expect.anything());
+    expect(options).toHaveProperty('tlog', expect.anything());
     expect(options.identityProviders).toHaveLength(1);
   });
 
@@ -182,7 +182,7 @@ describe('signAttestation', () => {
 
     // Signer was constructed with the correct options
     expect(options).toHaveProperty('fulcio', expect.anything());
-    expect(options).toHaveProperty('rekor', expect.anything());
+    expect(options).toHaveProperty('tlog', expect.anything());
     expect(options.identityProviders).toHaveLength(1);
   });
 

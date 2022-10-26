@@ -63,13 +63,14 @@ function printUsage() {
 const signOptions = {
   oidcClientID: 'sigstore',
   oidcIssuer: 'https://oauth2.sigstore.dev/auth',
+  rekorBaseURL: sigstore.DEFAULT_REKOR_BASE_URL,
 };
 
 async function sign(artifactPath: string) {
   const buffer = fs.readFileSync(artifactPath);
   const bundle = await sigstore.sign(buffer, signOptions);
 
-  const url = `${sigstore.getRekorBaseUrl(signOptions)}/api/v1/log/entries`;
+  const url = `${signOptions.rekorBaseURL}/api/v1/log/entries`;
   const logIndex = bundle.verificationData?.tlogEntries[0].logIndex;
   console.error(`Created entry at index ${logIndex}, available at`);
   console.error(`${url}?logIndex=${logIndex}`);

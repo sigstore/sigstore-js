@@ -14,8 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import nock from 'nock';
-import { Fulcio, Rekor } from './client';
+import { Fulcio } from './client';
 import { Signer } from './sign';
+import { TLogClient } from './tlog';
 import { HashAlgorithm } from './types/bundle';
 import { SignatureMaterial, SignerFunc } from './types/signature';
 import { pem } from './util';
@@ -30,12 +31,12 @@ describe('Signer', () => {
   const jwt = `.${Buffer.from(JSON.stringify(jwtPayload)).toString('base64')}.`;
 
   const fulcio = new Fulcio({ baseURL: fulcioBaseURL });
-  const rekor = new Rekor({ baseURL: rekorBaseURL });
+  const tlog = new TLogClient({ rekorBaseURL });
   const idp = { getToken: () => Promise.resolve(jwt) };
 
   const subject = new Signer({
     fulcio,
-    rekor,
+    tlog,
     identityProviders: [idp],
   });
 
@@ -51,7 +52,7 @@ describe('Signer', () => {
       describe('when no identity provider returns a token', () => {
         const noIDTokenSubject = new Signer({
           fulcio,
-          rekor,
+          tlog,
           identityProviders: [],
         });
 
@@ -250,7 +251,7 @@ describe('Signer', () => {
       it('invokes the custom signer', async () => {
         const s = new Signer({
           fulcio,
-          rekor,
+          tlog,
           identityProviders: [],
           signer,
         });
