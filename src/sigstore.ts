@@ -23,6 +23,7 @@ import {
   Envelope,
   SerializedBundle,
 } from './types/bundle';
+import { extractSignatureMaterial } from './types/signature';
 import { Verifier } from './verify';
 
 export const DEFAULT_REKOR_BASE_URL = 'https://rekor.sigstore.dev';
@@ -49,7 +50,7 @@ type IdentityProviderOptions = Pick<
   'identityToken' | 'oidcIssuer' | 'oidcClientID' | 'oidcClientSecret'
 >;
 
-function newTLogClient(options: { rekorBaseURL?: string }): TLog {
+function createTLogClient(options: { rekorBaseURL?: string }): TLog {
   return new TLogClient({
     rekorBaseURL: options.rekorBaseURL || DEFAULT_REKOR_BASE_URL,
   });
@@ -60,7 +61,7 @@ export async function sign(
   options: SignOptions = {}
 ): Promise<Bundle> {
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
-  const tlog = newTLogClient(options);
+  const tlog = createTLogClient(options);
   const idps = configureIdentityProviders(options);
   const signer = new Signer({
     fulcio,
@@ -78,7 +79,7 @@ export async function signAttestation(
   options: SignOptions = {}
 ): Promise<Bundle> {
   const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
-  const tlog = newTLogClient(options);
+  const tlog = createTLogClient(options);
   const idps = configureIdentityProviders(options);
   const signer = new Signer({
     fulcio,
@@ -95,7 +96,7 @@ export async function verify(
   data?: Buffer,
   options: VerifierOptions = {}
 ): Promise<boolean> {
-  const tlog = newTLogClient(options);
+  const tlog = createTLogClient(options);
   const verifier = new Verifier({ tlog });
 
   const b = bundleFromJSON(bundle);
@@ -104,13 +105,15 @@ export async function verify(
 
 // Accepts a signed DSSE envelope and a PEM-encoded public key to be added to the
 // transparency log. Returns a Sigstore bundle suitable for offline verification.
-export async function addEnvelopeToTransparencyLog(
-  envelope: Envelope,
-  key: string,
+export async function createRekorEntry(
+  dsseEnvelope: Envelope,
+  publicKey: string,
   options: SignOptions = {}
 ): Promise<Bundle> {
-  const tlog = newTLogClient(options);
-  const bundle = await tlog.createDSSEEntry(envelope, key);
+  const tlog = createTLogClient(options);
+
+  const sigMaterial = extractSignatureMaterial(dsseEnvelope, publicKey);
+  const bundle = await tlog.createDSSEEntry(dsseEnvelope, sigMaterial);
   return bundleToJSON(bundle) as Bundle;
 }
 

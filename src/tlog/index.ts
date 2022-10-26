@@ -26,7 +26,7 @@ export interface TLog {
 
   createDSSEEntry: (
     envelope: Envelope,
-    sigMaterial: SignatureMaterial | string
+    sigMaterial: SignatureMaterial
   ) => Promise<Bundle>;
 }
 
@@ -56,21 +56,8 @@ export class TLogClient implements TLog {
 
   async createDSSEEntry(
     envelope: Envelope,
-    sigMaterial: SignatureMaterial | string
+    sigMaterial: SignatureMaterial
   ): Promise<Bundle> {
-    // If sigMaterial is a string, assume it's a PEM-encoded public key
-    // and create a new SignatureMaterial object from data in envelope
-    if (typeof sigMaterial === 'string') {
-      sigMaterial = {
-        signature: envelope.signatures[0].sig,
-        key: {
-          id: envelope.signatures[0].keyid,
-          value: sigMaterial,
-        },
-        certificates: undefined,
-      };
-    }
-
     const proposedEntry = rekor.toProposedIntotoEntry(envelope, sigMaterial);
     const entry = await this.rekor.createEntry(proposedEntry);
     return bundle.toDSSEBundle(envelope, sigMaterial, entry);
