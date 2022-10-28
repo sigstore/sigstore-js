@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { createPublicKey } from 'crypto';
+import { VerificationError } from './error';
 import { TLogClient } from './tlog';
 import { Bundle, Envelope, HashAlgorithm } from './types/bundle';
 import { crypto } from './util';
@@ -21,7 +23,14 @@ import { Verifier } from './verify';
 describe('Verifier', () => {
   const rekorBaseURL = 'http://localhost:8002';
   const tlog = new TLogClient({ rekorBaseURL });
-  const subject = new Verifier({ tlog });
+
+  const tlogKey = createPublicKey(`-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2G2Y+2tabdTV5BcGiBIx0a9fAFwr
+kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
+-----END PUBLIC KEY-----`);
+
+  const keys = { abc: tlogKey };
+  const subject = new Verifier({ tlog, tlogKeys: keys });
 
   describe('#verify', () => {
     describe('when bundle type is messageSignature', () => {
@@ -67,17 +76,17 @@ describe('Verifier', () => {
 
       describe('when the signature and the cert match', () => {
         it('returns true', async () => {
-          const verified = await subject.verify(bundle, payload);
-
-          expect(verified).toBe(true);
+          await expect(subject.verify(bundle, payload)).resolves.toBe(
+            undefined
+          );
         });
       });
 
       describe('when the signature and the cert do NOT match', () => {
         it('returns false', async () => {
-          const verified = await subject.verify(bundle, Buffer.from(''));
-
-          expect(verified).toBe(false);
+          await expect(subject.verify(bundle, Buffer.from(''))).rejects.toThrow(
+            VerificationError
+          );
         });
       });
     });
@@ -126,22 +135,20 @@ describe('Verifier', () => {
 
       describe('when the signature and the cert match', () => {
         it('returns true', async () => {
-          const verified = await subject.verify(bundle);
-          expect(verified).toBe(true);
+          await expect(subject.verify(bundle)).resolves.toBe(undefined);
         });
       });
 
       describe('when the signature and the cert do NOT match', () => {
         it('returns false', async () => {
           const invalidBundle = { ...bundle };
-          if (invalidBundle.content?.$case !== 'dsseEnvelope') {
-            fail('invalid bundle');
+          if (invalidBundle.content?.$case === 'dsseEnvelope') {
+            invalidBundle.content.dsseEnvelope.payloadType = 'invalid';
           }
-          invalidBundle.content.dsseEnvelope.payloadType = 'invalid';
 
-          const verified = await subject.verify(invalidBundle);
-
-          expect(verified).toBe(false);
+          await expect(subject.verify(invalidBundle)).rejects.toThrow(
+            VerificationError
+          );
         });
       });
     });

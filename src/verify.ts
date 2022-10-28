@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { TLog } from './tlog';
 import { KeyObject } from 'crypto';
 import { VerificationError } from './error';
+import { TLog } from './tlog';
 import { verifyTLogSET } from './tlog/verify';
 import { Bundle } from './types/bundle';
 import { crypto, dsse, pem } from './util';

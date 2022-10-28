@@ -6,22 +6,29 @@ import { crypto, json } from '../util';
 export function verifyTLogSET(
   bundle: Bundle,
   tlogKeys: Record<string, KeyObject>
-): boolean {
-  const payload = rekor.toVerificationPayload(bundle);
-  const publicKey = tlogKeys[payload.logID];
-  if (!publicKey) {
-    throw new Error('No public key found for logID: ' + payload.logID);
-  }
+): void {
+  bundle.verificationData?.tlogEntries.forEach((entry, index) => {
+    // Re-create the original Rekor verification payload
+    const payload = rekor.toVerificationPayload(bundle, index);
 
-  const signature =
-    bundle.verificationData?.tlogEntries[0].inclusionPromise
-      ?.signedEntryTimestamp;
-  if (!signature) {
-    throw new Error('No signature found in bundle');
-  }
+    if (payload.logIndex === 6068178) console.log(payload);
+    // Canonicalize the payload and turn into a buffer for verification
+    const data = Buffer.from(json.canonicalize(payload), 'utf8');
 
-  // Canonicalize the payload and turn into a buffer
-  const data = Buffer.from(json.canonicalize(payload), 'utf8');
+    // Find the public key for the transaction log which generated the SET
+    const publicKey = tlogKeys[payload.logID];
+    if (!publicKey) {
+      throw new Error('no key found for logID: ' + payload.logID);
+    }
 
-  return crypto.verifyBlob(data, publicKey, signature);
+    // Extract the SET from the tlog entry
+    const signature = entry.inclusionPromise?.signedEntryTimestamp;
+    if (!signature) {
+      throw new Error('no SET found in bundle');
+    }
+
+    if (!crypto.verifyBlob(data, publicKey, signature)) {
+      throw new Error('transparency log SET verification failed');
+    }
+  });
 }

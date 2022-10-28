@@ -3,8 +3,11 @@ import fs from 'fs';
 import { crypto } from '../util';
 
 export function getKeys(): Record<string, KeyObject> {
+  // TODO: This should be be loaded via TUF
   const pem = fs.readFileSync('store/rekor.pub', 'utf-8');
   const key = createPublicKey(pem);
+
+  // Calculate logID from the key
   const logID = getLogID(key);
 
   const keys = {

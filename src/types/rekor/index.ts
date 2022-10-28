@@ -79,21 +79,25 @@ export const rekor = {
     // Double-encode payload and signature cause that's what Rekor expects
     const payload = enc.base64Encode(envelope.payload.toString('base64'));
     const sig = enc.base64Encode(envelope.signatures[0].sig.toString('base64'));
-    const keyid = signature.key?.id || '';
+    const keyid = signature.key?.id;
     const publicKey = enc.base64Encode(toPublicKey(signature));
-    const hash = crypto.hash(JSON.stringify(envelope.payload)).toString('hex');
+    const payloadHash = crypto.hash(envelope.payload).toString('hex');
+
+    const dsse: IntotoKind['spec']['content']['envelope'] = {
+      payloadType: envelope.payloadType,
+      payload: payload,
+      signatures: [{ sig: sig, keyid: keyid, publicKey: publicKey }],
+    };
+    const envelopeHash = crypto.hash(json.canonicalize(dsse)).toString('hex');
 
     return {
       apiVersion: '0.0.2',
       kind: 'intoto',
       spec: {
         content: {
-          envelope: {
-            payloadType: envelope.payloadType,
-            payload: payload,
-            signatures: [{ sig, keyid, publicKey }],
-          },
-          hash: { algorithm: 'sha256', value: hash },
+          envelope: dsse,
+          hash: { algorithm: 'sha256', value: envelopeHash },
+          payloadHash: { algorithm: 'sha256', value: payloadHash },
         },
       },
     };
@@ -127,14 +131,14 @@ export const rekor = {
     };
   },
 
-  toVerificationPayload: (bundle: Bundle): VerificationPayload => {
-    // Ensure bundle as tlog entries
+  toVerificationPayload: (bundle: Bundle, index = 0): VerificationPayload => {
+    // Ensure bundle has tlog entries
     const entries = bundle.verificationData?.tlogEntries;
-    if (!entries || entries.length == 0) {
+    if (!entries || entries.length - 1 < index) {
       throw new Error('No tlog entries found in bundle');
     }
 
-    const { integratedTime, logIndex, logId } = entries[0];
+    const { integratedTime, logIndex, logId } = entries[index];
 
     if (!logId) {
       throw new Error('No logId found in bundle');
@@ -167,6 +171,53 @@ export const rekor = {
           key: undefined,
         };
         body = rekor.toProposedHashedRekordEntry(digest, sigMaterial);
+        break;
+      }
+      case 'dsseEnvelope': {
+        const envelope = bundle.content.dsseEnvelope;
+        const sig = bundle.content.dsseEnvelope.signatures[0].sig;
+        const keyid = '';
+        // const hash = crypto
+        //   .hash(JSON.stringify(envelope.payload))
+        //   .toString('hex');
+        const hash = crypto.hash(envelope.payload).toString('hex');
+        const env = {
+          payload: enc.base64Encode(envelope.payload.toString('base64')),
+          payloadType: envelope.payloadType,
+          signatures: [
+            {
+              publicKey: enc.base64Encode(cert.slice(0, -1)),
+              // publicKey: enc.base64Encode(cert),
+              sig: enc.base64Encode(sig.toString('base64')),
+              keyid: '',
+            },
+          ],
+        };
+        const hash2 = crypto.hash(json.canonicalize(env)).toString('hex');
+        // const sigMaterial: SignatureMaterial = {
+        //   certificates: [cert],
+        //   signature: sig,
+        //   key: undefined,
+        // };
+        body = {
+          apiVersion: '0.0.2',
+          kind: 'intoto',
+          spec: {
+            content: {
+              envelope: {
+                payloadType: envelope.payloadType,
+                signatures: [
+                  {
+                    publicKey: enc.base64Encode(cert.slice(0, -1)),
+                    sig: enc.base64Encode(sig.toString('base64')),
+                  },
+                ],
+              },
+              hash: { algorithm: 'sha256', value: hash2 },
+              payloadHash: { algorithm: 'sha256', value: hash },
+            },
+          },
+        };
         break;
       }
       default:

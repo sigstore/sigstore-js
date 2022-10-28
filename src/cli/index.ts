@@ -63,7 +63,8 @@ function printUsage() {
 const signOptions = {
   oidcClientID: 'sigstore',
   oidcIssuer: 'https://oauth2.sigstore.dev/auth',
-  rekorBaseURL: sigstore.DEFAULT_REKOR_BASE_URL,
+  // rekorBaseURL: sigstore.DEFAULT_REKOR_BASE_URL,
+  rekorBaseURL: 'http://localhost:8080',
 };
 
 async function sign(artifactPath: string) {
@@ -101,12 +102,11 @@ async function verify(bundlePath: string, artifactPath: string) {
   const bundleFile = fs.readFileSync(bundlePath);
   const bundle = JSON.parse(bundleFile.toString('utf-8'));
 
-  const result = await sigstore.verify(bundle, payload);
-
-  if (result) {
+  try {
+    await sigstore.verify(bundle, payload);
     console.error('Verified OK');
-  } else {
-    throw 'Signature verification failed';
+  } catch (e) {
+    throw e;
   }
 }
 
