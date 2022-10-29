@@ -33,7 +33,7 @@ export function split(certificate: string): string[] {
     }
 
     if (line === PEM_FOOTER) {
-      certs.push(cert.join('\n'));
+      certs.push(cert.join('\n') + '\n');
     }
   });
 

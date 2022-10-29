@@ -89,6 +89,7 @@ export const rekor = {
       signatures: [{ sig: sig, keyid: keyid, publicKey: publicKey }],
     };
     const envelopeHash = crypto.hash(json.canonicalize(dsse)).toString('hex');
+    console.log(json.canonicalize(dsse));
 
     return {
       apiVersion: '0.0.2',
@@ -176,48 +177,16 @@ export const rekor = {
       case 'dsseEnvelope': {
         const envelope = bundle.content.dsseEnvelope;
         const sig = bundle.content.dsseEnvelope.signatures[0].sig;
-        const keyid = '';
-        // const hash = crypto
-        //   .hash(JSON.stringify(envelope.payload))
-        //   .toString('hex');
-        const hash = crypto.hash(envelope.payload).toString('hex');
-        const env = {
-          payload: enc.base64Encode(envelope.payload.toString('base64')),
-          payloadType: envelope.payloadType,
-          signatures: [
-            {
-              publicKey: enc.base64Encode(cert.slice(0, -1)),
-              // publicKey: enc.base64Encode(cert),
-              sig: enc.base64Encode(sig.toString('base64')),
-              keyid: '',
-            },
-          ],
-        };
-        const hash2 = crypto.hash(json.canonicalize(env)).toString('hex');
-        // const sigMaterial: SignatureMaterial = {
-        //   certificates: [cert],
-        //   signature: sig,
-        //   key: undefined,
-        // };
-        body = {
-          apiVersion: '0.0.2',
-          kind: 'intoto',
-          spec: {
-            content: {
-              envelope: {
-                payloadType: envelope.payloadType,
-                signatures: [
-                  {
-                    publicKey: enc.base64Encode(cert.slice(0, -1)),
-                    sig: enc.base64Encode(sig.toString('base64')),
-                  },
-                ],
-              },
-              hash: { algorithm: 'sha256', value: hash2 },
-              payloadHash: { algorithm: 'sha256', value: hash },
-            },
-          },
-        };
+        body = rekor.toProposedIntotoEntry(envelope, {
+          signature: sig,
+          key: undefined,
+          certificates: [cert],
+        });
+        // TODO make the canonicalizer handle undefined fields
+        body = JSON.parse(JSON.stringify(body));
+
+        // When Rekor saves the entry it removes the payload from the envelope
+        delete body.spec.content.envelope.payload;
         break;
       }
       default:

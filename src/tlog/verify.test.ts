@@ -64,7 +64,7 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
 
   describe('when a DSSE Bundle is provided', () => {
     const set = Buffer.from(
-      'MEUCIQC7qMm+IDfhfZYdvf8jVYQBD7Y1p7qGw+lr6NoR1IWiKgIgake3tCYZfg2/+UHtLVqmlYQyWno1DIpFsmUpGm4Kj6U=',
+      'MEYCIQCQbPmAJdeX6FQTaRlqJfIX+MTafAu3Gfp3KweK+Il1BgIhAL3EukkUb3DbCE0hIssL6O/XD/mOAWpwmTb6Tc47Gu+q',
       'base64'
     );
 
@@ -143,7 +143,7 @@ function createMessageSignatureBundle(logID: Buffer, set?: Buffer): Bundle {
 
 function createDSSEBundle(logID: Buffer, set?: Buffer): Bundle {
   const cert1 = Buffer.from(
-    'MIICnzCCAiWgAwIBAgIUEeZ+0cQECmADgzQF1ce+dQd5MaIwCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjIxMDI4MjMwNzI5WhcNMjIxMDI4MjMxNzI5WjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEVLVj/07cCd7M73pZSxf8Ps0odb93kvH2q54s0W+AzPYcE9p/vU8znonLL+TgYSmqMsiVIAMC3MI97fRpA5V6w6OCAUQwggFAMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQU9LtRll5h+uzEnU+KW6i5XvsWnVQwHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGJBgorBgEEAdZ5AgQCBHsEeQB3AHUACGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3IAAAGEINm2XQAABAMARjBEAiBZAtNEJJnMgFqLhztQvEPWxH69hr6Pc0/0ibc3daLbuwIgYfvUOTE9uG4dXykT7O8NF6t+ZyRmYL0uAT75zrMt9qkwCgYIKoZIzj0EAwMDaAAwZQIxAPi9c2WTcK+Fcul2AWUJNm8CDP2nO2aI6bDlpK8QQLh+UMg4hWqgsVAETUYwNtdpWwIwBh5d7uVPIvztnTSw6vvD771m8gYRbNl7RT9ukopZcpQfgiLsdOL9L5LBICD7dCMC',
+    'MIICoDCCAiagAwIBAgIUYyI8hSRQrdKIHIaS2jvAIHxuAc4wCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjIxMDI5MDAyMzI3WhcNMjIxMDI5MDAzMzI3WjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEsRpGkBXeDZdk5LA8VmNHYV/G8vNCAl+8KJlKAfZf1DQJMfr8G+I8urKzVqFjYJX6c1+bXMhpliHpICDxYPC2GqOCAUUwggFBMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUic6XGniEFYi/W82D1XgoB64daSYwHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGKBgorBgEEAdZ5AgQCBHwEegB4AHYACGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3IAAAGEIR9DbwAABAMARzBFAiEAtnv+OEMJQHPFG8NzEkc5TfGBbbBwKcNVCEhXGV39AfsCIDbmfnIfSSCKVuH5UtYzFwo+w8R+cHYYqMLJcEPbtPUpMAoGCCqGSM49BAMDA2gAMGUCMQC1GQ0biQbYlZEkviEjnjKEhzD5P4IsmsvXDpSTOcF8UNWjHo4yFzGrOrfTAD90p7UCMH9um7V4MbZK8MKEOc1HppfcXQinzo7c6EKLWC5PSMDTRaqj6gi77LNVf7cG8G8lKw==',
     'base64'
   );
   const cert2 = Buffer.from(
@@ -166,7 +166,7 @@ function createDSSEBundle(logID: Buffer, set?: Buffer): Bundle {
           {
             keyid: '',
             sig: Buffer.from(
-              'MEQCICDQfMz2deFRjTLRkpFmvbotEEVo8+MNkcGvZV4Huf+pAiB7c+/gER2fTkP9k/GizGQWygWPYRMUW4/+9lhlTOEJcw==',
+              'MEYCIQDA8kr4Cz5CPvfTSEEqZtOM3Scy3lTEI11rWLBUGKCeSwIhAOc45GLyZngDj1vpNo/SMOJYG/knygFBd5y1Boe+p++S',
               'base64'
             ),
           },
@@ -191,12 +191,12 @@ function createDSSEBundle(logID: Buffer, set?: Buffer): Bundle {
       },
       tlogEntries: [
         {
-          logIndex: '6068178',
+          logIndex: '6071591',
           logId: {
             keyId: logID,
           },
           kindVersion: { kind: 'intoto', version: '0.0.2' },
-          integratedTime: '1666998450',
+          integratedTime: '1667003008',
           inclusionPromise: set ? { signedEntryTimestamp: set } : undefined,
         },
       ],

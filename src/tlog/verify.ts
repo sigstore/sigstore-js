@@ -11,7 +11,7 @@ export function verifyTLogSET(
     // Re-create the original Rekor verification payload
     const payload = rekor.toVerificationPayload(bundle, index);
 
-    if (payload.logIndex === 6068178) console.log(payload);
+    if (payload.logIndex === 6069991) console.log(payload);
     // Canonicalize the payload and turn into a buffer for verification
     const data = Buffer.from(json.canonicalize(payload), 'utf8');
 

@@ -55,7 +55,7 @@ describe('request', () => {
           enc.base64Encode(envelope.payload.toString('base64'))
         );
         expect(e?.signatures).toHaveLength(1);
-        expect(e?.signatures[0].keyid).toEqual('');
+        expect(e?.signatures[0].keyid).toBeUndefined();
         expect(e?.signatures[0].sig).toEqual(
           enc.base64Encode(envelope.signatures[0].sig.toString('base64'))
         );
@@ -64,10 +64,17 @@ describe('request', () => {
         fail('envelope is a string');
       }
 
+      expect(entry.spec.content.payloadHash).toBeTruthy();
+      expect(entry.spec.content.payloadHash?.algorithm).toBe('sha256');
+      expect(entry.spec.content.payloadHash?.value).toBe(
+        crypto.hash(envelope.payload).toString('hex')
+      );
       expect(entry.spec.content.hash).toBeTruthy();
       expect(entry.spec.content.hash?.algorithm).toBe('sha256');
+      expect(JSON.stringify(Envelope.toJSON(envelope))).toEqual('');
+
       expect(entry.spec.content.hash?.value).toBe(
-        crypto.hash(JSON.stringify(envelope.payload)).toString('hex')
+        crypto.hash(JSON.stringify(Envelope.toJSON(envelope))).toString('hex')
       );
     });
   });
