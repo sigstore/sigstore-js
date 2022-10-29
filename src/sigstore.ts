@@ -17,6 +17,7 @@ import { Fulcio } from './client';
 import identity, { Provider } from './identity';
 import { Signer } from './sign';
 import { TLog, TLogClient } from './tlog';
+import { getKeys } from './tlog/keys';
 import {
   bundleFromJSON,
   bundleToJSON,
@@ -95,12 +96,13 @@ export async function verify(
   bundle: Bundle,
   data?: Buffer,
   options: VerifierOptions = {}
-): Promise<boolean> {
+): Promise<void> {
   const tlog = createTLogClient(options);
-  const verifier = new Verifier({ tlog });
+  const tlogKeys = getKeys();
+  const verifier = new Verifier({ tlog, tlogKeys });
 
   const b = bundleFromJSON(bundle);
-  return verifier.verify(b, data);
+  return verifier.verifyOffline(b, data);
 }
 
 // Accepts a signed DSSE envelope and a PEM-encoded public key to be added to the

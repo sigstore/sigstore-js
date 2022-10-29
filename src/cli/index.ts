@@ -101,12 +101,15 @@ async function verify(bundlePath: string, artifactPath: string) {
   const bundleFile = fs.readFileSync(bundlePath);
   const bundle = JSON.parse(bundleFile.toString('utf-8'));
 
-  const result = await sigstore.verify(bundle, payload);
-
-  if (result) {
+  try {
+    await sigstore.verify(bundle, payload);
     console.error('Verified OK');
-  } else {
-    throw 'Signature verification failed';
+  } catch (e) {
+    console.error('Verification failed');
+    if (e instanceof Error) {
+      console.error('Error: ' + e.message);
+    }
+    process.exit(1);
   }
 }
 

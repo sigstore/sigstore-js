@@ -17,7 +17,8 @@ const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
 const PEM_FOOTER = '-----END CERTIFICATE-----';
 
 // Given a set of PEM-encoded certificates bundled in a single string, returns
-// an array of certificates.
+// an array of certificates. Standard PEM encoding dictates that each certificate
+// should have a trailing newline after the footer.
 export function split(certificate: string): string[] {
   const certs: string[] = [];
   let cert: string[] = [];
@@ -33,7 +34,7 @@ export function split(certificate: string): string[] {
     }
 
     if (line === PEM_FOOTER) {
-      certs.push(cert.join('\n'));
+      certs.push(cert.join('\n').concat('\n'));
     }
   });
 
@@ -54,11 +55,14 @@ export function toDER(certificate: string): Buffer {
   return Buffer.from(der, 'base64');
 }
 
+// Translates a DER-encoded buffer into a PEM-encoded string. Standard PEM
+// encoding dictates that each certificate should have a trailing newline after
+// the footer.
 export function fromDER(certificate: Buffer): string {
   // Base64-encode the certificate.
   const der = certificate.toString('base64');
   // Split the certificate into lines of 64 characters.
   const lines = der.match(/.{1,64}/g) || '';
 
-  return [PEM_HEADER, ...lines, PEM_FOOTER].join('\n') + '\n';
+  return [PEM_HEADER, ...lines, PEM_FOOTER].join('\n').concat('\n');
 }

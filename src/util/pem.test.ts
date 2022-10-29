@@ -16,8 +16,10 @@ limitations under the License.
 import { fromDER, split, toDER } from './pem';
 
 describe('pem', () => {
-  const cert1 = '-----BEGIN CERTIFICATE-----\nABCD\n-----END CERTIFICATE-----';
-  const cert2 = '-----BEGIN CERTIFICATE-----\nDEFG\n-----END CERTIFICATE-----';
+  const cert1 =
+    '-----BEGIN CERTIFICATE-----\nABCD\n-----END CERTIFICATE-----\n';
+  const cert2 =
+    '-----BEGIN CERTIFICATE-----\nDEFG\n-----END CERTIFICATE-----\n';
 
   describe('split', () => {
     describe('when certificate is empty', () => {

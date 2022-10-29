@@ -23,7 +23,8 @@
     "url": "git+https://github.com/sigstore/sigstore-js.git"
   },
   "files": [
-    "dist"
+    "dist",
+    "store"
   ],
   "author": "bdehamer@github.com",
   "license": "Apache-2.0",

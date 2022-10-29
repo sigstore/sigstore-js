@@ -1,0 +1,118 @@
+/*
+Copyright 2022 The Sigstore Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+import { Envelope } from '../types/bundle';
+import { SignatureMaterial } from '../types/signature';
+import { crypto, encoding as enc, json } from '../util';
+import {
+  HashedRekordKind,
+  HASHEDREKORD_KIND,
+  IntotoKind,
+  INTOTO_KIND,
+} from './types';
+
+const DEFAULT_HASHEDREKORD_API_VERSION = '0.0.1';
+const DEFAULT_INTOTO_API_VERSION = '0.0.2';
+
+// Returns a properly formatted Rekor "hashedrekord" entry for the given digest
+// and signature
+export function toProposedHashedRekordEntry(
+  digest: Buffer,
+  signature: SignatureMaterial
+): HashedRekordKind {
+  const hexDigest = digest.toString('hex');
+  const b64Signature = signature.signature.toString('base64');
+  const b64Key = enc.base64Encode(toPublicKey(signature));
+
+  return {
+    apiVersion: DEFAULT_HASHEDREKORD_API_VERSION,
+    kind: HASHEDREKORD_KIND,
+    spec: {
+      data: {
+        hash: {
+          algorithm: 'sha256',
+          value: hexDigest,
+        },
+      },
+      signature: {
+        content: b64Signature,
+        publicKey: {
+          content: b64Key,
+        },
+      },
+    },
+  };
+}
+
+// Returns a properly formatted Rekor "intoto" entry for the given DSSE
+// envelope and signature
+export function toProposedIntotoEntry(
+  envelope: Envelope,
+  signature: SignatureMaterial,
+  apiVersion = DEFAULT_INTOTO_API_VERSION
+): IntotoKind {
+  switch (apiVersion) {
+    case '0.0.2':
+      return toProposedIntotoV002Entry(envelope, signature);
+    default:
+      throw new Error(`Unsupported intoto kind API version: ${apiVersion}`);
+  }
+}
+
+function toProposedIntotoV002Entry(
+  envelope: Envelope,
+  signature: SignatureMaterial
+): IntotoKind {
+  // Double-encode payload and signature cause that's what Rekor expects
+  const payload = enc.base64Encode(envelope.payload.toString('base64'));
+  const sig = enc.base64Encode(envelope.signatures[0].sig.toString('base64'));
+  const keyid = envelope.signatures[0].keyid;
+  const publicKey = enc.base64Encode(toPublicKey(signature));
+  const payloadHash = crypto.hash(envelope.payload).toString('hex');
+
+  // Create the envelop portion first so that we can calculate its hash
+  const dsse: IntotoKind['spec']['content']['envelope'] = {
+    payloadType: envelope.payloadType,
+    payload: payload,
+    signatures: [{ sig, publicKey }],
+  };
+
+  // If the keyid is an empty string, Rekor seems to remove it altogether. We
+  // need to do the same here so that we can properly recreate the entry for
+  // verification.
+  if (keyid.length > 0) {
+    dsse.signatures[0].keyid = keyid;
+  }
+
+  const envelopeHash = crypto.hash(json.canonicalize(dsse)).toString('hex');
+
+  return {
+    apiVersion: '0.0.2',
+    kind: INTOTO_KIND,
+    spec: {
+      content: {
+        envelope: dsse,
+        hash: { algorithm: 'sha256', value: envelopeHash },
+        payloadHash: { algorithm: 'sha256', value: payloadHash },
+      },
+    },
+  };
+}
+
+function toPublicKey(signature: SignatureMaterial): string {
+  return signature.certificates
+    ? signature.certificates[0]
+    : signature.key.value;
+}
