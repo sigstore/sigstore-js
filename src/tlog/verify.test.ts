@@ -1,3 +1,18 @@
+/*
+Copyright 2022 The Sigstore Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 import { createPublicKey } from 'crypto';
 import { Bundle, HashAlgorithm } from '../types/bundle';
 import { verifyTLogSET } from './verify';
@@ -64,7 +79,7 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
 
   describe('when a DSSE Bundle is provided', () => {
     const set = Buffer.from(
-      'MEYCIQCQbPmAJdeX6FQTaRlqJfIX+MTafAu3Gfp3KweK+Il1BgIhAL3EukkUb3DbCE0hIssL6O/XD/mOAWpwmTb6Tc47Gu+q',
+      'MEYCIQC/9HHAv5Fg4uCxtmkxRqXznZcQchktwV5f4f6/XdCjsQIhAIJTMDf+PbrDL1p6rr2lS/yq/iYnscFkclNrr0a03qdv',
       'base64'
     );
 
@@ -73,6 +88,16 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
 
       it('does NOT throw an error', () => {
         expect(() => verifyTLogSET(bundle, keys)).not.toThrow();
+      });
+    });
+
+    describe('when the SET does not match', () => {
+      const bundle = createDSSEBundle(logID, Buffer.from('invalid'));
+
+      it('throws an error', () => {
+        expect(() => verifyTLogSET(bundle, keys)).toThrow(
+          /transparency log SET verification failed/
+        );
       });
     });
   });
@@ -143,7 +168,7 @@ function createMessageSignatureBundle(logID: Buffer, set?: Buffer): Bundle {
 
 function createDSSEBundle(logID: Buffer, set?: Buffer): Bundle {
   const cert1 = Buffer.from(
-    'MIICoDCCAiagAwIBAgIUYyI8hSRQrdKIHIaS2jvAIHxuAc4wCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjIxMDI5MDAyMzI3WhcNMjIxMDI5MDAzMzI3WjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEsRpGkBXeDZdk5LA8VmNHYV/G8vNCAl+8KJlKAfZf1DQJMfr8G+I8urKzVqFjYJX6c1+bXMhpliHpICDxYPC2GqOCAUUwggFBMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUic6XGniEFYi/W82D1XgoB64daSYwHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGKBgorBgEEAdZ5AgQCBHwEegB4AHYACGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3IAAAGEIR9DbwAABAMARzBFAiEAtnv+OEMJQHPFG8NzEkc5TfGBbbBwKcNVCEhXGV39AfsCIDbmfnIfSSCKVuH5UtYzFwo+w8R+cHYYqMLJcEPbtPUpMAoGCCqGSM49BAMDA2gAMGUCMQC1GQ0biQbYlZEkviEjnjKEhzD5P4IsmsvXDpSTOcF8UNWjHo4yFzGrOrfTAD90p7UCMH9um7V4MbZK8MKEOc1HppfcXQinzo7c6EKLWC5PSMDTRaqj6gi77LNVf7cG8G8lKw==',
+    'MIICnzCCAiagAwIBAgIUL344ndfoO3//U50uxtblyETIiUEwCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjIxMDI5MDQ1MTUyWhcNMjIxMDI5MDUwMTUyWjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEX8ne4JiXI4a6qgaNj3gz4IiJVK/3dsjioIds+eGi6DFxElL4E4NeUjXtQiDzRWEkkJpi+QMPhoie2k+onI0t8qOCAUUwggFBMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUsKOCg+CT2YGW1GzpINc15p+4i9IwHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGKBgorBgEEAdZ5AgQCBHwEegB4AHYACGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3IAAAGEIhUBGgAABAMARzBFAiEA9NrGXft/DXCpxfjT2pVlPnfixefSZC6I5rPdDTFocF8CIA3PzW9dT8MXumDfLYn3K/sT5FZsmeqZmmoertcQH/AkMAoGCCqGSM49BAMDA2cAMGQCMAag7B6iQREiQYqATqpJlMLU5wykBeD+7NwVprlsuE2hG56aSD76Xf5wycPZSTkjlQIwbEpUgUdvxFLgh8HAvO5nfii7reBznUITdm37b9JbF0bFt//0EhjFy7EdBTCuAG51',
     'base64'
   );
   const cert2 = Buffer.from(
@@ -166,7 +191,7 @@ function createDSSEBundle(logID: Buffer, set?: Buffer): Bundle {
           {
             keyid: '',
             sig: Buffer.from(
-              'MEYCIQDA8kr4Cz5CPvfTSEEqZtOM3Scy3lTEI11rWLBUGKCeSwIhAOc45GLyZngDj1vpNo/SMOJYG/knygFBd5y1Boe+p++S',
+              'MEUCIQCdJHpwUUS919xv5M4cgYt8SGb5gMdPSdamfzFEReF+UgIgAKDrzm9uszoRHeo2Prz4nKRAhcl6k8MXuFzQ3dzXQmU=',
               'base64'
             ),
           },
@@ -191,12 +216,12 @@ function createDSSEBundle(logID: Buffer, set?: Buffer): Bundle {
       },
       tlogEntries: [
         {
-          logIndex: '6071591',
+          logIndex: '6083446',
           logId: {
             keyId: logID,
           },
           kindVersion: { kind: 'intoto', version: '0.0.2' },
-          integratedTime: '1667003008',
+          integratedTime: '1667019113',
           inclusionPromise: set ? { signedEntryTimestamp: set } : undefined,
         },
       ],

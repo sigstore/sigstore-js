@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { Entry, EntryKind } from '../../tlog';
 import { encoding as enc, pem } from '../../util';
-import { Entry, EntryKind } from '../rekor';
 import { SignatureMaterial } from '../signature';
 import { Envelope } from './__generated__/envelope';
 import { Bundle } from './__generated__/sigstore_bundle';

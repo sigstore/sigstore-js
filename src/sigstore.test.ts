@@ -239,7 +239,6 @@ describe('#verify', () => {
   });
 
   it('returns the value returned by the verifier', async () => {
-    const result = await verify(bundle);
-    expect(result).toBe(false);
+    await expect(verify(bundle)).resolves.toBe(undefined);
   });
 });

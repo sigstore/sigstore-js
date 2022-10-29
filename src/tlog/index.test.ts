@@ -15,9 +15,9 @@ limitations under the License.
 */
 import nock from 'nock';
 import { Envelope, HashAlgorithm } from '../types/bundle';
-import { rekor } from '../types/rekor';
 import { SignatureMaterial } from '../types/signature';
 import { pem } from '../util';
+import { rekor } from './format';
 import { TLogClient } from './index';
 
 describe('TLogClient', () => {

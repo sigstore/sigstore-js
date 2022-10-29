@@ -15,8 +15,10 @@ limitations under the License.
 */
 import { Rekor } from '../client';
 import { bundle, Bundle, Envelope } from '../types/bundle';
-import { rekor } from '../types/rekor';
 import { SignatureMaterial } from '../types/signature';
+import { rekor } from './format';
+
+export { Entry, EntryKind, HashedRekordKind } from './types';
 
 export interface TLog {
   createMessageSignatureEntry: (

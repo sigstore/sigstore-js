@@ -13,95 +13,61 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { crypto, encoding as enc, json, pem } from '../../util';
-import { Bundle, Envelope } from '../bundle';
-import { SignatureMaterial } from '../signature';
-import { HashedRekorV001Schema } from './__generated__/hashedrekord';
-import { IntotoV001Schema, IntotoV002Schema } from './__generated__/intoto';
-
-const INTOTO_KIND = 'intoto';
-const HASHEDREKORD_KIND = 'hashedrekord';
-
-export type HashedRekordKind = {
-  apiVersion: '0.0.1';
-  kind: typeof HASHEDREKORD_KIND;
-  spec: HashedRekorV001Schema;
-};
-
-export type IntotoKind =
-  | {
-      apiVersion: '0.0.1';
-      kind: typeof INTOTO_KIND;
-      spec: IntotoV001Schema;
-    }
-  | {
-      apiVersion: '0.0.2';
-      kind: typeof INTOTO_KIND;
-      spec: IntotoV002Schema;
-    };
-
-export type EntryKind = HashedRekordKind | IntotoKind;
-
-export interface Entry {
-  uuid: string;
-  body: string;
-  integratedTime: number;
-  logID: string;
-  logIndex: number;
-  verification: EntryVerification;
-  attestation?: object;
-}
-
-export interface EntryVerification {
-  inclusionProof: InclusionProof;
-  signedEntryTimestamp: string;
-}
-
-export interface InclusionProof {
-  hashes: string[];
-  logIndex: number;
-  rootHash: string;
-  treeSize: number;
-}
-
-export interface VerificationPayload {
-  body: any;
-  integratedTime: number;
-  logIndex: number;
-  logID: string;
-}
+import { Bundle, Envelope } from '../types/bundle';
+import { SignatureMaterial } from '../types/signature';
+import { crypto, encoding as enc, json, pem } from '../util';
+import {
+  HashedRekordKind,
+  IntotoKind,
+  INTOTO_KIND,
+  VerificationPayload,
+} from './types';
 
 export const rekor = {
   toProposedIntotoEntry: (
     envelope: Envelope,
-    signature: SignatureMaterial
+    signature: SignatureMaterial,
+    apiVersion = '0.0.2'
   ): IntotoKind => {
     // Double-encode payload and signature cause that's what Rekor expects
     const payload = enc.base64Encode(envelope.payload.toString('base64'));
     const sig = enc.base64Encode(envelope.signatures[0].sig.toString('base64'));
-    const keyid = signature.key?.id;
+    const keyid = envelope.signatures[0].keyid;
     const publicKey = enc.base64Encode(toPublicKey(signature));
     const payloadHash = crypto.hash(envelope.payload).toString('hex');
 
+    // Create the envelop portion first so that we can calculate its hash
     const dsse: IntotoKind['spec']['content']['envelope'] = {
       payloadType: envelope.payloadType,
       payload: payload,
-      signatures: [{ sig: sig, keyid: keyid, publicKey: publicKey }],
+      signatures: [{ sig, publicKey }],
     };
-    const envelopeHash = crypto.hash(json.canonicalize(dsse)).toString('hex');
-    console.log(json.canonicalize(dsse));
 
-    return {
-      apiVersion: '0.0.2',
-      kind: 'intoto',
-      spec: {
-        content: {
-          envelope: dsse,
-          hash: { algorithm: 'sha256', value: envelopeHash },
-          payloadHash: { algorithm: 'sha256', value: payloadHash },
-        },
-      },
-    };
+    // If the keyid is an empty string, Rekor seems to remove it altogether. We
+    // need to do the same here so that we can properly recreate the entry for
+    // verification.
+    if (keyid.length > 0) {
+      dsse.signatures[0].keyid = keyid;
+    }
+
+    const envelopeHash = crypto.hash(json.canonicalize(dsse)).toString('hex');
+
+    switch (apiVersion) {
+      case '0.0.2':
+        return {
+          apiVersion: apiVersion,
+          kind: INTOTO_KIND,
+          spec: {
+            content: {
+              envelope: dsse,
+              hash: { algorithm: 'sha256', value: envelopeHash },
+              payloadHash: { algorithm: 'sha256', value: payloadHash },
+            },
+          },
+        };
+      default:
+        throw new Error(`Unsupported API version: ${apiVersion}`);
+    }
   },
 
   toProposedHashedRekordEntry: (
@@ -167,8 +133,8 @@ export const rekor = {
           Buffer.from('');
         const sig = bundle.content.messageSignature.signature;
         const sigMaterial: SignatureMaterial = {
-          certificates: [cert],
           signature: sig,
+          certificates: [cert],
           key: undefined,
         };
         body = rekor.toProposedHashedRekordEntry(digest, sigMaterial);
@@ -179,14 +145,14 @@ export const rekor = {
         const sig = bundle.content.dsseEnvelope.signatures[0].sig;
         body = rekor.toProposedIntotoEntry(envelope, {
           signature: sig,
-          key: undefined,
           certificates: [cert],
+          key: undefined,
         });
-        // TODO make the canonicalizer handle undefined fields
-        body = JSON.parse(JSON.stringify(body));
 
         // When Rekor saves the entry it removes the payload from the envelope
-        delete body.spec.content.envelope.payload;
+        if (body.apiVersion === '0.0.2') {
+          delete body.spec.content?.envelope?.payload;
+        }
         break;
       }
       default:

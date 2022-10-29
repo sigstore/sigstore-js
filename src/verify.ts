@@ -40,6 +40,8 @@ export class Verifier {
   }
 }
 
+// Performs bundle signature verification. Determines the type of the bundle
+// content and delegates to the appropriate signature verification function.
 function verifyArtifactSignature(bundle: Bundle, data?: Buffer): void {
   switch (bundle.content?.$case) {
     case 'dsseEnvelope':
@@ -58,6 +60,9 @@ function verifyArtifactSignature(bundle: Bundle, data?: Buffer): void {
   }
 }
 
+// Performs signature verification for bundle containing a DSSE envelope.
+// Calculates the PAE for the DSSE envelope and verifies it against the
+// signature in the envelope.
 function verifyDSSESignature(bundle: Bundle): void {
   if (bundle.content?.$case !== 'dsseEnvelope') {
     throw new VerificationError('Bundle is not a DSSE envelope');
@@ -73,6 +78,7 @@ function verifyDSSESignature(bundle: Bundle): void {
     throw new VerificationError('No signatures found in DSSE envelope');
   }
 
+  // TODO: Support multiple signatures
   const signature = bundle.content.dsseEnvelope.signatures[0].sig;
 
   // Get signing certificate containing public key
@@ -83,6 +89,8 @@ function verifyDSSESignature(bundle: Bundle): void {
   }
 }
 
+// Performs signature verification for bundle containing a message signature.
+// Verifies the signature found in the bundle against the provided data.
 function verifyMessageSignature(bundle: Bundle, data: Buffer): void {
   if (bundle.content?.$case !== 'messageSignature') {
     throw new VerificationError('No message signature found in bundle');
@@ -99,6 +107,8 @@ function verifyMessageSignature(bundle: Bundle, data: Buffer): void {
   }
 }
 
+// Extracts the signing certificate from the bundle and formats it as a
+// PEM-encoded string.
 function getSigningCertificate(bundle: Bundle): string {
   if (bundle.verificationMaterial?.content?.$case !== 'x509CertificateChain') {
     throw new VerificationError('No certificate found in bundle');
