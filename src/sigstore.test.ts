@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { Signer } from './sign';
-import { sign, signAttestation, verify } from './sigstore';
+import { sign, utils, signAttestation, verify } from './sigstore';
 import {
   Bundle,
   HashAlgorithm,
@@ -59,6 +59,13 @@ const verificationData: VerificationData = {
 const x509CertificateChain: X509CertificateChain = {
   certificates: [{ derBytes: Buffer.from('certificate') }],
 };
+
+describe('utils', () => {
+  it('exports utils', async () => {
+    expect(utils.createDSSEEnvelope).toBeInstanceOf(Function);
+    expect(utils.createRekorEntry).toBeInstanceOf(Function);
+  });
+});
 
 describe('sign', () => {
   const payload = Buffer.from('Hello, world!');

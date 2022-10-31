@@ -31,6 +31,7 @@ export * from './__generated__/sigstore_common';
 
 export const bundleToJSON = Bundle.toJSON;
 export const bundleFromJSON = Bundle.fromJSON;
+export const envelopeToJSON = Envelope.toJSON;
 export const envelopeFromJSON = Envelope.fromJSON;
 
 const BUNDLE_MEDIA_TYPE =
