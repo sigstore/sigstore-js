@@ -83,3 +83,15 @@ export type SerializedBundle = {
   dsseEnvelope: SerializedDSSEEnvelope;
   messageSignature: SerializedMessageSignature;
 }>;
+
+interface SerializedSignature {
+  sig: string;
+  keyid: string;
+}
+
+// Serialized form of the DSSE Envelope
+export type SerializedEnvelope = {
+  payload: string;
+  payloadType: string;
+  signatures: SerializedSignature[];
+};

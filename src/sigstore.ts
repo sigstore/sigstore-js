@@ -20,7 +20,8 @@ import { TLog, TLogClient } from './tlog';
 import {
   bundleFromJSON,
   bundleToJSON,
-  Envelope,
+  envelopeFromJSON,
+  SerializedEnvelope,
   SerializedBundle,
 } from './types/bundle';
 import { extractSignatureMaterial } from './types/signature';
@@ -44,6 +45,8 @@ export type SignOptions = {
 export type VerifierOptions = TLogOptions;
 
 export type Bundle = SerializedBundle;
+
+export type Envelope = SerializedEnvelope;
 
 type IdentityProviderOptions = Pick<
   SignOptions,
@@ -110,10 +113,11 @@ export async function createRekorEntry(
   publicKey: string,
   options: SignOptions = {}
 ): Promise<Bundle> {
+  const envelope = envelopeFromJSON(dsseEnvelope);
   const tlog = createTLogClient(options);
 
-  const sigMaterial = extractSignatureMaterial(dsseEnvelope, publicKey);
-  const bundle = await tlog.createDSSEEntry(dsseEnvelope, sigMaterial);
+  const sigMaterial = extractSignatureMaterial(envelope, publicKey);
+  const bundle = await tlog.createDSSEEntry(envelope, sigMaterial);
   return bundleToJSON(bundle) as Bundle;
 }
 
