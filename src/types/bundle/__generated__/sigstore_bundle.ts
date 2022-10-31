@@ -22,18 +22,18 @@ export interface TimestampVerificationData {
 /**
  * VerificationData contains extra data that can be used to verify things
  * such as transparency and timestamp of the signature creation.
- * As this message can be either empty (no timestamps), or a combination of
+ * As this message can be either empty (no inclusion proof or timestamps), or a combination of
  * an arbitrarily number of transparency log entries and signed timestamps,
  * it is the client's responsibility to implement any required verification
  * policies.
  */
 export interface VerificationData {
   /**
-   * This is the regular inclusion promise and proof, where
+   * This is the inclusion promise and/or proof, where
    * the timestamp is coming from the transparency log.
    */
   tlogEntries: TransparencyLogEntry[];
-  /** Timestamp verirication data, over the artifact's signature. */
+  /** Timestamp verification data, over the artifact's signature. */
   timestampVerificationData: TimestampVerificationData | undefined;
 }
 

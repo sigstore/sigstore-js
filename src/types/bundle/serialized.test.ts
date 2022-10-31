@@ -56,7 +56,7 @@ describe('Serialized Types', () => {
   };
 
   const x509CertificateChain: X509CertificateChain = {
-    certificates: [{ derBytes: Buffer.from('certificate') }],
+    certificates: [{ rawBytes: Buffer.from('certificate') }],
   };
 
   describe('SerializedDSSEBundle', () => {
@@ -98,8 +98,8 @@ describe('Serialized Types', () => {
 
       const cert =
         json.verificationMaterial?.x509CertificateChain?.certificates[0];
-      expect(cert?.derBytes).toEqual(
-        Buffer.from(x509CertificateChain.certificates[0].derBytes).toString(
+      expect(cert?.rawBytes).toEqual(
+        Buffer.from(x509CertificateChain.certificates[0].rawBytes).toString(
           'base64'
         )
       );
@@ -224,8 +224,8 @@ describe('Serialized Types', () => {
 
       const cert =
         json.verificationMaterial?.x509CertificateChain?.certificates[0];
-      expect(cert?.derBytes).toEqual(
-        Buffer.from(x509CertificateChain.certificates[0].derBytes).toString(
+      expect(cert?.rawBytes).toEqual(
+        Buffer.from(x509CertificateChain.certificates[0].rawBytes).toString(
           'base64'
         )
       );

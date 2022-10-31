@@ -1,7 +1,5 @@
 /* eslint-disable */
 
-/** https://raw.githubusercontent.com/secure-systems-lab/dsse/9c813476bd36de70a5738c72e784f123ecea16af/envelope.proto */
-
 /** An authenticated message of arbitrary type. */
 export interface Envelope {
   /**

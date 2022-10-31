@@ -10,7 +10,7 @@
  * value, represented by '0'.
  */
 export enum HashAlgorithm {
-  UNSPECIFIED = 0,
+  HASH_ALGORITHM_UNSPECIFIED = 0,
   SHA2_256 = 1,
   SHA2_512 = 2,
 }
@@ -18,8 +18,8 @@ export enum HashAlgorithm {
 export function hashAlgorithmFromJSON(object: any): HashAlgorithm {
   switch (object) {
     case 0:
-    case "UNSPECIFIED":
-      return HashAlgorithm.UNSPECIFIED;
+    case "HASH_ALGORITHM_UNSPECIFIED":
+      return HashAlgorithm.HASH_ALGORITHM_UNSPECIFIED;
     case 1:
     case "SHA2_256":
       return HashAlgorithm.SHA2_256;
@@ -33,8 +33,8 @@ export function hashAlgorithmFromJSON(object: any): HashAlgorithm {
 
 export function hashAlgorithmToJSON(object: HashAlgorithm): string {
   switch (object) {
-    case HashAlgorithm.UNSPECIFIED:
-      return "UNSPECIFIED";
+    case HashAlgorithm.HASH_ALGORITHM_UNSPECIFIED:
+      return "HASH_ALGORITHM_UNSPECIFIED";
     case HashAlgorithm.SHA2_256:
       return "SHA2_256";
     case HashAlgorithm.SHA2_512:
@@ -79,10 +79,8 @@ export interface MessageSignature {
 /** This message holds a RFC 3161 timestamp. */
 export interface RFC3161SignedTimestamp {
   /**
-   * Signed timestamp is the DER encoded TimeStampToken
+   * Signed timestamp is the DER encoded TimeStampResponse.
    * See https://www.rfc-editor.org/rfc/rfc3161.html#section-2.4.2
-   * For verification, the TimeStampToken MUST contain TSA's
-   * certificate chain.
    */
   signedTimestamp: Buffer;
 }
@@ -97,20 +95,24 @@ export interface PublicKeyIdentifier {
    * The format of the hint must be agreed upon out of band by the
    * signer and the verifiers, and so is not subject to this
    * specification.
+   * Example use-case is to specify the public key to use, from a
+   * trusted key-ring.
+   * Implementors are RECOMMENDED derive the value from the public
+   * key as described in https://www.rfc-editor.org/rfc/rfc3280#section-4.2.1.1
    */
   hint: string;
 }
 
 export interface X509Certificate {
-  /** DER encoded X509 certificate. */
-  derBytes: Buffer;
+  /** DER-encoded X.509 certificate. */
+  rawBytes: Buffer;
 }
 
-/** A chain of X509 certificates. */
+/** A chain of X.509 certificates. */
 export interface X509CertificateChain {
   /**
    * The chain of certificates, with indices 0 to n.
-   * The first certificate in the array  must be the leaf
+   * The first certificate in the array must be the leaf
    * certificate used for signing. Any intermediate certificates
    * must be stored as offset 1 to n-1, and the root certificate at
    * position n.
@@ -212,18 +214,18 @@ export const PublicKeyIdentifier = {
 };
 
 function createBaseX509Certificate(): X509Certificate {
-  return { derBytes: Buffer.alloc(0) };
+  return { rawBytes: Buffer.alloc(0) };
 }
 
 export const X509Certificate = {
   fromJSON(object: any): X509Certificate {
-    return { derBytes: isSet(object.derBytes) ? Buffer.from(bytesFromBase64(object.derBytes)) : Buffer.alloc(0) };
+    return { rawBytes: isSet(object.rawBytes) ? Buffer.from(bytesFromBase64(object.rawBytes)) : Buffer.alloc(0) };
   },
 
   toJSON(message: X509Certificate): unknown {
     const obj: any = {};
-    message.derBytes !== undefined &&
-      (obj.derBytes = base64FromBytes(message.derBytes !== undefined ? message.derBytes : Buffer.alloc(0)));
+    message.rawBytes !== undefined &&
+      (obj.rawBytes = base64FromBytes(message.rawBytes !== undefined ? message.rawBytes : Buffer.alloc(0)));
     return obj;
   },
 };

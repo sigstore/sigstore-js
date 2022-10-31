@@ -75,7 +75,7 @@ export type SerializedBundle = {
   verificationData: SerializedVerificationData | undefined;
   verificationMaterial:
     | OneOf<{
-        x509CertificateChain: { certificates: { derBytes: string }[] };
+        x509CertificateChain: { certificates: { rawBytes: string }[] };
         publicKey: { hint: string };
       }>
     | undefined;

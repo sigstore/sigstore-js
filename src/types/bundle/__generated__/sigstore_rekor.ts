@@ -17,9 +17,9 @@ export interface KindVersion {
  * hostname and the current time.
  * The result is a string, the format is described here
  * https://github.com/transparency-dev/formats/blob/main/log/README.md
- * The details are here https://github.com/sigstore/rekor/blob/main/pkg/util/signed_note.go#L114.
+ * The details are here https://github.com/sigstore/rekor/blob/a6e58f72b6b18cc06cefe61808efd562b9726330/pkg/util/signed_note.go#L114
  * The signature has the same format as
- * TransparencyLogEntry.inclusion_proof. See below for more details.
+ * InclusionPromise.signed_entry_timestamp. See below for more details.
  */
 export interface Checkpoint {
   envelope: string;
@@ -42,9 +42,15 @@ export interface InclusionProof {
   /**
    * A list of hashes required to compute the inclusion proof, sorted
    * in order from leaf to root.
+   * Not that leaf and root hashes are not included.
+   * The root has is available separately in this message, and the
+   * leaf hash should be calculated by the client.
    */
   hashes: Buffer[];
-  /** Signature of the current tree head. See above for more details. */
+  /**
+   * Signature of the tree head, as of the time of this proof was
+   * generated. See above info on 'Checkpoint' for more details.
+   */
   checkpoint: Checkpoint | undefined;
 }
 
@@ -52,18 +58,19 @@ export interface InclusionProof {
  * The inclusion promise is calculated by Rekor. It's calculated as a
  * signature over a canonical JSON serialization of the persisted entry, the
  * log ID, log index and the integration timestamp.
- * See https://github.com/sigstore/rekor/blob/main/pkg/api/entries.go#L54
+ * See https://github.com/sigstore/rekor/blob/a6e58f72b6b18cc06cefe61808efd562b9726330/pkg/api/entries.go#L54
  * The format of the signature depends on the transparency log's public key.
  * If the signature algorithm requires a hash function and/or a signature
  * scheme (e.g. RSA) those has to be retrieved out-of-band from the log's
  * operators, together with the public key.
- * This is primarily used to verify the integration timestamp's value.
+ * This is used to verify the integration timestamp's value and that the log
+ * has promised to include the entry.
  */
 export interface InclusionPromise {
   signedEntryTimestamp: Buffer;
 }
 
-/** LogId captures the identity of a transparceny log. */
+/** LogId captures the identity of a transparency log. */
 export interface LogId {
   /**
    * The unique id of the log, represented as the SHA-256 hash
@@ -110,7 +117,7 @@ export interface TransparencyLogEntry {
    * entry was appended to the log, and that the log has not been
    * altered.
    */
-  inclusionProof?: InclusionProof | undefined;
+  inclusionProof: InclusionProof | undefined;
 }
 
 function createBaseKindVersion(): KindVersion {

@@ -140,9 +140,9 @@ function createMessageSignatureBundle(logID: Buffer, set?: Buffer): Bundle {
         $case: 'x509CertificateChain',
         x509CertificateChain: {
           certificates: [
-            { derBytes: cert1 },
-            { derBytes: cert2 },
-            { derBytes: cert3 },
+            { rawBytes: cert1 },
+            { rawBytes: cert2 },
+            { rawBytes: cert3 },
           ],
         },
       },
@@ -160,6 +160,7 @@ function createMessageSignatureBundle(logID: Buffer, set?: Buffer): Bundle {
           kindVersion: { kind: 'hashedrekord', version: '0.0.1' },
           integratedTime: '1666892690',
           inclusionPromise: set ? { signedEntryTimestamp: set } : undefined,
+          inclusionProof: undefined,
         },
       ],
     },
@@ -203,9 +204,9 @@ function createDSSEBundle(logID: Buffer, set?: Buffer): Bundle {
         $case: 'x509CertificateChain',
         x509CertificateChain: {
           certificates: [
-            { derBytes: cert1 },
-            { derBytes: cert2 },
-            { derBytes: cert3 },
+            { rawBytes: cert1 },
+            { rawBytes: cert2 },
+            { rawBytes: cert3 },
           ],
         },
       },
@@ -223,6 +224,7 @@ function createDSSEBundle(logID: Buffer, set?: Buffer): Bundle {
           kindVersion: { kind: 'intoto', version: '0.0.2' },
           integratedTime: '1667019113',
           inclusionPromise: set ? { signedEntryTimestamp: set } : undefined,
+          inclusionProof: undefined,
         },
       ],
     },
