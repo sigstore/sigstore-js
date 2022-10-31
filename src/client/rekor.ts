@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import fetch, { FetchInterface } from 'make-fetch-happen';
-import { Entry, EntryKind } from '../types/rekor';
+import { Entry, EntryKind } from '../tlog';
 import { ua } from '../util';
 import { checkStatus } from './error';
 

@@ -15,8 +15,10 @@ limitations under the License.
 */
 import { Rekor } from '../client';
 import { bundle, Bundle, Envelope } from '../types/bundle';
-import { rekor } from '../types/rekor';
 import { SignatureMaterial } from '../types/signature';
+import { toProposedHashedRekordEntry, toProposedIntotoEntry } from './format';
+
+export { Entry, EntryKind, HashedRekordKind } from './types';
 
 export interface TLog {
   createMessageSignatureEntry: (
@@ -45,10 +47,7 @@ export class TLogClient implements TLog {
     digest: Buffer,
     sigMaterial: SignatureMaterial
   ): Promise<Bundle> {
-    const proposedEntry = rekor.toProposedHashedRekordEntry(
-      digest,
-      sigMaterial
-    );
+    const proposedEntry = toProposedHashedRekordEntry(digest, sigMaterial);
 
     const entry = await this.rekor.createEntry(proposedEntry);
     return bundle.toMessageSignatureBundle(digest, sigMaterial, entry);
@@ -58,7 +57,7 @@ export class TLogClient implements TLog {
     envelope: Envelope,
     sigMaterial: SignatureMaterial
   ): Promise<Bundle> {
-    const proposedEntry = rekor.toProposedIntotoEntry(envelope, sigMaterial);
+    const proposedEntry = toProposedIntotoEntry(envelope, sigMaterial);
     const entry = await this.rekor.createEntry(proposedEntry);
     return bundle.toDSSEBundle(envelope, sigMaterial, entry);
   }

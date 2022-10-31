@@ -37,7 +37,13 @@ export function verifyBlob(
   key: KeyLike,
   signature: Buffer
 ): boolean {
-  return crypto.verify(null, data, key, signature);
+  // The try/catch is to work around an issue in Node 14.x where verify throws
+  // an error in some scenarios if the signature is invalid.
+  try {
+    return crypto.verify(null, data, key, signature);
+  } catch (e) {
+    return false;
+  }
 }
 
 export function hash(data: BinaryLike): Buffer {

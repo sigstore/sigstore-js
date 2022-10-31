@@ -15,9 +15,9 @@ limitations under the License.
 */
 import nock from 'nock';
 import { Envelope, HashAlgorithm } from '../types/bundle';
-import { rekor } from '../types/rekor';
 import { SignatureMaterial } from '../types/signature';
 import { pem } from '../util';
+import { toProposedHashedRekordEntry, toProposedIntotoEntry } from './format';
 import { TLogClient } from './index';
 
 describe('TLogClient', () => {
@@ -46,7 +46,7 @@ describe('TLogClient', () => {
 
     // Rekor input
     const proposedEntry = JSON.stringify(
-      rekor.toProposedHashedRekordEntry(digest, sigMaterial)
+      toProposedHashedRekordEntry(digest, sigMaterial)
     );
 
     describe('when Rekor returns an error', () => {
@@ -198,7 +198,7 @@ describe('TLogClient', () => {
 
     // Rekor input
     const proposedEntry = JSON.stringify(
-      rekor.toProposedIntotoEntry(dsse, sigMaterial)
+      toProposedIntotoEntry(dsse, sigMaterial)
     );
 
     describe('when Rekor returns an error', () => {

@@ -22,7 +22,6 @@ import {
   VerificationData,
   X509CertificateChain,
 } from './types/bundle';
-import { Verifier } from './verify';
 
 jest.mock('./sign');
 
@@ -200,46 +199,82 @@ describe('signAttestation', () => {
 });
 
 describe('#verify', () => {
+  const artifact = Buffer.from('hello, world!');
   const bundle: SerializedBundle = {
     mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.1',
-    dsseEnvelope: undefined,
+    verificationData: {
+      tlogEntries: [
+        {
+          logIndex: '6119844',
+          logId: { keyId: 'wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0=' },
+          kindVersion: { kind: 'hashedrekord', version: '0.0.1' },
+          integratedTime: '1667074164',
+          inclusionPromise: {
+            signedEntryTimestamp:
+              'MEYCIQC1Obm8lhrQt9YTBdBXfvYlkxC8RtgXwKPfHLPfZyyhSwIhAPC5Ow/iKiouuEuPzrcUnIZ7wjXLrvQP/M3yXBTunRMp',
+          },
+          inclusionProof: undefined,
+        },
+      ],
+      timestampVerificationData: { rfc3161Timestamps: [] },
+    },
+    verificationMaterial: {
+      x509CertificateChain: {
+        certificates: [
+          {
+            derBytes:
+              'MIICoTCCAiegAwIBAgIUSFKo3qe+NIIcCxlV4ST3xi04BgswCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjIxMDI5MjAwOTIzWhcNMjIxMDI5MjAxOTIzWjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEB4UFbL4DsSbTWJSZpfY18aFYncCEadUGoPtAnUOwf9xpUjr3ZMKgW0dqI9HcITO6YTxmCOx8L3PeRU3hA9oYFKOCAUYwggFCMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUxM/a1LX5zJT7UzfElZn/BExx3t0wHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGLBgorBgEEAdZ5AgQCBH0EewB5AHcACGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3IAAAGEJV0EjAAABAMASDBGAiEAkhFxAlQnVP3VqvdAOlIZaEcL06DVzMf262lbgXfgbYECIQCp0EhupvEyWnvRKJTBPSM6BmCM69EzK11BJ0mhYvjmZjAKBggqhkjOPQQDAwNoADBlAjAOoaelWFKbJAmhtblMsn/Y4Qu69nm+o1OXAsz1Yjv0Quhd2sg3unfcR+yOrVYajr8CMQDrPBdPv6gPLVYqvJaq77ecpI0Q+62naoe2psVrHtfmzJ29WX4BumsVyWeb9VLjduo=',
+          },
+          {
+            derBytes:
+              'MIICGjCCAaGgAwIBAgIUALnViVfnU0brJasmRkHrn/UnfaQwCgYIKoZIzj0EAwMwKjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0yMjA0MTMyMDA2MTVaFw0zMTEwMDUxMzU2NThaMDcxFTATBgNVBAoTDHNpZ3N0b3JlLmRldjEeMBwGA1UEAxMVc2lnc3RvcmUtaW50ZXJtZWRpYXRlMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE8RVS/ysH+NOvuDZyPIZtilgUF9NlarYpAd9HP1vBBH1U5CV77LSS7s0ZiH4nE7Hv7ptS6LvvR/STk798LVgMzLlJ4HeIfF3tHSaexLcYpSASr1kS0N/RgBJz/9jWCiXno3sweTAOBgNVHQ8BAf8EBAMCAQYwEwYDVR0lBAwwCgYIKwYBBQUHAwMwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0jBBgwFoAUWMAeX5FFpWapesyQoZMi0CrFxfowCgYIKoZIzj0EAwMDZwAwZAIwPCsQK4DYiZYDPIaDi5HFKnfxXx6ASSVmERfsynYBiX2X6SJRnZU84/9DZdnFvvxmAjBOt6QpBlc4J/0DxvkTCqpclvziL6BCCPnjdlIB3Pu3BxsPmygUY7Ii2zbdCdliiow=',
+          },
+          {
+            derBytes:
+              'MIIB9zCCAXygAwIBAgIUALZNAPFdxHPwjeDloDwyYChAO/4wCgYIKoZIzj0EAwMwKjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0yMTEwMDcxMzU2NTlaFw0zMTEwMDUxMzU2NThaMCoxFTATBgNVBAoTDHNpZ3N0b3JlLmRldjERMA8GA1UEAxMIc2lnc3RvcmUwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAAT7XeFT4rb3PQGwS4IajtLk3/OlnpgangaBclYpsYBr5i+4ynB07ceb3LP0OIOZdxexX69c5iVuyJRQ+Hz05yi+UF3uBWAlHpiS5sh0+H2GHE7SXrk1EC5m1Tr19L9gg92jYzBhMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRYwB5fkUWlZql6zJChkyLQKsXF+jAfBgNVHSMEGDAWgBRYwB5fkUWlZql6zJChkyLQKsXF+jAKBggqhkjOPQQDAwNpADBmAjEAj1nHeXZp+13NWBNa+EDsDP8G1WWg1tCMWP/WHPqpaVo0jhsweNFZgSs0eE7wYI4qAjEA2WB9ot98sIkoF3vZYdd3/VtWB5b9TNMea7Ix/stJ5TfcLLeABLE4BNJOsQ4vnBHJ',
+          },
+        ],
+      },
+      publicKey: undefined,
+    },
     messageSignature: {
       messageDigest: {
         algorithm: 'SHA2_256',
-        digest: '1o51L/K0DEbwMF440I3k26pgNTMNwppInpR+aU+a0Hw=',
+        digest: 'aOZWslHmfoNYvvhIOrDVHGYZ8+ehqfDnWDjUH/No9yg=',
       },
       signature:
-        'MEUCIEBnPQyP/nzkuBZcdX6faw8TpDGkxMJ+EiCgy4IrZ0kHAiEA8j+nFFNiI5JN36yNynao6uLw0Z5DE99Gi+mnP7QV+Uk=',
+        'MEQCIC59AHp1YEsCzdevfVrPjligHFkH9iA8VmpgsR5Nl1gvAiA2m7s/H6xvZtU74Qmwe12M04xCBhEmseuGNbv4Ecivqw==',
     },
-    verificationData: {
-      timestampVerificationData: {
-        rfc3161Timestamps: [],
-      },
-      tlogEntries: [],
-    },
-    verificationMaterial: {
-      publicKey: undefined,
-      x509CertificateChain: {
-        certificates: [{ derBytes: '' }],
-      },
-    },
+    dsseEnvelope: undefined,
   };
 
-  const mockVerify = jest.fn();
-
-  beforeEach(() => {
-    mockVerify.mockClear();
-    mockVerify.mockResolvedValueOnce(false);
-    jest.spyOn(Verifier.prototype, 'verify').mockImplementation(mockVerify);
+  describe('when everything in the bundle is valid', () => {
+    it('does not throw an error', async () => {
+      await expect(verify(bundle, artifact)).resolves.toBe(undefined);
+    });
   });
 
-  it('invokes the Verifier instance with the correct params', async () => {
-    await verify(bundle);
-    expect(mockVerify).toHaveBeenCalledWith(Bundle.fromJSON(bundle), undefined);
+  describe('when there is a signature mismatch', () => {
+    it('throws an error', async () => {
+      await expect(verify(bundle, Buffer.from(''))).rejects.toThrowError(
+        /signature verification failed/
+      );
+    });
   });
 
-  it('returns the value returned by the verifier', async () => {
-    const result = await verify(bundle);
-    expect(result).toBe(false);
+  describe('when SET in bundle verification data does not match payload', () => {
+    const bundleWithBadSET = { ...bundle };
+    it('throws an error', async () => {
+      if (!bundleWithBadSET.verificationData) {
+        fail('bundleWithBadSET.verificationData is undefined');
+      }
+
+      // Update integratedTime to be different from that signed by the SET
+      bundleWithBadSET.verificationData.tlogEntries[0].integratedTime = '1';
+
+      await expect(verify(bundleWithBadSET, artifact)).rejects.toThrowError(
+        /SET verification failed/
+      );
+    });
   });
 });
