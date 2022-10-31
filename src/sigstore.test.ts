@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { Signer } from './sign';
-import { sign, signAttestation, createDSSEEnvelope, verify } from './sigstore';
+import { sign, utils, signAttestation, verify } from './sigstore';
 import {
   Bundle,
   HashAlgorithm,
@@ -23,7 +23,6 @@ import {
   X509CertificateChain,
 } from './types/bundle';
 import { Verifier } from './verify';
-import { dsse } from './util';
 
 jest.mock('./sign');
 
@@ -61,6 +60,13 @@ const verificationData: VerificationData = {
 const x509CertificateChain: X509CertificateChain = {
   certificates: [{ derBytes: Buffer.from('certificate') }],
 };
+
+describe('utils', () => {
+  it('exports utils', async () => {
+    expect(utils.createDSSEEnvelope).toBeInstanceOf(Function);
+    expect(utils.createRekorEntry).toBeInstanceOf(Function);
+  });
+});
 
 describe('sign', () => {
   const payload = Buffer.from('Hello, world!');
@@ -197,56 +203,6 @@ describe('signAttestation', () => {
     const sig = await signAttestation(payload, payloadType);
 
     expect(sig).toEqual(Bundle.toJSON(bundle));
-  });
-});
-
-describe('createDSSEEnvelope', () => {
-  const payload = Buffer.from('Hello, world!');
-  const payloadType = 'text/plain';
-  const sigMaterial = {
-    key: {
-      id: 'sha256-1234',
-    },
-    signature: Buffer.from('abc'),
-  };
-
-  const mockSign = jest.fn();
-  const options = {
-    signer: mockSign,
-  };
-
-  beforeEach(() => {
-    mockSign.mockClear();
-    mockSign.mockResolvedValueOnce(sigMaterial);
-  });
-
-  it('calls the signer with the correct payload', async () => {
-    await createDSSEEnvelope(payload, payloadType, options);
-
-    // Signer func was called
-    expect(mockSign).toHaveBeenCalledTimes(1);
-    const args = mockSign.mock.calls[0];
-
-    expect(args).toHaveLength(1);
-    const signerArg = args[0];
-
-    // Signer was constructed with the correct options
-    expect(signerArg).toEqual(dsse.preAuthEncoding(payloadType, payload));
-  });
-
-  it('returns a serialized envelope', async () => {
-    const envelope = await createDSSEEnvelope(payload, payloadType, options);
-
-    expect(envelope).toEqual({
-      payloadType: 'text/plain',
-      payload: 'SGVsbG8sIHdvcmxkIQ==',
-      signatures: [
-        {
-          keyid: 'sha256-1234',
-          sig: 'YWJj',
-        },
-      ],
-    });
   });
 });
 

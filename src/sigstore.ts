@@ -20,15 +20,12 @@ import { TLog, TLogClient } from './tlog';
 import {
   bundleFromJSON,
   bundleToJSON,
-  envelopeFromJSON,
-  envelopeToJSON,
-  Envelope as DSSEEnvelope,
   SerializedEnvelope,
   SerializedBundle,
 } from './types/bundle';
-import { extractSignatureMaterial, SignerFunc } from './types/signature';
 import { Verifier } from './verify';
-import { dsse } from './util';
+
+export * as utils from './sigstore-utils';
 
 export const DEFAULT_REKOR_BASE_URL = 'https://rekor.sigstore.dev';
 
@@ -107,48 +104,6 @@ export async function verify(
 
   const b = bundleFromJSON(bundle);
   return verifier.verify(b, data);
-}
-
-export async function createDSSEEnvelope(
-  payload: Buffer,
-  payloadType: string,
-  options: {
-    signer: SignerFunc;
-  }
-): Promise<Envelope> {
-  // Pre-authentication encoding to be signed
-  const paeBuffer = dsse.preAuthEncoding(payloadType, payload);
-
-  // Get signature and verification material for pae
-  const sigMaterial = await options.signer(paeBuffer);
-
-  const envelope: DSSEEnvelope = {
-    payloadType,
-    payload,
-    signatures: [
-      {
-        keyid: sigMaterial.key?.id || '',
-        sig: sigMaterial.signature,
-      },
-    ],
-  };
-
-  return envelopeToJSON(envelope) as Envelope;
-}
-
-// Accepts a signed DSSE envelope and a PEM-encoded public key to be added to the
-// transparency log. Returns a Sigstore bundle suitable for offline verification.
-export async function createRekorEntry(
-  dsseEnvelope: Envelope,
-  publicKey: string,
-  options: SignOptions = {}
-): Promise<Bundle> {
-  const envelope = envelopeFromJSON(dsseEnvelope);
-  const tlog = createTLogClient(options);
-
-  const sigMaterial = extractSignatureMaterial(envelope, publicKey);
-  const bundle = await tlog.createDSSEEntry(envelope, sigMaterial);
-  return bundleToJSON(bundle) as Bundle;
 }
 
 // Translates the IdenityProviderOptions into a list of Providers which
