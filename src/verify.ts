@@ -16,7 +16,7 @@ limitations under the License.
 import { KeyObject } from 'crypto';
 import { VerificationError } from './error';
 import { TLog } from './tlog';
-import { verifyTLogSET } from './tlog/verify';
+import { verifyTLogIntegratedTime, verifyTLogSET } from './tlog/verify';
 import { Bundle } from './types/bundle';
 import { crypto, dsse, pem } from './util';
 
@@ -37,6 +37,7 @@ export class Verifier {
   public verifyOffline(bundle: Bundle, data?: Buffer): void {
     verifyArtifactSignature(bundle, data);
     verifyTLogSET(bundle, this.tlogKeys);
+    verifyTLogIntegratedTime(bundle);
   }
 }
 

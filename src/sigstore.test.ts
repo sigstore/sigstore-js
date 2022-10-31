@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { Signer } from './sign';
-import { sign, utils, signAttestation, verify } from './sigstore';
+import { sign, signAttestation, utils, verify } from './sigstore';
 import {
   Bundle,
   HashAlgorithm,
@@ -282,6 +282,58 @@ describe('#verify', () => {
       await expect(verify(bundleWithBadSET, artifact)).rejects.toThrowError(
         /SET verification failed/
       );
+    });
+  });
+
+  describe('when tlog timestamp is outside the validity period of the certificate', () => {
+    // This bundle has a valid signature (the public key in the signing
+    // certificate properly verifies the signature). Also, the SET is valid
+    // (this was a real entry added to Rekor. However, the timestamp of the
+    // Rekor entry is outside the validity period of the certificate.
+    const bundleWithExpiredCert: SerializedBundle = {
+      mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.1',
+      verificationData: {
+        tlogEntries: [
+          {
+            logIndex: '6175802',
+            logId: { keyId: 'wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0=' },
+            kindVersion: { kind: 'hashedrekord', version: '0.0.1' },
+            integratedTime: '1667157111',
+            inclusionPromise: {
+              signedEntryTimestamp:
+                'MEQCIEYKojgVMMYh0AAIXhdXWwBs3/ywXvwGJjrGbBnckwsnAiBn29rNkIj7Gr6OgcnPlY6ZHbR2mM9cq5p2d/FBAKQOuw==',
+            },
+            inclusionProof: undefined,
+          },
+        ],
+        timestampVerificationData: { rfc3161Timestamps: [] },
+      },
+      verificationMaterial: {
+        x509CertificateChain: {
+          certificates: [
+            {
+              rawBytes:
+                'MIICnzCCAiWgAwIBAgIUL5RT/0zJNjb8IcZZjqaMM+nbFN8wCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjIxMDMwMTkwMTM2WhcNMjIxMDMwMTkxMTM2WjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIr5XHtIa1AmprgTYwtjl6WaAI8GLVXoUk5iRsr+aw0z2LVBEGaiWhpcAntxdN6h4YfQskDpKjmknjXfGy8/oTaOCAUQwggFAMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUKeKh9ygNk/Ev2HvsYhBEeF15GU4wHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGJBgorBgEEAdZ5AgQCBHsEeQB3AHUACGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3IAAAGEKkVPFQAABAMARjBEAiA2T7br2/r4Ox3zXlYoUxKbPQIxzOLHV8ocmp1SOSbQOgIgZ1G2biiCl/V0w0FuusoT7Ojw6lJUaLqipRK1qpvrPfYwCgYIKoZIzj0EAwMDaAAwZQIxAOlgn/9dfnuXzvp7pOg5PBwlIxvduDtDyQkRB2EcpQs1p3Qz9dPZ9e9U1Lb/X8t4ywIwBicA0HL2cs/Hj0WZx2GjQFlY/VA5lWsmuz6iUOFyGQ9ESgJJiH/YzfOCfC+NVZdl',
+            },
+          ],
+        },
+        publicKey: undefined,
+      },
+      messageSignature: {
+        messageDigest: {
+          algorithm: 'SHA2_256',
+          digest: 'aOZWslHmfoNYvvhIOrDVHGYZ8+ehqfDnWDjUH/No9yg=',
+        },
+        signature:
+          'MEYCIQCXz79WbhXh3byqUXmdLpm5JQuxFc51M9Rm981dLJE7HAIhAKLKRORsGIX5cXTU2jvU2uyANJfeUEGhxX5NR6ZK468m',
+      },
+      dsseEnvelope: undefined,
+    };
+
+    it('throws an error', async () => {
+      await expect(
+        verify(bundleWithExpiredCert, artifact)
+      ).rejects.toThrowError(/integrated time is after certificate expiration/);
     });
   });
 });

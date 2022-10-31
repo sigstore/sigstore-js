@@ -21,7 +21,7 @@ import {
   VerificationMaterial,
 } from '../types/bundle';
 import { SignatureMaterial } from '../types/signature';
-import { crypto, encoding as enc, json, pem } from '../util';
+import { crypto, encoding as enc, json, pem, x509 } from '../util';
 import { toProposedHashedRekordEntry, toProposedIntotoEntry } from './format';
 import {
   EntryKind,
@@ -59,6 +59,32 @@ export function verifyTLogSET(
 
     if (!crypto.verifyBlob(data, publicKey, signature)) {
       throw new Error('transparency log SET verification failed');
+    }
+  });
+}
+
+export function verifyTLogIntegratedTime(bundle: Bundle): void {
+  if (bundle.verificationMaterial?.content?.$case !== 'x509CertificateChain') {
+    // If there is no certificate, we can't verify the integrated time
+    return;
+  }
+
+  // Get a parsed certificate from the DER bytes in the bundle
+  const der =
+    bundle.verificationMaterial.content.x509CertificateChain.certificates[0]
+      .rawBytes;
+  const cert = x509.parseCertificate(der);
+
+  // Iterate over all of the tlog entries in the bundle
+  bundle.verificationData?.tlogEntries.forEach((entry) => {
+    const integratedTime = new Date(Number(entry.integratedTime) * 1000);
+
+    if (integratedTime > cert.validTo) {
+      throw new Error('tlog integrated time is after certificate expiration');
+    }
+
+    if (integratedTime < cert.validFrom) {
+      throw new Error('tlog integrated time is before certificate issuance');
     }
   });
 }
