@@ -121,5 +121,5 @@ function getSigningCertificate(bundle: Bundle): string {
     throw new VerificationError('No certificate found in bundle');
   }
 
-  return pem.fromDER(signingCert.derBytes);
+  return pem.fromDER(signingCert.rawBytes);
 }

@@ -62,7 +62,7 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
           content: {
             $case: 'x509CertificateChain',
             x509CertificateChain: {
-              certificates: [{ derBytes: signingCert }],
+              certificates: [{ rawBytes: signingCert }],
             },
           },
         },
@@ -121,7 +121,7 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
           content: {
             $case: 'x509CertificateChain',
             x509CertificateChain: {
-              certificates: [{ derBytes: signingCert }],
+              certificates: [{ rawBytes: signingCert }],
             },
           },
         },

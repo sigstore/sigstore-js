@@ -124,7 +124,7 @@ function toVerificationMaterialx509CertificateChain(
       $case: 'x509CertificateChain',
       x509CertificateChain: {
         certificates: certificates.map((c) => ({
-          derBytes: pem.toDER(c),
+          rawBytes: pem.toDER(c),
         })),
       },
     },

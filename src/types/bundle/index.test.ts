@@ -81,7 +81,7 @@ describe('bundle', () => {
         const chain = b.verificationMaterial.content.x509CertificateChain;
         expect(chain).toBeTruthy();
         expect(chain.certificates).toHaveLength(1);
-        expect(chain.certificates[0].derBytes).toEqual(pem.toDER(certificate));
+        expect(chain.certificates[0].rawBytes).toEqual(pem.toDER(certificate));
       } else {
         fail('Expected x509CertificateChain');
       }
@@ -165,7 +165,7 @@ describe('bundle', () => {
         const chain = b.verificationMaterial.content.x509CertificateChain;
         expect(chain).toBeTruthy();
         expect(chain.certificates).toHaveLength(1);
-        expect(chain.certificates[0].derBytes).toEqual(pem.toDER(certificate));
+        expect(chain.certificates[0].rawBytes).toEqual(pem.toDER(certificate));
       } else {
         fail('Expected x509CertificateChain');
       }

@@ -134,10 +134,10 @@ describe('TLogClient', () => {
             bundle.verificationMaterial.content.x509CertificateChain;
           expect(chain).toBeTruthy();
           expect(chain.certificates).toHaveLength(2);
-          expect(chain.certificates[0].derBytes).toEqual(
+          expect(chain.certificates[0].rawBytes).toEqual(
             pem.toDER(leafCertificate)
           );
-          expect(chain.certificates[1].derBytes).toEqual(
+          expect(chain.certificates[1].rawBytes).toEqual(
             pem.toDER(rootCertificate)
           );
         } else {
@@ -283,10 +283,10 @@ describe('TLogClient', () => {
             bundle.verificationMaterial.content.x509CertificateChain;
           expect(chain).toBeTruthy();
           expect(chain.certificates).toHaveLength(2);
-          expect(chain.certificates[0].derBytes).toEqual(
+          expect(chain.certificates[0].rawBytes).toEqual(
             pem.toDER(leafCertificate)
           );
-          expect(chain.certificates[1].derBytes).toEqual(
+          expect(chain.certificates[1].rawBytes).toEqual(
             pem.toDER(rootCertificate)
           );
         } else {

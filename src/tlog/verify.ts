@@ -120,7 +120,7 @@ function toPublicKey(verificationMaterial: VerificationMaterial): string {
     case 'x509CertificateChain': {
       const der =
         verificationMaterial.content.x509CertificateChain.certificates[0];
-      return pem.fromDER(der.derBytes);
+      return pem.fromDER(der.rawBytes);
     }
     case 'publicKey':
     // TODO: How to handle this?
