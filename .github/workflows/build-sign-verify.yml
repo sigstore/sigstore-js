@@ -83,12 +83,12 @@ jobs:
         npm pack
     - name: Sign package
       run: |
-        ./bin/sigstore.js sign sigstore-0.0.1-alpha.2.tgz > bundle.sigstore
+        ./bin/sigstore.js sign sigstore-0.0.1-alpha.4.tgz > bundle.sigstore
     - name: Archive package
       uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # v3
       with:
         name: package
-        path: sigstore-0.0.1-alpha.2.tgz
+        path: sigstore-0.0.1-alpha.4.tgz
     - name: Archive signature
       uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # v3
       with:
@@ -122,4 +122,4 @@ jobs:
         npm run build
     - name: Verify artifact signature
       run: |
-        ./bin/sigstore.js verify bundle.sigstore sigstore-0.0.1-alpha.2.tgz
+        ./bin/sigstore.js verify bundle.sigstore sigstore-0.0.1-alpha.4.tgz
