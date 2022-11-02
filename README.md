@@ -2,7 +2,9 @@
 
 ⚠️ This project is not ready for general-purpose use! ⚠️
 
-A tool for signing and verifying npm packages.
+A tool for signing and verifying signatures using JavaScript.
+One of the intended uses is to sign and verify npm packages
+but it can be used to sign and verify any file.
 
 ## Features
 
