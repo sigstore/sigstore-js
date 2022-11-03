@@ -92,6 +92,12 @@ describe('format', () => {
         );
         expect(entry.spec.content.hash).toBeTruthy();
         expect(entry.spec.content.hash?.algorithm).toBe('sha256');
+
+        // This hard-coded hash value helps us detect if we've unintentionally
+        // changed the hashing algorithm.
+        expect(entry.spec.content.hash?.value).toBe(
+          '91a5eb7452452720d704da5442acb9703252b3ab7be51ec155a244f5c9aa5ec8'
+        );
       });
     });
 
@@ -105,12 +111,57 @@ describe('format', () => {
       it('returns a valid intoto entry', () => {
         const entry = toProposedIntotoEntry(envelope, sigMaterial);
 
-        if (typeof entry.spec.content.envelope !== 'string') {
-          const e = entry.spec.content.envelope;
-          expect(e?.signatures[0].keyid).toBeUndefined();
-        } else {
+        if (typeof entry.spec.content.envelope === 'string') {
           fail('intoto type is v0.0.1 but expecting v0.0.2');
         }
+
+        // Ensure the keyid is not included in the envelope.
+        const e = entry.spec.content.envelope;
+        expect(e?.signatures).toHaveLength(1);
+        expect(e?.signatures[0].keyid).toBeUndefined();
+        expect(e?.signatures[0].sig).toEqual(
+          enc.base64Encode(envelope.signatures[0].sig.toString('base64'))
+        );
+
+        // This hard-coded hash value helps us detect if we've unintentionally
+        // changed the hashing algorithm.
+        expect(entry.spec.content.hash?.value).toBe(
+          '295fd391f3b3f349cdaa686befaa765d90c0b411a0811e45f8bc481338a51622'
+        );
+      });
+    });
+
+    describe('when there are multiple signatures in the envelope', () => {
+      const envelope: Envelope = {
+        payloadType: 'application/vnd.in-toto+json',
+        payload: Buffer.from('payload'),
+        signatures: [
+          { keyid: '123', sig: signature },
+          { keyid: '', sig: signature },
+        ],
+      };
+
+      it('returns a valid intoto entry', () => {
+        const entry = toProposedIntotoEntry(envelope, sigMaterial);
+
+        if (typeof entry.spec.content.envelope === 'string') {
+          fail('intoto type is v0.0.1 but expecting v0.0.2');
+        }
+
+        // Check to ensure only the first signature is included in the envelope
+        const e = entry.spec.content.envelope;
+        expect(e?.signatures).toHaveLength(1);
+        expect(e?.signatures[0].keyid).toEqual(envelope.signatures[0].keyid);
+        expect(e?.signatures[0].sig).toEqual(
+          enc.base64Encode(envelope.signatures[0].sig.toString('base64'))
+        );
+        expect(e?.signatures[0].publicKey).toEqual(enc.base64Encode(cert));
+
+        // This hard-coded hash value helps us detect if we've unintentionally
+        // changed the hashing algorithm.
+        expect(entry.spec.content.hash?.value).toBe(
+          '91a5eb7452452720d704da5442acb9703252b3ab7be51ec155a244f5c9aa5ec8'
+        );
       });
     });
   });
