@@ -75,14 +75,22 @@ function toProposedIntotoV002Entry(
   envelope: Envelope,
   signature: SignatureMaterial
 ): IntotoKind {
+  // Calculate the value for the payloadHash field in the Rekor entry
+  const payloadHash = crypto.hash(envelope.payload).toString('hex');
+
+  // Calculate the value for the hash field in the Rekor entry
+  const envelopeHash = calculateDSSEHash(envelope);
+
+  // Collect values for re-creating the DSSE envelope.
   // Double-encode payload and signature cause that's what Rekor expects
   const payload = enc.base64Encode(envelope.payload.toString('base64'));
   const sig = enc.base64Encode(envelope.signatures[0].sig.toString('base64'));
   const keyid = envelope.signatures[0].keyid;
   const publicKey = enc.base64Encode(toPublicKey(signature));
-  const payloadHash = crypto.hash(envelope.payload).toString('hex');
 
-  // Create the envelop portion first so that we can calculate its hash
+  // Create the envelope portion of the entry. Note the inclusion of the
+  // publicKey in the signature struct is not a standard part of a DSSE
+  // envelope, but is required by Rekor.
   const dsse: IntotoKind['spec']['content']['envelope'] = {
     payloadType: envelope.payloadType,
     payload: payload,
@@ -96,8 +104,6 @@ function toProposedIntotoV002Entry(
     dsse.signatures[0].keyid = keyid;
   }
 
-  const envelopeHash = crypto.hash(json.canonicalize(dsse)).toString('hex');
-
   return {
     apiVersion: '0.0.2',
     kind: INTOTO_KIND,
@@ -109,6 +115,28 @@ function toProposedIntotoV002Entry(
       },
     },
   };
+}
+
+// Calculates the hash of a DSSE envelope for inclusion in a Rekor entry.
+// There is no standard way to do this, so the scheme we're using as as
+// follows:
+//  * payload is base64 encoded
+//  * signature is base64 encoded (only the first signature is used)
+//  * keyid is included ONLY if it is NOT an empty string
+//  * The resulting JSON is canonicalized and hashed to a hex string
+function calculateDSSEHash(envelope: Envelope): string {
+  const dsse: IntotoKind['spec']['content']['envelope'] = {
+    payloadType: envelope.payloadType,
+    payload: envelope.payload.toString('base64'),
+    signatures: [{ sig: envelope.signatures[0].sig.toString('base64') }],
+  };
+
+  // If the keyid is an empty string, Rekor seems to remove it altogether.
+  if (envelope.signatures[0].keyid.length > 0) {
+    dsse.signatures[0].keyid = envelope.signatures[0].keyid;
+  }
+
+  return crypto.hash(json.canonicalize(dsse)).toString('hex');
 }
 
 function toPublicKey(signature: SignatureMaterial): string {
