@@ -17,7 +17,7 @@ import { createPublicKey } from 'crypto';
 import { VerificationError } from './error';
 import { TLogClient } from './tlog';
 import { Bundle, Envelope, HashAlgorithm } from './types/bundle';
-import { crypto } from './util';
+import { crypto, pem } from './util';
 import { Verifier } from './verify';
 
 describe('Verifier', () => {
@@ -32,7 +32,39 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
   const keys = { abc: tlogKey };
   const subject = new Verifier({ tlog, tlogKeys: keys });
 
-  describe('#verify', () => {
+  describe('#verifyOffline', () => {
+    describe('when there is no verification material available', () => {
+      const bundle: Bundle = {
+        mediaType: 'application/vnd.in-toto+json',
+        content: {
+          $case: 'messageSignature',
+          messageSignature: {
+            signature: Buffer.from('signature'),
+            messageDigest: {
+              algorithm: HashAlgorithm.SHA2_256,
+              digest: Buffer.from('abc'),
+            },
+          },
+        },
+        verificationMaterial: {
+          content: {
+            $case: 'x509CertificateChain',
+            x509CertificateChain: { certificates: [] },
+          },
+        },
+        verificationData: {
+          timestampVerificationData: { rfc3161Timestamps: [] },
+          tlogEntries: [],
+        },
+      };
+
+      it('throws an error', async () => {
+        await expect(subject.verifyOffline(bundle)).rejects.toThrow(
+          VerificationError
+        );
+      });
+    });
+
     describe('when bundle type is messageSignature', () => {
       const payload = Buffer.from('Hello, world!');
 
@@ -46,47 +78,96 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
         'base64'
       );
 
-      const bundle: Bundle = {
-        mediaType: 'application/vnd.in-toto+json',
-        content: {
-          $case: 'messageSignature',
-          messageSignature: {
-            signature: signature,
-            messageDigest: {
-              algorithm: HashAlgorithm.SHA2_256,
-              digest: crypto.hash(payload),
-            },
-          },
-        },
-        verificationMaterial: {
+      describe('when the key comes from the bundle', () => {
+        const bundle: Bundle = {
+          mediaType: 'application/vnd.in-toto+json',
           content: {
-            $case: 'x509CertificateChain',
-            x509CertificateChain: {
-              certificates: [{ rawBytes: signingCert }],
+            $case: 'messageSignature',
+            messageSignature: {
+              signature: signature,
+              messageDigest: {
+                algorithm: HashAlgorithm.SHA2_256,
+                digest: crypto.hash(payload),
+              },
             },
           },
-        },
-        verificationData: {
-          timestampVerificationData: {
-            rfc3161Timestamps: [],
+          verificationMaterial: {
+            content: {
+              $case: 'x509CertificateChain',
+              x509CertificateChain: {
+                certificates: [{ rawBytes: signingCert }],
+              },
+            },
           },
-          tlogEntries: [],
-        },
-      };
+          verificationData: {
+            timestampVerificationData: {
+              rfc3161Timestamps: [],
+            },
+            tlogEntries: [],
+          },
+        };
 
-      describe('when the signature and the cert match', () => {
-        it('does NOT throw an error', () => {
-          expect(() => {
-            subject.verifyOffline(bundle, payload);
-          }).not.toThrow();
+        describe('when the signature and the cert match', () => {
+          it('does NOT throw an error', async () => {
+            await expect(
+              subject.verifyOffline(bundle, payload)
+            ).resolves.toBeUndefined();
+          });
+        });
+
+        describe('when the signature and the cert do NOT match', () => {
+          it('throws an error', async () => {
+            await expect(
+              subject.verifyOffline(bundle, Buffer.from(''))
+            ).rejects.toThrow(VerificationError);
+          });
         });
       });
 
-      describe('when the signature and the cert do NOT match', () => {
-        it('throws an error', () => {
-          expect(() => {
-            subject.verifyOffline(bundle, Buffer.from(''));
-          }).toThrow(VerificationError);
+      describe('when the key comes from the findKey callback', () => {
+        const findKey = () => Promise.resolve(pem.fromDER(signingCert));
+        const subject = new Verifier({ tlog, tlogKeys: keys, findKey });
+
+        const bundle: Bundle = {
+          mediaType: 'application/vnd.in-toto+json',
+          content: {
+            $case: 'messageSignature',
+            messageSignature: {
+              signature: signature,
+              messageDigest: {
+                algorithm: HashAlgorithm.SHA2_256,
+                digest: crypto.hash(payload),
+              },
+            },
+          },
+          verificationMaterial: {
+            content: {
+              $case: 'publicKey',
+              publicKey: { hint: 'hint' },
+            },
+          },
+          verificationData: {
+            timestampVerificationData: {
+              rfc3161Timestamps: [],
+            },
+            tlogEntries: [],
+          },
+        };
+
+        describe('when the signature and the cert match', () => {
+          it('does NOT throw an error', async () => {
+            await expect(
+              subject.verifyOffline(bundle, payload)
+            ).resolves.toBeUndefined();
+          });
+        });
+
+        describe('when the signature and the cert do NOT match', () => {
+          it('throws an error', async () => {
+            await expect(
+              subject.verifyOffline(bundle, Buffer.from(''))
+            ).rejects.toThrow(VerificationError);
+          });
         });
       });
     });
@@ -105,52 +186,106 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
         'base64'
       );
 
-      const envelope: Envelope = {
-        payload: payload,
-        payloadType,
-        signatures: [{ keyid: '', sig: signature }],
-      };
+      describe('when the key comes from the bundle', () => {
+        const envelope: Envelope = {
+          payload: payload,
+          payloadType,
+          signatures: [{ keyid: '', sig: signature }],
+        };
 
-      const bundle: Bundle = {
-        mediaType: 'application/vnd.dev.cosign.simplesigning.v1+json',
-        content: {
-          $case: 'dsseEnvelope',
-          dsseEnvelope: envelope,
-        },
-        verificationMaterial: {
+        const bundle: Bundle = {
+          mediaType: 'application/vnd.dev.cosign.simplesigning.v1+json',
           content: {
-            $case: 'x509CertificateChain',
-            x509CertificateChain: {
-              certificates: [{ rawBytes: signingCert }],
+            $case: 'dsseEnvelope',
+            dsseEnvelope: envelope,
+          },
+          verificationMaterial: {
+            content: {
+              $case: 'x509CertificateChain',
+              x509CertificateChain: {
+                certificates: [{ rawBytes: signingCert }],
+              },
             },
           },
-        },
-        verificationData: {
-          tlogEntries: [],
-          timestampVerificationData: {
-            rfc3161Timestamps: [],
+          verificationData: {
+            tlogEntries: [],
+            timestampVerificationData: {
+              rfc3161Timestamps: [],
+            },
           },
-        },
-      };
+        };
 
-      describe('when the signature and the cert match', () => {
-        it('does NOT throw an error', () => {
-          expect(() => {
-            subject.verifyOffline(bundle);
-          }).not.toThrow();
+        describe('when the signature and the cert match', () => {
+          it('does NOT throw an error', async () => {
+            await expect(
+              subject.verifyOffline(bundle)
+            ).resolves.toBeUndefined();
+          });
+        });
+
+        describe('when the signature and the cert do NOT match', () => {
+          it('throws an error', async () => {
+            const invalidBundle = { ...bundle };
+            if (invalidBundle.content?.$case === 'dsseEnvelope') {
+              invalidBundle.content.dsseEnvelope.payloadType = 'invalid';
+            }
+
+            await expect(subject.verifyOffline(invalidBundle)).rejects.toThrow(
+              VerificationError
+            );
+          });
         });
       });
 
-      describe('when the signature and the cert do NOT match', () => {
-        it('throws an error', () => {
-          const invalidBundle = { ...bundle };
-          if (invalidBundle.content?.$case === 'dsseEnvelope') {
-            invalidBundle.content.dsseEnvelope.payloadType = 'invalid';
-          }
+      describe('when the key comes from the findKey callback', () => {
+        const findKey = () => Promise.resolve(pem.fromDER(signingCert));
+        const subject = new Verifier({ tlog, tlogKeys: keys, findKey });
 
-          expect(() => {
-            subject.verifyOffline(invalidBundle);
-          }).toThrow(VerificationError);
+        const envelope: Envelope = {
+          payload: payload,
+          payloadType,
+          signatures: [{ keyid: '', sig: signature }],
+        };
+
+        const bundle: Bundle = {
+          mediaType: 'application/vnd.dev.cosign.simplesigning.v1+json',
+          content: {
+            $case: 'dsseEnvelope',
+            dsseEnvelope: envelope,
+          },
+          verificationMaterial: {
+            content: {
+              $case: 'publicKey',
+              publicKey: { hint: 'hint' },
+            },
+          },
+          verificationData: {
+            tlogEntries: [],
+            timestampVerificationData: {
+              rfc3161Timestamps: [],
+            },
+          },
+        };
+
+        describe('when the signature and the cert match', () => {
+          it('does NOT throw an error', async () => {
+            await expect(
+              subject.verifyOffline(bundle)
+            ).resolves.toBeUndefined();
+          });
+        });
+
+        describe('when the signature and the cert do NOT match', () => {
+          it('throws an error', async () => {
+            const invalidBundle = { ...bundle };
+            if (invalidBundle.content?.$case === 'dsseEnvelope') {
+              invalidBundle.content.dsseEnvelope.payloadType = 'invalid';
+            }
+
+            await expect(subject.verifyOffline(invalidBundle)).rejects.toThrow(
+              VerificationError
+            );
+          });
         });
       });
     });

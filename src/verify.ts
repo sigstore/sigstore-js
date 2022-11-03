@@ -17,33 +17,76 @@ import { KeyObject } from 'crypto';
 import { VerificationError } from './error';
 import { TLog } from './tlog';
 import { verifyTLogIntegratedTime, verifyTLogSET } from './tlog/verify';
-import { Bundle } from './types/bundle';
+import {
+  Bundle,
+  Envelope,
+  MessageSignature,
+  X509CertificateChain,
+} from './types/bundle';
 import { crypto, dsse, pem } from './util';
+
+export type FindKeyFunc = (keyId: string) => Promise<string | undefined>;
 
 export interface VerifyOptions {
   tlog: TLog;
   tlogKeys: Record<string, KeyObject>;
+  findKey?: FindKeyFunc;
 }
 
 export class Verifier {
   private tlog: TLog;
   private tlogKeys: Record<string, KeyObject>;
+  private findKey: FindKeyFunc;
 
   constructor(options: VerifyOptions) {
     this.tlog = options.tlog;
     this.tlogKeys = options.tlogKeys;
+    this.findKey = options.findKey || (() => Promise.resolve(undefined));
   }
 
-  public verifyOffline(bundle: Bundle, data?: Buffer): void {
-    verifyArtifactSignature(bundle, data);
+  public async verifyOffline(bundle: Bundle, data?: Buffer): Promise<void> {
+    const publicKey = await this.getPublicKey(bundle);
+
+    verifyArtifactSignature(bundle, publicKey, data);
     verifyTLogSET(bundle, this.tlogKeys);
     verifyTLogIntegratedTime(bundle);
+  }
+
+  public async getPublicKey(bundle: Bundle): Promise<string> {
+    let publicKey: string | undefined;
+
+    switch (bundle.verificationMaterial?.content?.$case) {
+      case 'x509CertificateChain':
+        publicKey = getSigningCertificate(
+          bundle.verificationMaterial.content.x509CertificateChain
+        );
+        break;
+      case 'publicKey':
+        publicKey = await this.findKey(
+          bundle.verificationMaterial.content.publicKey.hint
+        );
+        break;
+      default:
+        throw new VerificationError('No verification material found');
+    }
+
+    if (!publicKey) {
+      throw new VerificationError(
+        'No public key found for signature verification'
+      );
+    }
+
+    return publicKey;
   }
 }
 
 // Performs bundle signature verification. Determines the type of the bundle
 // content and delegates to the appropriate signature verification function.
-function verifyArtifactSignature(bundle: Bundle, data?: Buffer): void {
+function verifyArtifactSignature(
+  bundle: Bundle,
+  publicKey: string,
+  data?: Buffer
+): void {
   switch (bundle.content?.$case) {
     case 'messageSignature':
       if (!data) {
@@ -51,10 +94,10 @@ function verifyArtifactSignature(bundle: Bundle, data?: Buffer): void {
           'No data provided for message signature verification'
         );
       }
-      verifyMessageSignature(bundle, data);
+      verifyMessageSignature(bundle.content.messageSignature, publicKey, data);
       break;
     case 'dsseEnvelope':
-      verifyDSSESignature(bundle);
+      verifyDSSESignature(bundle.content.dsseEnvelope, publicKey);
       break;
     default:
       throw new VerificationError('Bundle is invalid');
@@ -63,16 +106,13 @@ function verifyArtifactSignature(bundle: Bundle, data?: Buffer): void {
 
 // Performs signature verification for bundle containing a message signature.
 // Verifies the signature found in the bundle against the provided data.
-function verifyMessageSignature(bundle: Bundle, data: Buffer): void {
-  if (bundle.content?.$case !== 'messageSignature') {
-    throw new VerificationError('No message signature found in bundle');
-  }
-
+function verifyMessageSignature(
+  messageSignature: MessageSignature,
+  publicKey: string,
+  data: Buffer
+): void {
   // Extract signature for message
-  const signature = bundle.content.messageSignature.signature;
-
-  // Get signing certificate containing public key
-  const publicKey = getSigningCertificate(bundle);
+  const signature = messageSignature.signature;
 
   if (!crypto.verifyBlob(data, publicKey, signature)) {
     throw new VerificationError('Artifact signature verification failed');
@@ -82,26 +122,18 @@ function verifyMessageSignature(bundle: Bundle, data: Buffer): void {
 // Performs signature verification for bundle containing a DSSE envelope.
 // Calculates the PAE for the DSSE envelope and verifies it against the
 // signature in the envelope.
-function verifyDSSESignature(bundle: Bundle): void {
-  if (bundle.content?.$case !== 'dsseEnvelope') {
-    throw new VerificationError('Bundle is not a DSSE envelope');
-  }
-
+function verifyDSSESignature(envelope: Envelope, publicKey: string): void {
   // Construct payload over which the signature was originally created
-  const payloadType = bundle.content.dsseEnvelope.payloadType;
-  const payload = bundle.content.dsseEnvelope.payload;
+  const { payloadType, payload } = envelope;
   const data = dsse.preAuthEncoding(payloadType, payload);
 
   // Extract signature from DSSE envelope
-  if (bundle.content.dsseEnvelope.signatures.length < 1) {
+  if (envelope.signatures.length < 1) {
     throw new VerificationError('No signatures found in DSSE envelope');
   }
 
-  // TODO: Support multiple signatures
-  const signature = bundle.content.dsseEnvelope.signatures[0].sig;
-
-  // Get signing certificate containing public key
-  const publicKey = getSigningCertificate(bundle);
+  // Only support a single signature in DSSE
+  const signature = envelope.signatures[0].sig;
 
   if (!crypto.verifyBlob(data, publicKey, signature)) {
     throw new VerificationError('Artifact signature verification failed');
@@ -110,17 +142,9 @@ function verifyDSSESignature(bundle: Bundle): void {
 
 // Extracts the signing certificate from the bundle and formats it as a
 // PEM-encoded string.
-function getSigningCertificate(bundle: Bundle): string {
-  if (bundle.verificationMaterial?.content?.$case !== 'x509CertificateChain') {
-    throw new VerificationError('No certificate found in bundle');
-  }
-
-  const signingCert =
-    bundle.verificationMaterial.content.x509CertificateChain.certificates[0];
-
-  if (!signingCert) {
-    throw new VerificationError('No certificate found in bundle');
-  }
-
-  return pem.fromDER(signingCert.rawBytes);
+function getSigningCertificate(
+  chain: X509CertificateChain
+): string | undefined {
+  const signingCert = chain.certificates[0];
+  return signingCert ? pem.fromDER(signingCert.rawBytes) : undefined;
 }
