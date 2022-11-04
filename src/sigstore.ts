@@ -21,10 +21,10 @@ import { getKeys } from './tlog/keys';
 import {
   bundleFromJSON,
   bundleToJSON,
-  SerializedEnvelope,
   SerializedBundle,
+  SerializedEnvelope,
 } from './types/bundle';
-import { Verifier } from './verify';
+import { GetPublicKeyFunc, Verifier } from './verify';
 
 export * as utils from './sigstore-utils';
 
@@ -43,7 +43,9 @@ export type SignOptions = {
   oidcClientSecret?: string;
 } & TLogOptions;
 
-export type VerifierOptions = TLogOptions;
+export type VerifierOptions = {
+  getPublicKey?: GetPublicKeyFunc;
+} & TLogOptions;
 
 export type Bundle = SerializedBundle;
 
@@ -102,7 +104,11 @@ export async function verify(
 ): Promise<void> {
   const tlog = createTLogClient(options);
   const tlogKeys = getKeys();
-  const verifier = new Verifier({ tlog, tlogKeys });
+  const verifier = new Verifier({
+    tlog,
+    tlogKeys,
+    getPublicKey: options.getPublicKey,
+  });
 
   const b = bundleFromJSON(bundle);
   return verifier.verifyOffline(b, data);
