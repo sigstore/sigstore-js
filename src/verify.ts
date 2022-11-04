@@ -30,18 +30,19 @@ export type FindKeyFunc = (keyId: string) => Promise<string | undefined>;
 export interface VerifyOptions {
   tlog: TLog;
   tlogKeys: Record<string, KeyObject>;
-  findKey?: FindKeyFunc;
+  getPublicKey?: FindKeyFunc;
 }
 
 export class Verifier {
   private tlog: TLog;
   private tlogKeys: Record<string, KeyObject>;
-  private findKey: FindKeyFunc;
+  private getExternalPublicKey: FindKeyFunc;
 
   constructor(options: VerifyOptions) {
     this.tlog = options.tlog;
     this.tlogKeys = options.tlogKeys;
-    this.findKey = options.findKey || (() => Promise.resolve(undefined));
+    this.getExternalPublicKey =
+      options.getPublicKey || (() => Promise.resolve(undefined));
   }
 
   public async verifyOffline(bundle: Bundle, data?: Buffer): Promise<void> {
@@ -62,7 +63,7 @@ export class Verifier {
         );
         break;
       case 'publicKey':
-        publicKey = await this.findKey(
+        publicKey = await this.getExternalPublicKey(
           bundle.verificationMaterial.content.publicKey.hint
         );
         break;

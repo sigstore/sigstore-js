@@ -125,8 +125,12 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
       });
 
       describe('when the key comes from the findKey callback', () => {
-        const findKey = () => Promise.resolve(pem.fromDER(signingCert));
-        const subject = new Verifier({ tlog, tlogKeys: keys, findKey });
+        const getPublicKey = () => Promise.resolve(pem.fromDER(signingCert));
+        const subject = new Verifier({
+          tlog,
+          tlogKeys: keys,
+          getPublicKey,
+        });
 
         const bundle: Bundle = {
           mediaType: 'application/vnd.in-toto+json',
@@ -238,8 +242,12 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
       });
 
       describe('when the key comes from the findKey callback', () => {
-        const findKey = () => Promise.resolve(pem.fromDER(signingCert));
-        const subject = new Verifier({ tlog, tlogKeys: keys, findKey });
+        const getPublicKey = () => Promise.resolve(pem.fromDER(signingCert));
+        const subject = new Verifier({
+          tlog,
+          tlogKeys: keys,
+          getPublicKey,
+        });
 
         const envelope: Envelope = {
           payload: payload,

@@ -44,7 +44,7 @@ export type SignOptions = {
 } & TLogOptions;
 
 export type VerifierOptions = {
-  findKey?: FindKeyFunc;
+  getPublicKey?: FindKeyFunc;
 } & TLogOptions;
 
 export type Bundle = SerializedBundle;
@@ -104,7 +104,11 @@ export async function verify(
 ): Promise<void> {
   const tlog = createTLogClient(options);
   const tlogKeys = getKeys();
-  const verifier = new Verifier({ tlog, tlogKeys, findKey: options.findKey });
+  const verifier = new Verifier({
+    tlog,
+    tlogKeys,
+    getPublicKey: options.getPublicKey,
+  });
 
   const b = bundleFromJSON(bundle);
   return verifier.verifyOffline(b, data);
