@@ -15,6 +15,7 @@ limitations under the License.
 */
 import { createPublicKey } from 'crypto';
 import { Bundle, HashAlgorithm } from '../types/bundle';
+import { pem } from '../util';
 import { verifyTLogSET } from './verify';
 
 describe('verifyTLogSET', () => {
@@ -28,7 +29,7 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2G2Y+2tabdTV5BcGiBIx0a9fAFwr
 kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
 -----END PUBLIC KEY-----`);
 
-  const keys = { [logID.toString('hex')]: tlogKey };
+  const tlogKeys = { [logID.toString('hex')]: tlogKey };
 
   describe('when a message signature Bundle is provided', () => {
     const set = Buffer.from(
@@ -37,17 +38,19 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
     );
     describe('when the SET is valid', () => {
       const bundle = createMessageSignatureBundle(logID, set);
+      const publicKey = getPublicKey(bundle);
 
       it('does NOT throw an error', () => {
-        expect(() => verifyTLogSET(bundle, keys)).not.toThrow();
+        expect(() => verifyTLogSET(bundle, publicKey, tlogKeys)).not.toThrow();
       });
     });
 
     describe('when there is no key for the logID', () => {
       const bundle = createMessageSignatureBundle(logID, set);
+      const publicKey = getPublicKey(bundle);
 
       it('throws an error', () => {
-        expect(() => verifyTLogSET(bundle, {})).toThrow(
+        expect(() => verifyTLogSET(bundle, publicKey, {})).toThrow(
           /no key found for logID/
         );
       });
@@ -55,9 +58,10 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
 
     describe('when there is no signature in the bundle', () => {
       const bundle = createMessageSignatureBundle(logID, undefined);
+      const publicKey = getPublicKey(bundle);
 
       it('throws an error', () => {
-        expect(() => verifyTLogSET(bundle, keys)).toThrow(
+        expect(() => verifyTLogSET(bundle, publicKey, tlogKeys)).toThrow(
           /no SET found in bundle/
         );
       });
@@ -68,9 +72,10 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
         logID,
         Buffer.from('invalid')
       );
+      const publicKey = getPublicKey(bundle);
 
       it('throws an error', () => {
-        expect(() => verifyTLogSET(bundle, keys)).toThrow(
+        expect(() => verifyTLogSET(bundle, publicKey, tlogKeys)).toThrow(
           /transparency log SET verification failed/
         );
       });
@@ -85,17 +90,19 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
 
     describe('when the SET is valid', () => {
       const bundle = createDSSEBundle(logID, set);
+      const publicKey = getPublicKey(bundle);
 
       it('does NOT throw an error', () => {
-        expect(() => verifyTLogSET(bundle, keys)).not.toThrow();
+        expect(() => verifyTLogSET(bundle, publicKey, tlogKeys)).not.toThrow();
       });
     });
 
     describe('when the SET does not match', () => {
       const bundle = createDSSEBundle(logID, Buffer.from('invalid'));
+      const publicKey = getPublicKey(bundle);
 
       it('throws an error', () => {
-        expect(() => verifyTLogSET(bundle, keys)).toThrow(
+        expect(() => verifyTLogSET(bundle, publicKey, tlogKeys)).toThrow(
           /transparency log SET verification failed/
         );
       });
@@ -229,4 +236,14 @@ function createDSSEBundle(logID: Buffer, set?: Buffer): Bundle {
       ],
     },
   };
+}
+
+function getPublicKey(bundle: Bundle): string {
+  if (bundle.verificationMaterial?.content?.$case === 'x509CertificateChain') {
+    const cert =
+      bundle.verificationMaterial.content.x509CertificateChain.certificates[0];
+    return pem.fromDER(cert.rawBytes);
+  } else {
+    fail('no public key found');
+  }
 }

@@ -49,7 +49,7 @@ export class Verifier {
     const publicKey = await this.getPublicKey(bundle);
 
     verifyArtifactSignature(bundle, publicKey, data);
-    verifyTLogSET(bundle, this.tlogKeys);
+    verifyTLogSET(bundle, publicKey, this.tlogKeys);
     verifyTLogIntegratedTime(bundle);
   }
 
