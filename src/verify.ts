@@ -25,18 +25,18 @@ import {
 } from './types/bundle';
 import { crypto, dsse, pem } from './util';
 
-export type FindKeyFunc = (keyId: string) => Promise<string | undefined>;
+export type GetPublicKeyFunc = (keyId: string) => Promise<string | undefined>;
 
 export interface VerifyOptions {
   tlog: TLog;
   tlogKeys: Record<string, KeyObject>;
-  getPublicKey?: FindKeyFunc;
+  getPublicKey?: GetPublicKeyFunc;
 }
 
 export class Verifier {
   private tlog: TLog;
   private tlogKeys: Record<string, KeyObject>;
-  private getExternalPublicKey: FindKeyFunc;
+  private getExternalPublicKey: GetPublicKeyFunc;
 
   constructor(options: VerifyOptions) {
     this.tlog = options.tlog;

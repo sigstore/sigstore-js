@@ -24,7 +24,7 @@ import {
   SerializedBundle,
   SerializedEnvelope,
 } from './types/bundle';
-import { FindKeyFunc, Verifier } from './verify';
+import { GetPublicKeyFunc, Verifier } from './verify';
 
 export * as utils from './sigstore-utils';
 
@@ -44,7 +44,7 @@ export type SignOptions = {
 } & TLogOptions;
 
 export type VerifierOptions = {
-  getPublicKey?: FindKeyFunc;
+  getPublicKey?: GetPublicKeyFunc;
 } & TLogOptions;
 
 export type Bundle = SerializedBundle;
