@@ -14,14 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { KeyObject } from 'crypto';
-import {
-  Bundle,
-  Envelope,
-  MessageSignature,
-  VerificationMaterial,
-} from '../types/bundle';
+import { Bundle, Envelope, MessageSignature } from '../types/bundle';
 import { SignatureMaterial } from '../types/signature';
-import { crypto, encoding as enc, json, pem, x509 } from '../util';
+import { crypto, encoding as enc, json, x509 } from '../util';
 import { toProposedHashedRekordEntry, toProposedIntotoEntry } from './format';
 import {
   EntryKind,
@@ -36,18 +31,19 @@ import {
 // key.
 export function verifyTLogSET(
   bundle: Bundle,
+  publicKey: string,
   tlogKeys: Record<string, KeyObject>
 ): void {
   bundle.verificationData?.tlogEntries.forEach((entry, index) => {
     // Re-create the original Rekor verification payload
-    const payload = toVerificationPayload(bundle, index);
+    const payload = toVerificationPayload(bundle, publicKey, index);
 
     // Canonicalize the payload and turn into a buffer for verification
     const data = Buffer.from(json.canonicalize(payload), 'utf8');
 
     // Find the public key for the transaction log which generated the SET
-    const publicKey = tlogKeys[payload.logID];
-    if (!publicKey) {
+    const tlogKey = tlogKeys[payload.logID];
+    if (!tlogKey) {
       throw new Error('no key found for logID: ' + payload.logID);
     }
 
@@ -57,7 +53,7 @@ export function verifyTLogSET(
       throw new Error('no SET found in bundle');
     }
 
-    if (!crypto.verifyBlob(data, publicKey, signature)) {
+    if (!crypto.verifyBlob(data, tlogKey, signature)) {
       throw new Error('transparency log SET verification failed');
     }
   });
@@ -92,7 +88,11 @@ export function verifyTLogIntegratedTime(bundle: Bundle): void {
 // Returns a properly formatted "VerificationPayload" for one of the
 // transaction log entires in the given bundle which can be used for SET
 // verification.
-function toVerificationPayload(bundle: Bundle, index = 0): VerificationPayload {
+function toVerificationPayload(
+  bundle: Bundle,
+  publicKey: string,
+  index = 0
+): VerificationPayload {
   // Ensure bundle has tlog entries
   const entries = bundle.verificationData?.tlogEntries;
   if (!entries || entries.length - 1 < index) {
@@ -107,7 +107,7 @@ function toVerificationPayload(bundle: Bundle, index = 0): VerificationPayload {
   }
 
   // Recreate the Rekor entry from the bundle
-  const body = toVerificationBody(bundle);
+  const body = toVerificationBody(bundle, publicKey);
 
   return {
     body: enc.base64Encode(json.canonicalize(body)),
@@ -118,14 +118,7 @@ function toVerificationPayload(bundle: Bundle, index = 0): VerificationPayload {
 }
 
 // Recreates the original Rekor entry from the bundle.
-function toVerificationBody(bundle: Bundle): EntryKind {
-  // Extract the public key (or signing cert) from the bundle
-  if (!bundle.verificationMaterial) {
-    throw new Error('No verification material found in bundle');
-  }
-
-  const publicKey = toPublicKey(bundle.verificationMaterial);
-
+function toVerificationBody(bundle: Bundle, publicKey: string): EntryKind {
   switch (bundle.content?.$case) {
     case 'messageSignature': {
       return toMessageSignatureVerificationBody(
@@ -138,21 +131,6 @@ function toVerificationBody(bundle: Bundle): EntryKind {
     }
     default:
       throw new Error('Unsupported bundle type');
-  }
-}
-
-function toPublicKey(verificationMaterial: VerificationMaterial): string {
-  switch (verificationMaterial?.content?.$case) {
-    case 'x509CertificateChain': {
-      const der =
-        verificationMaterial.content.x509CertificateChain.certificates[0];
-      return pem.fromDER(der.rawBytes);
-    }
-    case 'publicKey':
-    // TODO: How to handle this?
-    // eslint-disable-next-line no-fallthrough
-    default:
-      throw new Error('No certificate found in bundle');
   }
 }
 
