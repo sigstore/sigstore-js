@@ -23,6 +23,7 @@ import {
   HashAlgorithm,
   hashAlgorithmToJSON,
   MessageSignature,
+  PublicKeyIdentifier,
   X509CertificateChain,
 } from '../../../types/bundle/__generated__/sigstore_common';
 
@@ -61,6 +62,10 @@ describe('Serialized Types', () => {
 
   const x509CertificateChain: X509CertificateChain = {
     certificates: [{ rawBytes: Buffer.from('certificate') }],
+  };
+
+  const publicKey: PublicKeyIdentifier = {
+    hint: 'pki-hint',
   };
 
   describe('SerializedDSSEBundle', () => {
@@ -213,8 +218,8 @@ describe('Serialized Types', () => {
       verificationData,
       verificationMaterial: {
         content: {
-          $case: 'x509CertificateChain',
-          x509CertificateChain,
+          $case: 'publicKey',
+          publicKey,
         },
       },
     };
@@ -224,17 +229,9 @@ describe('Serialized Types', () => {
 
       expect(json.mediaType).toEqual(messageSignatureBundle.mediaType);
       expect(json.verificationMaterial).toBeTruthy();
-      expect(json.verificationMaterial?.x509CertificateChain).toBeTruthy();
-      expect(
-        json.verificationMaterial?.x509CertificateChain?.certificates
-      ).toHaveLength(x509CertificateChain.certificates.length);
-
-      const cert =
-        json.verificationMaterial?.x509CertificateChain?.certificates[0];
-      expect(cert?.rawBytes).toEqual(
-        Buffer.from(x509CertificateChain.certificates[0].rawBytes).toString(
-          'base64'
-        )
+      expect(json.verificationMaterial?.publicKey).toBeTruthy();
+      expect(json.verificationMaterial?.publicKey?.hint).toEqual(
+        publicKey.hint
       );
 
       expect(json.verificationData).toBeTruthy();

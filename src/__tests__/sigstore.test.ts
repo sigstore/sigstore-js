@@ -18,10 +18,10 @@ import { sign, signAttestation, utils, verify } from '../sigstore';
 import {
   Bundle,
   HashAlgorithm,
-  SerializedBundle,
   VerificationData,
   X509CertificateChain,
 } from '../types/bundle';
+import bundles from './__fixtures__/bundles';
 
 jest.mock('../sign');
 
@@ -207,138 +207,44 @@ describe('signAttestation', () => {
 });
 
 describe('#verify', () => {
-  const artifact = Buffer.from('hello, world!');
-  const bundle: SerializedBundle = {
-    mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.1',
-    verificationData: {
-      tlogEntries: [
-        {
-          logIndex: '6119844',
-          logId: { keyId: 'wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0=' },
-          kindVersion: { kind: 'hashedrekord', version: '0.0.1' },
-          canonicalizedBody:
-            'eyJhcGlWZXJzaW9uIjoiMC4wLjEiLCJraW5kIjoiaGFzaGVkcmVrb3JkIiwic3BlYyI6eyJkYXRhIjp7Imhhc2giOnsiYWxnb3JpdGhtIjoic2hhMjU2IiwidmFsdWUiOiI2OGU2NTZiMjUxZTY3ZTgzNThiZWY4NDgzYWIwZDUxYzY2MTlmM2U3YTFhOWYwZTc1ODM4ZDQxZmYzNjhmNzI4In19LCJzaWduYXR1cmUiOnsiY29udGVudCI6Ik1FUUNJQzU5QUhwMVlFc0N6ZGV2ZlZyUGpsaWdIRmtIOWlBOFZtcGdzUjVObDFndkFpQTJtN3MvSDZ4dlp0VTc0UW13ZTEyTTA0eENCaEVtc2V1R05idjRFY2l2cXc9PSIsInB1YmxpY0tleSI6eyJjb250ZW50IjoiTFMwdExTMUNSVWRKVGlCRFJWSlVTVVpKUTBGVVJTMHRMUzB0Q2sxSlNVTnZWRU5EUVdsbFowRjNTVUpCWjBsVlUwWkxiek54WlN0T1NVbGpRM2hzVmpSVFZETjRhVEEwUW1kemQwTm5XVWxMYjFwSmVtb3dSVUYzVFhjS1RucEZWazFDVFVkQk1WVkZRMmhOVFdNeWJHNWpNMUoyWTIxVmRWcEhWakpOVWpSM1NFRlpSRlpSVVVSRmVGWjZZVmRrZW1SSE9YbGFVekZ3WW01U2JBcGpiVEZzV2tkc2FHUkhWWGRJYUdOT1RXcEplRTFFU1RWTmFrRjNUMVJKZWxkb1kwNU5ha2w0VFVSSk5VMXFRWGhQVkVsNlYycEJRVTFHYTNkRmQxbElDa3R2V2tsNmFqQkRRVkZaU1V0dldrbDZhakJFUVZGalJGRm5RVVZDTkZWR1lrdzBSSE5UWWxSWFNsTmFjR1paTVRoaFJsbHVZME5GWVdSVlIyOVFkRUVLYmxWUGQyWTVlSEJWYW5JeldrMUxaMWN3WkhGSk9VaGpTVlJQTmxsVWVHMURUM2c0VEROUVpWSlZNMmhCT1c5WlJrdFBRMEZWV1hkblowWkRUVUUwUndwQk1WVmtSSGRGUWk5M1VVVkJkMGxJWjBSQlZFSm5UbFpJVTFWRlJFUkJTMEpuWjNKQ1owVkdRbEZqUkVGNlFXUkNaMDVXU0ZFMFJVWm5VVlY0VFM5aENqRk1XRFY2U2xRM1ZYcG1SV3hhYmk5Q1JYaDRNM1F3ZDBoM1dVUldVakJxUWtKbmQwWnZRVlV6T1ZCd2VqRlphMFZhWWpWeFRtcHdTMFpYYVhocE5Ga0tXa1E0ZDBoM1dVUldVakJTUVZGSUwwSkNWWGRGTkVWU1dXNUtjRmxYTlVGYVIxWnZXVmN4YkdOcE5XcGlNakIzVEVGWlMwdDNXVUpDUVVkRWRucEJRZ3BCVVZGbFlVaFNNR05JVFRaTWVUbHVZVmhTYjJSWFNYVlpNamwwVERKNGRsb3liSFZNTWpsb1pGaFNiMDFKUjB4Q1oyOXlRbWRGUlVGa1dqVkJaMUZEQ2tKSU1FVmxkMEkxUVVoalFVTkhRMU00UTJoVEx6Sm9SakJrUm5KS05GTmpVbGRqV1hKQ1dUbDNlbXBUWW1WaE9FbG5XVEppTTBsQlFVRkhSVXBXTUVVS2FrRkJRVUpCVFVGVFJFSkhRV2xGUVd0b1JuaEJiRkZ1VmxBelZuRjJaRUZQYkVsYVlVVmpUREEyUkZaNlRXWXlOakpzWW1kWVptZGlXVVZEU1ZGRGNBb3dSV2gxY0haRmVWZHVkbEpMU2xSQ1VGTk5Oa0p0UTAwMk9VVjZTekV4UWtvd2JXaFpkbXB0V21wQlMwSm5aM0ZvYTJwUFVGRlJSRUYzVG05QlJFSnNDa0ZxUVU5dllXVnNWMFpMWWtwQmJXaDBZbXhOYzI0dldUUlJkVFk1Ym0wcmJ6RlBXRUZ6ZWpGWmFuWXdVWFZvWkRKelp6TjFibVpqVWl0NVQzSldXV0VLYW5JNFEwMVJSSEpRUW1SUWRqWm5VRXhXV1hGMlNtRnhOemRsWTNCSk1GRXJOakp1WVc5bE1uQnpWbkpJZEdadGVrb3lPVmRZTkVKMWJYTldlVmRsWWdvNVZreHFaSFZ2UFFvdExTMHRMVVZPUkNCRFJWSlVTVVpKUTBGVVJTMHRMUzB0Q2c9PSJ9fX19',
-          integratedTime: '1667074164',
-          inclusionPromise: {
-            signedEntryTimestamp:
-              'MEYCIQC1Obm8lhrQt9YTBdBXfvYlkxC8RtgXwKPfHLPfZyyhSwIhAPC5Ow/iKiouuEuPzrcUnIZ7wjXLrvQP/M3yXBTunRMp',
-          },
-          inclusionProof: undefined,
-        },
-      ],
-      timestampVerificationData: { rfc3161Timestamps: [] },
-    },
-    verificationMaterial: {
-      x509CertificateChain: {
-        certificates: [
-          {
-            rawBytes:
-              'MIICoTCCAiegAwIBAgIUSFKo3qe+NIIcCxlV4ST3xi04BgswCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjIxMDI5MjAwOTIzWhcNMjIxMDI5MjAxOTIzWjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEB4UFbL4DsSbTWJSZpfY18aFYncCEadUGoPtAnUOwf9xpUjr3ZMKgW0dqI9HcITO6YTxmCOx8L3PeRU3hA9oYFKOCAUYwggFCMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUxM/a1LX5zJT7UzfElZn/BExx3t0wHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGLBgorBgEEAdZ5AgQCBH0EewB5AHcACGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3IAAAGEJV0EjAAABAMASDBGAiEAkhFxAlQnVP3VqvdAOlIZaEcL06DVzMf262lbgXfgbYECIQCp0EhupvEyWnvRKJTBPSM6BmCM69EzK11BJ0mhYvjmZjAKBggqhkjOPQQDAwNoADBlAjAOoaelWFKbJAmhtblMsn/Y4Qu69nm+o1OXAsz1Yjv0Quhd2sg3unfcR+yOrVYajr8CMQDrPBdPv6gPLVYqvJaq77ecpI0Q+62naoe2psVrHtfmzJ29WX4BumsVyWeb9VLjduo=',
-          },
-          {
-            rawBytes:
-              'MIICGjCCAaGgAwIBAgIUALnViVfnU0brJasmRkHrn/UnfaQwCgYIKoZIzj0EAwMwKjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0yMjA0MTMyMDA2MTVaFw0zMTEwMDUxMzU2NThaMDcxFTATBgNVBAoTDHNpZ3N0b3JlLmRldjEeMBwGA1UEAxMVc2lnc3RvcmUtaW50ZXJtZWRpYXRlMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE8RVS/ysH+NOvuDZyPIZtilgUF9NlarYpAd9HP1vBBH1U5CV77LSS7s0ZiH4nE7Hv7ptS6LvvR/STk798LVgMzLlJ4HeIfF3tHSaexLcYpSASr1kS0N/RgBJz/9jWCiXno3sweTAOBgNVHQ8BAf8EBAMCAQYwEwYDVR0lBAwwCgYIKwYBBQUHAwMwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0jBBgwFoAUWMAeX5FFpWapesyQoZMi0CrFxfowCgYIKoZIzj0EAwMDZwAwZAIwPCsQK4DYiZYDPIaDi5HFKnfxXx6ASSVmERfsynYBiX2X6SJRnZU84/9DZdnFvvxmAjBOt6QpBlc4J/0DxvkTCqpclvziL6BCCPnjdlIB3Pu3BxsPmygUY7Ii2zbdCdliiow=',
-          },
-          {
-            rawBytes:
-              'MIIB9zCCAXygAwIBAgIUALZNAPFdxHPwjeDloDwyYChAO/4wCgYIKoZIzj0EAwMwKjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0yMTEwMDcxMzU2NTlaFw0zMTEwMDUxMzU2NThaMCoxFTATBgNVBAoTDHNpZ3N0b3JlLmRldjERMA8GA1UEAxMIc2lnc3RvcmUwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAAT7XeFT4rb3PQGwS4IajtLk3/OlnpgangaBclYpsYBr5i+4ynB07ceb3LP0OIOZdxexX69c5iVuyJRQ+Hz05yi+UF3uBWAlHpiS5sh0+H2GHE7SXrk1EC5m1Tr19L9gg92jYzBhMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRYwB5fkUWlZql6zJChkyLQKsXF+jAfBgNVHSMEGDAWgBRYwB5fkUWlZql6zJChkyLQKsXF+jAKBggqhkjOPQQDAwNpADBmAjEAj1nHeXZp+13NWBNa+EDsDP8G1WWg1tCMWP/WHPqpaVo0jhsweNFZgSs0eE7wYI4qAjEA2WB9ot98sIkoF3vZYdd3/VtWB5b9TNMea7Ix/stJ5TfcLLeABLE4BNJOsQ4vnBHJ',
-          },
-        ],
-      },
-      publicKey: undefined,
-    },
-    messageSignature: {
-      messageDigest: {
-        algorithm: 'SHA2_256',
-        digest: 'aOZWslHmfoNYvvhIOrDVHGYZ8+ehqfDnWDjUH/No9yg=',
-      },
-      signature:
-        'MEQCIC59AHp1YEsCzdevfVrPjligHFkH9iA8VmpgsR5Nl1gvAiA2m7s/H6xvZtU74Qmwe12M04xCBhEmseuGNbv4Ecivqw==',
-    },
-    dsseEnvelope: undefined,
-  };
-
   describe('when everything in the bundle is valid', () => {
+    const bundle = bundles.signature.valid.withSigningCert;
+    const artifact = bundles.signature.artifact;
+
     it('does not throw an error', async () => {
       await expect(verify(bundle, artifact)).resolves.toBe(undefined);
     });
   });
 
   describe('when there is a signature mismatch', () => {
+    const bundle = bundles.signature.valid.withSigningCert;
+    const artifact = Buffer.from('');
     it('throws an error', async () => {
-      await expect(verify(bundle, Buffer.from(''))).rejects.toThrowError(
+      await expect(verify(bundle, artifact)).rejects.toThrowError(
         /signature verification failed/
       );
     });
   });
 
   describe('when SET in bundle verification data does not match payload', () => {
-    const bundleWithBadSET = { ...bundle };
+    const bundle = bundles.signature.invalid.setMismatch;
+    const artifact = bundles.signature.artifact;
+
     it('throws an error', async () => {
-      if (!bundleWithBadSET.verificationData) {
-        fail('bundleWithBadSET.verificationData is undefined');
-      }
-
-      // Update integratedTime to be different from that signed by the SET
-      bundleWithBadSET.verificationData.tlogEntries[0].integratedTime = '1';
-
-      await expect(verify(bundleWithBadSET, artifact)).rejects.toThrowError(
+      await expect(verify(bundle, artifact)).rejects.toThrowError(
         /SET verification failed/
       );
     });
   });
 
   describe('when tlog timestamp is outside the validity period of the certificate', () => {
-    // This bundle has a valid signature (the public key in the signing
-    // certificate properly verifies the signature). Also, the SET is valid
-    // (this was a real entry added to Rekor. However, the timestamp of the
-    // Rekor entry is outside the validity period of the certificate.
-    const bundleWithExpiredCert: SerializedBundle = {
-      mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.1',
-      verificationData: {
-        tlogEntries: [
-          {
-            logIndex: '6175802',
-            logId: { keyId: 'wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0=' },
-            kindVersion: { kind: 'hashedrekord', version: '0.0.1' },
-            canonicalizedBody:
-              'eyJhcGlWZXJzaW9uIjoiMC4wLjEiLCJraW5kIjoiaGFzaGVkcmVrb3JkIiwic3BlYyI6eyJkYXRhIjp7Imhhc2giOnsiYWxnb3JpdGhtIjoic2hhMjU2IiwidmFsdWUiOiI2OGU2NTZiMjUxZTY3ZTgzNThiZWY4NDgzYWIwZDUxYzY2MTlmM2U3YTFhOWYwZTc1ODM4ZDQxZmYzNjhmNzI4In19LCJzaWduYXR1cmUiOnsiY29udGVudCI6Ik1FWUNJUUNYejc5V2JoWGgzYnlxVVhtZExwbTVKUXV4RmM1MU05Um05ODFkTEpFN0hBSWhBS0xLUk9Sc0dJWDVjWFRVMmp2VTJ1eUFOSmZlVUVHaHhYNU5SNlpLNDY4bSIsInB1YmxpY0tleSI6eyJjb250ZW50IjoiTFMwdExTMUNSVWRKVGlCRFJWSlVTVVpKUTBGVVJTMHRMUzB0Q2sxSlNVTnVla05EUVdsWFowRjNTVUpCWjBsVlREVlNWQzh3ZWtwT2FtSTRTV05hV21weFlVMU5LMjVpUms0NGQwTm5XVWxMYjFwSmVtb3dSVUYzVFhjS1RucEZWazFDVFVkQk1WVkZRMmhOVFdNeWJHNWpNMUoyWTIxVmRWcEhWakpOVWpSM1NFRlpSRlpSVVVSRmVGWjZZVmRrZW1SSE9YbGFVekZ3WW01U2JBcGpiVEZzV2tkc2FHUkhWWGRJYUdOT1RXcEplRTFFVFhkTlZHdDNUVlJOTWxkb1kwNU5ha2w0VFVSTmQwMVVhM2hOVkUweVYycEJRVTFHYTNkRmQxbElDa3R2V2tsNmFqQkRRVkZaU1V0dldrbDZhakJFUVZGalJGRm5RVVZKY2pWWVNIUkpZVEZCYlhCeVoxUlpkM1JxYkRaWFlVRkpPRWRNVmxodlZXczFhVklLYzNJcllYY3dlakpNVmtKRlIyRnBWMmh3WTBGdWRIaGtUalpvTkZsbVVYTnJSSEJMYW0xcmJtcFlaa2Q1T0M5dlZHRlBRMEZWVVhkblowWkJUVUUwUndwQk1WVmtSSGRGUWk5M1VVVkJkMGxJWjBSQlZFSm5UbFpJVTFWRlJFUkJTMEpuWjNKQ1owVkdRbEZqUkVGNlFXUkNaMDVXU0ZFMFJVWm5VVlZMWlV0b0NqbDVaMDVyTDBWMk1raDJjMWxvUWtWbFJqRTFSMVUwZDBoM1dVUldVakJxUWtKbmQwWnZRVlV6T1ZCd2VqRlphMFZhWWpWeFRtcHdTMFpYYVhocE5Ga0tXa1E0ZDBoM1dVUldVakJTUVZGSUwwSkNWWGRGTkVWU1dXNUtjRmxYTlVGYVIxWnZXVmN4YkdOcE5XcGlNakIzVEVGWlMwdDNXVUpDUVVkRWRucEJRZ3BCVVZGbFlVaFNNR05JVFRaTWVUbHVZVmhTYjJSWFNYVlpNamwwVERKNGRsb3liSFZNTWpsb1pGaFNiMDFKUjBwQ1oyOXlRbWRGUlVGa1dqVkJaMUZEQ2tKSWMwVmxVVUl6UVVoVlFVTkhRMU00UTJoVEx6Sm9SakJrUm5KS05GTmpVbGRqV1hKQ1dUbDNlbXBUWW1WaE9FbG5XVEppTTBsQlFVRkhSVXRyVmxBS1JsRkJRVUpCVFVGU2FrSkZRV2xCTWxRM1luSXlMM0kwVDNnemVsaHNXVzlWZUV0aVVGRkplSHBQVEVoV09HOWpiWEF4VTA5VFlsRlBaMGxuV2pGSE1ncGlhV2xEYkM5V01IY3dSblYxYzI5VU4wOXFkelpzU2xWaFRIRnBjRkpMTVhGd2RuSlFabGwzUTJkWlNVdHZXa2w2YWpCRlFYZE5SR0ZCUVhkYVVVbDRDa0ZQYkdkdUx6bGtabTUxV0hwMmNEZHdUMmMxVUVKM2JFbDRkbVIxUkhSRWVWRnJVa0l5UldOd1VYTXhjRE5SZWpsa1VGbzVaVGxWTVV4aUwxZzRkRFFLZVhkSmQwSnBZMEV3U0V3eVkzTXZTR293VjFwNE1rZHFVVVpzV1M5V1FUVnNWM050ZFhvMmFWVlBSbmxIVVRsRlUyZEtTbWxJTDFsNlprOURaa01yVGdwV1dtUnNDaTB0TFMwdFJVNUVJRU5GVWxSSlJrbERRVlJGTFMwdExTMEsifX19fQ==',
-            integratedTime: '1667157111',
-            inclusionPromise: {
-              signedEntryTimestamp:
-                'MEQCIEYKojgVMMYh0AAIXhdXWwBs3/ywXvwGJjrGbBnckwsnAiBn29rNkIj7Gr6OgcnPlY6ZHbR2mM9cq5p2d/FBAKQOuw==',
-            },
-            inclusionProof: undefined,
-          },
-        ],
-        timestampVerificationData: { rfc3161Timestamps: [] },
-      },
-      verificationMaterial: {
-        x509CertificateChain: {
-          certificates: [
-            {
-              rawBytes:
-                'MIICnzCCAiWgAwIBAgIUL5RT/0zJNjb8IcZZjqaMM+nbFN8wCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjIxMDMwMTkwMTM2WhcNMjIxMDMwMTkxMTM2WjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIr5XHtIa1AmprgTYwtjl6WaAI8GLVXoUk5iRsr+aw0z2LVBEGaiWhpcAntxdN6h4YfQskDpKjmknjXfGy8/oTaOCAUQwggFAMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUKeKh9ygNk/Ev2HvsYhBEeF15GU4wHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGJBgorBgEEAdZ5AgQCBHsEeQB3AHUACGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3IAAAGEKkVPFQAABAMARjBEAiA2T7br2/r4Ox3zXlYoUxKbPQIxzOLHV8ocmp1SOSbQOgIgZ1G2biiCl/V0w0FuusoT7Ojw6lJUaLqipRK1qpvrPfYwCgYIKoZIzj0EAwMDaAAwZQIxAOlgn/9dfnuXzvp7pOg5PBwlIxvduDtDyQkRB2EcpQs1p3Qz9dPZ9e9U1Lb/X8t4ywIwBicA0HL2cs/Hj0WZx2GjQFlY/VA5lWsmuz6iUOFyGQ9ESgJJiH/YzfOCfC+NVZdl',
-            },
-          ],
-        },
-        publicKey: undefined,
-      },
-      messageSignature: {
-        messageDigest: {
-          algorithm: 'SHA2_256',
-          digest: 'aOZWslHmfoNYvvhIOrDVHGYZ8+ehqfDnWDjUH/No9yg=',
-        },
-        signature:
-          'MEYCIQCXz79WbhXh3byqUXmdLpm5JQuxFc51M9Rm981dLJE7HAIhAKLKRORsGIX5cXTU2jvU2uyANJfeUEGhxX5NR6ZK468m',
-      },
-      dsseEnvelope: undefined,
-    };
+    const bundle = bundles.signature.invalid.expiredCert;
+    const artifact = bundles.signature.artifact;
 
     it('throws an error', async () => {
-      await expect(
-        verify(bundleWithExpiredCert, artifact)
-      ).rejects.toThrowError(/integrated time is after certificate expiration/);
+      await expect(verify(bundle, artifact)).rejects.toThrowError(
+        /integrated time is after certificate expiration/
+      );
     });
   });
 });
