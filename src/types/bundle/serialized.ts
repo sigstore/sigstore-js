@@ -41,6 +41,7 @@ type SerializedVerificationData = {
           checkpoint: { envelope: string };
         }
       | undefined;
+    canonicalizedBody: string;
   }[];
   timestampVerificationData: {
     rfc3161Timestamps: { signedTimestamp: string }[];

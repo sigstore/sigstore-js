@@ -117,7 +117,18 @@ export interface TransparencyLogEntry {
    * entry was appended to the log, and that the log has not been
    * altered.
    */
-  inclusionProof: InclusionProof | undefined;
+  inclusionProof:
+    | InclusionProof
+    | undefined;
+  /**
+   * The canonicalized Rekor entry body, used for SET verification. This
+   * is the same as the body returned by Rekor. It's included here for
+   * cases where the client cannot deterministically reconstruct the
+   * bundle from the other fields. Clients MUST verify that the signature
+   * referenced in the canonicalized_body matches the signature provided
+   * in the bundle content.
+   */
+  canonicalizedBody: Buffer;
 }
 
 function createBaseKindVersion(): KindVersion {
@@ -236,6 +247,7 @@ function createBaseTransparencyLogEntry(): TransparencyLogEntry {
     integratedTime: "0",
     inclusionPromise: undefined,
     inclusionProof: undefined,
+    canonicalizedBody: Buffer.alloc(0),
   };
 }
 
@@ -248,6 +260,9 @@ export const TransparencyLogEntry = {
       integratedTime: isSet(object.integratedTime) ? String(object.integratedTime) : "0",
       inclusionPromise: isSet(object.inclusionPromise) ? InclusionPromise.fromJSON(object.inclusionPromise) : undefined,
       inclusionProof: isSet(object.inclusionProof) ? InclusionProof.fromJSON(object.inclusionProof) : undefined,
+      canonicalizedBody: isSet(object.canonicalizedBody)
+        ? Buffer.from(bytesFromBase64(object.canonicalizedBody))
+        : Buffer.alloc(0),
     };
   },
 
@@ -262,6 +277,10 @@ export const TransparencyLogEntry = {
       (obj.inclusionPromise = message.inclusionPromise ? InclusionPromise.toJSON(message.inclusionPromise) : undefined);
     message.inclusionProof !== undefined &&
       (obj.inclusionProof = message.inclusionProof ? InclusionProof.toJSON(message.inclusionProof) : undefined);
+    message.canonicalizedBody !== undefined &&
+      (obj.canonicalizedBody = base64FromBytes(
+        message.canonicalizedBody !== undefined ? message.canonicalizedBody : Buffer.alloc(0),
+      ));
     return obj;
   },
 };

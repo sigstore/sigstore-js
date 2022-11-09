@@ -16,7 +16,11 @@ limitations under the License.
 import { KeyObject } from 'crypto';
 import { VerificationError } from './error';
 import { TLog } from './tlog';
-import { verifyTLogIntegratedTime, verifyTLogSET } from './tlog/verify';
+import {
+  verifyTLogBodies,
+  verifyTLogIntegratedTime,
+  verifyTLogSET,
+} from './tlog/verify';
 import {
   Bundle,
   Envelope,
@@ -49,7 +53,8 @@ export class Verifier {
     const publicKey = await this.getPublicKey(bundle);
 
     verifyArtifactSignature(bundle, publicKey, data);
-    verifyTLogSET(bundle, publicKey, this.tlogKeys);
+    verifyTLogSET(bundle, this.tlogKeys);
+    verifyTLogBodies(bundle);
     verifyTLogIntegratedTime(bundle);
   }
 

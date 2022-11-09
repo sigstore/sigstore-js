@@ -28,6 +28,7 @@ export * from './serialized';
 export * from './__generated__/envelope';
 export * from './__generated__/sigstore_bundle';
 export * from './__generated__/sigstore_common';
+export { TransparencyLogEntry } from './__generated__/sigstore_rekor';
 
 export const bundleToJSON = Bundle.toJSON;
 export const bundleFromJSON = Bundle.fromJSON;
@@ -105,6 +106,7 @@ function toTransparencyLogEntry(entry: Entry): TransparencyLogEntry {
       version: entryBody.apiVersion,
     },
     inclusionProof: undefined,
+    canonicalizedBody: Buffer.from(entry.body, 'base64'),
   };
 }
 
