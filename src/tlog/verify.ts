@@ -14,10 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { KeyObject } from 'crypto';
-import { Bundle, Envelope, MessageSignature } from '../types/bundle';
-import { SignatureMaterial } from '../types/signature';
+import {
+  Bundle,
+  Envelope,
+  MessageSignature,
+  TransparencyLogEntry,
+} from '../types/bundle';
 import { crypto, encoding as enc, json, x509 } from '../util';
-import { toProposedHashedRekordEntry, toProposedIntotoEntry } from './format';
 import {
   EntryKind,
   HashedRekordKind,
@@ -31,12 +34,11 @@ import {
 // key.
 export function verifyTLogSET(
   bundle: Bundle,
-  publicKey: string,
   tlogKeys: Record<string, KeyObject>
 ): void {
-  bundle.verificationData?.tlogEntries.forEach((entry, index) => {
+  bundle.verificationData?.tlogEntries.forEach((entry) => {
     // Re-create the original Rekor verification payload
-    const payload = toVerificationPayload(bundle, publicKey, index);
+    const payload = toVerificationPayload(entry);
 
     // Canonicalize the payload and turn into a buffer for verification
     const data = Buffer.from(json.canonicalize(payload), 'utf8');
@@ -49,7 +51,7 @@ export function verifyTLogSET(
 
     // Extract the SET from the tlog entry
     const signature = entry.inclusionPromise?.signedEntryTimestamp;
-    if (!signature) {
+    if (!signature || signature.length === 0) {
       throw new Error('no SET found in bundle');
     }
 
@@ -85,89 +87,152 @@ export function verifyTLogIntegratedTime(bundle: Bundle): void {
   });
 }
 
+export function verifyTLogBodies(bundle: Bundle): void {
+  bundle.verificationData?.tlogEntries.forEach((entry) => {
+    verifyTLogBody(entry, bundle);
+  });
+}
+
+// Compare the given intoto tlog entry to the given bundle
+function verifyTLogBody(entry: TransparencyLogEntry, bundle: Bundle): void {
+  if (!entry.kindVersion) {
+    throw new Error('no kindVersion found in bundle');
+  }
+
+  const { kind, version } = entry.kindVersion;
+  const body: EntryKind = JSON.parse(entry.canonicalizedBody.toString('utf8'));
+
+  if (kind !== body.kind || version !== body.apiVersion) {
+    throw new Error('bundle content and tlog entry do not match');
+  }
+
+  switch (body.kind) {
+    case 'intoto':
+      verifyIntotoTLogBody(body, bundle);
+      break;
+    case 'hashedrekord':
+      verifyHashedRekordTLogBody(body, bundle);
+      break;
+    default:
+      throw new Error('Unknown kind found in tlog entry');
+  }
+}
+
+// Compare the given intoto tlog entry to the given bundle
+function verifyIntotoTLogBody(tlogEntry: IntotoKind, bundle: Bundle): void {
+  if (bundle.content?.$case !== 'dsseEnvelope') {
+    throw new Error('bundle content and tlog entry do not match');
+  }
+
+  const dsse = bundle.content.dsseEnvelope;
+
+  switch (tlogEntry.apiVersion) {
+    case '0.0.2':
+      verifyIntoto002TLogBody(tlogEntry, dsse);
+      break;
+    default:
+      throw new Error('Unsupported intoto version: ' + tlogEntry.apiVersion);
+  }
+}
+
+// Compare the given hashedrekord tlog entry to the given bundle
+function verifyHashedRekordTLogBody(
+  tlogEntry: HashedRekordKind,
+  bundle: Bundle
+): void {
+  if (bundle.content?.$case !== 'messageSignature') {
+    throw new Error('bundle content and tlog entry do not match');
+  }
+
+  const messageSignature = bundle.content.messageSignature;
+
+  switch (tlogEntry.apiVersion) {
+    case '0.0.1':
+      verifyHashedrekor001TLogBody(tlogEntry, messageSignature);
+      break;
+    default:
+      throw new Error(
+        'Unsupported hashedrekord version: ' + tlogEntry.apiVersion
+      );
+  }
+}
+
+// Compare the given intoto v0.0.2 tlog entry to the given DSSE envelope.
+function verifyIntoto002TLogBody(
+  tlogEntry: Extract<IntotoKind, { apiVersion: '0.0.2' }>,
+  dsse: Envelope
+): void {
+  // Collect all of the signatures from the DSSE envelope
+  // Turns them into base64-encoded strings for comparison
+  const dsseSigs = dsse.signatures.map((signature) =>
+    signature.sig.toString('base64')
+  );
+
+  // Collect all of the signatures from the tlog entry
+  // Remember that tlog signastures are double base64-encoded
+  const tlogSigs = tlogEntry.spec.content.envelope?.signatures.map(
+    (signature) => (signature.sig ? enc.base64Decode(signature.sig) : '')
+  );
+
+  // Ensure the bundle's DSSE and the tlog entry contain the same number of signatures
+  if (dsseSigs.length !== tlogSigs?.length) {
+    throw new Error('bundle content and tlog entry do not match');
+  }
+
+  // Ensure that every signature in the bundle's DSSE is present in the tlog entry
+  if (!dsseSigs.every((dsseSig) => tlogSigs.includes(dsseSig))) {
+    throw new Error('bundle content and tlog entry do not match');
+  }
+
+  // Ensure the digest of the bundle's DSSE payload matches the digest in the
+  // tlog entry
+  const dssePayloadHash = crypto.hash(dsse.payload).toString('hex');
+
+  if (dssePayloadHash !== tlogEntry.spec.content.payloadHash?.value) {
+    throw new Error('bundle content and tlog entry do not match');
+  }
+}
+
+// Compare the given hashedrekord v0.0.1 tlog entry to the given message
+// signature
+function verifyHashedrekor001TLogBody(
+  tlogEntry: Extract<HashedRekordKind, { apiVersion: '0.0.1' }>,
+  messageSignature: MessageSignature
+): void {
+  // Ensure that the bundles message signature matches the tlog entry
+  const msgSig = messageSignature.signature.toString('base64');
+  const tlogSig = tlogEntry.spec.signature.content;
+
+  if (msgSig !== tlogSig) {
+    throw new Error('bundle content and tlog entry do not match');
+  }
+
+  // Ensure that the bundle's message digest matches the tlog entry
+  const msgDigest = messageSignature.messageDigest?.digest.toString('hex');
+  const tlogDigest = tlogEntry.spec.data.hash?.value;
+
+  if (msgDigest !== tlogDigest) {
+    throw new Error('bundle content and tlog entry do not match');
+  }
+}
+
 // Returns a properly formatted "VerificationPayload" for one of the
 // transaction log entires in the given bundle which can be used for SET
 // verification.
 function toVerificationPayload(
-  bundle: Bundle,
-  publicKey: string,
-  index = 0
+  entry: TransparencyLogEntry
 ): VerificationPayload {
-  // Ensure bundle has tlog entries
-  const entries = bundle.verificationData?.tlogEntries;
-  if (!entries || entries.length - 1 < index) {
-    throw new Error('No tlog entries found in bundle');
-  }
-
   // Rekor metadata
-  const { integratedTime, logIndex, logId } = entries[index];
+  const { integratedTime, logIndex, logId, canonicalizedBody } = entry;
 
   if (!logId) {
-    throw new Error('No logId found in bundle');
+    throw new Error('no logId found in bundle');
   }
 
-  // Recreate the Rekor entry from the bundle
-  const body = toVerificationBody(bundle, publicKey);
-
   return {
-    body: enc.base64Encode(json.canonicalize(body)),
+    body: canonicalizedBody.toString('base64'),
     integratedTime: Number(integratedTime),
     logIndex: Number(logIndex),
     logID: logId.keyId.toString('hex'),
   };
-}
-
-// Recreates the original Rekor entry from the bundle.
-function toVerificationBody(bundle: Bundle, publicKey: string): EntryKind {
-  switch (bundle.content?.$case) {
-    case 'messageSignature': {
-      return toMessageSignatureVerificationBody(
-        bundle.content.messageSignature,
-        publicKey
-      );
-    }
-    case 'dsseEnvelope': {
-      return toDSSEVerificationBody(bundle.content.dsseEnvelope, publicKey);
-    }
-    default:
-      throw new Error('Unsupported bundle type');
-  }
-}
-
-// Recreates a Rekor "hashedrekord" entry from the bundle.
-function toMessageSignatureVerificationBody(
-  messageSignature: MessageSignature,
-  certificate: string
-): HashedRekordKind {
-  const digest = messageSignature.messageDigest?.digest || Buffer.from('');
-  const sig = messageSignature.signature;
-  const sigMaterial: SignatureMaterial = {
-    signature: sig,
-    certificates: [certificate],
-    key: undefined,
-  };
-
-  return toProposedHashedRekordEntry(digest, sigMaterial);
-}
-
-// Recreates a Rekor "intoto" entry from the bundle.
-function toDSSEVerificationBody(
-  dsseEnvelope: Envelope,
-  certificate: string
-): IntotoKind {
-  const sig = dsseEnvelope.signatures[0].sig;
-  const sigMaterial: SignatureMaterial = {
-    signature: sig,
-    certificates: [certificate],
-    key: undefined,
-  };
-
-  const body = toProposedIntotoEntry(dsseEnvelope, sigMaterial);
-
-  // When Rekor saves the entry it removes the payload from the envelope
-  if (body.apiVersion === '0.0.2') {
-    delete body.spec.content?.envelope?.payload;
-  }
-
-  return body;
 }

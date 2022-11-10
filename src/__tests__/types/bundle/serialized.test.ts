@@ -38,6 +38,7 @@ describe('Serialized Types', () => {
           kind: 'kind',
           version: 'version',
         },
+        canonicalizedBody: Buffer.from('body'),
         integratedTime: '2021-01-01T00:00:00Z',
         inclusionPromise: {
           signedEntryTimestamp: Buffer.from('inclusionPromise'),
@@ -126,6 +127,9 @@ describe('Serialized Types', () => {
       );
       expect(tlogEntry?.kindVersion?.version).toEqual(
         expectedTlogEntry.kindVersion?.version
+      );
+      expect(tlogEntry?.canonicalizedBody).toEqual(
+        expectedTlogEntry.canonicalizedBody.toString('base64')
       );
       expect(tlogEntry?.integratedTime).toEqual(
         expectedTlogEntry.integratedTime
@@ -252,6 +256,9 @@ describe('Serialized Types', () => {
       );
       expect(tlogEntry?.kindVersion?.version).toEqual(
         expectedTlogEntry.kindVersion?.version
+      );
+      expect(tlogEntry?.canonicalizedBody).toEqual(
+        expectedTlogEntry.canonicalizedBody.toString('base64')
       );
       expect(tlogEntry?.integratedTime).toEqual(
         expectedTlogEntry.integratedTime

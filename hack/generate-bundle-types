@@ -8,7 +8,7 @@ mkdir -p ${OUTPUT_DIR}
 
 # Retrieve proto files
 REPO=sigstore/protobuf-specs
-REF=d6bebacb75b9453684c09f7e51491e31409fccf0
+REF=d8064a7f8a47777132ff51bb74d40dbb99817262
 PB_PATH=protos
 
 DEFS_DIR=/tmp/defs
