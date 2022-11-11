@@ -51,5 +51,8 @@
   },
   "dependencies": {
     "make-fetch-happen": "^11.0.1"
+  },
+  "engines": {
+    "node": "^14.17.0 || ^16.13.0 || >=18.0.0"
   }
 }
