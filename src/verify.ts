@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { KeyObject } from 'crypto';
-import { VerificationError } from './error';
+import { InvalidBundleError, VerificationError } from './error';
 import { TLog } from './tlog';
 import {
   verifyTLogBodies,
@@ -73,12 +73,12 @@ export class Verifier {
         );
         break;
       default:
-        throw new VerificationError('No verification material found');
+        throw new InvalidBundleError('no verification material found');
     }
 
     if (!publicKey) {
       throw new VerificationError(
-        'No public key found for signature verification'
+        'no public key found for signature verification'
       );
     }
 
@@ -97,7 +97,7 @@ function verifyArtifactSignature(
     case 'messageSignature':
       if (!data) {
         throw new VerificationError(
-          'No data provided for message signature verification'
+          'no data provided for message signature verification'
         );
       }
       verifyMessageSignature(bundle.content.messageSignature, publicKey, data);
@@ -106,7 +106,7 @@ function verifyArtifactSignature(
       verifyDSSESignature(bundle.content.dsseEnvelope, publicKey);
       break;
     default:
-      throw new VerificationError('Bundle is invalid');
+      throw new InvalidBundleError('no content found');
   }
 }
 
@@ -121,7 +121,7 @@ function verifyMessageSignature(
   const signature = messageSignature.signature;
 
   if (!crypto.verifyBlob(data, publicKey, signature)) {
-    throw new VerificationError('Artifact signature verification failed');
+    throw new VerificationError('artifact signature verification failed');
   }
 }
 
@@ -135,14 +135,14 @@ function verifyDSSESignature(envelope: Envelope, publicKey: string): void {
 
   // Extract signature from DSSE envelope
   if (envelope.signatures.length < 1) {
-    throw new VerificationError('No signatures found in DSSE envelope');
+    throw new InvalidBundleError('no signatures found in DSSE envelope');
   }
 
   // Only support a single signature in DSSE
   const signature = envelope.signatures[0].sig;
 
   if (!crypto.verifyBlob(data, publicKey, signature)) {
-    throw new VerificationError('Artifact signature verification failed');
+    throw new VerificationError('artifact signature verification failed');
   }
 }
 

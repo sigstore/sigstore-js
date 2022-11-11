@@ -14,6 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import crypto from 'crypto';
+import {
+  InvalidBundleError,
+  UnsupportedVersionError,
+  VerificationError,
+} from '../../error';
 import { verifyTLogBodies, verifyTLogSET } from '../../tlog/verify';
 import { bundleFromJSON } from '../../types/bundle';
 import bundles from '../__fixtures__/bundles';
@@ -23,6 +28,7 @@ describe('verifyTLogSET', () => {
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2G2Y+2tabdTV5BcGiBIx0a9fAFwr
 kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
 -----END PUBLIC KEY-----`);
+
   const tlogKeyID = crypto
     .createHash('sha256')
     .update(tlogKey.export({ format: 'der', type: 'spki' }))
@@ -44,9 +50,7 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
       const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
 
       it('throws an error', () => {
-        expect(() => verifyTLogSET(bundle, {})).toThrow(
-          /no key found for logID/
-        );
+        expect(() => verifyTLogSET(bundle, {})).toThrow(VerificationError);
       });
     });
 
@@ -55,7 +59,7 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
 
       it('throws an error', () => {
         expect(() => verifyTLogSET(bundle, tlogKeys)).toThrow(
-          /no SET found in bundle/
+          InvalidBundleError
         );
       });
     });
@@ -65,7 +69,7 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
 
       it('throws an error', () => {
         expect(() => verifyTLogSET(bundle, tlogKeys)).toThrow(
-          /transparency log SET verification failed/
+          VerificationError
         );
       });
     });
@@ -85,7 +89,7 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
 
       it('throws an error', () => {
         expect(() => verifyTLogSET(bundle, tlogKeys)).toThrow(
-          /transparency log SET verification failed/
+          VerificationError
         );
       });
     });
@@ -95,7 +99,7 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
 
       it('throws an error', () => {
         expect(() => verifyTLogSET(bundle, tlogKeys)).toThrow(
-          /no logId found in bundle/
+          InvalidBundleError
         );
       });
     });
@@ -118,9 +122,7 @@ describe('verifyTLogBodies', () => {
       );
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(
-          /bundle content and tlog entry do not match/
-        );
+        expect(() => verifyTLogBodies(bundle)).toThrow(VerificationError);
       });
     });
 
@@ -130,9 +132,7 @@ describe('verifyTLogBodies', () => {
       );
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(
-          /bundle content and tlog entry do not match/
-        );
+        expect(() => verifyTLogBodies(bundle)).toThrow(VerificationError);
       });
     });
   });
@@ -152,18 +152,14 @@ describe('verifyTLogBodies', () => {
       );
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(
-          /no kindVersion found in bundle/
-        );
+        expect(() => verifyTLogBodies(bundle)).toThrow(InvalidBundleError);
       });
     });
     describe('when the payload hash does NOT match the value in the intoto entry', () => {
       const bundle = bundleFromJSON(bundles.dsse.invalid.badSignature);
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(
-          /bundle content and tlog entry do not match/
-        );
+        expect(() => verifyTLogBodies(bundle)).toThrow(VerificationError);
       });
     });
 
@@ -173,9 +169,17 @@ describe('verifyTLogBodies', () => {
       );
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(
-          /bundle content and tlog entry do not match/
-        );
+        expect(() => verifyTLogBodies(bundle)).toThrow(VerificationError);
+      });
+    });
+
+    describe('when the tlog entry version is unsupported', () => {
+      const bundle = bundleFromJSON(
+        bundles.dsse.invalid.tlogUnsupportedVersion
+      );
+
+      it('throws an error', () => {
+        expect(() => verifyTLogBodies(bundle)).toThrow(UnsupportedVersionError);
       });
     });
 
@@ -183,9 +187,7 @@ describe('verifyTLogBodies', () => {
       const bundle = bundleFromJSON(bundles.dsse.invalid.tlogTooManySigsInBody);
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(
-          /bundle content and tlog entry do not match/
-        );
+        expect(() => verifyTLogBodies(bundle)).toThrow(VerificationError);
       });
     });
 
@@ -193,9 +195,7 @@ describe('verifyTLogBodies', () => {
       const bundle = bundleFromJSON(bundles.dsse.invalid.tlogVersionMismatch);
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(
-          /bundle content and tlog entry do not match/
-        );
+        expect(() => verifyTLogBodies(bundle)).toThrow(VerificationError);
       });
     });
   });

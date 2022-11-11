@@ -22,4 +22,5 @@ module.exports = {
     '<rootDir>/dist/',
     '<rootDir>/src/__tests__/__fixtures__',
   ],
+  coveragePathIgnorePatterns: ['__generated__', '__fixtures__'],
 };

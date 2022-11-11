@@ -15,6 +15,11 @@ limitations under the License.
 */
 import { KeyObject } from 'crypto';
 import {
+  InvalidBundleError,
+  UnsupportedVersionError,
+  VerificationError,
+} from '../error';
+import {
   Bundle,
   Envelope,
   MessageSignature,
@@ -27,6 +32,8 @@ import {
   IntotoKind,
   VerificationPayload,
 } from './types';
+
+const TLOG_MISMATCH_ERROR_MSG = 'bundle content and tlog entry do not match';
 
 // Verifies that all of the tlog entries in the given bundle can be verified.
 // Verification is peroformed by re-creating the original Rekor entry from the
@@ -46,17 +53,17 @@ export function verifyTLogSET(
     // Find the public key for the transaction log which generated the SET
     const tlogKey = tlogKeys[payload.logID];
     if (!tlogKey) {
-      throw new Error('no key found for logID: ' + payload.logID);
+      throw new VerificationError('no key found for logID: ' + payload.logID);
     }
 
     // Extract the SET from the tlog entry
     const signature = entry.inclusionPromise?.signedEntryTimestamp;
     if (!signature || signature.length === 0) {
-      throw new Error('no SET found in bundle');
+      throw new InvalidBundleError('no SET found in bundle');
     }
 
     if (!crypto.verifyBlob(data, tlogKey, signature)) {
-      throw new Error('transparency log SET verification failed');
+      throw new VerificationError('transparency log SET verification failed');
     }
   });
 }
@@ -78,11 +85,15 @@ export function verifyTLogIntegratedTime(bundle: Bundle): void {
     const integratedTime = new Date(Number(entry.integratedTime) * 1000);
 
     if (integratedTime > cert.validTo) {
-      throw new Error('tlog integrated time is after certificate expiration');
+      throw new VerificationError(
+        'tlog integrated time is after certificate expiration'
+      );
     }
 
     if (integratedTime < cert.validFrom) {
-      throw new Error('tlog integrated time is before certificate issuance');
+      throw new VerificationError(
+        'tlog integrated time is before certificate issuance'
+      );
     }
   });
 }
@@ -96,14 +107,14 @@ export function verifyTLogBodies(bundle: Bundle): void {
 // Compare the given intoto tlog entry to the given bundle
 function verifyTLogBody(entry: TransparencyLogEntry, bundle: Bundle): void {
   if (!entry.kindVersion) {
-    throw new Error('no kindVersion found in bundle');
+    throw new InvalidBundleError('no kindVersion found in bundle');
   }
 
   const { kind, version } = entry.kindVersion;
   const body: EntryKind = JSON.parse(entry.canonicalizedBody.toString('utf8'));
 
   if (kind !== body.kind || version !== body.apiVersion) {
-    throw new Error('bundle content and tlog entry do not match');
+    throw new VerificationError(TLOG_MISMATCH_ERROR_MSG);
   }
 
   switch (body.kind) {
@@ -114,14 +125,18 @@ function verifyTLogBody(entry: TransparencyLogEntry, bundle: Bundle): void {
       verifyHashedRekordTLogBody(body, bundle);
       break;
     default:
-      throw new Error('Unknown kind found in tlog entry');
+      throw new UnsupportedVersionError(
+        `unsupported kind in tlog entry: ${kind}`
+      );
   }
 }
 
 // Compare the given intoto tlog entry to the given bundle
 function verifyIntotoTLogBody(tlogEntry: IntotoKind, bundle: Bundle): void {
   if (bundle.content?.$case !== 'dsseEnvelope') {
-    throw new Error('bundle content and tlog entry do not match');
+    throw new UnsupportedVersionError(
+      `unsupported bundle content: ${bundle.content?.$case || 'unknown'}`
+    );
   }
 
   const dsse = bundle.content.dsseEnvelope;
@@ -131,7 +146,9 @@ function verifyIntotoTLogBody(tlogEntry: IntotoKind, bundle: Bundle): void {
       verifyIntoto002TLogBody(tlogEntry, dsse);
       break;
     default:
-      throw new Error('Unsupported intoto version: ' + tlogEntry.apiVersion);
+      throw new UnsupportedVersionError(
+        `unsupported intoto version: ${tlogEntry.apiVersion}`
+      );
   }
 }
 
@@ -141,7 +158,9 @@ function verifyHashedRekordTLogBody(
   bundle: Bundle
 ): void {
   if (bundle.content?.$case !== 'messageSignature') {
-    throw new Error('bundle content and tlog entry do not match');
+    throw new UnsupportedVersionError(
+      `unsupported bundle content: ${bundle.content?.$case || 'unknown'}`
+    );
   }
 
   const messageSignature = bundle.content.messageSignature;
@@ -151,8 +170,8 @@ function verifyHashedRekordTLogBody(
       verifyHashedrekor001TLogBody(tlogEntry, messageSignature);
       break;
     default:
-      throw new Error(
-        'Unsupported hashedrekord version: ' + tlogEntry.apiVersion
+      throw new UnsupportedVersionError(
+        `unsupported hashedrekord version: ${tlogEntry.apiVersion}`
       );
   }
 }
@@ -176,12 +195,12 @@ function verifyIntoto002TLogBody(
 
   // Ensure the bundle's DSSE and the tlog entry contain the same number of signatures
   if (dsseSigs.length !== tlogSigs?.length) {
-    throw new Error('bundle content and tlog entry do not match');
+    throw new VerificationError(TLOG_MISMATCH_ERROR_MSG);
   }
 
   // Ensure that every signature in the bundle's DSSE is present in the tlog entry
   if (!dsseSigs.every((dsseSig) => tlogSigs.includes(dsseSig))) {
-    throw new Error('bundle content and tlog entry do not match');
+    throw new VerificationError(TLOG_MISMATCH_ERROR_MSG);
   }
 
   // Ensure the digest of the bundle's DSSE payload matches the digest in the
@@ -189,7 +208,7 @@ function verifyIntoto002TLogBody(
   const dssePayloadHash = crypto.hash(dsse.payload).toString('hex');
 
   if (dssePayloadHash !== tlogEntry.spec.content.payloadHash?.value) {
-    throw new Error('bundle content and tlog entry do not match');
+    throw new VerificationError(TLOG_MISMATCH_ERROR_MSG);
   }
 }
 
@@ -204,7 +223,7 @@ function verifyHashedrekor001TLogBody(
   const tlogSig = tlogEntry.spec.signature.content;
 
   if (msgSig !== tlogSig) {
-    throw new Error('bundle content and tlog entry do not match');
+    throw new VerificationError(TLOG_MISMATCH_ERROR_MSG);
   }
 
   // Ensure that the bundle's message digest matches the tlog entry
@@ -212,7 +231,7 @@ function verifyHashedrekor001TLogBody(
   const tlogDigest = tlogEntry.spec.data.hash?.value;
 
   if (msgDigest !== tlogDigest) {
-    throw new Error('bundle content and tlog entry do not match');
+    throw new VerificationError(TLOG_MISMATCH_ERROR_MSG);
   }
 }
 
@@ -226,7 +245,7 @@ function toVerificationPayload(
   const { integratedTime, logIndex, logId, canonicalizedBody } = entry;
 
   if (!logId) {
-    throw new Error('no logId found in bundle');
+    throw new InvalidBundleError('no logId found in bundle');
   }
 
   return {
