@@ -60,10 +60,3 @@ export interface InclusionProof {
   rootHash: string;
   treeSize: number;
 }
-
-export interface VerificationPayload {
-  body: string;
-  integratedTime: number;
-  logIndex: number;
-  logID: string;
-}
