@@ -20,9 +20,11 @@ type Response = Awaited<ReturnType<typeof fetch>>;
 
 export class HTTPError extends Error {
   public response: Response;
+  public statusCode: number;
   constructor(response: Response) {
     super(`HTTP Error: ${response.status} ${response.statusText}`);
     this.response = response;
+    this.statusCode = response.status;
   }
 }
 
