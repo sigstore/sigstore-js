@@ -1,0 +1,60 @@
+name: main
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+
+jobs:
+  lint-source:
+    name: Lint code
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
+    - name: Setup node
+      uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516 # v3
+      with:
+        node-version: 16
+        cache: npm
+    - name: Install dependencies
+      run: npm ci
+    - name: Run linter
+      run: npm run lint:check
+
+  run-tests:
+    name: Run tests
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          - 14.17.0
+          - 14.x
+          - 16.13.0
+          - 16.x
+          - 18.0.0
+          - 18.x
+        platform:
+          - os: ubuntu-latest
+            shell: bash
+          - os: macos-latest
+            shell: bash
+          - os: windows-latest
+            shell: cmd
+    runs-on: ${{ matrix.platform.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.platform.shell }}
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
+    - name: Setup node
+      uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516 # v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: npm
+    - name: Install dependencies
+      run: npm ci
+    - name: Run tests
+      run: npm run test:ci

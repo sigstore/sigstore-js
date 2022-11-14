@@ -1,0 +1,41 @@
+name: smoke-test
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  sign-verify:
+    name: Sign/Verify Artifact
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
+    - name: Setup node
+      uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516 # v3
+      with:
+        node-version: 16
+        cache: npm
+    - name: Install dependencies
+      run: npm ci
+    - name: Build sigstore-js
+      run: |
+        npm run build
+    - name: Create artifact to sign
+      run: |
+        echo -n "hello world" > artifact
+    - name: Sign artifact
+      run: |
+        ./bin/sigstore.js sign-dsse artifact "text/plain" > bundle.sigstore
+    - name: Verify bundle
+      run: |
+        ./bin/sigstore.js verify bundle.sigstore
+    - name: Archive bundle
+      uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # v3
+      with:
+        name: bundle
+        path: bundle.sigstore
+
