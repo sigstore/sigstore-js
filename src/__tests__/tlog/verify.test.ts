@@ -13,36 +13,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import crypto from 'crypto';
 import {
   InvalidBundleError,
   UnsupportedVersionError,
   VerificationError,
 } from '../../error';
-import { verifyTLogBodies, verifyTLogSET } from '../../tlog/verify';
+import { verifyTLogEntries } from '../../tlog/verify';
 import { bundleFromJSON } from '../../types/bundle';
-import bundles from '../__fixtures__/bundles';
+import bundles, { tlogKeys } from '../__fixtures__/bundles';
 
-describe('verifyTLogSET', () => {
-  const tlogKey = crypto.createPublicKey(`-----BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2G2Y+2tabdTV5BcGiBIx0a9fAFwr
-kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
------END PUBLIC KEY-----`);
-
-  const tlogKeyID = crypto
-    .createHash('sha256')
-    .update(tlogKey.export({ format: 'der', type: 'spki' }))
-    .digest()
-    .toString('hex');
-
-  const tlogKeys = { [tlogKeyID]: tlogKey };
-
+describe('verifyTLogEntries', () => {
   describe('when a message signature Bundle is provided', () => {
-    describe('when the SET is valid', () => {
+    describe('when everything is valid', () => {
       const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
 
       it('does NOT throw an error', () => {
-        expect(() => verifyTLogSET(bundle, tlogKeys)).not.toThrow();
+        expect(() => verifyTLogEntries(bundle, tlogKeys)).not.toThrow();
       });
     });
 
@@ -50,7 +36,7 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
       const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
 
       it('throws an error', () => {
-        expect(() => verifyTLogSET(bundle, {})).toThrow(VerificationError);
+        expect(() => verifyTLogEntries(bundle, {})).toThrow(VerificationError);
       });
     });
 
@@ -58,7 +44,7 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
       const bundle = bundleFromJSON(bundles.signature.invalid.setMissing);
 
       it('throws an error', () => {
-        expect(() => verifyTLogSET(bundle, tlogKeys)).toThrow(
+        expect(() => verifyTLogEntries(bundle, tlogKeys)).toThrow(
           InvalidBundleError
         );
       });
@@ -68,51 +54,9 @@ kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
       const bundle = bundleFromJSON(bundles.signature.invalid.setMismatch);
 
       it('throws an error', () => {
-        expect(() => verifyTLogSET(bundle, tlogKeys)).toThrow(
+        expect(() => verifyTLogEntries(bundle, tlogKeys)).toThrow(
           VerificationError
         );
-      });
-    });
-  });
-
-  describe('when a DSSE Bundle is provided', () => {
-    describe('when the SET is valid', () => {
-      const bundle = bundleFromJSON(bundles.dsse.valid.withSigningCert);
-
-      it('does NOT throw an error', () => {
-        expect(() => verifyTLogSET(bundle, tlogKeys)).not.toThrow();
-      });
-    });
-
-    describe('when the SET does not match', () => {
-      const bundle = bundleFromJSON(bundles.dsse.invalid.tlogSETMismatch);
-
-      it('throws an error', () => {
-        expect(() => verifyTLogSET(bundle, tlogKeys)).toThrow(
-          VerificationError
-        );
-      });
-    });
-
-    describe('when there is no log ID in the tlog entry', () => {
-      const bundle = bundleFromJSON(bundles.dsse.invalid.tlogLogIDMissing);
-
-      it('throws an error', () => {
-        expect(() => verifyTLogSET(bundle, tlogKeys)).toThrow(
-          InvalidBundleError
-        );
-      });
-    });
-  });
-});
-
-describe('verifyTLogBodies', () => {
-  describe('when a message signature Bundle is provided', () => {
-    describe('when the bundle is valid', () => {
-      const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
-
-      it('does NOT throw an error', () => {
-        expect(() => verifyTLogBodies(bundle)).not.toThrow();
       });
     });
 
@@ -122,7 +66,9 @@ describe('verifyTLogBodies', () => {
       );
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(VerificationError);
+        expect(() => verifyTLogEntries(bundle, tlogKeys)).toThrow(
+          VerificationError
+        );
       });
     });
 
@@ -132,17 +78,39 @@ describe('verifyTLogBodies', () => {
       );
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(VerificationError);
+        expect(() => verifyTLogEntries(bundle, tlogKeys)).toThrow(
+          VerificationError
+        );
       });
     });
   });
 
   describe('when a DSSE Bundle is provided', () => {
-    describe('when the bundle is valid', () => {
-      const bundle = bundleFromJSON(bundles.dsse.valid);
+    describe('when everything is valid', () => {
+      const bundle = bundleFromJSON(bundles.dsse.valid.withSigningCert);
 
       it('does NOT throw an error', () => {
-        expect(() => verifyTLogBodies(bundle)).not.toThrow();
+        expect(() => verifyTLogEntries(bundle, tlogKeys)).not.toThrow();
+      });
+    });
+
+    describe('when the SET does not match', () => {
+      const bundle = bundleFromJSON(bundles.dsse.invalid.tlogSETMismatch);
+
+      it('throws an error', () => {
+        expect(() => verifyTLogEntries(bundle, tlogKeys)).toThrow(
+          VerificationError
+        );
+      });
+    });
+
+    describe('when there is no log ID in the tlog entry', () => {
+      const bundle = bundleFromJSON(bundles.dsse.invalid.tlogLogIDMissing);
+
+      it('throws an error', () => {
+        expect(() => verifyTLogEntries(bundle, tlogKeys)).toThrow(
+          InvalidBundleError
+        );
       });
     });
 
@@ -152,14 +120,18 @@ describe('verifyTLogBodies', () => {
       );
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(InvalidBundleError);
+        expect(() => verifyTLogEntries(bundle, tlogKeys)).toThrow(
+          InvalidBundleError
+        );
       });
     });
     describe('when the payload hash does NOT match the value in the intoto entry', () => {
       const bundle = bundleFromJSON(bundles.dsse.invalid.badSignature);
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(VerificationError);
+        expect(() => verifyTLogEntries(bundle, tlogKeys)).toThrow(
+          VerificationError
+        );
       });
     });
 
@@ -169,7 +141,9 @@ describe('verifyTLogBodies', () => {
       );
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(VerificationError);
+        expect(() => verifyTLogEntries(bundle, tlogKeys)).toThrow(
+          VerificationError
+        );
       });
     });
 
@@ -179,7 +153,9 @@ describe('verifyTLogBodies', () => {
       );
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(UnsupportedVersionError);
+        expect(() => verifyTLogEntries(bundle, tlogKeys)).toThrow(
+          UnsupportedVersionError
+        );
       });
     });
 
@@ -187,7 +163,9 @@ describe('verifyTLogBodies', () => {
       const bundle = bundleFromJSON(bundles.dsse.invalid.tlogTooManySigsInBody);
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(VerificationError);
+        expect(() => verifyTLogEntries(bundle, tlogKeys)).toThrow(
+          VerificationError
+        );
       });
     });
 
@@ -195,7 +173,9 @@ describe('verifyTLogBodies', () => {
       const bundle = bundleFromJSON(bundles.dsse.invalid.tlogVersionMismatch);
 
       it('throws an error', () => {
-        expect(() => verifyTLogBodies(bundle)).toThrow(VerificationError);
+        expect(() => verifyTLogEntries(bundle, tlogKeys)).toThrow(
+          VerificationError
+        );
       });
     });
   });

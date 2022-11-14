@@ -26,82 +26,91 @@ import {
   TransparencyLogEntry,
 } from '../types/bundle';
 import { crypto, encoding as enc, json, x509 } from '../util';
-import {
-  EntryKind,
-  HashedRekordKind,
-  IntotoKind,
-  VerificationPayload,
-} from './types';
+import { EntryKind, HashedRekordKind, IntotoKind } from './types';
 
 const TLOG_MISMATCH_ERROR_MSG = 'bundle content and tlog entry do not match';
 
-// Verifies that all of the tlog entries in the given bundle can be verified.
-// Verification is peroformed by re-creating the original Rekor entry from the
-// bundle and then verifying the SET against the entry using the corresponding
-// key.
-export function verifyTLogSET(
+// Structure over which the tlog SET signature is generated
+interface VerificationPayload {
+  body: string;
+  integratedTime: number;
+  logIndex: number;
+  logID: string;
+}
+
+// Verifies that all of the tlog entries in the given bundle.
+export function verifyTLogEntries(
   bundle: Bundle,
   tlogKeys: Record<string, KeyObject>
 ): void {
-  bundle.verificationData?.tlogEntries.forEach((entry) => {
-    // Re-create the original Rekor verification payload
-    const payload = toVerificationPayload(entry);
-
-    // Canonicalize the payload and turn into a buffer for verification
-    const data = Buffer.from(json.canonicalize(payload), 'utf8');
-
-    // Find the public key for the transaction log which generated the SET
-    const tlogKey = tlogKeys[payload.logID];
-    if (!tlogKey) {
-      throw new VerificationError('no key found for logID: ' + payload.logID);
-    }
-
-    // Extract the SET from the tlog entry
-    const signature = entry.inclusionPromise?.signedEntryTimestamp;
-    if (!signature || signature.length === 0) {
-      throw new InvalidBundleError('no SET found in bundle');
-    }
-
-    if (!crypto.verifyBlob(data, tlogKey, signature)) {
-      throw new VerificationError('transparency log SET verification failed');
-    }
-  });
-}
-
-export function verifyTLogIntegratedTime(bundle: Bundle): void {
-  if (bundle.verificationMaterial?.content?.$case !== 'x509CertificateChain') {
-    // If there is no certificate, we can't verify the integrated time
-    return;
+  // Extract the signing cert bytes if available
+  let signingCert: Buffer | undefined;
+  if (bundle.verificationMaterial?.content?.$case === 'x509CertificateChain') {
+    signingCert =
+      bundle.verificationMaterial.content.x509CertificateChain.certificates[0]
+        .rawBytes;
   }
 
-  // Get a parsed certificate from the DER bytes in the bundle
-  const der =
-    bundle.verificationMaterial.content.x509CertificateChain.certificates[0]
-      .rawBytes;
-  const cert = x509.parseCertificate(der);
-
-  // Iterate over all of the tlog entries in the bundle
+  // Iterate over the tlog entries and verify each one
   bundle.verificationData?.tlogEntries.forEach((entry) => {
-    const integratedTime = new Date(Number(entry.integratedTime) * 1000);
+    verifyTLogBody(entry, bundle);
+    verifyTLogSET(entry, tlogKeys);
 
-    if (integratedTime > cert.validTo) {
-      throw new VerificationError(
-        'tlog integrated time is after certificate expiration'
-      );
-    }
-
-    if (integratedTime < cert.validFrom) {
-      throw new VerificationError(
-        'tlog integrated time is before certificate issuance'
-      );
+    // If there is no signing certificate, we can't verify the integrated time
+    if (signingCert) {
+      verifyTLogIntegratedTime(entry, signingCert);
     }
   });
 }
 
-export function verifyTLogBodies(bundle: Bundle): void {
-  bundle.verificationData?.tlogEntries.forEach((entry) => {
-    verifyTLogBody(entry, bundle);
-  });
+// Verfifies the SET for the given entry using the provided keys.
+function verifyTLogSET(
+  entry: TransparencyLogEntry,
+  tlogKeys: Record<string, KeyObject>
+): void {
+  // Re-create the original Rekor verification payload
+  const payload = toVerificationPayload(entry);
+
+  // Canonicalize the payload and turn into a buffer for verification
+  const data = Buffer.from(json.canonicalize(payload), 'utf8');
+
+  // Find the public key for the transaction log which generated the SET
+  const tlogKey = tlogKeys[payload.logID];
+  if (!tlogKey) {
+    throw new VerificationError('no key found for logID: ' + payload.logID);
+  }
+
+  // Extract the SET from the tlog entry
+  const signature = entry.inclusionPromise?.signedEntryTimestamp;
+  if (!signature || signature.length === 0) {
+    throw new InvalidBundleError('no SET found in bundle');
+  }
+
+  if (!crypto.verifyBlob(data, tlogKey, signature)) {
+    throw new VerificationError('transparency log SET verification failed');
+  }
+}
+
+// Checks that the tlog integrated time is within the certificate's validity
+// period.
+function verifyTLogIntegratedTime(
+  entry: TransparencyLogEntry,
+  signingCert: Buffer
+): void {
+  const x509Cert = x509.parseCertificate(signingCert);
+  const integratedTime = new Date(Number(entry.integratedTime) * 1000);
+
+  if (integratedTime > x509Cert.validTo) {
+    throw new VerificationError(
+      'tlog integrated time is after certificate expiration'
+    );
+  }
+
+  if (integratedTime < x509Cert.validFrom) {
+    throw new VerificationError(
+      'tlog integrated time is before certificate issuance'
+    );
+  }
 }
 
 // Compare the given intoto tlog entry to the given bundle
