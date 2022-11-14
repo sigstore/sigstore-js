@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import fetch from 'make-fetch-happen';
-import { checkStatus } from '../../client/error';
+import { checkStatus, HTTPError } from '../../client/error';
 
 type Response = Awaited<ReturnType<typeof fetch>>;
 
@@ -39,7 +39,14 @@ describe('checkStatus', () => {
     } as Response;
 
     it('throws an error', () => {
-      expect(() => checkStatus(response)).toThrow('HTTP Error: 404 Not Found');
+      try {
+        checkStatus(response);
+        fail('Expected an error to be thrown');
+      } catch (e) {
+        if (!(e instanceof HTTPError)) fail('Expected an HTTPError');
+        expect(e.message).toEqual('HTTP Error: 404 Not Found');
+        expect(e.statusCode).toEqual(404);
+      }
     });
   });
 });
