@@ -323,3 +323,16 @@ Should you discover any security issues, please refer to sigstore's [security pr
 `sigstore-js` is developed as part of the [`sigstore`](https://sigstore.dev) project.
 
 We also use a [slack channel](https://sigstore.slack.com)! Click [here](https://join.slack.com/t/sigstore/shared_invite/zt-mhs55zh0-XmY3bcfWn4XEyMqUUutbUQ) for the invite link.
+
+## Release Steps
+
+1. Update the version inside `package.json` and run `npm i` to update `package-lock.json`.
+2. PR the changes above and merge to the "main" branch when approved.
+3. Use either the "[Create a new release](https://github.com/sigstore/sigstore-js/releases/new)" link or the `gh release create` CLI command to start a new release.
+4. Tag the release with a label matching the version in the `package.json` (with a `v` prefix).
+5. Add a title matching the tag.
+6. Add release notes.
+7. Mark as pre-release as appropriate.
+8. Publish release.
+
+After publishing the release, a new npm package will be built and published automatically to the npm registry.
