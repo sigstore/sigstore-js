@@ -112,6 +112,9 @@ describe('parseBitString', () => {
     expect(parseBitString(Buffer.from([0x04, 0x57, 0xd0]))).toEqual([
       0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1,
     ]);
+
+    // Since the last four bits are ignored, the parsed bit string is
+    // identical to the example above.
     expect(parseBitString(Buffer.from([0x04, 0x57, 0xdf]))).toEqual([
       0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1,
     ]);

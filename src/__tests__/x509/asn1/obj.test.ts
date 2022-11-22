@@ -4,6 +4,7 @@ import { ASN1Obj } from '../../../x509/asn1/obj';
 describe('ASN1Obj', () => {
   describe('parseBuffer', () => {
     describe('when parsing a primitive', () => {
+      // INTEGER (2 bytes) 0x1010
       const buffer = Buffer.from('02021010', 'hex');
 
       it('parses a primitive', () => {
@@ -18,6 +19,9 @@ describe('ASN1Obj', () => {
     });
 
     describe('when parsing a constructed object', () => {
+      // SEQUENCE (8 bytes)
+      //   INTEGER (2 bytes) 0x1010
+      //   INTEGER (2 bytes) 0x1111
       const buffer = Buffer.from('30080202101002021111', 'hex');
       it('parses a constructed object', () => {
         const obj = ASN1Obj.parseBuffer(buffer);
@@ -41,6 +45,9 @@ describe('ASN1Obj', () => {
     });
 
     describe('when parsing an OCTET STREAM w/ children', () => {
+      // OCTET STRING (8 bytes)
+      //   INTEGER (2 bytes) 0x1010
+      //   INTEGER (2 bytes) 0x1010
       const buffer = Buffer.from('04080202101002021111', 'hex');
       it('parses the object', () => {
         const obj = ASN1Obj.parseBuffer(buffer);
@@ -99,6 +106,7 @@ describe('ASN1Obj', () => {
   describe('#toBoolean', () => {
     describe('when the object is a BOOLEAN', () => {
       describe('when the value is 0x00', () => {
+        // BOOLEAN (1 byte) 0x00
         const buffer = Buffer.from('010100', 'hex');
         it('returns false', () => {
           const obj = ASN1Obj.parseBuffer(buffer);
@@ -107,6 +115,7 @@ describe('ASN1Obj', () => {
       });
 
       describe('when the value is 0x01', () => {
+        // BOOLEAN (1 byte) 0x01
         const buffer = Buffer.from('010101', 'hex');
         it('returns true', () => {
           const obj = ASN1Obj.parseBuffer(buffer);
@@ -126,6 +135,7 @@ describe('ASN1Obj', () => {
 
   describe('#toInteger', () => {
     describe('when the object is an INTEGER', () => {
+      // INTEGER (1 bytes) 0x00
       const buffer = Buffer.from('020100', 'hex');
       it('returns the parsed integer', () => {
         const obj = ASN1Obj.parseBuffer(buffer);
@@ -144,6 +154,7 @@ describe('ASN1Obj', () => {
 
   describe('#toOID', () => {
     describe('when the object is an OBJECT IDENTIFIER', () => {
+      // OBJECT IDENTIFIER (1 byte) 0x82
       const buffer = Buffer.from('060182', 'hex');
       it('returns parsed OID', () => {
         const obj = ASN1Obj.parseBuffer(buffer);
@@ -162,6 +173,7 @@ describe('ASN1Obj', () => {
 
   describe('#toDate', () => {
     describe('when the object is a UTCTime', () => {
+      // UTCTime (13 bytes) 0x3232313132323131313131315A
       const buffer = Buffer.from('170D3232313132323131313131315A', 'hex');
       it('returns the parsed date', () => {
         const obj = ASN1Obj.parseBuffer(buffer);
@@ -170,6 +182,7 @@ describe('ASN1Obj', () => {
     });
 
     describe('when the object is a GeneralizedTime', () => {
+      // GeneralizedTime (15 bytes) 0x32303232313132323131313131315A
       const buffer = Buffer.from('180F32303232313132323131313131315A', 'hex');
       it('returns the parsed date', () => {
         const obj = ASN1Obj.parseBuffer(buffer);
@@ -188,6 +201,7 @@ describe('ASN1Obj', () => {
 
   describe('#toBitString', () => {
     describe('when the object is a BITSTRING', () => {
+      // BITSTRING (2 bytes) 0x00F0
       const buffer = Buffer.from('030200F0', 'hex');
       it('returns the parsed bit string', () => {
         const obj = ASN1Obj.parseBuffer(buffer);

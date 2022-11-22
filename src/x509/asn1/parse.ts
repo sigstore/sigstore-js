@@ -52,7 +52,7 @@ export function parseTime(buf: Buffer, shortYear: boolean): Date {
     throw new Error('invalid time');
   }
 
-  // Normalize to 4-digit year
+  // Translate dates with a 2-digit year to 4 digits per the spec
   if (shortYear) {
     let year = Number(m[1]);
     year += year >= 50 ? 1900 : 2000;

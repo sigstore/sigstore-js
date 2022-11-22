@@ -8,8 +8,9 @@ import { ASN1ParseError } from './error';
 export function decodeLength(stream: ByteStream): number {
   const buf = stream.get();
 
-  // If the first bit is unset the length is just the value of the byte.
-  if (buf < 0x80) {
+  // If the most significant bit is UNSET the length is just the value of the
+  // byte.
+  if ((buf & 0x80) === 0x00) {
     return buf;
   }
 
