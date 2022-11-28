@@ -7,6 +7,7 @@ import {
 } from './ext';
 
 const EXTENSION_OID_KEY_USAGE = '2.5.29.15';
+const EXTENSION_OID_SUBJECT_ALT_NAME = '2.5.29.17';
 const EXTENSION_OID_BASIC_CONSTRAINTS = '2.5.29.19';
 const EXTENSION_OID_SCT = '1.3.6.1.4.1.11129.2.4.2';
 
@@ -75,6 +76,13 @@ export class x509Certificate {
     return this.signatureValueObj.value.subarray(1);
   }
 
+  get extensions(): ASN1Obj[] {
+    // The extension list is the first (and only) element of the extensions
+    // context specific tag
+    const extSeq = this.extensionsObj?.subs[0];
+    return extSeq?.subs || [];
+  }
+
   get extKeyUsage(): x509KeyUsageExtension | undefined {
     const ext = this.findExtension(EXTENSION_OID_KEY_USAGE);
     return ext ? new x509KeyUsageExtension(ext) : undefined;
@@ -91,13 +99,9 @@ export class x509Certificate {
   }
 
   private findExtension(oid: string): ASN1Obj | undefined {
-    // The extension list is the first (and only) element of the extensions
-    // context specific tag
-    const extSeq = this.extensionsObj?.subs[0];
-
     // Find the extension with the given OID. The OID will always be the first
     // element of the extension sequence
-    return extSeq?.subs.find((ext) => ext.subs[0].toOID() === oid);
+    return this.extensions.find((ext) => ext.subs[0].toOID() === oid);
   }
 
   /////////////////////////////////////////////////////////////////////////////

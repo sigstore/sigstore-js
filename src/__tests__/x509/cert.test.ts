@@ -91,6 +91,14 @@ describe('x509Certificate', () => {
 
         expect(cert.extSCT).toBeDefined();
         expect(cert.extSCT?.critical).toBe(false);
+        expect(cert.extSCT?.signedCertificateTimestamps).toHaveLength(1);
+
+        const sct = cert.extSCT?.signedCertificateTimestamps[0]!;
+        expect(sct.version).toBe('v1');
+        expect(sct.timestamp.toISOString()).toBe('2022-11-11T00:33:41.942Z');
+        expect(sct.signatureAlgorithm).toBe('ecdsa');
+        expect(sct.hashAlgorithm).toBe('sha256');
+        expect(sct.logID).toBeTruthy();
       });
     });
   });

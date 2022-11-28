@@ -1,4 +1,5 @@
 import { ASN1Obj } from './asn1/obj';
+import { SignedCertificateTimestamp } from './sct';
 
 // https://www.rfc-editor.org/rfc/rfc5280#section-4.1
 class x509Extension {
@@ -78,5 +79,30 @@ export class x509SCTExtension extends x509Extension {
     super(asn1);
   }
 
-  // TODO: Parse the SCTs
+  get signedCertificateTimestamps(): SignedCertificateTimestamp[] {
+    const buf = this.extnValueObj.subs[0].value;
+    let pos = 0;
+
+    // The overall list length is encoded in the first two bytes
+    const end = buf.readUInt16BE(pos) + 2;
+    pos += 2;
+
+    const sctList = [];
+    while (pos < end) {
+      // Read the length of the next SCT
+      const sctLength = buf.readUInt16BE(pos);
+      pos += 2;
+
+      // Slice out the bytes for the next SCT and parse it
+      const sct = buf.subarray(pos, pos + sctLength);
+      sctList.push(SignedCertificateTimestamp.parseBuffer(sct));
+      pos += sctLength;
+    }
+
+    if (pos !== end) {
+      throw new Error('SCT list length does not match actual length');
+    }
+
+    return sctList;
+  }
 }
