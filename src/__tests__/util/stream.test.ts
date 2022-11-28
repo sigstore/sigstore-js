@@ -42,7 +42,7 @@ describe('ByteStream', () => {
 
     describe('when the position is greater than the length', () => {
       beforeEach(() => {
-        subject.seek(11);
+        subject.seek(10);
       });
 
       it('should throw an error', () => {

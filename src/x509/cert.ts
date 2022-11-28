@@ -1,5 +1,4 @@
-import crypto from 'crypto';
-import { pem } from '../util';
+import { crypto, pem } from '../util';
 import { ASN1Obj } from './asn1/obj';
 import {
   x509AuthorityKeyIDExtension,
@@ -10,10 +9,12 @@ import {
   x509SubjectAlternativeNameExtension,
   x509SubjectKeyIDExtension,
 } from './ext';
+import { Log } from './sct';
+import { ByteStream } from './stream';
 
 const EXTENSION_OID_KEY_USAGE = '2.5.29.15';
-const EXTENSION_OID_BASIC_CONSTRAINTS = '2.5.29.19';
 const EXTENSION_OID_SUBJECT_ALT_NAME = '2.5.29.17';
+const EXTENSION_OID_BASIC_CONSTRAINTS = '2.5.29.19';
 const EXTENSION_OID_AUTHORITY_KEY_ID = '2.5.29.35';
 const EXTENSION_OID_SUBJECT_KEY_ID = '2.5.29.14';
 const EXTENSION_OID_SCT = '1.3.6.1.4.1.11129.2.4.2';
@@ -50,8 +51,8 @@ export class x509Certificate {
     return new x509Certificate(asn1);
   }
 
-  get tbsCertificate(): Buffer {
-    return this.tbsCertificateObj.raw;
+  get tbsCertificate(): ASN1Obj {
+    return this.tbsCertificateObj;
   }
 
   get version(): string {
@@ -78,12 +79,8 @@ export class x509Certificate {
     return this.subjectObj.value;
   }
 
-  get publicKey(): crypto.KeyObject {
-    return crypto.createPublicKey({
-      key: this.subjectPublicKeyInfoObj.raw,
-      format: 'der',
-      type: 'spki',
-    });
+  get publicKey(): Buffer {
+    return this.subjectPublicKeyInfoObj.raw;
   }
 
   get signatureAlgorithm(): string {
@@ -94,6 +91,13 @@ export class x509Certificate {
   get signatureValue(): Buffer {
     // Signature value is a bit string, so we need to skip the first byte
     return this.signatureValueObj.value.subarray(1);
+  }
+
+  get extensions(): ASN1Obj[] {
+    // The extension list is the first (and only) element of the extensions
+    // context specific tag
+    const extSeq = this.extensionsObj?.subs[0];
+    return extSeq?.subs || [];
   }
 
   get extKeyUsage(): x509KeyUsageExtension | undefined {
@@ -140,12 +144,13 @@ export class x509Certificate {
   public verify(issuerCertificate?: x509Certificate): boolean {
     // Use the issuer's public key if provided, otherwise use the subject's
     const publicKey = issuerCertificate?.publicKey || this.publicKey;
+    const key = crypto.createPublicKey(publicKey);
 
-    return crypto.verify(
-      this.signatureAlgorithm,
-      this.tbsCertificate,
-      publicKey,
-      this.signatureValue
+    return crypto.verifyBlob(
+      this.tbsCertificate.raw,
+      key,
+      this.signatureValue,
+      this.signatureAlgorithm
     );
   }
 
@@ -157,14 +162,68 @@ export class x509Certificate {
     return this.root.raw.equals(other.root.raw);
   }
 
-  private findExtension(oid: string): ASN1Obj | undefined {
-    // The extension list is the first (and only) element of the extensions
-    // context specific tag
-    const extSeq = this.extensionsObj?.subs[0];
+  public verifySCTs(issuer: x509Certificate, logs: Log[]): boolean {
+    let extSCT: x509SCTExtension | undefined;
 
+    // Verifying the SCT requires that we remove the SCT extension and
+    // re-encode the TBS structure to DER -- this value is part of the data
+    // over which the signature is calculated. Since this is a destructive action
+    // we create a copy of the certificate so we can remove the SCT extension
+    // without affecting the original certificate.
+    const clone = this.clone();
+
+    // Re-implement logic to retrieve extension cause we need to remove
+    // the SCT extension from the certificate before calculating the
+    // PreCert structure
+    for (let i = 0; i < clone.extensions.length; i++) {
+      const ext = clone.extensions[i];
+
+      if (ext.subs[0].toOID() === EXTENSION_OID_SCT) {
+        extSCT = new x509SCTExtension(ext);
+
+        // Remove the extension from the certificate
+        clone.extensions.splice(i, 1);
+        break;
+      }
+    }
+
+    if (!extSCT) {
+      throw new Error('Certificate does not contain SCT extension');
+    }
+
+    if (extSCT?.signedCertificateTimestamps?.length === 0) {
+      throw new Error('Certificate does not contain any SCTs');
+    }
+
+    // Construct the PreCert structure
+    // https://www.rfc-editor.org/rfc/rfc6962#section-3.2
+    const preCert = new ByteStream();
+
+    // Calculate hash of the issuer's public key
+    const issuerId = crypto.hash(issuer.publicKey);
+    preCert.appendView(issuerId);
+
+    // Re-encodes the certificate to DER after removing the SCT extension
+    const tbs = clone.tbsCertificate.toDER();
+    preCert.appendUint24(tbs.length);
+    preCert.appendView(tbs);
+
+    return extSCT.signedCertificateTimestamps.every((sct) =>
+      sct.verify(preCert.buffer, logs)
+    );
+  }
+
+  // Creates a copy of the certificate with a new buffer
+  private clone(): x509Certificate {
+    const clone = Buffer.alloc(this.root.raw.length);
+    this.root.raw.copy(clone);
+    return x509Certificate.fromDER(clone);
+  }
+
+  private findExtension(oid: string): ASN1Obj | undefined {
     // Find the extension with the given OID. The OID will always be the first
     // element of the extension sequence
-    return extSeq?.subs.find((ext) => ext.subs[0].toOID() === oid);
+    return this.extensions.find((ext) => ext.subs[0].toOID() === oid);
   }
 
   // A certificate should be considered invalid if it contains critical

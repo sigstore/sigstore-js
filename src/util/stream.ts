@@ -25,14 +25,22 @@ export class ByteStream {
   }
 
   // Returns the next byte in the stream
-  public get(): number {
-    const pos = this.pos++;
-
-    if (pos >= this.length) {
+  public get(length: number): Buffer;
+  public get(): number;
+  public get(length = 1): Buffer | number {
+    if (this.pos + length > this.length) {
       throw new StreamError('request past end of buffer');
     }
 
-    return this.buf[pos];
+    let res: Buffer | number;
+    if (length > 1) {
+      res = this.slice(this.pos, length);
+    } else {
+      res = this.buf[this.pos];
+    }
+
+    this.pos += length;
+    return res;
   }
 
   // Returns a Buffer containing the specified number of bytes starting at the

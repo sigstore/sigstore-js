@@ -90,8 +90,6 @@ describe('x509Certificate', () => {
         expect(cert.issuer).toHaveLength(51);
 
         expect(cert.publicKey).toBeDefined();
-        expect(cert.publicKey.type).toBe('public');
-        expect(cert.publicKey.asymmetricKeyType).toBe('ec');
 
         expect(cert.extBasicConstraints).toBeUndefined();
 
@@ -166,6 +164,18 @@ describe('x509Certificate', () => {
         expect(cert.validForDate(new Date('2050-01-01T00:00:00.000Z'))).toBe(
           false
         );
+=======
+        expect(cert.extSCT).toBeDefined();
+        expect(cert.extSCT?.critical).toBe(false);
+        expect(cert.extSCT?.signedCertificateTimestamps).toHaveLength(1);
+
+        // const sct = cert.extSCT?.signedCertificateTimestamps[0]!;
+        // expect(sct.version).toBe('v1');
+        // expect(sct.timestamp.toISOString()).toBe('2022-11-11T00:33:41.942Z');
+        // expect(sct.signatureAlgorithm).toBe('ecdsa');
+        // expect(sct.hashAlgorithm).toBe('sha256');
+        // expect(sct.logID).toBeTruthy();
+>>>>>>> 96c7888 (SCT verification for x509 certs)
       });
     });
   });
@@ -229,6 +239,75 @@ describe('x509Certificate', () => {
     describe('when the certificates are NOT equal', () => {
       it('returns false', () => {
         expect(leaf1Cert.equals(rootCert)).toBe(false);
+      });
+    });
+  });
+
+  describe('#verivySCTs', () => {
+    const ctfe = `
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbfwR+RJudXscgRBRpKX1XFDy3Pyu
+dDxz/SfnRi1fT8ekpfBd2O1uoz7jr3Z8nKzxA69EUQ+eFCFI3zeubPWU7w==
+-----END PUBLIC KEY-----
+`;
+    const logs = [
+      { logID: 'CGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3I=', key: ctfe },
+    ];
+
+    describe('when the certificate does NOT have an SCT extension', () => {
+      xit('throws an error', () => {
+        // TODO add a case here when we have a certificate without an SCT extension
+      });
+    });
+
+    describe('when the certificate has an SCT extension', () => {
+      const leafPEM = `-----BEGIN CERTIFICATE-----
+MIICoTCCAiagAwIBAgIURm9on7zDvhPmPdvRSid8Qc1W0nEwCgYIKoZIzj0EAwMw
+NzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRl
+cm1lZGlhdGUwHhcNMjIwNzIyMjExMTUxWhcNMjIwNzIyMjEyMTUxWjAAMFkwEwYH
+KoZIzj0CAQYIKoZIzj0DAQcDQgAEWfKrK8Ky+duY5xEgexxh2fhS+6RWxAodzdaQ
+3p75wvumEzpWXMynav3upjUqGw28+ZPnTpAYkryk/zl3pKRUEKOCAUUwggFBMA4G
+A1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUHOAT
+bi5c3xsJdYKpMmkF/8QPVX8wHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4Y
+ZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzAB
+AQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGKBgorBgEEAdZ5AgQC
+BHwEegB4AHYACGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3IAAAGCJ8Ce
+nAAABAMARzBFAiEAueywtShv7qINRCpAnajFJgvWrnazEdcfrO/xx/yTyFwCIE41
+5V1imhqE+aiF52Idmzr57Y5//QJgZ5E5vadkxefQMAoGCCqGSM49BAMDA2kAMGYC
+MQDYQen2LUbFkSmg2mb9hXjmNL6TNp8b8xJSje72ZYhqiuika4CyQkcByHsbORky
+vjICMQDgfIBIFgnkBIn0UIacFvoF6RWlg/bmkdftHVkdDS59Uv24OpwoGndgoG8w
+tLtOthg=
+-----END CERTIFICATE-----`;
+      const subject = x509Certificate.fromDER(pem.toDER(leafPEM));
+
+      describe('when the SCTs are valid', () => {
+        const issuerPEM = `-----BEGIN CERTIFICATE-----
+MIICGjCCAaGgAwIBAgIUALnViVfnU0brJasmRkHrn/UnfaQwCgYIKoZIzj0EAwMw
+KjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0y
+MjA0MTMyMDA2MTVaFw0zMTEwMDUxMzU2NThaMDcxFTATBgNVBAoTDHNpZ3N0b3Jl
+LmRldjEeMBwGA1UEAxMVc2lnc3RvcmUtaW50ZXJtZWRpYXRlMHYwEAYHKoZIzj0C
+AQYFK4EEACIDYgAE8RVS/ysH+NOvuDZyPIZtilgUF9NlarYpAd9HP1vBBH1U5CV7
+7LSS7s0ZiH4nE7Hv7ptS6LvvR/STk798LVgMzLlJ4HeIfF3tHSaexLcYpSASr1kS
+0N/RgBJz/9jWCiXno3sweTAOBgNVHQ8BAf8EBAMCAQYwEwYDVR0lBAwwCgYIKwYB
+BQUHAwMwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQU39Ppz1YkEZb5qNjp
+KFWixi4YZD8wHwYDVR0jBBgwFoAUWMAeX5FFpWapesyQoZMi0CrFxfowCgYIKoZI
+zj0EAwMDZwAwZAIwPCsQK4DYiZYDPIaDi5HFKnfxXx6ASSVmERfsynYBiX2X6SJR
+nZU84/9DZdnFvvxmAjBOt6QpBlc4J/0DxvkTCqpclvziL6BCCPnjdlIB3Pu3BxsP
+mygUY7Ii2zbdCdliiow=
+-----END CERTIFICATE-----`;
+        const issuer = x509Certificate.fromDER(pem.toDER(issuerPEM));
+
+        it('returns true', () => {
+          expect(subject.verifySCTs(issuer, logs)).toBe(true);
+        });
+      });
+
+      describe('when the SCTs are invalid', () => {
+        const badIssuer = x509Certificate.fromDER(pem.toDER(certificates.root));
+
+        it('returns false', () => {
+          expect(subject.verifySCTs(badIssuer, logs)).toBe(false);
+        });
       });
     });
   });

@@ -1,4 +1,6 @@
 import { ASN1Obj } from './asn1/obj';
+import { SignedCertificateTimestamp } from './sct';
+import { ByteStream } from './stream';
 
 // https://www.rfc-editor.org/rfc/rfc5280#section-4.1
 export class x509Extension {
@@ -113,5 +115,27 @@ export class x509SCTExtension extends x509Extension {
     super(asn1);
   }
 
-  // TODO: Parse the SCTs
+  get signedCertificateTimestamps(): SignedCertificateTimestamp[] {
+    const buf = this.extnValueObj.subs[0].value;
+    const stream = new ByteStream(buf);
+
+    // The overall list length is encoded in the first two bytes
+    const end = stream.getUint16() + 2;
+
+    const sctList = [];
+    while (stream.position < end) {
+      // Read the length of the next SCT
+      const sctLength = stream.getUint16();
+
+      // Slice out the bytes for the next SCT and parse it
+      const sct = stream.getBlock(sctLength);
+      sctList.push(SignedCertificateTimestamp.parse(sct));
+    }
+
+    if (stream.position !== end) {
+      throw new Error('SCT list length does not match actual length');
+    }
+
+    return sctList;
+  }
 }
