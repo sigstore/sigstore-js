@@ -1,7 +1,7 @@
 import { ASN1Obj } from './asn1/obj';
 
 // https://www.rfc-editor.org/rfc/rfc5280#section-4.1
-class x509Extension {
+export class x509Extension {
   protected root: ASN1Obj;
 
   constructor(asn1: ASN1Obj) {
@@ -26,10 +26,6 @@ class x509Extension {
 
 // https://www.rfc-editor.org/rfc/rfc5280#section-4.2.1.9
 export class x509BasicConstraintsExtension extends x509Extension {
-  constructor(asn1: ASN1Obj) {
-    super(asn1);
-  }
-
   get isCA(): boolean {
     return this.sequence.subs[0].toBoolean();
   }
@@ -49,10 +45,6 @@ export class x509BasicConstraintsExtension extends x509Extension {
 
 // https://www.rfc-editor.org/rfc/rfc5280#section-4.2.1.3
 export class x509KeyUsageExtension extends x509Extension {
-  constructor(asn1: ASN1Obj) {
-    super(asn1);
-  }
-
   get digitalSignature(): boolean {
     return this.bitString[0] === 1;
   }
