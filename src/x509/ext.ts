@@ -72,6 +72,26 @@ export class x509KeyUsageExtension extends x509Extension {
   }
 }
 
+// https://www.rfc-editor.org/rfc/rfc5280#section-4.2.1.6
+export class x509SubjectAlternativeNameExtension extends x509Extension {
+  get rfc822Name(): string | undefined {
+    return this.findGeneralName(0x01)?.value.toString('ascii');
+  }
+
+  get uri(): string | undefined {
+    return this.findGeneralName(0x06)?.value.toString('ascii');
+  }
+
+  private findGeneralName(tag: number): ASN1Obj | undefined {
+    return this.generalNames.find((gn) => gn.tag.isContextSpecific(tag));
+  }
+
+  // The extnValue field contains a sequence of GeneralNames.
+  private get generalNames(): ASN1Obj[] {
+    return this.extnValueObj.subs[0].subs;
+  }
+}
+
 // https://www.rfc-editor.org/rfc/rfc6962#section-3.3
 export class x509SCTExtension extends x509Extension {
   constructor(asn1: ASN1Obj) {

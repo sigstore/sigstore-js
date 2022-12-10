@@ -4,10 +4,12 @@ import {
   x509BasicConstraintsExtension,
   x509KeyUsageExtension,
   x509SCTExtension,
+  x509SubjectAlternativeNameExtension,
 } from './ext';
 
 const EXTENSION_OID_KEY_USAGE = '2.5.29.15';
 const EXTENSION_OID_BASIC_CONSTRAINTS = '2.5.29.19';
+const EXTENSION_OID_SUBJECT_ALT_NAME = '2.5.29.17';
 const EXTENSION_OID_SCT = '1.3.6.1.4.1.11129.2.4.2';
 
 const ECDSA_SIGNATURE_ALGOS: Record<string, string> = {
@@ -83,6 +85,11 @@ export class x509Certificate {
   get extBasicConstraints(): x509BasicConstraintsExtension | undefined {
     const ext = this.findExtension(EXTENSION_OID_BASIC_CONSTRAINTS);
     return ext ? new x509BasicConstraintsExtension(ext) : undefined;
+  }
+
+  get extSubjectAltName(): x509SubjectAlternativeNameExtension | undefined {
+    const ext = this.findExtension(EXTENSION_OID_SUBJECT_ALT_NAME);
+    return ext ? new x509SubjectAlternativeNameExtension(ext) : undefined;
   }
 
   get extSCT(): x509SCTExtension | undefined {

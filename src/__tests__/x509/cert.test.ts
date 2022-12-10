@@ -70,9 +70,9 @@ describe('x509Certificate', () => {
 
         expect(cert.version).toBe('v3');
         expect(cert.notBefore).toBeInstanceOf(Date);
-        expect(cert.notBefore.toISOString()).toBe('2022-11-11T00:33:41.000Z');
+        expect(cert.notBefore.toISOString()).toBe('2022-12-08T16:18:39.000Z');
         expect(cert.notAfter).toBeInstanceOf(Date);
-        expect(cert.notAfter.toISOString()).toBe('2022-11-11T00:43:41.000Z');
+        expect(cert.notAfter.toISOString()).toBe('2022-12-08T16:28:39.000Z');
 
         expect(cert.subject).toHaveLength(0);
         expect(cert.issuer).toHaveLength(55);
@@ -88,6 +88,12 @@ describe('x509Certificate', () => {
         expect(cert.extKeyUsage?.digitalSignature).toBe(true);
         expect(cert.extKeyUsage?.keyCertSign).toBe(false);
         expect(cert.extKeyUsage?.crlSign).toBe(false);
+
+        expect(cert.extSubjectAltName).toBeDefined();
+        expect(cert.extSubjectAltName?.rfc822Name).toBeUndefined();
+        expect(cert.extSubjectAltName?.uri).toBe(
+          'https://github.com/sigstore/sigstore-js/.github/workflows/publish.yml@refs/tags/v0.2.0'
+        );
 
         expect(cert.extSCT).toBeDefined();
         expect(cert.extSCT?.critical).toBe(false);
