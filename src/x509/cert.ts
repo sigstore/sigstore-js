@@ -90,6 +90,17 @@ export class x509Certificate {
     return ext ? new x509SCTExtension(ext) : undefined;
   }
 
+  public verify(issuerCertificate?: x509Certificate): boolean {
+    // Use the issuer's public key if provided, otherwise use the subject's
+    const publicKey = issuerCertificate?.publicKey || this.publicKey;
+
+    return crypto.verify(
+      this.signatureAlgorithm,
+      this.tbsCertificate,
+      publicKey,
+      this.signatureValue
+    );
+  }
   private findExtension(oid: string): ASN1Obj | undefined {
     // The extension list is the first (and only) element of the extensions
     // context specific tag
