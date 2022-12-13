@@ -2,13 +2,24 @@ import crypto from 'crypto';
 import { ASN1Obj } from './asn1/obj';
 import {
   x509BasicConstraintsExtension,
+  x509Extension,
   x509KeyUsageExtension,
   x509SCTExtension,
+  x509SubjectAlternativeNameExtension,
 } from './ext';
 
 const EXTENSION_OID_KEY_USAGE = '2.5.29.15';
 const EXTENSION_OID_BASIC_CONSTRAINTS = '2.5.29.19';
+const EXTENSION_OID_SUBJECT_ALT_NAME = '2.5.29.17';
 const EXTENSION_OID_SCT = '1.3.6.1.4.1.11129.2.4.2';
+
+// List of recognized critical extensions
+// https://www.rfc-editor.org/rfc/rfc5280#section-4.2
+const RECOGNIZED_EXTENSIONS = [
+  EXTENSION_OID_KEY_USAGE,
+  EXTENSION_OID_BASIC_CONSTRAINTS,
+  EXTENSION_OID_SUBJECT_ALT_NAME,
+];
 
 const ECDSA_SIGNATURE_ALGOS: Record<string, string> = {
   '1.2.840.10045.4.3.1': 'sha224',
@@ -22,6 +33,10 @@ export class x509Certificate {
 
   constructor(asn1: ASN1Obj) {
     this.root = asn1;
+
+    if (!this.checkRecognizedExtensions()) {
+      throw new Error('Certificate contains unrecognized critical extensions');
+    }
   }
 
   public static fromDER(der: Buffer): x509Certificate {
@@ -85,6 +100,11 @@ export class x509Certificate {
     return ext ? new x509BasicConstraintsExtension(ext) : undefined;
   }
 
+  get extSubjectAltName(): x509SubjectAlternativeNameExtension | undefined {
+    const ext = this.findExtension(EXTENSION_OID_SUBJECT_ALT_NAME);
+    return ext ? new x509SubjectAlternativeNameExtension(ext) : undefined;
+  }
+
   get extSCT(): x509SCTExtension | undefined {
     const ext = this.findExtension(EXTENSION_OID_SCT);
     return ext ? new x509SCTExtension(ext) : undefined;
@@ -98,6 +118,24 @@ export class x509Certificate {
     // Find the extension with the given OID. The OID will always be the first
     // element of the extension sequence
     return extSeq?.subs.find((ext) => ext.subs[0].toOID() === oid);
+  }
+
+  // A certificate should be considered invalid if it contains critical
+  // extensions that are not recognized
+  private checkRecognizedExtensions(): boolean {
+    // The extension list is the first (and only) element of the extensions
+    // context specific tag
+    const extSeq = this.extensionsObj?.subs[0];
+
+    const exts = extSeq?.subs.map((ext) => new x509Extension(ext));
+
+    // Check for unrecognized critical extensions
+    return (
+      !exts ||
+      exts.every(
+        (ext) => !ext.critical || RECOGNIZED_EXTENSIONS.includes(ext.oid)
+      )
+    );
   }
 
   /////////////////////////////////////////////////////////////////////////////
