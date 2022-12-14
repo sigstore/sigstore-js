@@ -84,6 +84,21 @@ export class x509SubjectAlternativeNameExtension extends x509Extension {
   }
 }
 
+// https://www.rfc-editor.org/rfc/rfc5280#section-4.2.1.1
+export class x509AuthorityKeyIDExtension extends x509Extension {
+  get keyIdentifier(): Buffer | undefined {
+    return this.findSequenceMember(0x00)?.value;
+  }
+
+  private findSequenceMember(tag: number): ASN1Obj | undefined {
+    return this.sequence.subs.find((el) => el.tag.isContextSpecific(tag));
+  }
+
+  // The extnValue field contains a single sequence wrapping the keyIdentifier
+  private get sequence(): ASN1Obj {
+    return this.extnValueObj.subs[0];
+  }
+}
 // https://www.rfc-editor.org/rfc/rfc6962#section-3.3
 export class x509SCTExtension extends x509Extension {
   constructor(asn1: ASN1Obj) {
