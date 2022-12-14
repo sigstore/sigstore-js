@@ -24,6 +24,6 @@ jobs:
     - name: Install dependencies and build
       run: npm ci && npm run build
     - name: Publish package
-      run: npm exec npm@npm/cli#provenance -- publish
+      run: npm exec npm@npm/cli#provenance -- publish --provenance
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
