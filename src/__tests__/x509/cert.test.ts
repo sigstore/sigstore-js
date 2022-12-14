@@ -32,6 +32,13 @@ describe('x509Certificate', () => {
         expect(cert.extKeyUsage?.digitalSignature).toBe(false);
         expect(cert.extKeyUsage?.keyCertSign).toBe(true);
         expect(cert.extKeyUsage?.crlSign).toBe(true);
+
+        expect(cert.extAuthorityKeyID).toBeDefined();
+        expect(cert.extAuthorityKeyID?.oid).toBe('2.5.29.35');
+        expect(cert.extAuthorityKeyID?.critical).toBe(false);
+        expect(cert.extAuthorityKeyID?.keyIdentifier).toStrictEqual(
+          Buffer.from('58C01E5F9145A566A97ACC90A19322D02AC5C5FA', 'hex')
+        );
       });
     });
 
@@ -60,6 +67,13 @@ describe('x509Certificate', () => {
         expect(cert.extKeyUsage?.digitalSignature).toBe(false);
         expect(cert.extKeyUsage?.keyCertSign).toBe(true);
         expect(cert.extKeyUsage?.crlSign).toBe(true);
+
+        expect(cert.extAuthorityKeyID).toBeDefined();
+        expect(cert.extAuthorityKeyID?.oid).toBe('2.5.29.35');
+        expect(cert.extAuthorityKeyID?.critical).toBe(false);
+        expect(cert.extAuthorityKeyID?.keyIdentifier).toStrictEqual(
+          Buffer.from('58C01E5F9145A566A97ACC90A19322D02AC5C5FA', 'hex')
+        );
       });
     });
 
@@ -93,6 +107,13 @@ describe('x509Certificate', () => {
         expect(cert.extSubjectAltName?.rfc822Name).toBeUndefined();
         expect(cert.extSubjectAltName?.uri).toBe(
           'https://github.com/sigstore/sigstore-js/.github/workflows/publish.yml@refs/tags/v0.2.0'
+        );
+
+        expect(cert.extAuthorityKeyID).toBeDefined();
+        expect(cert.extAuthorityKeyID?.oid).toBe('2.5.29.35');
+        expect(cert.extAuthorityKeyID?.critical).toBe(false);
+        expect(cert.extAuthorityKeyID?.keyIdentifier).toStrictEqual(
+          Buffer.from('DFD3E9CF56241196F9A8D8E92855A2C62E18643F', 'hex')
         );
 
         expect(cert.extSCT).toBeDefined();

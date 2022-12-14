@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { ASN1Obj } from './asn1/obj';
 import {
+  x509AuthorityKeyIDExtension,
   x509BasicConstraintsExtension,
   x509Extension,
   x509KeyUsageExtension,
@@ -11,6 +12,7 @@ import {
 const EXTENSION_OID_KEY_USAGE = '2.5.29.15';
 const EXTENSION_OID_BASIC_CONSTRAINTS = '2.5.29.19';
 const EXTENSION_OID_SUBJECT_ALT_NAME = '2.5.29.17';
+const EXTENSION_OID_AUTHORITY_KEY_ID = '2.5.29.35';
 const EXTENSION_OID_SCT = '1.3.6.1.4.1.11129.2.4.2';
 
 // List of recognized critical extensions
@@ -103,6 +105,11 @@ export class x509Certificate {
   get extSubjectAltName(): x509SubjectAlternativeNameExtension | undefined {
     const ext = this.findExtension(EXTENSION_OID_SUBJECT_ALT_NAME);
     return ext ? new x509SubjectAlternativeNameExtension(ext) : undefined;
+  }
+
+  get extAuthorityKeyID(): x509AuthorityKeyIDExtension | undefined {
+    const ext = this.findExtension(EXTENSION_OID_AUTHORITY_KEY_ID);
+    return ext ? new x509AuthorityKeyIDExtension(ext) : undefined;
   }
 
   get extSCT(): x509SCTExtension | undefined {
