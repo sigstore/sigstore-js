@@ -99,6 +99,14 @@ export class x509AuthorityKeyIDExtension extends x509Extension {
     return this.extnValueObj.subs[0];
   }
 }
+
+// https://www.rfc-editor.org/rfc/rfc5280#section-4.2.1.2
+export class x509SubjectKeyIDExtension extends x509Extension {
+  get keyIdentifier(): Buffer {
+    return this.extnValueObj.subs[0].value;
+  }
+}
+
 // https://www.rfc-editor.org/rfc/rfc6962#section-3.3
 export class x509SCTExtension extends x509Extension {
   constructor(asn1: ASN1Obj) {
