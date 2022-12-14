@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import { pem } from '../../util';
 import { x509Certificate } from '../../x509/cert';
 import { certificates } from '../__fixtures__/certs';
@@ -101,43 +100,44 @@ describe('x509Certificate', () => {
     });
   });
 
-  describe('verification', () => {
+  describe('#verify', () => {
     const leafCert = x509Certificate.fromDER(pem.toDER(certificates.leaf));
     const intCert = x509Certificate.fromDER(
       pem.toDER(certificates.intermediate)
     );
     const rootCert = x509Certificate.fromDER(pem.toDER(certificates.root));
 
-    it('properly extracts keys and signatures', () => {
-      // Self-signed root certificate
-      expect(
-        crypto.verify(
-          rootCert.signatureAlgorithm,
-          rootCert.tbsCertificate,
-          rootCert.publicKey,
-          rootCert.signatureValue
-        )
-      ).toBe(true);
+    describe('when the issuer is provided', () => {
+      describe('when the issuer is a parent certificate', () => {
+        it('returns true', () => {
+          expect(leafCert.verify(intCert)).toBe(true);
+          expect(intCert.verify(rootCert)).toBe(true);
+        });
+      });
 
-      // Intermediate certificate signed by root
-      expect(
-        crypto.verify(
-          intCert.signatureAlgorithm,
-          intCert.tbsCertificate,
-          rootCert.publicKey,
-          intCert.signatureValue
-        )
-      ).toBe(true);
+      describe('when the issuer is NOT a parent', () => {
+        it('returns false', () => {
+          expect(leafCert.verify(rootCert)).toBe(false);
+          expect(intCert.verify(leafCert)).toBe(false);
+          expect(rootCert.verify(leafCert)).toBe(false);
+          expect(rootCert.verify(intCert)).toBe(false);
+        });
+      });
+    });
 
-      // Leaf certificate signed by intermediate
-      expect(
-        crypto.verify(
-          leafCert.signatureAlgorithm,
-          leafCert.tbsCertificate,
-          intCert.publicKey,
-          leafCert.signatureValue
-        )
-      ).toBe(true);
+    describe('when the issuer is NOT provided', () => {
+      describe('when the certificate is self-signed', () => {
+        it('returns true', () => {
+          expect(rootCert.verify()).toBe(true);
+        });
+      });
+
+      describe('when the certificate is NOT self-signed', () => {
+        it('returns false', () => {
+          expect(intCert.verify()).toBe(false);
+          expect(leafCert.verify()).toBe(false);
+        });
+      });
     });
   });
 });
