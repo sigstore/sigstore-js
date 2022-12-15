@@ -7,12 +7,14 @@ import {
   x509KeyUsageExtension,
   x509SCTExtension,
   x509SubjectAlternativeNameExtension,
+  x509SubjectKeyIDExtension,
 } from './ext';
 
 const EXTENSION_OID_KEY_USAGE = '2.5.29.15';
 const EXTENSION_OID_BASIC_CONSTRAINTS = '2.5.29.19';
 const EXTENSION_OID_SUBJECT_ALT_NAME = '2.5.29.17';
 const EXTENSION_OID_AUTHORITY_KEY_ID = '2.5.29.35';
+const EXTENSION_OID_SUBJECT_KEY_ID = '2.5.29.14';
 const EXTENSION_OID_SCT = '1.3.6.1.4.1.11129.2.4.2';
 
 // List of recognized critical extensions
@@ -110,6 +112,11 @@ export class x509Certificate {
   get extAuthorityKeyID(): x509AuthorityKeyIDExtension | undefined {
     const ext = this.findExtension(EXTENSION_OID_AUTHORITY_KEY_ID);
     return ext ? new x509AuthorityKeyIDExtension(ext) : undefined;
+  }
+
+  get extSubjectKeyID(): x509SubjectKeyIDExtension | undefined {
+    const ext = this.findExtension(EXTENSION_OID_SUBJECT_KEY_ID);
+    return ext ? new x509SubjectKeyIDExtension(ext) : undefined;
   }
 
   get extSCT(): x509SCTExtension | undefined {

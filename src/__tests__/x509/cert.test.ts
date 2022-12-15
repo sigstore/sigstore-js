@@ -38,6 +38,13 @@ describe('x509Certificate', () => {
         expect(cert.extAuthorityKeyID?.keyIdentifier).toStrictEqual(
           Buffer.from('58C01E5F9145A566A97ACC90A19322D02AC5C5FA', 'hex')
         );
+
+        expect(cert.extSubjectKeyID).toBeDefined();
+        expect(cert.extSubjectKeyID?.oid).toBe('2.5.29.14');
+        expect(cert.extSubjectKeyID?.critical).toBe(false);
+        expect(cert.extSubjectKeyID?.keyIdentifier).toStrictEqual(
+          Buffer.from('58C01E5F9145A566A97ACC90A19322D02AC5C5FA', 'hex')
+        );
       });
     });
 
@@ -72,6 +79,13 @@ describe('x509Certificate', () => {
         expect(cert.extAuthorityKeyID?.critical).toBe(false);
         expect(cert.extAuthorityKeyID?.keyIdentifier).toStrictEqual(
           Buffer.from('58C01E5F9145A566A97ACC90A19322D02AC5C5FA', 'hex')
+        );
+
+        expect(cert.extSubjectKeyID).toBeDefined();
+        expect(cert.extSubjectKeyID?.oid).toBe('2.5.29.14');
+        expect(cert.extSubjectKeyID?.critical).toBe(false);
+        expect(cert.extSubjectKeyID?.keyIdentifier).toStrictEqual(
+          Buffer.from('DFD3E9CF56241196F9A8D8E92855A2C62E18643F', 'hex')
         );
       });
     });
@@ -113,6 +127,13 @@ describe('x509Certificate', () => {
         expect(cert.extAuthorityKeyID?.critical).toBe(false);
         expect(cert.extAuthorityKeyID?.keyIdentifier).toStrictEqual(
           Buffer.from('DFD3E9CF56241196F9A8D8E92855A2C62E18643F', 'hex')
+        );
+
+        expect(cert.extSubjectKeyID).toBeDefined();
+        expect(cert.extSubjectKeyID?.oid).toBe('2.5.29.14');
+        expect(cert.extSubjectKeyID?.critical).toBe(false);
+        expect(cert.extSubjectKeyID?.keyIdentifier).toStrictEqual(
+          Buffer.from('2DFD2400F6B9B92711D5F14CFF2D1E74E5245AC0', 'hex')
         );
 
         expect(cert.extSCT).toBeDefined();
