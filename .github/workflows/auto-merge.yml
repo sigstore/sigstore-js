@@ -21,3 +21,9 @@ jobs:
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Approve Dependabot PRs (only semver patch updates and dev/indirect deps)
+        if: ${{ (steps.metadata.outputs.dependency-type == 'direct:development' || steps.metadata.outputs.dependency-type == 'indirect') && steps.metadata.outputs.update-type == 'version-update:semver-patch'}}
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
