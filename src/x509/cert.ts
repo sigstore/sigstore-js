@@ -124,6 +124,17 @@ export class x509Certificate {
     return ext ? new x509SCTExtension(ext) : undefined;
   }
 
+  get isCA(): boolean {
+    const ca = this.extBasicConstraints?.isCA || false;
+
+    // If the KeyUsage extension is present, keyCertSign must be set
+    if (this.extKeyUsage) {
+      ca && this.extKeyUsage.keyCertSign;
+    }
+
+    return ca;
+  }
+
   public verify(issuerCertificate?: x509Certificate): boolean {
     // Use the issuer's public key if provided, otherwise use the subject's
     const publicKey = issuerCertificate?.publicKey || this.publicKey;
@@ -135,6 +146,11 @@ export class x509Certificate {
       this.signatureValue
     );
   }
+
+  public validForDate(date: Date): boolean {
+    return this.notBefore <= date && date <= this.notAfter;
+  }
+
   private findExtension(oid: string): ASN1Obj | undefined {
     // The extension list is the first (and only) element of the extensions
     // context specific tag

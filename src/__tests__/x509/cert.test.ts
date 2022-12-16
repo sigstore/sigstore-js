@@ -45,6 +45,8 @@ describe('x509Certificate', () => {
         expect(cert.extSubjectKeyID?.keyIdentifier).toStrictEqual(
           Buffer.from('58C01E5F9145A566A97ACC90A19322D02AC5C5FA', 'hex')
         );
+
+        expect(cert.isCA).toBe(true);
       });
     });
 
@@ -87,6 +89,8 @@ describe('x509Certificate', () => {
         expect(cert.extSubjectKeyID?.keyIdentifier).toStrictEqual(
           Buffer.from('DFD3E9CF56241196F9A8D8E92855A2C62E18643F', 'hex')
         );
+
+        expect(cert.isCA).toBe(true);
       });
     });
 
@@ -138,6 +142,8 @@ describe('x509Certificate', () => {
 
         expect(cert.extSCT).toBeDefined();
         expect(cert.extSCT?.critical).toBe(false);
+
+        expect(cert.isCA).toBe(false);
       });
     });
   });
