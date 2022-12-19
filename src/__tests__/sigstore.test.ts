@@ -18,43 +18,43 @@ import { sign, signAttestation, utils, verify } from '../sigstore';
 import {
   Bundle,
   HashAlgorithm,
-  VerificationData,
+  TimestampVerificationData,
+  TransparencyLogEntry,
   X509CertificateChain,
 } from '../types/bundle';
 import bundles from './__fixtures__/bundles';
 
 jest.mock('../sign');
 
-const verificationData: VerificationData = {
-  tlogEntries: [
-    {
+const tlogEntries: TransparencyLogEntry[] = [
+  {
+    logIndex: '0',
+    logId: {
+      keyId: Buffer.from('logId'),
+    },
+    kindVersion: {
+      kind: 'kind',
+      version: 'version',
+    },
+    canonicalizedBody: Buffer.from('body'),
+    integratedTime: '2021-01-01T00:00:00Z',
+    inclusionPromise: {
+      signedEntryTimestamp: Buffer.from('inclusionPromise'),
+    },
+    inclusionProof: {
       logIndex: '0',
-      logId: {
-        keyId: Buffer.from('logId'),
-      },
-      kindVersion: {
-        kind: 'kind',
-        version: 'version',
-      },
-      canonicalizedBody: Buffer.from('body'),
-      integratedTime: '2021-01-01T00:00:00Z',
-      inclusionPromise: {
-        signedEntryTimestamp: Buffer.from('inclusionPromise'),
-      },
-      inclusionProof: {
-        logIndex: '0',
-        rootHash: Buffer.from('rootHash'),
-        treeSize: '0',
-        hashes: [Buffer.from('hash')],
-        checkpoint: {
-          envelope: 'checkpoint',
-        },
+      rootHash: Buffer.from('rootHash'),
+      treeSize: '0',
+      hashes: [Buffer.from('hash')],
+      checkpoint: {
+        envelope: 'checkpoint',
       },
     },
-  ],
-  timestampVerificationData: {
-    rfc3161Timestamps: [{ signedTimestamp: Buffer.from('signedTimestamp') }],
   },
+];
+
+const timestampVerificationData: TimestampVerificationData = {
+  rfc3161Timestamps: [{ signedTimestamp: Buffer.from('signedTimestamp') }],
 };
 
 const x509CertificateChain: X509CertificateChain = {
@@ -74,12 +74,13 @@ describe('sign', () => {
   // Signer output
   const bundle: Bundle = {
     mediaType: 'test/output',
-    verificationData: verificationData,
     verificationMaterial: {
       content: {
         $case: 'x509CertificateChain',
         x509CertificateChain: x509CertificateChain,
       },
+      tlogEntries,
+      timestampVerificationData,
     },
     content: {
       $case: 'messageSignature',
@@ -141,12 +142,13 @@ describe('signAttestation', () => {
   // Signer output
   const bundle: Bundle = {
     mediaType: 'test/output',
-    verificationData: verificationData,
     verificationMaterial: {
       content: {
         $case: 'x509CertificateChain',
         x509CertificateChain: x509CertificateChain,
       },
+      tlogEntries,
+      timestampVerificationData,
     },
     content: {
       $case: 'dsseEnvelope',

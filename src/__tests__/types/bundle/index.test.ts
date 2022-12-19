@@ -87,14 +87,10 @@ describe('bundle', () => {
       }
 
       // Timestamp verification data
-      expect(b.verificationData).toBeTruthy();
-      expect(b.verificationData?.timestampVerificationData).toBeTruthy();
-      expect(
-        b.verificationData?.timestampVerificationData?.rfc3161Timestamps
-      ).toHaveLength(0);
-      expect(b.verificationData?.tlogEntries).toHaveLength(1);
+      expect(b.verificationMaterial?.timestampVerificationData).toBeUndefined();
+      expect(b.verificationMaterial?.tlogEntries).toHaveLength(1);
 
-      const tlog = b.verificationData?.tlogEntries[0];
+      const tlog = b.verificationMaterial?.tlogEntries[0];
       expect(tlog?.inclusionPromise).toBeTruthy();
       expect(
         tlog?.inclusionPromise?.signedEntryTimestamp.toString('base64')
@@ -170,15 +166,10 @@ describe('bundle', () => {
         fail('Expected x509CertificateChain');
       }
 
-      // Timestamp verification data
-      expect(b.verificationData).toBeTruthy();
-      expect(b.verificationData?.timestampVerificationData).toBeTruthy();
-      expect(
-        b.verificationData?.timestampVerificationData?.rfc3161Timestamps
-      ).toHaveLength(0);
-      expect(b.verificationData?.tlogEntries).toHaveLength(1);
+      expect(b.verificationMaterial?.timestampVerificationData).toBeUndefined();
+      expect(b.verificationMaterial?.tlogEntries).toHaveLength(1);
 
-      const tlog = b.verificationData?.tlogEntries[0];
+      const tlog = b.verificationMaterial?.tlogEntries[0];
       expect(tlog?.inclusionPromise).toBeTruthy();
       expect(
         tlog?.inclusionPromise?.signedEntryTimestamp.toString('base64')
