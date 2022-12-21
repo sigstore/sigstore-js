@@ -3,21 +3,19 @@ import { x509Certificate } from '../../x509/cert';
 import { certificates } from '../__fixtures__/certs';
 
 describe('x509Certificate', () => {
-  describe('parsing', () => {
+  describe('.parse', () => {
     describe('when parsing a root certificate', () => {
-      const derCert = pem.toDER(certificates.root);
-
-      it('parses a certificate', () => {
-        const cert = x509Certificate.fromDER(derCert);
+      it('parses successfully', () => {
+        const cert = x509Certificate.parse(certificates.root);
 
         expect(cert.version).toBe('v3');
         expect(cert.notBefore).toBeInstanceOf(Date);
-        expect(cert.notBefore.toISOString()).toBe('2021-10-07T13:56:59.000Z');
+        expect(cert.notBefore.toISOString()).toBe('1990-01-01T00:00:00.000Z');
         expect(cert.notAfter).toBeInstanceOf(Date);
-        expect(cert.notAfter.toISOString()).toBe('2031-10-05T13:56:58.000Z');
+        expect(cert.notAfter.toISOString()).toBe('2040-01-01T00:00:00.000Z');
 
-        expect(cert.subject).toHaveLength(42);
-        expect(cert.issuer).toHaveLength(42);
+        expect(cert.subject).toHaveLength(38);
+        expect(cert.issuer).toHaveLength(38);
 
         expect(cert.extBasicConstraints).toBeDefined();
         expect(cert.extBasicConstraints?.oid).toBe('2.5.29.19');
@@ -32,36 +30,29 @@ describe('x509Certificate', () => {
         expect(cert.extKeyUsage?.keyCertSign).toBe(true);
         expect(cert.extKeyUsage?.crlSign).toBe(true);
 
-        expect(cert.extAuthorityKeyID).toBeDefined();
-        expect(cert.extAuthorityKeyID?.oid).toBe('2.5.29.35');
-        expect(cert.extAuthorityKeyID?.critical).toBe(false);
-        expect(cert.extAuthorityKeyID?.keyIdentifier).toStrictEqual(
-          Buffer.from('58C01E5F9145A566A97ACC90A19322D02AC5C5FA', 'hex')
-        );
-
         expect(cert.extSubjectKeyID).toBeDefined();
         expect(cert.extSubjectKeyID?.oid).toBe('2.5.29.14');
         expect(cert.extSubjectKeyID?.critical).toBe(false);
-        expect(cert.extSubjectKeyID?.keyIdentifier).toStrictEqual(
-          Buffer.from('58C01E5F9145A566A97ACC90A19322D02AC5C5FA', 'hex')
-        );
+        expect(cert.extSubjectKeyID?.keyIdentifier).toBeTruthy();
+
+        expect(cert.extAuthorityKeyID).toBeUndefined();
+        expect(cert.extSubjectAltName).toBeUndefined();
+        expect(cert.extSCT).toBeUndefined();
       });
     });
 
     describe('when parsing an intermediate certificate', () => {
-      const derCert = pem.toDER(certificates.intermediate);
-
-      it('parses a certificate', () => {
-        const cert = x509Certificate.fromDER(derCert);
+      it('parses successfully', () => {
+        const cert = x509Certificate.parse(certificates.intermediate);
 
         expect(cert.version).toBe('v3');
         expect(cert.notBefore).toBeInstanceOf(Date);
-        expect(cert.notBefore.toISOString()).toBe('2022-04-13T20:06:15.000Z');
+        expect(cert.notBefore.toISOString()).toBe('1990-01-01T00:00:00.000Z');
         expect(cert.notAfter).toBeInstanceOf(Date);
-        expect(cert.notAfter.toISOString()).toBe('2031-10-05T13:56:58.000Z');
+        expect(cert.notAfter.toISOString()).toBe('2040-01-01T00:00:00.000Z');
 
-        expect(cert.subject).toHaveLength(55);
-        expect(cert.issuer).toHaveLength(42);
+        expect(cert.subject).toHaveLength(51);
+        expect(cert.issuer).toHaveLength(38);
 
         expect(cert.extBasicConstraints).toBeDefined();
         expect(cert.extBasicConstraints?.critical).toBe(true);
@@ -74,35 +65,29 @@ describe('x509Certificate', () => {
         expect(cert.extKeyUsage?.keyCertSign).toBe(true);
         expect(cert.extKeyUsage?.crlSign).toBe(true);
 
-        expect(cert.extAuthorityKeyID).toBeDefined();
-        expect(cert.extAuthorityKeyID?.oid).toBe('2.5.29.35');
-        expect(cert.extAuthorityKeyID?.critical).toBe(false);
-        expect(cert.extAuthorityKeyID?.keyIdentifier).toStrictEqual(
-          Buffer.from('58C01E5F9145A566A97ACC90A19322D02AC5C5FA', 'hex')
-        );
-
         expect(cert.extSubjectKeyID).toBeDefined();
         expect(cert.extSubjectKeyID?.oid).toBe('2.5.29.14');
         expect(cert.extSubjectKeyID?.critical).toBe(false);
-        expect(cert.extSubjectKeyID?.keyIdentifier).toStrictEqual(
-          Buffer.from('DFD3E9CF56241196F9A8D8E92855A2C62E18643F', 'hex')
-        );
+        expect(cert.extSubjectKeyID?.keyIdentifier).toBeTruthy();
+
+        expect(cert.extAuthorityKeyID).toBeUndefined();
+        expect(cert.extSubjectAltName).toBeUndefined();
+        expect(cert.extSCT).toBeUndefined();
       });
     });
 
     describe('when parsing a leaf certificate', () => {
-      const derCert = pem.toDER(certificates.leaf);
-      it('parses a certificate', () => {
-        const cert = x509Certificate.fromDER(derCert);
+      it('parses successfully', () => {
+        const cert = x509Certificate.parse(certificates.leaf);
 
         expect(cert.version).toBe('v3');
         expect(cert.notBefore).toBeInstanceOf(Date);
-        expect(cert.notBefore.toISOString()).toBe('2022-12-08T16:18:39.000Z');
+        expect(cert.notBefore.toISOString()).toBe('1990-01-01T00:00:00.000Z');
         expect(cert.notAfter).toBeInstanceOf(Date);
-        expect(cert.notAfter.toISOString()).toBe('2022-12-08T16:28:39.000Z');
+        expect(cert.notAfter.toISOString()).toBe('2040-01-01T00:00:00.000Z');
 
         expect(cert.subject).toHaveLength(0);
-        expect(cert.issuer).toHaveLength(55);
+        expect(cert.issuer).toHaveLength(51);
 
         expect(cert.publicKey).toBeDefined();
         expect(cert.publicKey.type).toBe('public');
@@ -118,36 +103,77 @@ describe('x509Certificate', () => {
 
         expect(cert.extSubjectAltName).toBeDefined();
         expect(cert.extSubjectAltName?.rfc822Name).toBeUndefined();
-        expect(cert.extSubjectAltName?.uri).toBe(
-          'https://github.com/sigstore/sigstore-js/.github/workflows/publish.yml@refs/tags/v0.2.0'
-        );
+        expect(cert.extSubjectAltName?.uri).toBe('http://foobar.dev');
 
         expect(cert.extAuthorityKeyID).toBeDefined();
         expect(cert.extAuthorityKeyID?.oid).toBe('2.5.29.35');
         expect(cert.extAuthorityKeyID?.critical).toBe(false);
-        expect(cert.extAuthorityKeyID?.keyIdentifier).toStrictEqual(
-          Buffer.from('DFD3E9CF56241196F9A8D8E92855A2C62E18643F', 'hex')
-        );
+        expect(cert.extAuthorityKeyID?.keyIdentifier).toBeTruthy();
 
         expect(cert.extSubjectKeyID).toBeDefined();
         expect(cert.extSubjectKeyID?.oid).toBe('2.5.29.14');
         expect(cert.extSubjectKeyID?.critical).toBe(false);
-        expect(cert.extSubjectKeyID?.keyIdentifier).toStrictEqual(
-          Buffer.from('2DFD2400F6B9B92711D5F14CFF2D1E74E5245AC0', 'hex')
-        );
+        expect(cert.extSubjectKeyID?.keyIdentifier).toBeTruthy();
+      });
+    });
 
-        expect(cert.extSCT).toBeDefined();
-        expect(cert.extSCT?.critical).toBe(false);
+    describe('when parsing a certificate with an unrecognized critical extension', () => {
+      it('throws an error', () => {
+        const der = pem.toDER(certificates.poisoned);
+        expect(() => x509Certificate.parse(der)).toThrow();
+      });
+    });
+  });
+
+  describe('#isCA', () => {
+    describe('when the certificate is a CA', () => {
+      const cert = x509Certificate.parse(certificates.root);
+      it('returns true', () => {
+        expect(cert.isCA).toBe(true);
+      });
+    });
+
+    describe('when the certificate is not a CA', () => {
+      const cert = x509Certificate.parse(certificates.leaf);
+
+      it('returns true', () => {
+        expect(cert.isCA).toBe(false);
+      });
+    });
+  });
+
+  describe('#validForDate', () => {
+    const cert = x509Certificate.parse(certificates.leaf);
+
+    describe('when the date is within the validity period', () => {
+      it('returns true', () => {
+        expect(cert.validForDate(new Date('2000-01-01T00:00:00.000Z'))).toBe(
+          true
+        );
+      });
+    });
+
+    describe('when the date is before the validity period', () => {
+      it('returns false', () => {
+        expect(cert.validForDate(new Date('1980-01-01T00:00:00.000Z'))).toBe(
+          false
+        );
+      });
+    });
+
+    describe('when the date is after the validity period', () => {
+      it('returns false', () => {
+        expect(cert.validForDate(new Date('2050-01-01T00:00:00.000Z'))).toBe(
+          false
+        );
       });
     });
   });
 
   describe('#verify', () => {
-    const leafCert = x509Certificate.fromDER(pem.toDER(certificates.leaf));
-    const intCert = x509Certificate.fromDER(
-      pem.toDER(certificates.intermediate)
-    );
-    const rootCert = x509Certificate.fromDER(pem.toDER(certificates.root));
+    const leafCert = x509Certificate.parse(certificates.leaf);
+    const intCert = x509Certificate.parse(certificates.intermediate);
+    const rootCert = x509Certificate.parse(certificates.root);
 
     describe('when the issuer is provided', () => {
       describe('when the issuer is a parent certificate', () => {
@@ -179,6 +205,30 @@ describe('x509Certificate', () => {
           expect(intCert.verify()).toBe(false);
           expect(leafCert.verify()).toBe(false);
         });
+      });
+    });
+  });
+
+  describe('#equals', () => {
+    const leaf1Cert = x509Certificate.parse(certificates.leaf);
+    const leaf2Cert = x509Certificate.parse(certificates.leaf);
+    const rootCert = x509Certificate.parse(certificates.root);
+
+    describe('when the certificates are the same object', () => {
+      it('returns true', () => {
+        expect(leaf1Cert.equals(leaf1Cert)).toBe(true);
+      });
+    });
+
+    describe('when the certificates are equal', () => {
+      it('returns true', () => {
+        expect(leaf1Cert.equals(leaf2Cert)).toBe(true);
+      });
+    });
+
+    describe('when the certificates are NOT equal', () => {
+      it('returns false', () => {
+        expect(leaf1Cert.equals(rootCert)).toBe(false);
       });
     });
   });
