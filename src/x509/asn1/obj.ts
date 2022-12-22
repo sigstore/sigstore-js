@@ -1,6 +1,6 @@
 import { ByteStream } from '../../util/stream';
 import { ASN1ParseError, ASN1TypeError } from './error';
-import { decodeLength } from './length';
+import { decodeLength, encodeLength } from './length';
 import {
   parseBitString,
   parseBoolean,
@@ -45,6 +45,24 @@ export class ASN1Obj {
   // and value)
   get raw(): Buffer {
     return this.buf;
+  }
+
+  public toDER(): Buffer {
+    let value: Buffer;
+
+    if (this.subs.length > 0) {
+      value = Buffer.alloc(0);
+      for (const sub of this.subs) {
+        value = Buffer.concat([value, sub.toDER()]);
+      }
+    } else {
+      value = this.value;
+    }
+
+    const tag = Buffer.from([this.tag.toDER()]);
+    const len = encodeLength(value.length);
+
+    return Buffer.concat([tag, len, value]);
   }
 
   /////////////////////////////////////////////////////////////////////////////

@@ -103,6 +103,39 @@ describe('ASN1Obj', () => {
     });
   });
 
+  describe('#toDER', () => {
+    describe('when the object is a primitive', () => {
+      // INTEGER (2 bytes) 0x1010
+      const buffer = Buffer.from('02021010', 'hex');
+      const obj = ASN1Obj.parseBuffer(buffer);
+
+      it('encodes properly', () => {
+        expect(obj.toDER()).toStrictEqual(buffer);
+      });
+    });
+
+    describe('when the object has children', () => {
+      // SEQUENCE (8 bytes)
+      //   INTEGER (2 bytes) 0x1010
+      //   INTEGER (2 bytes) 0x1111
+      const buffer = Buffer.from('30080202101002021111', 'hex');
+      const obj = ASN1Obj.parseBuffer(buffer);
+
+      it('encodes properly', () => {
+        expect(obj.toDER()).toStrictEqual(buffer);
+      });
+
+      describe('when the object is mutated', () => {
+        const obj = ASN1Obj.parseBuffer(buffer);
+
+        it('encodes properly', () => {
+          obj.subs.splice(0, 1);
+          expect(obj.toDER()).toStrictEqual(Buffer.from('300402021111', 'hex'));
+        });
+      });
+    });
+  });
+
   describe('#toBoolean', () => {
     describe('when the object is a BOOLEAN', () => {
       describe('when the value is 0x00', () => {
