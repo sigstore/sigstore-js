@@ -26,7 +26,6 @@ export function getKeys(): Record<string, KeyObject> {
     require.resolve('../../store/rekor.pub'),
     'utf-8'
   );
-
   const key = createPublicKey(pem);
 
   // Calculate logID from the key
