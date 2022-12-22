@@ -14,17 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { createPublicKey, KeyObject } from 'crypto';
+import fs from 'fs';
 import { crypto } from '../util';
+
 
 // Returns the set of trusted log keys which can be used to verify the
 // Signed Entry Timestamps in the log.
 export function getKeys(): Record<string, KeyObject> {
   // TODO: This should be be loaded via TUF
-  const pem = `
------BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2G2Y+2tabdTV5BcGiBIx0a9fAFwr
-kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
------END PUBLIC KEY-----`
+  const pem = fs.readFileSync(
+    require.resolve('../../store/rekor.pub'),
+    'utf-8'
+  );
 
   const key = createPublicKey(pem);
 
