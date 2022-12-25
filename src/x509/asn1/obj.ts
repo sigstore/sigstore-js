@@ -1,4 +1,5 @@
 import { ByteStream } from '../../util/stream';
+import { ByteStream as BS } from '../stream';
 import { ASN1ParseError, ASN1TypeError } from './error';
 import { decodeLength, encodeLength } from './length';
 import {
@@ -48,21 +49,25 @@ export class ASN1Obj {
   }
 
   public toDER(): Buffer {
-    let value: Buffer;
+    const valueStream = new BS();
 
     if (this.subs.length > 0) {
-      value = Buffer.alloc(0);
       for (const sub of this.subs) {
-        value = Buffer.concat([value, sub.toDER()]);
+        valueStream.appendView(sub.toDER());
       }
     } else {
-      value = this.value;
+      valueStream.appendView(this.value);
     }
 
-    const tag = Buffer.from([this.tag.toDER()]);
-    const len = encodeLength(value.length);
+    const value = valueStream.buffer;
 
-    return Buffer.concat([tag, len, value]);
+    // Concat tag/length/value
+    const obj = new BS();
+    obj.appendChar(this.tag.toDER());
+    obj.appendView(encodeLength(value.length));
+    obj.appendView(value);
+
+    return obj.buffer;
   }
 
   /////////////////////////////////////////////////////////////////////////////
