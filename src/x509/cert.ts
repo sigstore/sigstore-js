@@ -1,3 +1,5 @@
+import * as sigstore from '../types/sigstore';
+import { crypto } from '../util';
 import { crypto, pem } from '../util';
 import { ASN1Obj } from './asn1/obj';
 import {
@@ -9,8 +11,19 @@ import {
   x509SubjectAlternativeNameExtension,
   x509SubjectKeyIDExtension,
 } from './ext';
-import { Log } from './sct';
 import { ByteStream } from './stream';
+
+const x: sigstore.TransparencyLogInstance = {
+  baseUrl: 'https://ct.googleapis.com/aviator',
+  hashAlgorithm: sigstore.HashAlgorithm.HASH_ALGORITHM_UNSPECIFIED,
+  logId: {
+    keyId: Buffer.from(''),
+  },
+  publicKey: {
+    keyDetails: sigstore.PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
+    rawBytes: Buffer.from(''),
+  },
+};
 
 const EXTENSION_OID_KEY_USAGE = '2.5.29.15';
 const EXTENSION_OID_SUBJECT_ALT_NAME = '2.5.29.17';
@@ -162,7 +175,10 @@ export class x509Certificate {
     return this.root.raw.equals(other.root.raw);
   }
 
-  public verifySCTs(issuer: x509Certificate, logs: Log[]): boolean {
+  public verifySCTs(
+    issuer: x509Certificate,
+    logs: sigstore.TransparencyLogInstance[]
+  ): boolean {
     let extSCT: x509SCTExtension | undefined;
 
     // Verifying the SCT requires that we remove the SCT extension and

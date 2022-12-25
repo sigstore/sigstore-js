@@ -1,3 +1,4 @@
+import * as sigstore from '../../types/sigstore';
 import { SignedCertificateTimestamp } from '../../x509/sct';
 
 describe('SignedCertificateTimestamp', () => {
@@ -66,16 +67,6 @@ describe('SignedCertificateTimestamp', () => {
     });
   });
 
-  describe('#logIDBase64', () => {
-    const subject = SignedCertificateTimestamp.parse(sctBuffer);
-
-    it('returns the log ID as a base64 string', () => {
-      expect(subject.logIDBase64).toEqual(
-        Buffer.from(logID, 'hex').toString('base64')
-      );
-    });
-  });
-
   describe('#datetime', () => {
     const subject = SignedCertificateTimestamp.parse(sctBuffer);
 
@@ -112,9 +103,22 @@ describe('SignedCertificateTimestamp', () => {
     describe('when the key for the log is available', () => {
       // Real key used to sign the SCT
       const ctfe =
-        '-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbfwR+RJudXscgRBRpKX1XFDy3Pyu\ndDxz/SfnRi1fT8ekpfBd2O1uoz7jr3Z8nKzxA69EUQ+eFCFI3zeubPWU7w==\n-----END PUBLIC KEY-----';
-      const logIDB64 = Buffer.from(logID, 'hex').toString('base64');
-      const logs = [{ logID: logIDB64, key: ctfe }];
+        'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbfwR+RJudXscgRBRpKX1XFDy3PyudDxz/SfnRi1fT8ekpfBd2O1uoz7jr3Z8nKzxA69EUQ+eFCFI3zeubPWU7w==';
+
+      const ctl = {
+        baseUrl: '',
+        hashAlgorithm: 'SHA2_256',
+        publicKey: {
+          rawBytes:
+            'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbfwR+RJudXscgRBRpKX1XFDy3PyudDxz/SfnRi1fT8ekpfBd2O1uoz7jr3Z8nKzxA69EUQ+eFCFI3zeubPWU7w==',
+          keyDetails: 'PKIX_ECDSA_P256_SHA_256',
+        },
+        logId: { keyId: Buffer.from(logID, 'hex') },
+      };
+
+      const logs: sigstore.TransparencyLogInstance[] = [
+        sigstore.TransparencyLogInstance.fromJSON(ctl),
+      ];
 
       describe('when the signature is valid', () => {
         it('returns true', () => {

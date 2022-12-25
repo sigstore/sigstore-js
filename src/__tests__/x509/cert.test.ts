@@ -1,3 +1,4 @@
+import * as sigstore from '../../types/sigstore';
 import { pem } from '../../util';
 import { x509Certificate } from '../../x509/cert';
 import { certificates } from '../__fixtures__/certs';
@@ -244,14 +245,23 @@ describe('x509Certificate', () => {
   });
 
   describe('#verivySCTs', () => {
-    const ctfe = `
------BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbfwR+RJudXscgRBRpKX1XFDy3Pyu
-dDxz/SfnRi1fT8ekpfBd2O1uoz7jr3Z8nKzxA69EUQ+eFCFI3zeubPWU7w==
------END PUBLIC KEY-----
-`;
-    const logs = [
-      { logID: 'CGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3I=', key: ctfe },
+    // Real key used to sign the SCT
+    const ctfe =
+      'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbfwR+RJudXscgRBRpKX1XFDy3PyudDxz/SfnRi1fT8ekpfBd2O1uoz7jr3Z8nKzxA69EUQ+eFCFI3zeubPWU7w==';
+
+    const ctl = {
+      baseUrl: '',
+      hashAlgorithm: 'SHA2_256',
+      publicKey: {
+        rawBytes:
+          'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbfwR+RJudXscgRBRpKX1XFDy3PyudDxz/SfnRi1fT8ekpfBd2O1uoz7jr3Z8nKzxA69EUQ+eFCFI3zeubPWU7w==',
+        keyDetails: 'PKIX_ECDSA_P256_SHA_256',
+      },
+      logId: { keyId: 'CGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3I=' },
+    };
+
+    const logs: sigstore.TransparencyLogInstance[] = [
+      sigstore.TransparencyLogInstance.fromJSON(ctl),
     ];
 
     describe('when the certificate does NOT have an SCT extension', () => {

@@ -1,10 +1,6 @@
+import * as sigstore from '../types/sigstore';
 import { crypto } from '../util';
 import { ByteStream } from './stream';
-
-export interface Log {
-  logID: string;
-  key: string;
-}
 
 interface SCTOptions {
   version: number;
@@ -39,10 +35,6 @@ export class SignedCertificateTimestamp {
     return new Date(Number(this.timestamp.readBigInt64BE()));
   }
 
-  get logIDBase64(): string {
-    return this.logID.toString('base64');
-  }
-
   // Returns the hash algorithm used to generate the SCT's signature.
   // https://www.rfc-editor.org/rfc/rfc5246#section-7.4.1.4.1
   get algorithm(): string {
@@ -66,15 +58,18 @@ export class SignedCertificateTimestamp {
     }
   }
 
-  public verify(preCert: Buffer, logs: Log[]): boolean {
+  public verify(
+    preCert: Buffer,
+    logs: sigstore.TransparencyLogInstance[]
+  ): boolean {
     // Find key for the log reponsible for this signature
-    const log = logs.find((log) => log.logID === this.logIDBase64);
+    const log = logs.find((log) => log.logId?.keyId.equals(this.logID));
 
-    if (!log) {
-      throw new Error(`No key found for log: ${this.logIDBase64}`);
+    if (!log?.publicKey?.rawBytes) {
+      throw new Error(`No key found for log: ${this.logID.toString('base64')}`);
     }
 
-    const publicKey = crypto.createPublicKey(log.key);
+    const publicKey = crypto.createPublicKey(log.publicKey.rawBytes);
 
     // Assemble the digitally-signed struct (the data over which the signature
     // was generated).
