@@ -1,6 +1,6 @@
+import { ByteStream } from '../util/stream';
 import { ASN1Obj } from './asn1/obj';
 import { SignedCertificateTimestamp } from './sct';
-import { ByteStream } from './stream';
 
 // https://www.rfc-editor.org/rfc/rfc5280#section-4.1
 export class x509Extension {

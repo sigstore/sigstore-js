@@ -1,6 +1,6 @@
 import * as sigstore from '../types/sigstore';
-import { crypto } from '../util';
 import { crypto, pem } from '../util';
+import { ByteStream } from '../util/stream';
 import { ASN1Obj } from './asn1/obj';
 import {
   x509AuthorityKeyIDExtension,
@@ -11,19 +11,6 @@ import {
   x509SubjectAlternativeNameExtension,
   x509SubjectKeyIDExtension,
 } from './ext';
-import { ByteStream } from './stream';
-
-const x: sigstore.TransparencyLogInstance = {
-  baseUrl: 'https://ct.googleapis.com/aviator',
-  hashAlgorithm: sigstore.HashAlgorithm.HASH_ALGORITHM_UNSPECIFIED,
-  logId: {
-    keyId: Buffer.from(''),
-  },
-  publicKey: {
-    keyDetails: sigstore.PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
-    rawBytes: Buffer.from(''),
-  },
-};
 
 const EXTENSION_OID_KEY_USAGE = '2.5.29.15';
 const EXTENSION_OID_SUBJECT_ALT_NAME = '2.5.29.17';

@@ -253,8 +253,7 @@ describe('x509Certificate', () => {
       baseUrl: '',
       hashAlgorithm: 'SHA2_256',
       publicKey: {
-        rawBytes:
-          'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbfwR+RJudXscgRBRpKX1XFDy3PyudDxz/SfnRi1fT8ekpfBd2O1uoz7jr3Z8nKzxA69EUQ+eFCFI3zeubPWU7w==',
+        rawBytes: ctfe,
         keyDetails: 'PKIX_ECDSA_P256_SHA_256',
       },
       logId: { keyId: 'CGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3I=' },

@@ -1,6 +1,6 @@
 import * as sigstore from '../types/sigstore';
 import { crypto } from '../util';
-import { ByteStream } from './stream';
+import { ByteStream } from '../util/stream';
 
 interface SCTOptions {
   version: number;

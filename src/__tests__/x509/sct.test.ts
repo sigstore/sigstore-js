@@ -40,7 +40,7 @@ describe('SignedCertificateTimestamp', () => {
         it('throws an error', () => {
           expect(() =>
             SignedCertificateTimestamp.parse(Buffer.from(''))
-          ).toThrow('Unexpected end of stream');
+          ).toThrow('request past end of buffer');
         });
       });
 
@@ -109,8 +109,7 @@ describe('SignedCertificateTimestamp', () => {
         baseUrl: '',
         hashAlgorithm: 'SHA2_256',
         publicKey: {
-          rawBytes:
-            'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbfwR+RJudXscgRBRpKX1XFDy3PyudDxz/SfnRi1fT8ekpfBd2O1uoz7jr3Z8nKzxA69EUQ+eFCFI3zeubPWU7w==',
+          rawBytes: ctfe,
           keyDetails: 'PKIX_ECDSA_P256_SHA_256',
         },
         logId: { keyId: Buffer.from(logID, 'hex') },

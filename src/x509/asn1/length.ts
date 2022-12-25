@@ -6,7 +6,7 @@ import { ASN1ParseError } from './error';
 // Decodes the length of a DER-encoded ANS.1 element from the supplied stream.
 // https://learn.microsoft.com/en-us/windows/win32/seccertenroll/about-encoded-length-and-value-bytes
 export function decodeLength(stream: ByteStream): number {
-  const buf = stream.get();
+  const buf = stream.getUint8();
 
   // If the most significant bit is UNSET the length is just the value of the
   // byte.
@@ -26,7 +26,7 @@ export function decodeLength(stream: ByteStream): number {
   // Iterate over the bytes that encode the length.
   let len = 0;
   for (let i = 0; i < byteCount; i++) {
-    len = len * 256 + stream.get();
+    len = len * 256 + stream.getUint8();
   }
 
   // This is a valid ASN.1 length encoding, but we don't support it.
