@@ -3,18 +3,18 @@ set -ex
 
 # Set-up dir to receive generated files
 REPO_ROOT=$(git rev-parse --show-toplevel)
-OUTPUT_DIR=${REPO_ROOT}/src/types/bundle/__generated__
+OUTPUT_DIR=${REPO_ROOT}/src/types/sigstore/__generated__
 mkdir -p ${OUTPUT_DIR}
 
 # Retrieve proto files
 REPO=sigstore/protobuf-specs
-REF=d8064a7f8a47777132ff51bb74d40dbb99817262
+REF=120c958642ee5c0c6e2d699d40737397796abcde
 PB_PATH=protos
 
 DEFS_DIR=/tmp/defs
 mkdir -p ${DEFS_DIR}
 
-PBS=( envelope.proto sigstore_bundle.proto sigstore_common.proto sigstore_rekor.proto )
+PBS=( envelope.proto sigstore_bundle.proto sigstore_common.proto sigstore_rekor.proto sigstore_trustroot.proto sigstore_verification_proto )
 for PB in "${PBS[@]}"
 do
   curl -L --silent --show-error \
@@ -32,4 +32,4 @@ popd
 exec docker run --rm --net=none --platform linux/amd64 \
   -v ${DEFS_DIR}:/in \
   -v ${OUTPUT_DIR}:/out \
-  ${IMAGE_NAME} sigstore_bundle.proto
+  ${IMAGE_NAME} sigstore_verification.proto

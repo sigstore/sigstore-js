@@ -12,7 +12,7 @@
     "lint": "eslint --fix --ext .ts src/**",
     "lint:check": "eslint --max-warnings 0 --ext .ts src/**",
     "format": "prettier --write \"src/**/*\"",
-    "codegen:bundle": "./hack/generate-bundle-types",
+    "codegen:sigstore": "./hack/generate-sigstore-types",
     "codegen:rekor": "./hack/generate-rekor-types"
   },
   "bin": {
