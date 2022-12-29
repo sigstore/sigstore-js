@@ -102,26 +102,26 @@ export class SignedCertificateTimestamp {
   public static parse(buf: Buffer): SignedCertificateTimestamp {
     const stream = new ByteStream(buf);
 
-    // Version field is first byte
+    // Version - enum { v1(0), (255) }
     const version = stream.getUint8();
 
-    // Log ID is next 32 bytes
+    // Log ID  - struct { opaque key_id[32]; }
     const logID = stream.getBlock(32);
 
-    // Timestamp is next 8 bytes
+    // Timestamp - uint64
     const timestamp = stream.getBlock(8);
 
-    // Extension length is next 2 bytes followed by the extensions
+    // Extensions - opaque extensions<0..2^16-1>;
     const extenstionLength = stream.getUint16();
     const extensions = stream.getBlock(extenstionLength);
 
-    // Hash algo is next byte
+    // Hash algo - enum { sha256(4), . . . (255) }
     const hashAlgorithm = stream.getUint8();
 
-    // Signature algo is next byte (unused, implied by public key)
+    // Signature algo - enum { anonymous(0), rsa(1), dsa(2), ecdsa(3), (255) }
     const signatureAlgorithm = stream.getUint8();
 
-    // Signature length is next 2 bytes followed by the signature
+    // Signature  - opaque signature<0..2^16-1>;
     const sigLength = stream.getUint16();
     const signature = stream.getBlock(sigLength);
 

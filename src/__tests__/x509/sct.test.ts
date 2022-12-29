@@ -107,7 +107,7 @@ describe('SignedCertificateTimestamp', () => {
 
       const ctl = {
         baseUrl: '',
-        hashAlgorithm: 'SHA2_256',
+        hashAlgorithm: 'HASH_ALGORITHM_UNSPECIFIED',
         publicKey: {
           rawBytes: ctfe,
           keyDetails: 'PKIX_ECDSA_P256_SHA_256',
