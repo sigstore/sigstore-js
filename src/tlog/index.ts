@@ -14,9 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { Rekor } from '../client';
+import { HTTPError } from '../client/error';
 import { bundle, Bundle, Envelope } from '../types/bundle';
 import { SignatureMaterial } from '../types/signature';
 import { toProposedHashedRekordEntry, toProposedIntotoEntry } from './format';
+import { Entry } from './types';
+
+interface CreateEntryOptions {
+  fetchOnConflict?: boolean;
+}
 
 export { Entry, EntryKind, HashedRekordKind } from './types';
 
@@ -28,7 +34,8 @@ export interface TLog {
 
   createDSSEEntry: (
     envelope: Envelope,
-    sigMaterial: SignatureMaterial
+    sigMaterial: SignatureMaterial,
+    options?: CreateEntryOptions
   ) => Promise<Bundle>;
 }
 
@@ -55,10 +62,36 @@ export class TLogClient implements TLog {
 
   async createDSSEEntry(
     envelope: Envelope,
-    sigMaterial: SignatureMaterial
+    sigMaterial: SignatureMaterial,
+    options: CreateEntryOptions = {}
   ): Promise<Bundle> {
-    const proposedEntry = toProposedIntotoEntry(envelope, sigMaterial);
-    const entry = await this.rekor.createEntry(proposedEntry);
+    const fetchOnConflict = options.fetchOnConflict ?? false;
+    let entry: Entry;
+
+    try {
+      const proposedEntry = toProposedIntotoEntry(envelope, sigMaterial);
+      entry = await this.rekor.createEntry(proposedEntry);
+    } catch (err) {
+      // If the entry already exists, fetch it (if enabled)
+      if (entryExistsError(err) && fetchOnConflict) {
+        // Grab the UUID of the existing entry from the location header
+        const uuid = err.location.split('/').pop() || '';
+        entry = await this.rekor.getEntry(uuid);
+      } else {
+        throw err;
+      }
+    }
+
     return bundle.toDSSEBundle(envelope, sigMaterial, entry);
   }
+}
+
+function entryExistsError(
+  value: unknown
+): value is HTTPError & { location: string } {
+  return (
+    value instanceof HTTPError &&
+    value.statusCode === 409 &&
+    value.location !== undefined
+  );
 }

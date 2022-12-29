@@ -73,6 +73,9 @@ export async function createRekorEntry(
   const tlog = createTLogClient(options);
 
   const sigMaterial = extractSignatureMaterial(envelope, publicKey);
-  const bundle = await tlog.createDSSEEntry(envelope, sigMaterial);
+  const bundle = await tlog.createDSSEEntry(envelope, sigMaterial, {
+    fetchOnConflict: true,
+  });
+
   return bundleToJSON(bundle) as Bundle;
 }
