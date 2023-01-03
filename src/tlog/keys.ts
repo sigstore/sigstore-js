@@ -17,7 +17,6 @@ import { createPublicKey, KeyObject } from 'crypto';
 import fs from 'fs';
 import { crypto } from '../util';
 
-
 // Returns the set of trusted log keys which can be used to verify the
 // Signed Entry Timestamps in the log.
 export function getKeys(): Record<string, KeyObject> {
