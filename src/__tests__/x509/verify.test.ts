@@ -48,11 +48,11 @@ describe('CertificateChainVerifier', () => {
       });
     });
 
-    describe('when the check-date is outside the validity period of the cert chain', () => {
+    describe('when the validAt is outside the validity period of the cert chain', () => {
       const opts = {
         trustedCerts: [rootCert, intCert],
         certs: [leafCert],
-        checkDate: new Date('1980-12-21T16:22:00.000Z'),
+        validAt: new Date('1980-12-21T16:22:00.000Z'),
       };
 
       it('throws an error', () => {
@@ -79,7 +79,7 @@ describe('CertificateChainVerifier', () => {
       const opts = {
         trustedCerts: [intCert, rootCert],
         certs: [rootCert, intCert, leafCert],
-        checkDate: new Date('2022-12-21T16:22:00.000Z'),
+        validAt: new Date('2022-12-21T16:22:00.000Z'),
       };
 
       it('returns without error', () => {

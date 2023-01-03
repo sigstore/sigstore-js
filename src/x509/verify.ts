@@ -4,7 +4,7 @@ import { x509Certificate } from './cert';
 interface VerifyCertificateChainOptions {
   trustedCerts: x509Certificate[];
   certs: x509Certificate[];
-  checkDate?: Date;
+  validAt?: Date;
 }
 
 export function verifyCertificateChain(
@@ -18,13 +18,13 @@ class CertificateChainVerifier {
   private certs: x509Certificate[];
   private trustedCerts: x509Certificate[];
   private localCerts: x509Certificate[];
-  private checkDate: Date;
+  private validAt: Date;
 
   constructor(opts: VerifyCertificateChainOptions) {
     this.certs = opts.certs;
     this.trustedCerts = opts.trustedCerts;
     this.localCerts = dedupeCertificates([...opts.trustedCerts, ...opts.certs]);
-    this.checkDate = opts.checkDate || new Date();
+    this.validAt = opts.validAt || new Date();
   }
 
   public verify(): void {
@@ -159,9 +159,7 @@ class CertificateChainVerifier {
     }
 
     // Check that all certificates are valid at the check date
-    const validForDate = path.every((cert) =>
-      cert.validForDate(this.checkDate)
-    );
+    const validForDate = path.every((cert) => cert.validForDate(this.validAt));
     if (!validForDate) {
       throw new CertificateChainVerificationError(
         'Certificate is not valid or expired at the specified date'
