@@ -15,7 +15,6 @@ limitations under the License.
 */
 import { createPublicKey, KeyObject } from 'crypto';
 import fs from 'fs';
-import path from 'path';
 import { crypto } from '../util';
 
 // Returns the set of trusted log keys which can be used to verify the
@@ -23,7 +22,7 @@ import { crypto } from '../util';
 export function getKeys(): Record<string, KeyObject> {
   // TODO: This should be be loaded via TUF
   const pem = fs.readFileSync(
-    path.resolve(__dirname, '../../store/rekor.pub'),
+    require.resolve('../../store/rekor.pub'),
     'utf-8'
   );
   const key = createPublicKey(pem);
