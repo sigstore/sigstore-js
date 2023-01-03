@@ -36,3 +36,22 @@ export function decodeLength(stream: ByteStream): number {
 
   return len;
 }
+
+// Translates the supplied value to a DER-encoded length.
+export function encodeLength(len: number): Buffer {
+  if (len < 128) {
+    return Buffer.from([len]);
+  }
+
+  // Bitwise operations on large numbers are not supported in JS, so we need to
+  // use BigInts.
+  let val = BigInt(len);
+  const bytes = [];
+
+  while (val > 0n) {
+    bytes.unshift(Number(val & 255n));
+    val = val >> 8n;
+  }
+
+  return Buffer.from([0x80 | bytes.length, ...bytes]);
+}

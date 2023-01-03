@@ -83,4 +83,8 @@ export class ASN1Tag {
   public isGeneralizedTime(): boolean {
     return this.isUniversal() && this.number === UNIVERSAL_TAG.GENERALIZED_TIME;
   }
+
+  public toDER(): number {
+    return this.number | (this.constructed ? 0x20 : 0x00) | (this.class << 6);
+  }
 }

@@ -141,7 +141,7 @@ describe('ASN1Tag', () => {
     });
   });
 
-  describe('isOID', () => {
+  describe('#isOID', () => {
     describe('when the tag is an OID', () => {
       it('should return true', () => {
         const tag = new ASN1Tag(0x06);
@@ -160,7 +160,7 @@ describe('ASN1Tag', () => {
     });
   });
 
-  describe('isUTCTime', () => {
+  describe('#isUTCTime', () => {
     describe('when the tag is a UTCTime', () => {
       it('should return true', () => {
         const tag = new ASN1Tag(0x17);
@@ -179,7 +179,7 @@ describe('ASN1Tag', () => {
     });
   });
 
-  describe('isGeneralizedTime', () => {
+  describe('#isGeneralizedTime', () => {
     describe('when the tag is a GeneralizedTime', () => {
       it('should return true', () => {
         const tag = new ASN1Tag(0x18);
@@ -195,6 +195,14 @@ describe('ASN1Tag', () => {
         tag = new ASN1Tag(0x58);
         expect(tag.isGeneralizedTime()).toEqual(false);
       });
+    });
+  });
+
+  describe('#toDER', () => {
+    it('should return the DER encoding of the tag', () => {
+      expect(new ASN1Tag(0x02).toDER()).toEqual(0x02);
+      expect(new ASN1Tag(0x30).toDER()).toEqual(0x30);
+      expect(new ASN1Tag(0xa3).toDER()).toEqual(0xa3);
     });
   });
 });
