@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { pem } from '../util';
 import { ASN1Obj } from './asn1/obj';
 import {
   x509AuthorityKeyIDExtension,
@@ -43,7 +44,8 @@ export class x509Certificate {
     }
   }
 
-  public static fromDER(der: Buffer): x509Certificate {
+  public static parse(cert: Buffer | string): x509Certificate {
+    const der = typeof cert === 'string' ? pem.toDER(cert) : cert;
     const asn1 = ASN1Obj.parseBuffer(der);
     return new x509Certificate(asn1);
   }
@@ -86,7 +88,7 @@ export class x509Certificate {
 
   get signatureAlgorithm(): string {
     const oid: string = this.signatureAlgorithmObj.subs[0].toOID();
-    return ECDSA_SIGNATURE_ALGOS[oid] || '';
+    return ECDSA_SIGNATURE_ALGOS[oid];
   }
 
   get signatureValue(): Buffer {
@@ -124,6 +126,17 @@ export class x509Certificate {
     return ext ? new x509SCTExtension(ext) : undefined;
   }
 
+  get isCA(): boolean {
+    const ca = this.extBasicConstraints?.isCA || false;
+
+    // If the KeyUsage extension is present, keyCertSign must be set
+    if (this.extKeyUsage) {
+      ca && this.extKeyUsage.keyCertSign;
+    }
+
+    return ca;
+  }
+
   public verify(issuerCertificate?: x509Certificate): boolean {
     // Use the issuer's public key if provided, otherwise use the subject's
     const publicKey = issuerCertificate?.publicKey || this.publicKey;
@@ -135,6 +148,15 @@ export class x509Certificate {
       this.signatureValue
     );
   }
+
+  public validForDate(date: Date): boolean {
+    return this.notBefore <= date && date <= this.notAfter;
+  }
+
+  public equals(other: x509Certificate): boolean {
+    return this.root.raw.equals(other.root.raw);
+  }
+
   private findExtension(oid: string): ASN1Obj | undefined {
     // The extension list is the first (and only) element of the extensions
     // context specific tag
