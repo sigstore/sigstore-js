@@ -220,7 +220,7 @@ export class x509Certificate {
   private clone(): x509Certificate {
     const clone = Buffer.alloc(this.root.raw.length);
     this.root.raw.copy(clone);
-    return x509Certificate.fromDER(clone);
+    return x509Certificate.parse(clone);
   }
 
   private findExtension(oid: string): ASN1Obj | undefined {

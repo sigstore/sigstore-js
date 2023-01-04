@@ -113,6 +113,14 @@ describe('x509Certificate', () => {
         expect(cert.extSubjectKeyID?.oid).toBe('2.5.29.14');
         expect(cert.extSubjectKeyID?.critical).toBe(false);
         expect(cert.extSubjectKeyID?.keyIdentifier).toBeTruthy();
+
+        expect(cert.extSCT).toBeUndefined();
+        // const sct = cert.extSCT?.signedCertificateTimestamps[0]!;
+        // expect(sct.version).toBe('v1');
+        // expect(sct.timestamp.toISOString()).toBe('2022-11-11T00:33:41.942Z');
+        // expect(sct.signatureAlgorithm).toBe('ecdsa');
+        // expect(sct.hashAlgorithm).toBe('sha256');
+        // expect(sct.logID).toBeTruthy();
       });
     });
 
@@ -165,18 +173,6 @@ describe('x509Certificate', () => {
         expect(cert.validForDate(new Date('2050-01-01T00:00:00.000Z'))).toBe(
           false
         );
-=======
-        expect(cert.extSCT).toBeDefined();
-        expect(cert.extSCT?.critical).toBe(false);
-        expect(cert.extSCT?.signedCertificateTimestamps).toHaveLength(1);
-
-        // const sct = cert.extSCT?.signedCertificateTimestamps[0]!;
-        // expect(sct.version).toBe('v1');
-        // expect(sct.timestamp.toISOString()).toBe('2022-11-11T00:33:41.942Z');
-        // expect(sct.signatureAlgorithm).toBe('ecdsa');
-        // expect(sct.hashAlgorithm).toBe('sha256');
-        // expect(sct.logID).toBeTruthy();
->>>>>>> 96c7888 (SCT verification for x509 certs)
       });
     });
   });
@@ -287,7 +283,7 @@ MQDYQen2LUbFkSmg2mb9hXjmNL6TNp8b8xJSje72ZYhqiuika4CyQkcByHsbORky
 vjICMQDgfIBIFgnkBIn0UIacFvoF6RWlg/bmkdftHVkdDS59Uv24OpwoGndgoG8w
 tLtOthg=
 -----END CERTIFICATE-----`;
-      const subject = x509Certificate.fromDER(pem.toDER(leafPEM));
+      const subject = x509Certificate.parse(leafPEM);
 
       describe('when the SCTs are valid', () => {
         const issuerPEM = `-----BEGIN CERTIFICATE-----
@@ -304,7 +300,7 @@ zj0EAwMDZwAwZAIwPCsQK4DYiZYDPIaDi5HFKnfxXx6ASSVmERfsynYBiX2X6SJR
 nZU84/9DZdnFvvxmAjBOt6QpBlc4J/0DxvkTCqpclvziL6BCCPnjdlIB3Pu3BxsP
 mygUY7Ii2zbdCdliiow=
 -----END CERTIFICATE-----`;
-        const issuer = x509Certificate.fromDER(pem.toDER(issuerPEM));
+        const issuer = x509Certificate.parse(issuerPEM);
 
         it('returns true', () => {
           expect(subject.verifySCTs(issuer, logs)).toBe(true);
@@ -312,7 +308,7 @@ mygUY7Ii2zbdCdliiow=
       });
 
       describe('when the SCTs are invalid', () => {
-        const badIssuer = x509Certificate.fromDER(pem.toDER(certificates.root));
+        const badIssuer = x509Certificate.parse(certificates.root);
 
         it('returns false', () => {
           expect(subject.verifySCTs(badIssuer, logs)).toBe(false);
