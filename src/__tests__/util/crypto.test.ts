@@ -13,7 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { KeyObject } from 'crypto';
 import {
+  createPublicKey,
   generateKeyPair,
   hash,
   randomBytes,
@@ -30,6 +32,34 @@ describe('generateKeyPair', () => {
 
     expect(keypair.publicKey).toBeDefined();
     expect(keypair.publicKey.asymmetricKeyType).toBe('ec');
+  });
+});
+
+describe('createPublicKey', () => {
+  describe('when the input in a PEM-encoded key', () => {
+    const pem = `-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEtZO/hiYFB3WveI+iYoN4I6w17rSA
+tbn02XdfIl+ZhQqUZv88dgDB86bfKyoOokA7fagAEOulkquhKKoOxdOySQ==
+-----END PUBLIC KEY-----`;
+
+    it('creates a public key', () => {
+      const key = createPublicKey(pem);
+      expect(key).toBeDefined();
+      expect((key as KeyObject).asymmetricKeyType).toBe('ec');
+    });
+  });
+
+  describe('when the input is a DER-encoded key', () => {
+    const der = Buffer.from(
+      'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEtZO/hiYFB3WveI+iYoN4I6w17rSAtbn02XdfIl+ZhQqUZv88dgDB86bfKyoOokA7fagAEOulkquhKKoOxdOySQ==',
+      'base64'
+    );
+
+    it('creates a public key', () => {
+      const key = createPublicKey(der);
+      expect(key).toBeDefined();
+      expect((key as KeyObject).asymmetricKeyType).toBe('ec');
+    });
   });
 });
 
