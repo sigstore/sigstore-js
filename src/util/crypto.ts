@@ -25,6 +25,14 @@ export function generateKeyPair(): KeyPairKeyObjectResult {
   });
 }
 
+export function createPublicKey(key: string | Buffer): KeyLike {
+  if (typeof key === 'string') {
+    return crypto.createPublicKey(key);
+  } else {
+    return crypto.createPublicKey({ key, format: 'der', type: 'spki' });
+  }
+}
+
 export function signBlob(
   data: NodeJS.ArrayBufferView,
   privateKey: KeyLike
@@ -35,12 +43,13 @@ export function signBlob(
 export function verifyBlob(
   data: Buffer,
   key: KeyLike,
-  signature: Buffer
+  signature: Buffer,
+  algorithm?: string
 ): boolean {
   // The try/catch is to work around an issue in Node 14.x where verify throws
   // an error in some scenarios if the signature is invalid.
   try {
-    return crypto.verify(null, data, key, signature);
+    return crypto.verify(algorithm, data, key, signature);
   } catch (e) {
     return false;
   }
