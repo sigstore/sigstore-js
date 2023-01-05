@@ -23,5 +23,6 @@ protoc --plugin=/usr/local/bin/protoc-gen-ts \
   --ts_proto_opt=oneof=unions \
   --ts_proto_opt=unrecognizedEnum=false \
   --ts_proto_opt=exportCommonSymbols=false \
-  -I /in \
+  -I/in \
+  -I/opt/include \
   "$@"
