@@ -48,21 +48,25 @@ export class ASN1Obj {
   }
 
   public toDER(): Buffer {
-    let value: Buffer;
+    const valueStream = new ByteStream();
 
     if (this.subs.length > 0) {
-      value = Buffer.alloc(0);
       for (const sub of this.subs) {
-        value = Buffer.concat([value, sub.toDER()]);
+        valueStream.appendView(sub.toDER());
       }
     } else {
-      value = this.value;
+      valueStream.appendView(this.value);
     }
 
-    const tag = Buffer.from([this.tag.toDER()]);
-    const len = encodeLength(value.length);
+    const value = valueStream.buffer;
 
-    return Buffer.concat([tag, len, value]);
+    // Concat tag/length/value
+    const obj = new ByteStream();
+    obj.appendChar(this.tag.toDER());
+    obj.appendView(encodeLength(value.length));
+    obj.appendView(value);
+
+    return obj.buffer;
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -131,7 +135,7 @@ function parseStream(stream: ByteStream): ASN1Obj {
   const startPos = stream.position;
 
   // Parse tag and length from stream
-  const tag = new ASN1Tag(stream.get());
+  const tag = new ASN1Tag(stream.getUint8());
   const len = decodeLength(stream);
 
   // Calculate length of header (tag + length)
