@@ -13,30 +13,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { Fulcio } from './client';
+import { CA } from './ca';
 import { Provider } from './identity';
 import { TLog } from './tlog';
 import { Bundle, Envelope } from './types/bundle';
-import { fulcio } from './types/fulcio';
 import { SignatureMaterial, SignerFunc } from './types/signature';
-import { crypto, dsse, oidc, pem } from './util';
+import { crypto, dsse, oidc } from './util';
 
 export interface SignOptions {
-  fulcio: Fulcio;
+  ca: CA;
   tlog: TLog;
   identityProviders: Provider[];
   signer?: SignerFunc;
 }
 
 export class Signer {
-  private fulcio: Fulcio;
+  private ca: CA;
   private tlog: TLog;
   private signer: SignerFunc;
 
   private identityProviders: Provider[] = [];
 
   constructor(options: SignOptions) {
-    this.fulcio = options.fulcio;
+    this.ca = options.ca;
     this.tlog = options.tlog;
     this.identityProviders = options.identityProviders;
     this.signer = options.signer || this.signWithEphemeralKey.bind(this);
@@ -93,9 +92,10 @@ export class Signer {
     const challenge = crypto.signBlob(Buffer.from(subject), keypair.privateKey);
 
     // Create signing certificate
-    const certificate = await this.fulcio.createSigningCertificate(
+    const certificates = await this.ca.createSigningCertificate(
       identityToken,
-      fulcio.toCertificateRequest(keypair.publicKey, challenge)
+      keypair.publicKey,
+      challenge
     );
 
     // Generate artifact signature
@@ -103,7 +103,7 @@ export class Signer {
 
     return {
       signature,
-      certificates: pem.split(certificate),
+      certificates,
       key: undefined,
     };
   }

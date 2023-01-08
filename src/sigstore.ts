@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { Fulcio } from './client';
+import { CA, CAClient } from './ca';
 import identity, { Provider } from './identity';
 import { Signer } from './sign';
 import { TLog, TLogClient } from './tlog';
@@ -28,6 +28,7 @@ import { GetPublicKeyFunc, Verifier } from './verify';
 
 export * as utils from './sigstore-utils';
 
+export const DEFAULT_FULCIO_BASE_URL = 'https://fulcio.sigstore.dev';
 export const DEFAULT_REKOR_BASE_URL = 'https://rekor.sigstore.dev';
 
 interface TLogOptions {
@@ -56,6 +57,12 @@ type IdentityProviderOptions = Pick<
   'identityToken' | 'oidcIssuer' | 'oidcClientID' | 'oidcClientSecret'
 >;
 
+function createCAClient(options: { fulcioBaseURL?: string }): CA {
+  return new CAClient({
+    fulcioBaseURL: options.fulcioBaseURL || DEFAULT_FULCIO_BASE_URL,
+  });
+}
+
 function createTLogClient(options: { rekorBaseURL?: string }): TLog {
   return new TLogClient({
     rekorBaseURL: options.rekorBaseURL || DEFAULT_REKOR_BASE_URL,
@@ -66,11 +73,11 @@ export async function sign(
   payload: Buffer,
   options: SignOptions = {}
 ): Promise<Bundle> {
-  const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
+  const ca = createCAClient(options);
   const tlog = createTLogClient(options);
   const idps = configureIdentityProviders(options);
   const signer = new Signer({
-    fulcio,
+    ca,
     tlog,
     identityProviders: idps,
   });
@@ -84,11 +91,11 @@ export async function signAttestation(
   payloadType: string,
   options: SignOptions = {}
 ): Promise<Bundle> {
-  const fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
+  const ca = createCAClient(options);
   const tlog = createTLogClient(options);
   const idps = configureIdentityProviders(options);
   const signer = new Signer({
-    fulcio,
+    ca,
     tlog,
     identityProviders: idps,
   });

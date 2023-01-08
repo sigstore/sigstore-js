@@ -14,22 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { KeyObject } from 'crypto';
+import { CertificateRequest } from '../client/fulcio';
 
-export interface CertificateRequest {
-  publicKey: { content: string };
-  signedEmailAddress: string;
-}
-
-export const fulcio = {
-  toCertificateRequest: (
-    publicKey: KeyObject,
-    challenge: Buffer
-  ): CertificateRequest => ({
+export function toCertificateRequest(
+  publicKey: KeyObject,
+  challenge: Buffer
+): CertificateRequest {
+  return {
     publicKey: {
       content: publicKey
         .export({ type: 'spki', format: 'der' })
         .toString('base64'),
     },
     signedEmailAddress: challenge.toString('base64'),
-  }),
-};
+  };
+}

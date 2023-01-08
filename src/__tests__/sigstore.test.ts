@@ -116,7 +116,7 @@ describe('sign', () => {
     const options = args[0];
 
     // Signer was constructed with the correct options
-    expect(options).toHaveProperty('fulcio', expect.anything());
+    expect(options).toHaveProperty('ca', expect.anything());
     expect(options).toHaveProperty('tlog', expect.anything());
     expect(options.identityProviders).toHaveLength(1);
   });
@@ -188,7 +188,7 @@ describe('signAttestation', () => {
     const options = args[0];
 
     // Signer was constructed with the correct options
-    expect(options).toHaveProperty('fulcio', expect.anything());
+    expect(options).toHaveProperty('ca', expect.anything());
     expect(options).toHaveProperty('tlog', expect.anything());
     expect(options.identityProviders).toHaveLength(1);
   });

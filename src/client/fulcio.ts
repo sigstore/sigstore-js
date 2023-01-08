@@ -14,14 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import fetch, { FetchInterface } from 'make-fetch-happen';
-import { CertificateRequest } from '../types/fulcio';
 import { ua } from '../util';
 import { checkStatus } from './error';
 
-const DEFAULT_BASE_URL = 'https://fulcio.sigstore.dev';
-
 export interface FulcioOptions {
-  baseURL?: string;
+  baseURL: string;
+}
+
+export interface CertificateRequest {
+  publicKey: { content: string };
+  signedEmailAddress: string;
 }
 
 /**
@@ -41,7 +43,7 @@ export class Fulcio {
         'User-Agent': ua.getUserAgent(),
       },
     });
-    this.baseUrl = options.baseURL ?? DEFAULT_BASE_URL;
+    this.baseUrl = options.baseURL;
   }
 
   public async createSigningCertificate(

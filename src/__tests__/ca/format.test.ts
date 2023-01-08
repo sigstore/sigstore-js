@@ -14,22 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import * as crypto from 'crypto';
-import { fulcio } from '../../types/fulcio';
+import { toCertificateRequest } from '../../ca/format';
 
-describe('fulcio', () => {
-  describe('toCertificateRequest', () => {
-    const key = crypto.generateKeyPairSync('ec', {
-      namedCurve: 'P-256',
-    }).publicKey;
-    const challenge = Buffer.from('challenge');
+describe('toCertificateRequest', () => {
+  const key = crypto.generateKeyPairSync('ec', {
+    namedCurve: 'P-256',
+  }).publicKey;
+  const challenge = Buffer.from('challenge');
 
-    it('returns a CertificateRequest', () => {
-      const cr = fulcio.toCertificateRequest(key, challenge);
+  it('returns a CertificateRequest', () => {
+    const cr = toCertificateRequest(key, challenge);
 
-      expect(cr.signedEmailAddress).toEqual(challenge.toString('base64'));
-      expect(cr.publicKey.content).toEqual(
-        key.export({ type: 'spki', format: 'der' }).toString('base64')
-      );
-    });
+    expect(cr.signedEmailAddress).toEqual(challenge.toString('base64'));
+    expect(cr.publicKey.content).toEqual(
+      key.export({ type: 'spki', format: 'der' }).toString('base64')
+    );
   });
 });
