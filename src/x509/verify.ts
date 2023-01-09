@@ -9,9 +9,9 @@ interface VerifyCertificateChainOptions {
 
 export function verifyCertificateChain(
   opts: VerifyCertificateChainOptions
-): void {
+): x509Certificate[] {
   const verifier = new CertificateChainVerifier(opts);
-  verifier.verify();
+  return verifier.verify();
 }
 
 class CertificateChainVerifier {
@@ -27,7 +27,7 @@ class CertificateChainVerifier {
     this.validAt = opts.validAt || new Date();
   }
 
-  public verify(): void {
+  public verify(): x509Certificate[] {
     if (this.certs.length === 0) {
       throw new CertificateChainVerificationError('No certificates provided');
     }
@@ -37,6 +37,9 @@ class CertificateChainVerifier {
 
     // Perform validation checks on each certificate in the path
     this.checkPath(certificatePath);
+
+    // Return verified certificate path
+    return certificatePath;
   }
 
   private sort(): x509Certificate[] {

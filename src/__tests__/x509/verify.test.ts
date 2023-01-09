@@ -82,8 +82,17 @@ describe('CertificateChainVerifier', () => {
         validAt: new Date('2022-12-21T16:22:00.000Z'),
       };
 
-      it('returns without error', () => {
-        verifyCertificateChain(opts);
+      it('does not throw an error', () => {
+        expect(() => verifyCertificateChain(opts)).not.toThrowError();
+      });
+
+      it('returns the trusted chain', () => {
+        const trustedChain = verifyCertificateChain(opts);
+        expect(trustedChain).toBeDefined();
+        expect(trustedChain).toHaveLength(4);
+
+        // The first cert in the chain is the leaf cert
+        expect(trustedChain[0]).toEqual(opts.certs[2]);
       });
     });
 
@@ -93,8 +102,15 @@ describe('CertificateChainVerifier', () => {
         certs: [rootCert],
       };
 
-      it('returns without error', () => {
-        verifyCertificateChain(opts);
+      it('does not throw an error', () => {
+        expect(() => verifyCertificateChain(opts)).not.toThrowError();
+      });
+
+      it('returns the trusted chain', () => {
+        const trustedChain = verifyCertificateChain(opts);
+        expect(trustedChain).toBeDefined();
+        expect(trustedChain).toHaveLength(2);
+        expect(trustedChain[0]).toEqual(opts.certs[0]);
       });
     });
   });
