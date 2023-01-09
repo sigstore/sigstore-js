@@ -327,7 +327,10 @@ mygUY7Ii2zbdCdliiow=
 
         it('returns true', () => {
           expect(subject.extSCT).toBeDefined();
-          expect(subject.verifySCTs(issuer, logs)).toBe(true);
+          const results = subject.verifySCTs(issuer, logs);
+          expect(results).toBeDefined();
+          expect(results).toHaveLength(1);
+          expect(results[0].verified).toBe(true);
         });
       });
 
@@ -335,7 +338,10 @@ mygUY7Ii2zbdCdliiow=
         const badIssuer = x509Certificate.parse(certificates.root);
 
         it('returns false', () => {
-          expect(subject.verifySCTs(badIssuer, logs)).toBe(false);
+          const results = subject.verifySCTs(badIssuer, logs);
+          expect(results).toBeDefined();
+          expect(results).toHaveLength(1);
+          expect(results[0].verified).toBe(false);
         });
       });
     });

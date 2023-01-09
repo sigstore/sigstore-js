@@ -34,6 +34,11 @@ const ECDSA_SIGNATURE_ALGOS: Record<string, string> = {
   '1.2.840.10045.4.3.4': 'sha512',
 };
 
+interface SCTVerificationResult {
+  verified: boolean;
+  logID: Buffer;
+}
+
 export class x509Certificate {
   public root: ASN1Obj;
 
@@ -165,7 +170,7 @@ export class x509Certificate {
   public verifySCTs(
     issuer: x509Certificate,
     logs: sigstore.TransparencyLogInstance[]
-  ): boolean {
+  ): SCTVerificationResult[] {
     let extSCT: x509SCTExtension | undefined;
 
     // Verifying the SCT requires that we remove the SCT extension and
@@ -211,9 +216,11 @@ export class x509Certificate {
     preCert.appendUint24(tbs.length);
     preCert.appendView(tbs);
 
-    return extSCT.signedCertificateTimestamps.every((sct) =>
-      sct.verify(preCert.buffer, logs)
-    );
+    // Calculate and return the verification results for each SCT
+    return extSCT.signedCertificateTimestamps.map((sct) => ({
+      logID: sct.logID,
+      verified: sct.verify(preCert.buffer, logs),
+    }));
   }
 
   // Creates a copy of the certificate with a new buffer
