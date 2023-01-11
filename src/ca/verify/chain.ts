@@ -13,38 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { VerificationError } from '../error';
-import * as sigstore from '../types/sigstore';
-import { x509Certificate } from '../x509/cert';
-import { verifyCertificateChain } from '../x509/verify';
+import { VerificationError } from '../../error';
+import * as sigstore from '../../types/sigstore';
+import { x509Certificate } from '../../x509/cert';
+import { verifyCertificateChain } from '../../x509/verify';
 
-export function verifySigningCertificate(
-  bundle: sigstore.BundleWithCertificateChain,
-  trustedRoot: sigstore.TrustedRoot,
-  options: sigstore.CAArtifactVerificationOptions
-) {
-  const bundleCerts = parseCerts(
-    bundle.verificationMaterial.content.x509CertificateChain.certificates
-  );
-
-  // Check that a trusted certificate chain can be found for the signing
-  // certificate in the bundle
-  const trustedChain = verifyChain(
-    bundleCerts,
-    trustedRoot.certificateAuthorities
-  );
-
-  // Unless disabled, verify the SCTs in the signing certificate
-  if (options.ctlogOptions.disable === false) {
-    verifySCTs(trustedChain, trustedRoot.ctlogs, options.ctlogOptions);
-  }
-}
-
-function verifyChain(
-  bundleCerts: x509Certificate[],
+export function verifyChain(
+  bundleCerts: sigstore.X509Certificate[],
   certificateAuthorities: sigstore.CertificateAuthority[]
 ): x509Certificate[] {
-  const signingCert = bundleCerts[0];
+  const certs = parseCerts(bundleCerts);
+  const signingCert = certs[0];
 
   // Filter the list of certificate authorities to those which are valid for the
   // signing certificate's notBefore date.
@@ -65,7 +44,7 @@ function verifyChain(
     try {
       trustedChain = verifyCertificateChain({
         trustedCerts,
-        certs: bundleCerts,
+        certs,
         validAt: signingCert.notBefore,
       });
       return true;
@@ -79,25 +58,6 @@ function verifyChain(
   }
 
   return trustedChain;
-}
-
-function verifySCTs(
-  certificateChain: x509Certificate[],
-  ctLogs: sigstore.TransparencyLogInstance[],
-  options: sigstore.ArtifactVerificationOptions_CtlogOptions
-) {
-  const signingCert = certificateChain[0];
-  const issuerCert = certificateChain[1];
-  const sctResults = signingCert.verifySCTs(issuerCert, ctLogs);
-
-  // Count the number of verified SCTs which were found
-  const verifiedSCTCount = sctResults.filter((sct) => sct.verified).length;
-
-  if (verifiedSCTCount < options.threshold) {
-    throw new VerificationError(
-      `Not enough SCTs verified (found ${verifiedSCTCount}, need ${options.threshold})`
-    );
-  }
 }
 
 // Filter the list of certificate authorities to those which are valid for the

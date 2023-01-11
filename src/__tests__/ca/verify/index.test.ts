@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import fs from 'fs';
-import { verifySigningCertificate } from '../../ca/verify';
-import * as sigstore from '../../types/sigstore';
-import bundles from '../__fixtures__/bundles/';
+import { verifySigningCertificate } from '../../../ca/verify';
+import * as sigstore from '../../../types/sigstore';
+import bundles from '../../__fixtures__/bundles/';
 
 describe('verifySigningCertificate', () => {
   // Temporary until we reconsole bundle formats
@@ -27,7 +27,7 @@ describe('verifySigningCertificate', () => {
 
   const trustedRootJSON = JSON.parse(
     fs
-      .readFileSync(require.resolve('../../../store/trusted_root.json'))
+      .readFileSync(require.resolve('../../../../store/trusted_root.json'))
       .toString('utf8')
   );
   const trustedRoot: sigstore.TrustedRoot =
