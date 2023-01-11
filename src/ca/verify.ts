@@ -19,14 +19,10 @@ import { x509Certificate } from '../x509/cert';
 import { verifyCertificateChain } from '../x509/verify';
 
 export function verifySigningCertificate(
-  bundle: sigstore.Bundle,
+  bundle: sigstore.BundleWithCertificateChain,
   trustedRoot: sigstore.TrustedRoot,
-  options: sigstore.ArtifactVerificationOptions_CtlogOptions
+  options: sigstore.CAArtifactVerificationOptions
 ) {
-  if (bundle.verificationMaterial?.content?.$case !== 'x509CertificateChain') {
-    throw new VerificationError('No certificate chain in bundle');
-  }
-
   const bundleCerts = parseCerts(
     bundle.verificationMaterial.content.x509CertificateChain.certificates
   );
@@ -39,8 +35,8 @@ export function verifySigningCertificate(
   );
 
   // Unless disabled, verify the SCTs in the signing certificate
-  if (!options.disable) {
-    verifySCTs(trustedChain, trustedRoot.ctlogs, options);
+  if (options.ctlogOptions.disable === false) {
+    verifySCTs(trustedChain, trustedRoot.ctlogs, options.ctlogOptions);
   }
 }
 

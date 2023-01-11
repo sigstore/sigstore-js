@@ -21,7 +21,9 @@ import bundles from '../__fixtures__/bundles/';
 describe('verifySigningCertificate', () => {
   // Temporary until we reconsole bundle formats
   const bundleJSON = bundles.dsse.valid.withSigningCert;
-  const bundle = sigstore.Bundle.fromJSON(bundleJSON);
+  const bundle = sigstore.Bundle.fromJSON(
+    bundleJSON
+  ) as sigstore.BundleWithCertificateChain;
 
   const trustedRootJSON = JSON.parse(
     fs
@@ -31,23 +33,23 @@ describe('verifySigningCertificate', () => {
   const trustedRoot: sigstore.TrustedRoot =
     sigstore.TrustedRoot.fromJSON(trustedRootJSON);
 
-  const opts: sigstore.ArtifactVerificationOptions_CtlogOptions = {
+  const ctlogOptions: sigstore.ArtifactVerificationOptions_CtlogOptions = {
     disable: false,
     detachedSct: false,
     threshold: 1,
   };
 
-  describe('when the bundle does not contain a certificate chain', () => {
-    // Bundle with no certificate chain
-    const bundleJSON = bundles.dsse.valid.withPublicKey;
-    const bundle = sigstore.Bundle.fromJSON(bundleJSON);
+  const signers: sigstore.CAArtifactVerificationOptions['signers'] = {
+    $case: 'certificateIdentities',
+    certificateIdentities: {
+      identities: [],
+    },
+  };
 
-    it('throws an error', () => {
-      expect(() =>
-        verifySigningCertificate(bundle, trustedRoot, opts)
-      ).toThrowError('No certificate chain in bundle');
-    });
-  });
+  const opts: sigstore.CAArtifactVerificationOptions = {
+    ctlogOptions,
+    signers,
+  };
 
   describe('when there are NO valid CAs for the signing certificate', () => {
     // CA w/ validFor.end date in the past
@@ -104,10 +106,15 @@ describe('verifySigningCertificate', () => {
     const threshold = Number.MAX_SAFE_INTEGER;
 
     describe('when SCT verification is disabled', () => {
-      const opts: sigstore.ArtifactVerificationOptions_CtlogOptions = {
+      const ctlogOptions: sigstore.ArtifactVerificationOptions_CtlogOptions = {
         disable: true,
         detachedSct: false,
         threshold,
+      };
+
+      const opts = {
+        ctlogOptions,
+        signers,
       };
 
       it('returns without error', () => {
@@ -118,7 +125,7 @@ describe('verifySigningCertificate', () => {
     });
 
     describe('when SCT verification is NOT disabled', () => {
-      const opts: sigstore.ArtifactVerificationOptions_CtlogOptions = {
+      const ctlogOptions: sigstore.ArtifactVerificationOptions_CtlogOptions = {
         disable: false,
         detachedSct: false,
         threshold,
@@ -126,7 +133,10 @@ describe('verifySigningCertificate', () => {
 
       it('throws an error', () => {
         expect(() =>
-          verifySigningCertificate(bundle, trustedRoot, opts)
+          verifySigningCertificate(bundle, trustedRoot, {
+            ctlogOptions,
+            signers,
+          })
         ).toThrowError(/Not enough SCTs verified/);
       });
     });
