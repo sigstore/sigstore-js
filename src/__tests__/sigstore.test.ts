@@ -21,7 +21,7 @@ import {
   TimestampVerificationData,
   TransparencyLogEntry,
   X509CertificateChain,
-} from '../types/bundle';
+} from '../types/sigstore';
 import bundles from './__fixtures__/bundles';
 
 jest.mock('../sign');

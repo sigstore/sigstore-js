@@ -23,7 +23,7 @@ import {
   bundleToJSON,
   SerializedBundle,
   SerializedEnvelope,
-} from './types/bundle';
+} from './types/sigstore';
 import { GetPublicKeyFunc, Verifier } from './verify';
 
 export * as utils from './sigstore-utils';

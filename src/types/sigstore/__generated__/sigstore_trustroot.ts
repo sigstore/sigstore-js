@@ -74,6 +74,8 @@ export interface CertificateAuthority {
  * that are allowed.
  */
 export interface TrustedRoot {
+  /** MUST be application/vnd.dev.sigstore.trustedroot+json;version=0.1 */
+  mediaType: string;
   /** A set of trusted Rekor servers. */
   tlogs: TransparencyLogInstance[];
   /**
@@ -146,17 +148,20 @@ export const CertificateAuthority = {
 };
 
 function createBaseTrustedRoot(): TrustedRoot {
-  return { tlogs: [], certificateAuthorities: [], ctlogs: [], timestampAuthorities: [] };
+  return { mediaType: "", tlogs: [], certificateAuthorities: [], ctlogs: [], timestampAuthorities: [] };
 }
 
 export const TrustedRoot = {
   fromJSON(object: any): TrustedRoot {
     return {
+      mediaType: isSet(object.mediaType) ? String(object.mediaType) : "",
       tlogs: Array.isArray(object?.tlogs) ? object.tlogs.map((e: any) => TransparencyLogInstance.fromJSON(e)) : [],
       certificateAuthorities: Array.isArray(object?.certificateAuthorities)
         ? object.certificateAuthorities.map((e: any) => CertificateAuthority.fromJSON(e))
         : [],
-      ctlogs: Array.isArray(object?.ctlogs) ? object.ctlogs.map((e: any) => TransparencyLogInstance.fromJSON(e)) : [],
+      ctlogs: Array.isArray(object?.ctlogs)
+        ? object.ctlogs.map((e: any) => TransparencyLogInstance.fromJSON(e))
+        : [],
       timestampAuthorities: Array.isArray(object?.timestampAuthorities)
         ? object.timestampAuthorities.map((e: any) => CertificateAuthority.fromJSON(e))
         : [],
@@ -165,6 +170,7 @@ export const TrustedRoot = {
 
   toJSON(message: TrustedRoot): unknown {
     const obj: any = {};
+    message.mediaType !== undefined && (obj.mediaType = message.mediaType);
     if (message.tlogs) {
       obj.tlogs = message.tlogs.map((e) => e ? TransparencyLogInstance.toJSON(e) : undefined);
     } else {

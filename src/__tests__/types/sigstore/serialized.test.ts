@@ -13,20 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { SerializedBundle } from '../../../types/bundle/serialized';
-import { Envelope } from '../../../types/bundle/__generated__/envelope';
 import {
   Bundle,
-  TimestampVerificationData,
-} from '../../../types/bundle/__generated__/sigstore_bundle';
-import {
+  Envelope,
   HashAlgorithm,
   hashAlgorithmToJSON,
   MessageSignature,
   PublicKeyIdentifier,
+  SerializedBundle,
+  TimestampVerificationData,
+  TransparencyLogEntry,
   X509CertificateChain,
-} from '../../../types/bundle/__generated__/sigstore_common';
-import { TransparencyLogEntry } from '../../../types/bundle/__generated__/sigstore_rekor';
+} from '../../../types/sigstore';
 
 describe('Serialized Types', () => {
   const tlogEntries: TransparencyLogEntry[] = [

@@ -17,8 +17,8 @@ import nock from 'nock';
 import { CAClient } from '../ca';
 import { Signer } from '../sign';
 import { TLogClient } from '../tlog';
-import { HashAlgorithm } from '../types/bundle';
 import { SignatureMaterial, SignerFunc } from '../types/signature';
+import { HashAlgorithm } from '../types/sigstore';
 import { pem } from '../util';
 
 describe('Signer', () => {

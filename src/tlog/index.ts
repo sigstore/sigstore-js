@@ -15,8 +15,8 @@ limitations under the License.
 */
 import { Rekor } from '../client';
 import { HTTPError } from '../client/error';
-import { bundle, Bundle, Envelope } from '../types/bundle';
 import { SignatureMaterial } from '../types/signature';
+import { bundle, Bundle, Envelope } from '../types/sigstore';
 import { toProposedHashedRekordEntry, toProposedIntotoEntry } from './format';
 import { Entry } from './types';
 

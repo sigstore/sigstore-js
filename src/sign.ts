@@ -16,8 +16,8 @@ limitations under the License.
 import { CA } from './ca';
 import { Provider } from './identity';
 import { TLog } from './tlog';
-import { Bundle, Envelope } from './types/bundle';
 import { SignatureMaterial, SignerFunc } from './types/signature';
+import { Bundle, Envelope } from './types/sigstore';
 import { crypto, dsse, oidc } from './util';
 
 export interface SignOptions {

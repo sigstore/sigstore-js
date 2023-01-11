@@ -22,7 +22,7 @@ import {
   Envelope,
   MessageSignature,
   X509CertificateChain,
-} from './types/bundle';
+} from './types/sigstore';
 import { crypto, dsse, pem } from './util';
 
 export type GetPublicKeyFunc = (keyId: string) => Promise<string | undefined>;

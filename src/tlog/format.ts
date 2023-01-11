@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { Envelope } from '../types/bundle';
 import { SignatureMaterial } from '../types/signature';
+import { Envelope } from '../types/sigstore';
 import { crypto, encoding as enc, json } from '../util';
 import {
   HashedRekordKind,
