@@ -17,8 +17,8 @@ import {
   toProposedHashedRekordEntry,
   toProposedIntotoEntry,
 } from '../../tlog/format';
-import { Envelope } from '../../types/bundle';
 import { SignatureMaterial } from '../../types/signature';
+import { Envelope } from '../../types/sigstore';
 import { crypto, encoding as enc } from '../../util';
 
 describe('format', () => {

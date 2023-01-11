@@ -64,6 +64,7 @@ describe('verifySigningCertificate', () => {
     };
 
     const trustedRoot: sigstore.TrustedRoot = {
+      mediaType: 'application/vnd.dev.sigstore.trustedroot+json;version=0.1',
       certificateAuthorities: [ca],
       ctlogs: [],
       tlogs: [],
@@ -89,6 +90,7 @@ describe('verifySigningCertificate', () => {
     };
 
     const trustedRoot: sigstore.TrustedRoot = {
+      mediaType: 'application/vnd.dev.sigstore.trustedroot+json;version=0.1',
       certificateAuthorities: [ca],
       ctlogs: [],
       tlogs: [],

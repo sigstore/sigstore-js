@@ -19,8 +19,8 @@ import {
   toProposedIntotoEntry,
 } from '../../tlog/format';
 import { TLogClient } from '../../tlog/index';
-import { Envelope, HashAlgorithm } from '../../types/bundle';
 import { SignatureMaterial } from '../../types/signature';
+import { Envelope, HashAlgorithm } from '../../types/sigstore';
 import { pem } from '../../util';
 
 describe('TLogClient', () => {

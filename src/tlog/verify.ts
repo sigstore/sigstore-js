@@ -24,7 +24,7 @@ import {
   Envelope,
   MessageSignature,
   TransparencyLogEntry,
-} from '../types/bundle';
+} from '../types/sigstore';
 import { crypto, encoding as enc, json, x509 } from '../util';
 import { EntryKind, HashedRekordKind, IntotoKind } from './types';
 

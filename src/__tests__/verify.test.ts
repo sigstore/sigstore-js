@@ -15,7 +15,7 @@ limitations under the License.
 */
 import { InvalidBundleError, VerificationError } from '../error';
 import { TLogClient } from '../tlog';
-import { Bundle, bundleFromJSON } from '../types/bundle';
+import { Bundle, bundleFromJSON } from '../types/sigstore';
 import { Verifier } from '../verify';
 import bundles, { tlogKeys } from './__fixtures__/bundles';
 

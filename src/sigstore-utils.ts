@@ -13,21 +13,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { TLog, TLogClient } from './tlog';
-import {
-  bundleToJSON,
-  envelopeFromJSON,
-  envelopeToJSON,
-  Envelope as DSSEEnvelope,
-} from './types/bundle';
-import { extractSignatureMaterial, SignerFunc } from './types/signature';
-import { dsse } from './util';
 import {
   Bundle,
+  DEFAULT_REKOR_BASE_URL,
   Envelope,
   SignOptions,
-  DEFAULT_REKOR_BASE_URL,
 } from './sigstore';
+import { TLog, TLogClient } from './tlog';
+import { extractSignatureMaterial, SignerFunc } from './types/signature';
+import {
+  bundleToJSON,
+  Envelope as DSSEEnvelope,
+  envelopeFromJSON,
+  envelopeToJSON,
+} from './types/sigstore';
+import { dsse } from './util';
 
 function createTLogClient(options: { rekorBaseURL?: string }): TLog {
   return new TLogClient({

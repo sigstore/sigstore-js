@@ -8,13 +8,13 @@ mkdir -p ${OUTPUT_DIR}
 
 # Retrieve proto files
 REPO=sigstore/protobuf-specs
-REF=120c958642ee5c0c6e2d699d40737397796abcde
+REF=ee12d82f7d067f372cfce5cb33a9ed6b25f493e3  # v0.1.0
 PB_PATH=protos
 
 DEFS_DIR=/tmp/defs
 mkdir -p ${DEFS_DIR}
 
-PBS=( envelope.proto sigstore_bundle.proto sigstore_common.proto sigstore_rekor.proto sigstore_trustroot.proto sigstore_verification_proto )
+PBS=( envelope.proto sigstore_bundle.proto sigstore_common.proto sigstore_rekor.proto sigstore_trustroot.proto sigstore_verification.proto )
 for PB in "${PBS[@]}"
 do
   curl -L --silent --show-error \

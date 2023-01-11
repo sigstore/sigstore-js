@@ -19,7 +19,7 @@ import {
   VerificationError,
 } from '../../error';
 import { verifyTLogEntries } from '../../tlog/verify';
-import { bundleFromJSON } from '../../types/bundle';
+import { bundleFromJSON } from '../../types/sigstore';
 import bundles, { tlogKeys } from '../__fixtures__/bundles';
 
 describe('verifyTLogEntries', () => {
