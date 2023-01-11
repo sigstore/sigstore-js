@@ -17,11 +17,8 @@ import { Entry, EntryKind } from '../../tlog';
 import { encoding as enc, pem } from '../../util';
 import { SignatureMaterial } from '../signature';
 import { Envelope } from './__generated__/envelope';
-import { Bundle } from './__generated__/sigstore_bundle';
-import {
-  HashAlgorithm,
-  VerificationMaterial,
-} from './__generated__/sigstore_common';
+import { Bundle, VerificationMaterial } from './__generated__/sigstore_bundle';
+import { HashAlgorithm } from './__generated__/sigstore_common';
 import { TransparencyLogEntry } from './__generated__/sigstore_rekor';
 
 export * from './serialized';
@@ -49,13 +46,7 @@ export const bundle = {
       $case: 'dsseEnvelope',
       dsseEnvelope: envelope,
     },
-    verificationData: {
-      tlogEntries: [toTransparencyLogEntry(rekorEntry)],
-      timestampVerificationData: {
-        rfc3161Timestamps: [],
-      },
-    },
-    verificationMaterial: toVerificationMaterial(signature),
+    verificationMaterial: toVerificationMaterial(signature, rekorEntry),
   }),
 
   toMessageSignatureBundle: (
@@ -74,13 +65,7 @@ export const bundle = {
         signature: signature.signature,
       },
     },
-    verificationData: {
-      tlogEntries: [toTransparencyLogEntry(rekorEntry)],
-      timestampVerificationData: {
-        rfc3161Timestamps: [],
-      },
-    },
-    verificationMaterial: toVerificationMaterial(signature),
+    verificationMaterial: toVerificationMaterial(signature, rekorEntry),
   }),
 };
 
@@ -111,33 +96,33 @@ function toTransparencyLogEntry(entry: Entry): TransparencyLogEntry {
 }
 
 function toVerificationMaterial(
-  signature: SignatureMaterial
+  signature: SignatureMaterial,
+  entry: Entry
 ): VerificationMaterial {
-  return signature.certificates
-    ? toVerificationMaterialx509CertificateChain(signature.certificates)
-    : toVerificationMaterialPublicKey(signature.key.id || '');
+  return {
+    content: signature.certificates
+      ? toVerificationMaterialx509CertificateChain(signature.certificates)
+      : toVerificationMaterialPublicKey(signature.key.id || ''),
+    tlogEntries: [toTransparencyLogEntry(entry)],
+    timestampVerificationData: undefined,
+  };
 }
 
 function toVerificationMaterialx509CertificateChain(
   certificates: string[]
-): VerificationMaterial {
+): VerificationMaterial['content'] {
   return {
-    content: {
-      $case: 'x509CertificateChain',
-      x509CertificateChain: {
-        certificates: certificates.map((c) => ({
-          rawBytes: pem.toDER(c),
-        })),
-      },
+    $case: 'x509CertificateChain',
+    x509CertificateChain: {
+      certificates: certificates.map((c) => ({
+        rawBytes: pem.toDER(c),
+      })),
     },
   };
 }
 
-function toVerificationMaterialPublicKey(hint: string): VerificationMaterial {
-  return {
-    content: {
-      $case: 'publicKey',
-      publicKey: { hint },
-    },
-  };
+function toVerificationMaterialPublicKey(
+  hint: string
+): VerificationMaterial['content'] {
+  return { $case: 'publicKey', publicKey: { hint } };
 }

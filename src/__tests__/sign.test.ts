@@ -176,18 +176,12 @@ describe('Signer', () => {
               fail('Expected x509CertificateChain');
             }
 
-            // Timestamp verification data
-            expect(bundle.verificationData).toBeTruthy();
             expect(
-              bundle.verificationData?.timestampVerificationData
-            ).toBeTruthy();
-            expect(
-              bundle.verificationData?.timestampVerificationData
-                ?.rfc3161Timestamps
-            ).toHaveLength(0);
-            expect(bundle.verificationData?.tlogEntries).toHaveLength(1);
+              bundle.verificationMaterial?.timestampVerificationData
+            ).toBeUndefined();
+            expect(bundle.verificationMaterial?.tlogEntries).toHaveLength(1);
 
-            const tlog = bundle.verificationData?.tlogEntries[0];
+            const tlog = bundle.verificationMaterial?.tlogEntries[0];
             expect(tlog?.inclusionPromise).toBeTruthy();
             expect(tlog?.inclusionPromise?.signedEntryTimestamp).toBeTruthy();
             expect(
@@ -364,18 +358,12 @@ describe('Signer', () => {
             fail('Expected x509CertificateChain');
           }
 
-          // Timestamp verification data
-          expect(bundle.verificationData).toBeTruthy();
           expect(
-            bundle.verificationData?.timestampVerificationData
-          ).toBeTruthy();
-          expect(
-            bundle.verificationData?.timestampVerificationData
-              ?.rfc3161Timestamps
-          ).toHaveLength(0);
-          expect(bundle.verificationData?.tlogEntries).toHaveLength(1);
+            bundle.verificationMaterial?.timestampVerificationData
+          ).toBeUndefined();
+          expect(bundle.verificationMaterial?.tlogEntries).toHaveLength(1);
 
-          const tlog = bundle.verificationData?.tlogEntries[0];
+          const tlog = bundle.verificationMaterial?.tlogEntries[0];
           expect(tlog?.inclusionPromise).toBeTruthy();
           expect(tlog?.inclusionPromise?.signedEntryTimestamp).toBeTruthy();
           expect(

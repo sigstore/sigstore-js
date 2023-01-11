@@ -15,37 +15,35 @@ limitations under the License.
 */
 import { OneOf } from '../utility';
 
-// Serialized form of the verificationData in the Sigstore Bundle
-type SerializedVerificationData = {
-  tlogEntries: {
-    logIndex: string;
-    logId: {
-      keyId: string;
-    };
-    kindVersion:
-      | {
-          kind: string;
-          version: string;
-        }
-      | undefined;
-    integratedTime: string;
-    inclusionPromise: {
-      signedEntryTimestamp: string;
-    };
-    inclusionProof:
-      | {
-          logIndex: string;
-          rootHash: string;
-          treeSize: string;
-          hashes: string[];
-          checkpoint: { envelope: string };
-        }
-      | undefined;
-    canonicalizedBody: string;
-  }[];
-  timestampVerificationData: {
-    rfc3161Timestamps: { signedTimestamp: string }[];
+type SerializedTLogEntry = {
+  logIndex: string;
+  logId: {
+    keyId: string;
   };
+  kindVersion:
+    | {
+        kind: string;
+        version: string;
+      }
+    | undefined;
+  integratedTime: string;
+  inclusionPromise: {
+    signedEntryTimestamp: string;
+  };
+  inclusionProof:
+    | {
+        logIndex: string;
+        rootHash: string;
+        treeSize: string;
+        hashes: string[];
+        checkpoint: { envelope: string };
+      }
+    | undefined;
+  canonicalizedBody: string;
+};
+
+type SerializedTimestampVerificationData = {
+  rfc3161Timestamps: { signedTimestamp: string }[];
 };
 
 // Serialized form of the messageSignature option in the Sigstore Bundle
@@ -73,13 +71,16 @@ type SerializedDSSEEnvelope = {
 // represented
 export type SerializedBundle = {
   mediaType: string;
-  verificationData: SerializedVerificationData | undefined;
-  verificationMaterial:
+  verificationMaterial: (
     | OneOf<{
         x509CertificateChain: { certificates: { rawBytes: string }[] };
         publicKey: { hint: string };
       }>
-    | undefined;
+    | undefined
+  ) & {
+    tlogEntries: SerializedTLogEntry[];
+    timestampVerificationData: SerializedTimestampVerificationData | undefined;
+  };
 } & OneOf<{
   dsseEnvelope: SerializedDSSEEnvelope;
   messageSignature: SerializedMessageSignature;

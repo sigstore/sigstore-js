@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Envelope } from "./envelope";
-import { MessageSignature, RFC3161SignedTimestamp, VerificationMaterial } from "./sigstore_common";
+import { MessageSignature, PublicKeyIdentifier, RFC3161SignedTimestamp, X509CertificateChain } from "./sigstore_common";
 import { TransparencyLogEntry } from "./sigstore_rekor";
 
 /**
@@ -12,7 +12,7 @@ export interface TimestampVerificationData {
   /**
    * A list of RFC3161 signed timestamps provided by the user.
    * This can be used when the entry has not been stored on a
-   * transparency log, or in conjuction for a stronger trust model.
+   * transparency log, or in conjunction for a stronger trust model.
    * Clients MUST verify the hashed message in the message imprint
    * against the signature in the bundle.
    */
@@ -20,14 +20,13 @@ export interface TimestampVerificationData {
 }
 
 /**
- * VerificationData contains extra data that can be used to verify things
- * such as transparency and timestamp of the signature creation.
- * As this message can be either empty (no inclusion proof or timestamps), or a combination of
- * an arbitrarily number of transparency log entries and signed timestamps,
- * it is the client's responsibility to implement any required verification
- * policies.
+ * VerificationMaterial captures details on the materials used to verify
+ * signatures.
  */
-export interface VerificationData {
+export interface VerificationMaterial {
+  content?:
+    | { $case: "publicKey"; publicKey: PublicKeyIdentifier }
+    | { $case: "x509CertificateChain"; x509CertificateChain: X509CertificateChain };
   /**
    * This is the inclusion promise and/or proof, where
    * the timestamp is coming from the transparency log.
@@ -43,7 +42,13 @@ export interface Bundle {
    * when encoded as JSON.
    */
   mediaType: string;
-  verificationData: VerificationData | undefined;
+  /**
+   * When a signer is identified by a X.509 certificate, a verifier MUST
+   * verify that the signature was computed at the time the certificate
+   * was valid as described in the Sigstore client spec: "Verification
+   * using a Bundle".
+   * <https://docs.google.com/document/d/1kbhK2qyPPk8SLavHzYSDM8-Ueul9_oxIMVFuWMWKz0E/edit#heading=h.x8bduppe89ln>
+   */
   verificationMaterial: VerificationMaterial | undefined;
   content?: { $case: "messageSignature"; messageSignature: MessageSignature } | {
     $case: "dsseEnvelope";
@@ -75,13 +80,21 @@ export const TimestampVerificationData = {
   },
 };
 
-function createBaseVerificationData(): VerificationData {
-  return { tlogEntries: [], timestampVerificationData: undefined };
+function createBaseVerificationMaterial(): VerificationMaterial {
+  return { content: undefined, tlogEntries: [], timestampVerificationData: undefined };
 }
 
-export const VerificationData = {
-  fromJSON(object: any): VerificationData {
+export const VerificationMaterial = {
+  fromJSON(object: any): VerificationMaterial {
     return {
+      content: isSet(object.publicKey)
+        ? { $case: "publicKey", publicKey: PublicKeyIdentifier.fromJSON(object.publicKey) }
+        : isSet(object.x509CertificateChain)
+        ? {
+          $case: "x509CertificateChain",
+          x509CertificateChain: X509CertificateChain.fromJSON(object.x509CertificateChain),
+        }
+        : undefined,
       tlogEntries: Array.isArray(object?.tlogEntries)
         ? object.tlogEntries.map((e: any) => TransparencyLogEntry.fromJSON(e))
         : [],
@@ -91,8 +104,14 @@ export const VerificationData = {
     };
   },
 
-  toJSON(message: VerificationData): unknown {
+  toJSON(message: VerificationMaterial): unknown {
     const obj: any = {};
+    message.content?.$case === "publicKey" &&
+      (obj.publicKey = message.content?.publicKey ? PublicKeyIdentifier.toJSON(message.content?.publicKey) : undefined);
+    message.content?.$case === "x509CertificateChain" &&
+      (obj.x509CertificateChain = message.content?.x509CertificateChain
+        ? X509CertificateChain.toJSON(message.content?.x509CertificateChain)
+        : undefined);
     if (message.tlogEntries) {
       obj.tlogEntries = message.tlogEntries.map((e) => e ? TransparencyLogEntry.toJSON(e) : undefined);
     } else {
@@ -107,14 +126,13 @@ export const VerificationData = {
 };
 
 function createBaseBundle(): Bundle {
-  return { mediaType: "", verificationData: undefined, verificationMaterial: undefined, content: undefined };
+  return { mediaType: "", verificationMaterial: undefined, content: undefined };
 }
 
 export const Bundle = {
   fromJSON(object: any): Bundle {
     return {
       mediaType: isSet(object.mediaType) ? String(object.mediaType) : "",
-      verificationData: isSet(object.verificationData) ? VerificationData.fromJSON(object.verificationData) : undefined,
       verificationMaterial: isSet(object.verificationMaterial)
         ? VerificationMaterial.fromJSON(object.verificationMaterial)
         : undefined,
@@ -129,8 +147,6 @@ export const Bundle = {
   toJSON(message: Bundle): unknown {
     const obj: any = {};
     message.mediaType !== undefined && (obj.mediaType = message.mediaType);
-    message.verificationData !== undefined &&
-      (obj.verificationData = message.verificationData ? VerificationData.toJSON(message.verificationData) : undefined);
     message.verificationMaterial !== undefined && (obj.verificationMaterial = message.verificationMaterial
       ? VerificationMaterial.toJSON(message.verificationMaterial)
       : undefined);

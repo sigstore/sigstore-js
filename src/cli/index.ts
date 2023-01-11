@@ -71,7 +71,7 @@ async function sign(artifactPath: string) {
   const bundle = await sigstore.sign(buffer, signOptions);
 
   const url = `${signOptions.rekorBaseURL}/api/v1/log/entries`;
-  const logIndex = bundle.verificationData?.tlogEntries[0].logIndex;
+  const logIndex = bundle.verificationMaterial?.tlogEntries[0].logIndex;
   console.error(`Created entry at index ${logIndex}, available at`);
   console.error(`${url}?logIndex=${logIndex}`);
 

@@ -1,18 +1,18 @@
 /* eslint-disable */
+import { Timestamp } from "./google/protobuf/timestamp";
 
 /**
  * Only a subset of the secure hash standard algorithms are supported.
- * See https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf for more
+ * See <https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf> for more
  * details.
  * UNSPECIFIED SHOULD not be used, primary reason for inclusion is to force
  * any proto JSON serialization to emit the used hash algorithm, as default
- * option is to *omit* the default value of an emum (which is the first
+ * option is to *omit* the default value of an enum (which is the first
  * value, represented by '0'.
  */
 export enum HashAlgorithm {
   HASH_ALGORITHM_UNSPECIFIED = 0,
   SHA2_256 = 1,
-  SHA2_512 = 2,
 }
 
 export function hashAlgorithmFromJSON(object: any): HashAlgorithm {
@@ -23,9 +23,6 @@ export function hashAlgorithmFromJSON(object: any): HashAlgorithm {
     case 1:
     case "SHA2_256":
       return HashAlgorithm.SHA2_256;
-    case 2:
-    case "SHA2_512":
-      return HashAlgorithm.SHA2_512;
     default:
       throw new globalThis.Error("Unrecognized enum value " + object + " for enum HashAlgorithm");
   }
@@ -37,10 +34,132 @@ export function hashAlgorithmToJSON(object: HashAlgorithm): string {
       return "HASH_ALGORITHM_UNSPECIFIED";
     case HashAlgorithm.SHA2_256:
       return "SHA2_256";
-    case HashAlgorithm.SHA2_512:
-      return "SHA2_512";
     default:
       throw new globalThis.Error("Unrecognized enum value " + object + " for enum HashAlgorithm");
+  }
+}
+
+/**
+ * Details of a specific public key, capturing the the key encoding method,
+ * and signature algorithm.
+ * To avoid the possibility of contradicting formats such as PKCS1 with
+ * ED25519 the valid permutations are listed as a linear set instead of a
+ * cartesian set (i.e one combined variable instead of two, one for encoding
+ * and one for the signature algorithm).
+ */
+export enum PublicKeyDetails {
+  PUBLIC_KEY_DETAILS_UNSPECIFIED = 0,
+  /** PKCS1_RSA_PKCS1V5 - RSA */
+  PKCS1_RSA_PKCS1V5 = 1,
+  /** PKCS1_RSA_PSS - See RFC8017 */
+  PKCS1_RSA_PSS = 2,
+  PKIX_RSA_PKCS1V5 = 3,
+  PKIX_RSA_PSS = 4,
+  /** PKIX_ECDSA_P256_SHA_256 - ECDSA */
+  PKIX_ECDSA_P256_SHA_256 = 5,
+  /** PKIX_ECDSA_P256_HMAC_SHA_256 - See RFC6979 */
+  PKIX_ECDSA_P256_HMAC_SHA_256 = 6,
+  /** PKIX_ED25519 - Ed 25519 */
+  PKIX_ED25519 = 7,
+}
+
+export function publicKeyDetailsFromJSON(object: any): PublicKeyDetails {
+  switch (object) {
+    case 0:
+    case "PUBLIC_KEY_DETAILS_UNSPECIFIED":
+      return PublicKeyDetails.PUBLIC_KEY_DETAILS_UNSPECIFIED;
+    case 1:
+    case "PKCS1_RSA_PKCS1V5":
+      return PublicKeyDetails.PKCS1_RSA_PKCS1V5;
+    case 2:
+    case "PKCS1_RSA_PSS":
+      return PublicKeyDetails.PKCS1_RSA_PSS;
+    case 3:
+    case "PKIX_RSA_PKCS1V5":
+      return PublicKeyDetails.PKIX_RSA_PKCS1V5;
+    case 4:
+    case "PKIX_RSA_PSS":
+      return PublicKeyDetails.PKIX_RSA_PSS;
+    case 5:
+    case "PKIX_ECDSA_P256_SHA_256":
+      return PublicKeyDetails.PKIX_ECDSA_P256_SHA_256;
+    case 6:
+    case "PKIX_ECDSA_P256_HMAC_SHA_256":
+      return PublicKeyDetails.PKIX_ECDSA_P256_HMAC_SHA_256;
+    case 7:
+    case "PKIX_ED25519":
+      return PublicKeyDetails.PKIX_ED25519;
+    default:
+      throw new globalThis.Error("Unrecognized enum value " + object + " for enum PublicKeyDetails");
+  }
+}
+
+export function publicKeyDetailsToJSON(object: PublicKeyDetails): string {
+  switch (object) {
+    case PublicKeyDetails.PUBLIC_KEY_DETAILS_UNSPECIFIED:
+      return "PUBLIC_KEY_DETAILS_UNSPECIFIED";
+    case PublicKeyDetails.PKCS1_RSA_PKCS1V5:
+      return "PKCS1_RSA_PKCS1V5";
+    case PublicKeyDetails.PKCS1_RSA_PSS:
+      return "PKCS1_RSA_PSS";
+    case PublicKeyDetails.PKIX_RSA_PKCS1V5:
+      return "PKIX_RSA_PKCS1V5";
+    case PublicKeyDetails.PKIX_RSA_PSS:
+      return "PKIX_RSA_PSS";
+    case PublicKeyDetails.PKIX_ECDSA_P256_SHA_256:
+      return "PKIX_ECDSA_P256_SHA_256";
+    case PublicKeyDetails.PKIX_ECDSA_P256_HMAC_SHA_256:
+      return "PKIX_ECDSA_P256_HMAC_SHA_256";
+    case PublicKeyDetails.PKIX_ED25519:
+      return "PKIX_ED25519";
+    default:
+      throw new globalThis.Error("Unrecognized enum value " + object + " for enum PublicKeyDetails");
+  }
+}
+
+export enum SubjectAlternativeNameType {
+  SUBJECT_ALTERNATIVE_NAME_TYPE_UNSPECIFIED = 0,
+  EMAIL = 1,
+  URI = 2,
+  /**
+   * OTHER_NAME - OID 1.3.6.1.4.1.57264.1.7
+   * See https://github.com/sigstore/fulcio/blob/main/docs/oid-info.md#1361415726417--othername-san
+   * for more details.
+   */
+  OTHER_NAME = 3,
+}
+
+export function subjectAlternativeNameTypeFromJSON(object: any): SubjectAlternativeNameType {
+  switch (object) {
+    case 0:
+    case "SUBJECT_ALTERNATIVE_NAME_TYPE_UNSPECIFIED":
+      return SubjectAlternativeNameType.SUBJECT_ALTERNATIVE_NAME_TYPE_UNSPECIFIED;
+    case 1:
+    case "EMAIL":
+      return SubjectAlternativeNameType.EMAIL;
+    case 2:
+    case "URI":
+      return SubjectAlternativeNameType.URI;
+    case 3:
+    case "OTHER_NAME":
+      return SubjectAlternativeNameType.OTHER_NAME;
+    default:
+      throw new globalThis.Error("Unrecognized enum value " + object + " for enum SubjectAlternativeNameType");
+  }
+}
+
+export function subjectAlternativeNameTypeToJSON(object: SubjectAlternativeNameType): string {
+  switch (object) {
+    case SubjectAlternativeNameType.SUBJECT_ALTERNATIVE_NAME_TYPE_UNSPECIFIED:
+      return "SUBJECT_ALTERNATIVE_NAME_TYPE_UNSPECIFIED";
+    case SubjectAlternativeNameType.EMAIL:
+      return "EMAIL";
+    case SubjectAlternativeNameType.URI:
+      return "URI";
+    case SubjectAlternativeNameType.OTHER_NAME:
+      return "OTHER_NAME";
+    default:
+      throw new globalThis.Error("Unrecognized enum value " + object + " for enum SubjectAlternativeNameType");
   }
 }
 
@@ -76,6 +195,16 @@ export interface MessageSignature {
   signature: Buffer;
 }
 
+/** LogId captures the identity of a transparency log. */
+export interface LogId {
+  /**
+   * The unique id of the log, represented as the SHA-256 hash
+   * of the log's public key, computed over the DER encoding.
+   * <https://www.rfc-editor.org/rfc/rfc6962#section-3.2>
+   */
+  keyId: Buffer;
+}
+
 /** This message holds a RFC 3161 timestamp. */
 export interface RFC3161SignedTimestamp {
   /**
@@ -83,6 +212,20 @@ export interface RFC3161SignedTimestamp {
    * See https://www.rfc-editor.org/rfc/rfc3161.html#section-2.4.2
    */
   signedTimestamp: Buffer;
+}
+
+export interface PublicKey {
+  /**
+   * DER-encoded public key, encoding method is specified by the
+   * key_details attribute.
+   */
+  rawBytes?:
+    | Buffer
+    | undefined;
+  /** Key encoding and signature algorithm to use for this key. */
+  keyDetails: PublicKeyDetails;
+  /** Optional validity period for this key. */
+  validFor?: TimeRange | undefined;
 }
 
 /**
@@ -97,15 +240,37 @@ export interface PublicKeyIdentifier {
    * specification.
    * Example use-case is to specify the public key to use, from a
    * trusted key-ring.
-   * Implementors are RECOMMENDED derive the value from the public
-   * key as described in https://www.rfc-editor.org/rfc/rfc3280#section-4.2.1.1
+   * Implementors are RECOMMENDED to derive the value from the public
+   * key as described in RFC 6962.
+   * See: <https://www.rfc-editor.org/rfc/rfc6962#section-3.2>
    */
   hint: string;
+}
+
+/** An ASN.1 OBJECT IDENTIFIER */
+export interface ObjectIdentifier {
+  id: number[];
+}
+
+/** An OID and the corresponding (byte) value. */
+export interface ObjectIdentifierValuePair {
+  oid: ObjectIdentifier | undefined;
+  value: Buffer;
+}
+
+export interface DistinguishedName {
+  organization: string;
+  commonName: string;
 }
 
 export interface X509Certificate {
   /** DER-encoded X.509 certificate. */
   rawBytes: Buffer;
+}
+
+export interface SubjectAlternativeName {
+  type: SubjectAlternativeNameType;
+  identity?: { $case: "regexp"; regexp: string } | { $case: "value"; value: string };
 }
 
 /** A chain of X.509 certificates. */
@@ -121,14 +286,14 @@ export interface X509CertificateChain {
 }
 
 /**
- * VerificationMaterial captures details on the materials used to verify
- * signatures.
+ * The time range is half-open and does not include the end timestamp,
+ * i.e [start, end).
+ * End is optional to be able to capture a period that has started but
+ * has no known end.
  */
-export interface VerificationMaterial {
-  content?: { $case: "publicKey"; publicKey: PublicKeyIdentifier } | {
-    $case: "x509CertificateChain";
-    x509CertificateChain: X509CertificateChain;
-  };
+export interface TimeRange {
+  start: Date | undefined;
+  end?: Date | undefined;
 }
 
 function createBaseHashOutput(): HashOutput {
@@ -174,6 +339,23 @@ export const MessageSignature = {
   },
 };
 
+function createBaseLogId(): LogId {
+  return { keyId: Buffer.alloc(0) };
+}
+
+export const LogId = {
+  fromJSON(object: any): LogId {
+    return { keyId: isSet(object.keyId) ? Buffer.from(bytesFromBase64(object.keyId)) : Buffer.alloc(0) };
+  },
+
+  toJSON(message: LogId): unknown {
+    const obj: any = {};
+    message.keyId !== undefined &&
+      (obj.keyId = base64FromBytes(message.keyId !== undefined ? message.keyId : Buffer.alloc(0)));
+    return obj;
+  },
+};
+
 function createBaseRFC3161SignedTimestamp(): RFC3161SignedTimestamp {
   return { signedTimestamp: Buffer.alloc(0) };
 }
@@ -197,6 +379,30 @@ export const RFC3161SignedTimestamp = {
   },
 };
 
+function createBasePublicKey(): PublicKey {
+  return { rawBytes: undefined, keyDetails: 0, validFor: undefined };
+}
+
+export const PublicKey = {
+  fromJSON(object: any): PublicKey {
+    return {
+      rawBytes: isSet(object.rawBytes) ? Buffer.from(bytesFromBase64(object.rawBytes)) : undefined,
+      keyDetails: isSet(object.keyDetails) ? publicKeyDetailsFromJSON(object.keyDetails) : 0,
+      validFor: isSet(object.validFor) ? TimeRange.fromJSON(object.validFor) : undefined,
+    };
+  },
+
+  toJSON(message: PublicKey): unknown {
+    const obj: any = {};
+    message.rawBytes !== undefined &&
+      (obj.rawBytes = message.rawBytes !== undefined ? base64FromBytes(message.rawBytes) : undefined);
+    message.keyDetails !== undefined && (obj.keyDetails = publicKeyDetailsToJSON(message.keyDetails));
+    message.validFor !== undefined &&
+      (obj.validFor = message.validFor ? TimeRange.toJSON(message.validFor) : undefined);
+    return obj;
+  },
+};
+
 function createBasePublicKeyIdentifier(): PublicKeyIdentifier {
   return { hint: "" };
 }
@@ -209,6 +415,67 @@ export const PublicKeyIdentifier = {
   toJSON(message: PublicKeyIdentifier): unknown {
     const obj: any = {};
     message.hint !== undefined && (obj.hint = message.hint);
+    return obj;
+  },
+};
+
+function createBaseObjectIdentifier(): ObjectIdentifier {
+  return { id: [] };
+}
+
+export const ObjectIdentifier = {
+  fromJSON(object: any): ObjectIdentifier {
+    return { id: Array.isArray(object?.id) ? object.id.map((e: any) => Number(e)) : [] };
+  },
+
+  toJSON(message: ObjectIdentifier): unknown {
+    const obj: any = {};
+    if (message.id) {
+      obj.id = message.id.map((e) => Math.round(e));
+    } else {
+      obj.id = [];
+    }
+    return obj;
+  },
+};
+
+function createBaseObjectIdentifierValuePair(): ObjectIdentifierValuePair {
+  return { oid: undefined, value: Buffer.alloc(0) };
+}
+
+export const ObjectIdentifierValuePair = {
+  fromJSON(object: any): ObjectIdentifierValuePair {
+    return {
+      oid: isSet(object.oid) ? ObjectIdentifier.fromJSON(object.oid) : undefined,
+      value: isSet(object.value) ? Buffer.from(bytesFromBase64(object.value)) : Buffer.alloc(0),
+    };
+  },
+
+  toJSON(message: ObjectIdentifierValuePair): unknown {
+    const obj: any = {};
+    message.oid !== undefined && (obj.oid = message.oid ? ObjectIdentifier.toJSON(message.oid) : undefined);
+    message.value !== undefined &&
+      (obj.value = base64FromBytes(message.value !== undefined ? message.value : Buffer.alloc(0)));
+    return obj;
+  },
+};
+
+function createBaseDistinguishedName(): DistinguishedName {
+  return { organization: "", commonName: "" };
+}
+
+export const DistinguishedName = {
+  fromJSON(object: any): DistinguishedName {
+    return {
+      organization: isSet(object.organization) ? String(object.organization) : "",
+      commonName: isSet(object.commonName) ? String(object.commonName) : "",
+    };
+  },
+
+  toJSON(message: DistinguishedName): unknown {
+    const obj: any = {};
+    message.organization !== undefined && (obj.organization = message.organization);
+    message.commonName !== undefined && (obj.commonName = message.commonName);
     return obj;
   },
 };
@@ -226,6 +493,31 @@ export const X509Certificate = {
     const obj: any = {};
     message.rawBytes !== undefined &&
       (obj.rawBytes = base64FromBytes(message.rawBytes !== undefined ? message.rawBytes : Buffer.alloc(0)));
+    return obj;
+  },
+};
+
+function createBaseSubjectAlternativeName(): SubjectAlternativeName {
+  return { type: 0, identity: undefined };
+}
+
+export const SubjectAlternativeName = {
+  fromJSON(object: any): SubjectAlternativeName {
+    return {
+      type: isSet(object.type) ? subjectAlternativeNameTypeFromJSON(object.type) : 0,
+      identity: isSet(object.regexp)
+        ? { $case: "regexp", regexp: String(object.regexp) }
+        : isSet(object.value)
+        ? { $case: "value", value: String(object.value) }
+        : undefined,
+    };
+  },
+
+  toJSON(message: SubjectAlternativeName): unknown {
+    const obj: any = {};
+    message.type !== undefined && (obj.type = subjectAlternativeNameTypeToJSON(message.type));
+    message.identity?.$case === "regexp" && (obj.regexp = message.identity?.regexp);
+    message.identity?.$case === "value" && (obj.value = message.identity?.value);
     return obj;
   },
 };
@@ -254,32 +546,22 @@ export const X509CertificateChain = {
   },
 };
 
-function createBaseVerificationMaterial(): VerificationMaterial {
-  return { content: undefined };
+function createBaseTimeRange(): TimeRange {
+  return { start: undefined, end: undefined };
 }
 
-export const VerificationMaterial = {
-  fromJSON(object: any): VerificationMaterial {
+export const TimeRange = {
+  fromJSON(object: any): TimeRange {
     return {
-      content: isSet(object.publicKey)
-        ? { $case: "publicKey", publicKey: PublicKeyIdentifier.fromJSON(object.publicKey) }
-        : isSet(object.x509CertificateChain)
-        ? {
-          $case: "x509CertificateChain",
-          x509CertificateChain: X509CertificateChain.fromJSON(object.x509CertificateChain),
-        }
-        : undefined,
+      start: isSet(object.start) ? fromJsonTimestamp(object.start) : undefined,
+      end: isSet(object.end) ? fromJsonTimestamp(object.end) : undefined,
     };
   },
 
-  toJSON(message: VerificationMaterial): unknown {
+  toJSON(message: TimeRange): unknown {
     const obj: any = {};
-    message.content?.$case === "publicKey" &&
-      (obj.publicKey = message.content?.publicKey ? PublicKeyIdentifier.toJSON(message.content?.publicKey) : undefined);
-    message.content?.$case === "x509CertificateChain" &&
-      (obj.x509CertificateChain = message.content?.x509CertificateChain
-        ? X509CertificateChain.toJSON(message.content?.x509CertificateChain)
-        : undefined);
+    message.start !== undefined && (obj.start = message.start.toISOString());
+    message.end !== undefined && (obj.end = message.end.toISOString());
     return obj;
   },
 };
@@ -325,6 +607,22 @@ function base64FromBytes(arr: Uint8Array): string {
       bin.push(String.fromCharCode(byte));
     });
     return globalThis.btoa(bin.join(""));
+  }
+}
+
+function fromTimestamp(t: Timestamp): Date {
+  let millis = Number(t.seconds) * 1_000;
+  millis += t.nanos / 1_000_000;
+  return new Date(millis);
+}
+
+function fromJsonTimestamp(o: any): Date {
+  if (o instanceof Date) {
+    return o;
+  } else if (typeof o === "string") {
+    return new Date(o);
+  } else {
+    return fromTimestamp(Timestamp.fromJSON(o));
   }
 }
 

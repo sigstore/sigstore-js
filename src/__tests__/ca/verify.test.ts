@@ -15,15 +15,12 @@ limitations under the License.
 */
 import fs from 'fs';
 import { verifySigningCertificate } from '../../ca/verify';
-import { translateLegacyBundleJSON } from '../../types';
 import * as sigstore from '../../types/sigstore';
 import bundles from '../__fixtures__/bundles/';
 
 describe('verifySigningCertificate', () => {
   // Temporary until we reconsole bundle formats
-  const bundleJSON = translateLegacyBundleJSON(
-    bundles.dsse.valid.withSigningCert
-  );
+  const bundleJSON = bundles.dsse.valid.withSigningCert;
   const bundle = sigstore.Bundle.fromJSON(bundleJSON);
 
   const trustedRootJSON = JSON.parse(
@@ -42,9 +39,7 @@ describe('verifySigningCertificate', () => {
 
   describe('when the bundle does not contain a certificate chain', () => {
     // Bundle with no certificate chain
-    const bundleJSON = translateLegacyBundleJSON(
-      bundles.dsse.valid.withPublicKey
-    );
+    const bundleJSON = bundles.dsse.valid.withPublicKey;
     const bundle = sigstore.Bundle.fromJSON(bundleJSON);
 
     it('throws an error', () => {

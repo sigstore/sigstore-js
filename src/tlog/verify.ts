@@ -52,7 +52,7 @@ export function verifyTLogEntries(
   }
 
   // Iterate over the tlog entries and verify each one
-  bundle.verificationData?.tlogEntries.forEach((entry) => {
+  bundle.verificationMaterial?.tlogEntries.forEach((entry) => {
     verifyTLogBody(entry, bundle);
     verifyTLogSET(entry, tlogKeys);
 

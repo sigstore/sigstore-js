@@ -1,4 +1,5 @@
 /* eslint-disable */
+import { LogId } from "./sigstore_common";
 
 /** KindVersion contains the entry's kind and api version. */
 export interface KindVersion {
@@ -68,17 +69,6 @@ export interface InclusionProof {
  */
 export interface InclusionPromise {
   signedEntryTimestamp: Buffer;
-}
-
-/** LogId captures the identity of a transparency log. */
-export interface LogId {
-  /**
-   * The unique id of the log, represented as the SHA-256 hash
-   * of the log's public key, computed over the DER encoding.
-   * This is similar to how it works for certificate transparency logs:
-   * https://www.rfc-editor.org/rfc/rfc6962#section-3.2
-   */
-  keyId: Buffer;
 }
 
 /**
@@ -218,23 +208,6 @@ export const InclusionPromise = {
       (obj.signedEntryTimestamp = base64FromBytes(
         message.signedEntryTimestamp !== undefined ? message.signedEntryTimestamp : Buffer.alloc(0),
       ));
-    return obj;
-  },
-};
-
-function createBaseLogId(): LogId {
-  return { keyId: Buffer.alloc(0) };
-}
-
-export const LogId = {
-  fromJSON(object: any): LogId {
-    return { keyId: isSet(object.keyId) ? Buffer.from(bytesFromBase64(object.keyId)) : Buffer.alloc(0) };
-  },
-
-  toJSON(message: LogId): unknown {
-    const obj: any = {};
-    message.keyId !== undefined &&
-      (obj.keyId = base64FromBytes(message.keyId !== undefined ? message.keyId : Buffer.alloc(0)));
     return obj;
   },
 };

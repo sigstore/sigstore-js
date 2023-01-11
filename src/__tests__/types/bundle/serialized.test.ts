@@ -17,7 +17,7 @@ import { SerializedBundle } from '../../../types/bundle/serialized';
 import { Envelope } from '../../../types/bundle/__generated__/envelope';
 import {
   Bundle,
-  VerificationData,
+  TimestampVerificationData,
 } from '../../../types/bundle/__generated__/sigstore_bundle';
 import {
   HashAlgorithm,
@@ -26,38 +26,38 @@ import {
   PublicKeyIdentifier,
   X509CertificateChain,
 } from '../../../types/bundle/__generated__/sigstore_common';
+import { TransparencyLogEntry } from '../../../types/bundle/__generated__/sigstore_rekor';
 
 describe('Serialized Types', () => {
-  const verificationData: VerificationData = {
-    tlogEntries: [
-      {
+  const tlogEntries: TransparencyLogEntry[] = [
+    {
+      logIndex: '0',
+      logId: {
+        keyId: Buffer.from('logId'),
+      },
+      kindVersion: {
+        kind: 'kind',
+        version: 'version',
+      },
+      canonicalizedBody: Buffer.from('body'),
+      integratedTime: '2021-01-01T00:00:00Z',
+      inclusionPromise: {
+        signedEntryTimestamp: Buffer.from('inclusionPromise'),
+      },
+      inclusionProof: {
         logIndex: '0',
-        logId: {
-          keyId: Buffer.from('logId'),
-        },
-        kindVersion: {
-          kind: 'kind',
-          version: 'version',
-        },
-        canonicalizedBody: Buffer.from('body'),
-        integratedTime: '2021-01-01T00:00:00Z',
-        inclusionPromise: {
-          signedEntryTimestamp: Buffer.from('inclusionPromise'),
-        },
-        inclusionProof: {
-          logIndex: '0',
-          rootHash: Buffer.from('rootHash'),
-          treeSize: '0',
-          hashes: [Buffer.from('hash')],
-          checkpoint: {
-            envelope: 'checkpoint',
-          },
+        rootHash: Buffer.from('rootHash'),
+        treeSize: '0',
+        hashes: [Buffer.from('hash')],
+        checkpoint: {
+          envelope: 'checkpoint',
         },
       },
-    ],
-    timestampVerificationData: {
-      rfc3161Timestamps: [{ signedTimestamp: Buffer.from('signedTimestamp') }],
     },
+  ];
+
+  const timestampVerificationData: TimestampVerificationData = {
+    rfc3161Timestamps: [{ signedTimestamp: Buffer.from('signedTimestamp') }],
   };
 
   const x509CertificateChain: X509CertificateChain = {
@@ -86,12 +86,13 @@ describe('Serialized Types', () => {
         $case: 'dsseEnvelope',
         dsseEnvelope,
       },
-      verificationData,
       verificationMaterial: {
         content: {
           $case: 'x509CertificateChain',
           x509CertificateChain,
         },
+        tlogEntries,
+        timestampVerificationData,
       },
     };
 
@@ -113,13 +114,12 @@ describe('Serialized Types', () => {
         )
       );
 
-      expect(json.verificationData).toBeTruthy();
-      expect(json.verificationData?.tlogEntries).toHaveLength(
-        verificationData.tlogEntries.length
+      expect(json.verificationMaterial?.tlogEntries).toHaveLength(
+        tlogEntries.length
       );
 
-      const tlogEntry = json.verificationData?.tlogEntries[0];
-      const expectedTlogEntry = verificationData.tlogEntries[0];
+      const tlogEntry = json.verificationMaterial?.tlogEntries[0];
+      const expectedTlogEntry = tlogEntries[0];
       expect(tlogEntry).toBeTruthy();
       expect(tlogEntry?.logId).toBeTruthy();
       expect(tlogEntry?.logId.keyId).toEqual(
@@ -168,17 +168,17 @@ describe('Serialized Types', () => {
         expectedTlogEntry.inclusionProof?.checkpoint?.envelope
       );
 
-      expect(json.verificationData?.timestampVerificationData).toBeTruthy();
+      expect(json.verificationMaterial?.timestampVerificationData).toBeTruthy();
       expect(
-        json.verificationData?.timestampVerificationData.rfc3161Timestamps
+        json.verificationMaterial?.timestampVerificationData?.rfc3161Timestamps
       ).toHaveLength(
-        verificationData.timestampVerificationData?.rfc3161Timestamps
-          ?.length as number
+        timestampVerificationData?.rfc3161Timestamps?.length as number
       );
       const rfc3161Timestamp =
-        json.verificationData?.timestampVerificationData.rfc3161Timestamps[0];
+        json.verificationMaterial?.timestampVerificationData
+          ?.rfc3161Timestamps[0];
       const expectedRfc3161Timestamp =
-        verificationData.timestampVerificationData?.rfc3161Timestamps?.[0];
+        timestampVerificationData?.rfc3161Timestamps?.[0];
       expect(rfc3161Timestamp).toBeTruthy();
       expect(rfc3161Timestamp?.signedTimestamp).toEqual(
         (expectedRfc3161Timestamp?.signedTimestamp as Buffer).toString('base64')
@@ -215,12 +215,13 @@ describe('Serialized Types', () => {
         $case: 'messageSignature',
         messageSignature,
       },
-      verificationData,
       verificationMaterial: {
         content: {
           $case: 'publicKey',
           publicKey,
         },
+        tlogEntries,
+        timestampVerificationData,
       },
     };
 
@@ -234,13 +235,12 @@ describe('Serialized Types', () => {
         publicKey.hint
       );
 
-      expect(json.verificationData).toBeTruthy();
-      expect(json.verificationData?.tlogEntries).toHaveLength(
-        verificationData.tlogEntries.length
+      expect(json.verificationMaterial?.tlogEntries).toHaveLength(
+        tlogEntries.length
       );
 
-      const tlogEntry = json.verificationData?.tlogEntries[0];
-      const expectedTlogEntry = verificationData.tlogEntries[0];
+      const tlogEntry = json.verificationMaterial?.tlogEntries[0];
+      const expectedTlogEntry = tlogEntries[0];
       expect(tlogEntry).toBeTruthy();
       expect(tlogEntry?.logId).toBeTruthy();
       expect(tlogEntry?.logId.keyId).toEqual(
@@ -289,17 +289,17 @@ describe('Serialized Types', () => {
         expectedTlogEntry.inclusionProof?.checkpoint?.envelope
       );
 
-      expect(json.verificationData?.timestampVerificationData).toBeTruthy();
+      expect(json.verificationMaterial?.timestampVerificationData).toBeTruthy();
       expect(
-        json.verificationData?.timestampVerificationData.rfc3161Timestamps
+        json.verificationMaterial?.timestampVerificationData?.rfc3161Timestamps
       ).toHaveLength(
-        verificationData.timestampVerificationData?.rfc3161Timestamps
-          ?.length as number
+        timestampVerificationData?.rfc3161Timestamps?.length as number
       );
       const rfc3161Timestamp =
-        json.verificationData?.timestampVerificationData.rfc3161Timestamps[0];
+        json.verificationMaterial?.timestampVerificationData
+          ?.rfc3161Timestamps[0];
       const expectedRfc3161Timestamp =
-        verificationData.timestampVerificationData?.rfc3161Timestamps?.[0];
+        timestampVerificationData?.rfc3161Timestamps?.[0];
       expect(rfc3161Timestamp).toBeTruthy();
       expect(rfc3161Timestamp?.signedTimestamp).toEqual(
         (expectedRfc3161Timestamp?.signedTimestamp as Buffer).toString('base64')
