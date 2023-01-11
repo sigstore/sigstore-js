@@ -39,65 +39,6 @@ export function hashAlgorithmToJSON(object: HashAlgorithm): string {
   }
 }
 
-/** Subset of known signature algorithms. */
-export enum SignatureAlgorithm {
-  SIGNATURE_ALGORITHM_UNSPECIFIED = 0,
-  /** ECDSA_P256_SHA_256 - See NIST FIPS 186-4 */
-  ECDSA_P256_SHA_256 = 1,
-  /** ECDSA_P256_HMAC_SHA_256 - See RFC6979 */
-  ECDSA_P256_HMAC_SHA_256 = 2,
-  /** ED25519 - See RFC8032 */
-  ED25519 = 3,
-  /** RSA_PKCS1V5 - See RFC8017 */
-  RSA_PKCS1V5 = 4,
-  /** RSA_PSS - See RFC8017 */
-  RSA_PSS = 5,
-}
-
-export function signatureAlgorithmFromJSON(object: any): SignatureAlgorithm {
-  switch (object) {
-    case 0:
-    case "SIGNATURE_ALGORITHM_UNSPECIFIED":
-      return SignatureAlgorithm.SIGNATURE_ALGORITHM_UNSPECIFIED;
-    case 1:
-    case "ECDSA_P256_SHA_256":
-      return SignatureAlgorithm.ECDSA_P256_SHA_256;
-    case 2:
-    case "ECDSA_P256_HMAC_SHA_256":
-      return SignatureAlgorithm.ECDSA_P256_HMAC_SHA_256;
-    case 3:
-    case "ED25519":
-      return SignatureAlgorithm.ED25519;
-    case 4:
-    case "RSA_PKCS1V5":
-      return SignatureAlgorithm.RSA_PKCS1V5;
-    case 5:
-    case "RSA_PSS":
-      return SignatureAlgorithm.RSA_PSS;
-    default:
-      throw new globalThis.Error("Unrecognized enum value " + object + " for enum SignatureAlgorithm");
-  }
-}
-
-export function signatureAlgorithmToJSON(object: SignatureAlgorithm): string {
-  switch (object) {
-    case SignatureAlgorithm.SIGNATURE_ALGORITHM_UNSPECIFIED:
-      return "SIGNATURE_ALGORITHM_UNSPECIFIED";
-    case SignatureAlgorithm.ECDSA_P256_SHA_256:
-      return "ECDSA_P256_SHA_256";
-    case SignatureAlgorithm.ECDSA_P256_HMAC_SHA_256:
-      return "ECDSA_P256_HMAC_SHA_256";
-    case SignatureAlgorithm.ED25519:
-      return "ED25519";
-    case SignatureAlgorithm.RSA_PKCS1V5:
-      return "RSA_PKCS1V5";
-    case SignatureAlgorithm.RSA_PSS:
-      return "RSA_PSS";
-    default:
-      throw new globalThis.Error("Unrecognized enum value " + object + " for enum SignatureAlgorithm");
-  }
-}
-
 /**
  * Details of a specific public key, capturing the the key encoding method,
  * and signature algorithm.
