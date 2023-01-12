@@ -201,37 +201,13 @@ describe('verifySignerIdentity', () => {
       });
     });
 
-    describe('when the required SAN type is OTHER_NAME (not supported yet)', () => {
-      const ids: sigstore.CertificateIdentities = {
-        identities: [
-          {
-            issuer,
-            san: {
-              type: sigstore.SubjectAlternativeNameType.OTHER_NAME,
-              identity: {
-                $case: 'value',
-                value: workflowURI,
-              },
-            },
-            oids: [],
-          },
-        ],
-      };
-
-      it('throws an error', () => {
-        expect(() => verifySignerIdentity(signingCert, ids)).toThrowError(
-          'Certificate issued to untrusted signer'
-        );
-      });
-    });
-
     describe('when the required SAN type does NOT match the certificate', () => {
       const ids: sigstore.CertificateIdentities = {
         identities: [
           {
             issuer,
             san: {
-              type: sigstore.SubjectAlternativeNameType.EMAIL,
+              type: sigstore.SubjectAlternativeNameType.OTHER_NAME,
               identity: {
                 $case: 'value',
                 value: workflowURI,

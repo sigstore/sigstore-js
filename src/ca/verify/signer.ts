@@ -18,7 +18,10 @@ import * as sigstore from '../../types/sigstore';
 import { x509Certificate } from '../../x509/cert';
 
 // https://github.com/sigstore/fulcio/blob/main/docs/oid-info.md#1361415726411--issuer
-const OID_FUCIO_ISSUER = '1.3.6.1.4.1.57264.1.1';
+const OID_FULCIO_ISSUER = '1.3.6.1.4.1.57264.1.1';
+
+// https://github.com/sigstore/fulcio/blob/main/docs/oid-info.md#1361415726417--othername-san
+const OID_FULCIO_USERNAME_SUBJECT = '1.3.6.1.4.1.57264.1.7';
 
 // Verifies the identity embedded in a Fulcio-issued signing certificate against
 // the list of trusted identities. Returns without error if at least one of the
@@ -57,7 +60,7 @@ function verifyIdentity(
 // Checks the Fulcio issuer extension against the expected issuer. Returns true
 // if the issuer matches; otherwise, returns false.
 function verifyIssuer(cert: x509Certificate, issuer: string): boolean {
-  const issuerExtension = cert.extension(OID_FUCIO_ISSUER);
+  const issuerExtension = cert.extension(OID_FULCIO_ISSUER);
 
   return issuerExtension?.value.toString('ascii') === issuer;
 }
@@ -95,7 +98,8 @@ function verifySAN(
       sanValue = sanExtension.uri;
       break;
     case sigstore.SubjectAlternativeNameType.OTHER_NAME:
-    // TODO: Support other name types
+      sanValue = sanExtension.otherName(OID_FULCIO_USERNAME_SUBJECT);
+      break;
   }
 
   // Missing SAN value is an automatic failure
