@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The Sigstore Authors.
+Copyright 2023 The Sigstore Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ limitations under the License.
 import * as sigstore from '../../types/sigstore';
 import { verifyChain } from './chain';
 import { verifySCTs } from './sct';
+import { verifySignerIdentity } from './signer';
 
 export function verifySigningCertificate(
   bundle: sigstore.BundleWithCertificateChain,
@@ -33,4 +34,6 @@ export function verifySigningCertificate(
   if (options.ctlogOptions.disable === false) {
     verifySCTs(trustedChain, trustedRoot.ctlogs, options.ctlogOptions);
   }
+
+  verifySignerIdentity(trustedChain[0], options.signers.certificateIdentities);
 }
