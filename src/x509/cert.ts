@@ -1,3 +1,18 @@
+/*
+Copyright 2023 The Sigstore Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 import * as sigstore from '../types/sigstore';
 import { crypto, pem } from '../util';
 import { ByteStream } from '../util/stream';
@@ -144,6 +159,11 @@ export class x509Certificate {
     }
 
     return ca;
+  }
+
+  public extension(oid: string): x509Extension | undefined {
+    const ext = this.findExtension(oid);
+    return ext ? new x509Extension(ext) : undefined;
   }
 
   public verify(issuerCertificate?: x509Certificate): boolean {
