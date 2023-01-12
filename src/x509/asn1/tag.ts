@@ -51,7 +51,7 @@ export class ASN1Tag {
 
   public isContextSpecific(num?: number): boolean {
     const res = this.class === TAG_CLASS.CONTEXT_SPECIFIC;
-    return num ? res && this.number === num : res;
+    return num !== undefined ? res && this.number === num : res;
   }
 
   public isBoolean(): boolean {
