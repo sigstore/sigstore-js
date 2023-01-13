@@ -16,6 +16,7 @@ limitations under the License.
 import { Entry, EntryKind } from '../../tlog';
 import { encoding as enc, pem } from '../../util';
 import { SignatureMaterial } from '../signature';
+import { WithRequired } from '../utility';
 import { Envelope } from './__generated__/envelope';
 import { Bundle, VerificationMaterial } from './__generated__/sigstore_bundle';
 import { HashAlgorithm } from './__generated__/sigstore_common';
@@ -80,6 +81,12 @@ export function isCAVerificationOptions(
     options.signers.$case === 'certificateIdentities'
   );
 }
+
+export type VerifiableTransparencyLogEntry = WithRequired<
+  TransparencyLogEntry,
+  'logId' | 'inclusionPromise'
+>;
+
 export const bundle = {
   toDSSEBundle: (
     envelope: Envelope,
