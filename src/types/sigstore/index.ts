@@ -65,7 +65,7 @@ export function isBundleWithCertificateChain(
 export type CAArtifactVerificationOptions = Required<
   Pick<ArtifactVerificationOptions, 'ctlogOptions'>
 > & {
-  signers: Extract<
+  signers?: Extract<
     ArtifactVerificationOptions['signers'],
     { $case: 'certificateIdentities' }
   >;
