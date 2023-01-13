@@ -56,7 +56,7 @@ leaf.crt: int.crt
 		-subj / \
 		-addext "keyUsage = critical, digitalSignature" \
 		-addext "extendedKeyUsage = codeSigning" \
-		-addext "subjectAltName = URI:http://foobar.dev" \
+		-addext "subjectAltName = URI:http://foobar.dev,otherName:1.3.6.1.4.1.57264.1.7;UTF8:FOO" \
 		-out store/leaf/leaf.csr
 	openssl ca \
 		-notext \

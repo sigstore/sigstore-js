@@ -107,6 +107,10 @@ describe('x509Certificate', () => {
         expect(cert.extSubjectAltName).toBeDefined();
         expect(cert.extSubjectAltName?.rfc822Name).toBeUndefined();
         expect(cert.extSubjectAltName?.uri).toBe('http://foobar.dev');
+        expect(cert.extSubjectAltName?.otherName('1.3.6.1.4.1.57264.1.7')).toBe(
+          'FOO'
+        );
+        expect(cert.extSubjectAltName?.otherName('9.9.9.9')).toBeUndefined();
 
         expect(cert.extAuthorityKeyID).toBeDefined();
         expect(cert.extAuthorityKeyID?.oid).toBe('2.5.29.35');

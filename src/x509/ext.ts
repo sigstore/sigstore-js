@@ -95,6 +95,26 @@ export class x509SubjectAlternativeNameExtension extends x509Extension {
     return this.findGeneralName(0x06)?.value.toString('ascii');
   }
 
+  // Retrieve the value of an otherName with the given OID.
+  public otherName(oid: string): string | undefined {
+    const otherName = this.findGeneralName(0x00);
+
+    if (otherName === undefined) {
+      return undefined;
+    }
+
+    // The otherName is a sequence containing an OID and a value.
+    // Need to check that the OID matches the one we're looking for.
+    const otherNameOID = otherName.subs[0].toOID();
+    if (otherNameOID !== oid) {
+      return undefined;
+    }
+
+    // The otherNameValue is a sequence containing the actual value.
+    const otherNameValue = otherName.subs[1];
+    return otherNameValue.subs[0].value.toString('ascii');
+  }
+
   private findGeneralName(tag: number): ASN1Obj | undefined {
     return this.generalNames.find((gn) => gn.tag.isContextSpecific(tag));
   }

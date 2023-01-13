@@ -50,10 +50,27 @@ describe('ASN1Tag', () => {
 
   describe('#isContextSpecific', () => {
     describe('when the tag is context-specific', () => {
-      it('should return true', () => {
-        const tag = new ASN1Tag(0xa3);
-        expect(tag.isContextSpecific()).toEqual(true);
-        expect(tag.isContextSpecific(0x03)).toEqual(true);
+      const tag = new ASN1Tag(0xa3);
+
+      describe('when a tag number filter is supplied', () => {
+        describe('when the tag number matches', () => {
+          it('returns true', () => {
+            expect(tag.isContextSpecific(0x03)).toEqual(true);
+          });
+        });
+
+        describe('when the tag number does NOT match', () => {
+          it('returns false', () => {
+            expect(tag.isContextSpecific(0x06)).toEqual(false);
+            expect(tag.isContextSpecific(0x00)).toEqual(false);
+          });
+        });
+      });
+
+      describe('when a tag number filter is NOT supplied', () => {
+        it('should return true', () => {
+          expect(tag.isContextSpecific()).toEqual(true);
+        });
       });
     });
 
@@ -61,6 +78,7 @@ describe('ASN1Tag', () => {
       it('should return false', () => {
         const tag = new ASN1Tag(0x02);
         expect(tag.isContextSpecific()).toEqual(false);
+        expect(tag.isContextSpecific(0x02)).toEqual(false);
       });
     });
   });
