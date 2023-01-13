@@ -97,6 +97,7 @@ nosan.crt: int.crt
 		-subj / \
 		-addext "keyUsage = critical, digitalSignature" \
 		-addext "extendedKeyUsage = codeSigning" \
+		-addext "1.3.6.1.4.1.57264.1.1 = DER:46:4F:4F" \
 		-out store/nosan/nosan.csr
 	openssl ca \
 		-notext \

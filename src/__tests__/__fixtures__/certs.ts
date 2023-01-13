@@ -1,3 +1,18 @@
+/*
+Copyright 2023 The Sigstore Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 export const certificates = {
   root: `-----BEGIN CERTIFICATE-----
 MIIBzTCCAVOgAwIBAgIUQSFLFi9Qcj7aAn/JIVCBxeAkaEcwCgYIKoZIzj0EAwMw
@@ -55,16 +70,16 @@ QHcettKBr/5eWu4DEmBya983E3fB9MlOZ8gYF+UzOJNyvlaTTQ==
 
   // Leaf cert w/ no SAN extension
   nosan: `-----BEGIN CERTIFICATE-----
-MIIBvDCCAUKgAwIBAgIUN0K550PXvbBPMCMMO7PZFueX86kwCgYIKoZIzj0EAwMw
+MIIBzzCCAVWgAwIBAgIUdc4zXkJS22Mlt65StmpkV483+BowCgYIKoZIzj0EAwMw
 MzETMBEGA1UECgwKZm9vYmFyLmRldjEcMBoGA1UEAwwTZm9vYmFyLWludGVybWVk
 aWF0ZTAeFw05MDAxMDEwMDAwMDBaFw00MDAxMDEwMDAwMDBaMAAwWTATBgcqhkjO
-PQIBBggqhkjOPQMBBwNCAASayVcJSt9P2UpIsYVEjzjZnUiRMwNhTaokd2yIjLrO
-ikSDLMl1/0kHZ5YROcmkAx/FPNuwA7ZkVYzjtBgFzq2lo2cwZTAdBgNVHQ4EFgQU
-fDKWWHM3qint4qYiUvpMBaHLmEQwHwYDVR0jBBgwFoAUVtNBsTLmo8a0L+8oILZy
-mLlVkM0wDgYDVR0PAQH/BAQDAgeAMBMGA1UdJQQMMAoGCCsGAQUFBwMDMAoGCCqG
-SM49BAMDA2gAMGUCMFZ3uusOrCbg3x4Mllo2/Ih4jLZ6TJOLyZXbavpqVPstTDP8
-r/u/dCuPFTk2MQoLQAIxAKwIpSglj2tswHFhxAw9I05f/hZmVrzMazCREOvenGUX
-mhKxjvJ0LXy4q0jZ+gBNmw==
+PQIBBggqhkjOPQMBBwNCAASgRggQOECzsLeYNRbaoL/u+DhSANDMnSR8V0G0rpFA
+3aC8jyR4SEDEJmYcqBWAq6KTHkYXErw1Hed1Q9xQAp0Ao3oweDAdBgNVHQ4EFgQU
+jN+PiA9IksHiANhHXEOEAH9giwcwHwYDVR0jBBgwFoAUVtNBsTLmo8a0L+8oILZy
+mLlVkM0wDgYDVR0PAQH/BAQDAgeAMBMGA1UdJQQMMAoGCCsGAQUFBwMDMBEGCisG
+AQQBg78wAQEEA0ZPTzAKBggqhkjOPQQDAwNoADBlAjEA1m+8HyhtQIZmjJ73fhLu
+MrowOQjIF8zsnRQWhYzbWZRPAyvw+vt3yt3/J+VVsWzwAjB+2Cn/HnK6um0X8NnR
+dydvsVlJx6uxwJyljAzgJojn68vWifLuEAdua2I4SvLnqOQ=
 -----END CERTIFICATE-----`,
 
   // Leaf cert with an IP address in the SAN extension.
@@ -106,5 +121,28 @@ FsfiqIos7CnalmGcDuc/xJtZnDAfBgNVHSMEGDAWgBQfdr4pmKJqGYbuWctaU45J
 BBUwE4YRaHR0cDovL2Zvb2Jhci5kZXYwCgYIKoZIzj0EAwMDSAAwRQIgDmojPO/W
 OQ7m6hB+0udxUa+EzeWUnVuVFsDM8BZxM+8CIQDdjO4osDg5Tn9/dWPE8yBLL0ok
 v8E/2yJIGKcbArpcsg==
+-----END CERTIFICATE-----`,
+
+  fulcioleaf: `-----BEGIN CERTIFICATE-----
+MIIDnDCCAyKgAwIBAgIUEg2LbBC+v12QtPBt2jawiYrF33UwCgYIKoZIzj0EAwMw
+NzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRl
+cm1lZGlhdGUwHhcNMjMwMTExMTczMTUyWhcNMjMwMTExMTc0MTUyWjAAMFkwEwYH
+KoZIzj0CAQYIKoZIzj0DAQcDQgAEscmo8xVdr+olWHVVpTlLdKdTwTDvNpINwLXi
+6W2OlPwTkMbJj0zCpO99heNH4ZxF1+NmO6NyjcbynKjf/GPUV6OCAkEwggI9MA4G
+A1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUdsZZ
+492PIgVwGjT/q8AwgHhDkj4wHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4Y
+ZD8wZAYDVR0RAQH/BFowWIZWaHR0cHM6Ly9naXRodWIuY29tL3NpZ3N0b3JlL3Np
+Z3N0b3JlLWpzLy5naXRodWIvd29ya2Zsb3dzL3B1Ymxpc2gueW1sQHJlZnMvdGFn
+cy92MC40LjAwOQYKKwYBBAGDvzABAQQraHR0cHM6Ly90b2tlbi5hY3Rpb25zLmdp
+dGh1YnVzZXJjb250ZW50LmNvbTAVBgorBgEEAYO/MAECBAdyZWxlYXNlMDYGCisG
+AQQBg78wAQMEKDhhMmVlMmZkMjBkZGE1OGZmYTRhOGQ4MDhhNjVjYjFlMDQ3MTFj
+MDMwFQYKKwYBBAGDvzABBAQHcHVibGlzaDAiBgorBgEEAYO/MAEFBBRzaWdzdG9y
+ZS9zaWdzdG9yZS1qczAeBgorBgEEAYO/MAEGBBByZWZzL3RhZ3MvdjAuNC4wMIGK
+BgorBgEEAdZ5AgQCBHwEegB4AHYA3T0wasbHETJjGR4cmWc3AqJKXrjePK3/h4py
+gC8p7o4AAAGFoeNlfwAABAMARzBFAiBqYOxNKEMS4gXVBqU3Mr/w+yYXYtZDYa6d
+aYOZJZB++wIhANat2b2mVTeHERPyhATU/Z8HOfC6iqY/IwiXnwWKsp9xMAoGCCqG
+SM49BAMDA2gAMGUCMQD5OzgtStQId/HNXGwVM1Ydjux8x2d4cr7tzWreGSbMUJhR
+uVlJliOdJKsu8ufHQfYCMC8M76uThWeCI2A5GndGj0TTaI1Cq92T8oXm5iHHFPxm
+vZtjXtnwCuGzLAKHILlmlg==
 -----END CERTIFICATE-----`,
 };

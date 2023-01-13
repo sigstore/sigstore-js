@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The Sigstore Authors.
+Copyright 2023 The Sigstore Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -42,7 +42,21 @@ describe('verifySigningCertificate', () => {
   const signers: sigstore.CAArtifactVerificationOptions['signers'] = {
     $case: 'certificateIdentities',
     certificateIdentities: {
-      identities: [],
+      identities: [
+        {
+          issuer: 'https://github.com/login/oauth',
+          san: {
+            type: sigstore.SubjectAlternativeNameType.EMAIL,
+            identity: {
+              $case: 'value',
+              value: Buffer.from('YnJpYW5AZGVoYW1lci5jb20=', 'base64').toString(
+                'utf-8'
+              ),
+            },
+          },
+          oids: [],
+        },
+      ],
     },
   };
 
