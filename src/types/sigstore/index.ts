@@ -15,6 +15,7 @@ limitations under the License.
 */
 import { Entry, EntryKind } from '../../tlog';
 import { encoding as enc, pem } from '../../util';
+import { x509Certificate } from '../../x509/cert';
 import { SignatureMaterial } from '../signature';
 import { WithRequired } from '../utility';
 import { Envelope } from './__generated__/envelope';
@@ -48,6 +49,10 @@ export type BundleWithCertificateChain = Bundle & {
       { $case: 'x509CertificateChain' }
     >;
   };
+};
+
+export type BundleWithTLogEntries = Bundle & {
+  verificationMaterial: WithRequired<VerificationMaterial, 'tlogEntries'>;
 };
 
 // Type guard for narrowing a Bundle to a BundleWithCertificateChain
@@ -86,6 +91,16 @@ export type VerifiableTransparencyLogEntry = WithRequired<
   TransparencyLogEntry,
   'logId' | 'inclusionPromise' | 'kindVersion'
 >;
+
+export function isVerifiableTransparencyLogEntry(
+  entry: TransparencyLogEntry
+): entry is VerifiableTransparencyLogEntry {
+  return (
+    entry.logId !== undefined &&
+    entry.inclusionPromise !== undefined &&
+    entry.kindVersion !== undefined
+  );
+}
 
 export const bundle = {
   toDSSEBundle: (
@@ -177,4 +192,16 @@ function toVerificationMaterialPublicKey(
   hint: string
 ): VerificationMaterial['content'] {
   return { $case: 'publicKey', publicKey: { hint } };
+}
+
+export function signingCertificate(
+  bundle: Bundle
+): x509Certificate | undefined {
+  if (!isBundleWithCertificateChain(bundle)) {
+    return undefined;
+  }
+
+  const signingCert =
+    bundle.verificationMaterial.content.x509CertificateChain.certificates[0];
+  return x509Certificate.parse(signingCert.rawBytes);
 }
