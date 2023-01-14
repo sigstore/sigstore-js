@@ -84,7 +84,7 @@ export function isCAVerificationOptions(
 
 export type VerifiableTransparencyLogEntry = WithRequired<
   TransparencyLogEntry,
-  'logId' | 'inclusionPromise'
+  'logId' | 'inclusionPromise' | 'kindVersion'
 >;
 
 export const bundle = {
