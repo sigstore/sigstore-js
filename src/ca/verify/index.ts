@@ -35,5 +35,12 @@ export function verifySigningCertificate(
     verifySCTs(trustedChain, trustedRoot.ctlogs, options.ctlogOptions);
   }
 
-  verifySignerIdentity(trustedChain[0], options.signers.certificateIdentities);
+  // Verify the signing certificate against the provided identities
+  // if provided
+  if (options.signers) {
+    verifySignerIdentity(
+      trustedChain[0],
+      options.signers.certificateIdentities
+    );
+  }
 }

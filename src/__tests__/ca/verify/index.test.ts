@@ -159,10 +159,30 @@ describe('verifySigningCertificate', () => {
   });
 
   describe('when everything verifies without error', () => {
-    it('returns without error', () => {
-      expect(() =>
-        verifySigningCertificate(bundle, trustedRoot, opts)
-      ).not.toThrow();
+    describe('when signers are not specified', () => {
+      const opts: sigstore.CAArtifactVerificationOptions = {
+        ctlogOptions,
+        signers: undefined,
+      };
+
+      it('returns without error', () => {
+        expect(() =>
+          verifySigningCertificate(bundle, trustedRoot, opts)
+        ).not.toThrow();
+      });
+    });
+
+    describe('when signers are specified', () => {
+      const opts: sigstore.CAArtifactVerificationOptions = {
+        ctlogOptions,
+        signers,
+      };
+
+      it('returns without error', () => {
+        expect(() =>
+          verifySigningCertificate(bundle, trustedRoot, opts)
+        ).not.toThrow();
+      });
     });
   });
 });
