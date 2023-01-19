@@ -102,7 +102,7 @@ async function verify(bundlePath: string, artifactPath: string) {
   const bundle = JSON.parse(bundleFile.toString('utf-8'));
 
   try {
-    await sigstore.verify(bundle, payload);
+    await sigstore.verify(bundle, {}, payload);
     console.error('Verified OK');
   } catch (e) {
     console.error('Verification failed');
