@@ -22,7 +22,7 @@ import { verifyTLogSET } from './set';
 // Verifies that the number of tlog entries that pass offline verification
 // is greater than or equal to the threshold specified in the options.
 export function verifyTLogEntries(
-  bundle: sigstore.BundleWithTLogEntries,
+  bundle: sigstore.BundleWithVerificationMaterial,
   trustedRoot: sigstore.TrustedRoot,
   options: sigstore.ArtifactVerificationOptions_TlogOptions
 ): void {

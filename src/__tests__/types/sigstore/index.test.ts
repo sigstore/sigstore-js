@@ -19,6 +19,38 @@ import * as sigstore from '../../../types/sigstore';
 import { encoding as enc, pem } from '../../../util';
 import bundles from '../../__fixtures__/bundles/';
 
+describe('isBundleWithVerificationMaterial', () => {
+  describe('when the bundle contains verification material', () => {
+    const json = bundles.dsse.valid.withSigningCert;
+    const bundle = sigstore.Bundle.fromJSON(json);
+
+    it('returns true', () => {
+      expect(sigstore.isBundleWithVerificationMaterial(bundle)).toBe(true);
+    });
+  });
+
+  describe('when the bundle does NOT contain verification material', () => {
+    const bundle: sigstore.Bundle = {
+      mediaType: 'application/vnd.dev.cosign.simplesigning.v1+json',
+      verificationMaterial: undefined,
+      content: {
+        $case: 'messageSignature',
+        messageSignature: {
+          messageDigest: {
+            algorithm: sigstore.HashAlgorithm.SHA2_256,
+            digest: Buffer.from(''),
+          },
+          signature: Buffer.from(''),
+        },
+      },
+    };
+
+    it('returns false', () => {
+      expect(sigstore.isBundleWithVerificationMaterial(bundle)).toBe(false);
+    });
+  });
+});
+
 describe('isBundleWithCertificateChain', () => {
   describe('when the bundle contains a certificate chain', () => {
     const json = bundles.dsse.valid.withSigningCert;
@@ -83,8 +115,8 @@ describe('isCAVerificationOptions', () => {
       },
     };
 
-    it('returns false', () => {
-      expect(sigstore.isCAVerificationOptions(opts)).toBe(false);
+    it('returns true', () => {
+      expect(sigstore.isCAVerificationOptions(opts)).toBe(true);
     });
   });
 
