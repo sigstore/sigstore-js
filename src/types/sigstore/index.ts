@@ -40,6 +40,20 @@ export const envelopeFromJSON = Envelope.fromJSON;
 const BUNDLE_MEDIA_TYPE =
   'application/vnd.dev.sigstore.bundle+json;version=0.1';
 
+// Subset of sigstore.Bundle that has verification material as part
+// of the bundle
+export type BundleWithVerificationMaterial = WithRequired<
+  Bundle,
+  'verificationMaterial'
+>;
+
+// Type guard for narrowing a Bundle to a BundleWithVerificationMaterial
+export function isBundleWithVerificationMaterial(
+  bundle: Bundle
+): bundle is BundleWithVerificationMaterial {
+  return bundle.verificationMaterial !== undefined;
+}
+
 // Subset of sigstore.Bundle that has a certificate chain as part
 // of the verification material (as opposed to a public key)
 export type BundleWithCertificateChain = Bundle & {
@@ -51,25 +65,27 @@ export type BundleWithCertificateChain = Bundle & {
   };
 };
 
-export type BundleWithTLogEntries = Bundle & {
-  verificationMaterial: WithRequired<VerificationMaterial, 'tlogEntries'>;
-};
-
 // Type guard for narrowing a Bundle to a BundleWithCertificateChain
 export function isBundleWithCertificateChain(
   bundle: Bundle
 ): bundle is BundleWithCertificateChain {
   return (
-    bundle.verificationMaterial !== undefined &&
+    isBundleWithVerificationMaterial(bundle) &&
     bundle.verificationMaterial.content !== undefined &&
     bundle.verificationMaterial.content.$case === 'x509CertificateChain'
   );
 }
 
+export type RequiredArtifactVerificationOptions = WithRequired<
+  ArtifactVerificationOptions,
+  'ctlogOptions' | 'tlogOptions'
+>;
+
 // Subset of sigstore.ArtifactVerificationOptions that has a
 // both ctlogOptions and certificate identities defined
-export type CAArtifactVerificationOptions = Required<
-  Pick<ArtifactVerificationOptions, 'ctlogOptions'>
+export type CAArtifactVerificationOptions = WithRequired<
+  ArtifactVerificationOptions,
+  'ctlogOptions'
 > & {
   signers?: Extract<
     ArtifactVerificationOptions['signers'],
@@ -82,8 +98,8 @@ export function isCAVerificationOptions(
 ): options is CAArtifactVerificationOptions {
   return (
     options.ctlogOptions !== undefined &&
-    options.signers !== undefined &&
-    options.signers.$case === 'certificateIdentities'
+    (options.signers === undefined ||
+      options.signers.$case === 'certificateIdentities')
   );
 }
 

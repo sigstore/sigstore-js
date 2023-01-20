@@ -22,7 +22,7 @@ import bundles from '../../__fixtures__/bundles';
 describe('verifyTLogEntries', () => {
   const bundle = sigstore.bundleFromJSON(
     bundles.signature.valid.withSigningCert
-  ) as sigstore.BundleWithTLogEntries;
+  ) as sigstore.BundleWithVerificationMaterial;
 
   const trustedRootJSON = JSON.parse(
     fs
@@ -50,7 +50,7 @@ describe('verifyTLogEntries', () => {
     describe('when the bundle does NOT have a signing certificate', () => {
       const bundle = sigstore.bundleFromJSON(
         bundles.signature.valid.withPublicKey
-      ) as sigstore.BundleWithTLogEntries;
+      ) as sigstore.BundleWithVerificationMaterial;
 
       it('does NOT throw an error', () => {
         expect(() =>
@@ -91,7 +91,7 @@ describe('verifyTLogEntries', () => {
   describe('when tlog entries are missing data necessary for verification', () => {
     const bundle = sigstore.bundleFromJSON(
       bundles.dsse.invalid.tlogKindVersionMissing
-    ) as sigstore.BundleWithTLogEntries;
+    ) as sigstore.BundleWithVerificationMaterial;
 
     it('throws an error', () => {
       expect(() => verifyTLogEntries(bundle, trustedRoot, options)).toThrow(
