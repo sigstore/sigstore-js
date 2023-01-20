@@ -24,6 +24,7 @@ import {
   SerializedBundle,
   SerializedEnvelope,
 } from './types/sigstore';
+import { assertValidBundle } from './types/sigstore/validate';
 import { GetPublicKeyFunc, Verifier } from './verify';
 
 export * as utils from './sigstore-utils';
@@ -118,6 +119,7 @@ export async function verify(
   });
 
   const b = bundleFromJSON(bundle);
+  assertValidBundle(b);
   return verifier.verifyOffline(b, data);
 }
 
