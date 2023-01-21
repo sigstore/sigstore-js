@@ -15,7 +15,7 @@ limitations under the License.
 */
 import crypto from 'crypto';
 import fs from 'fs';
-import { InvalidBundleError, VerificationError } from '../error';
+import { VerificationError } from '../error';
 import * as sigstore from '../types/sigstore';
 import { Verifier } from '../verify';
 import bundles from './__fixtures__/bundles';
@@ -45,59 +45,6 @@ describe('Verifier', () => {
   const subject = new Verifier(trustedRoot);
 
   describe('#verify', () => {
-    describe('when the bundle is malformed', () => {
-      describe('when there is no verification material', () => {
-        it('throws an error', () => {
-          expect(() => subject.verify({} as sigstore.Bundle, options)).toThrow(
-            InvalidBundleError
-          );
-        });
-      });
-
-      describe('when there is no content in the bundle', () => {
-        const bundle: sigstore.Bundle = {
-          mediaType: 'application/vnd.sigstore.tlog.v1+json',
-          verificationMaterial: {
-            content: {
-              $case: 'x509CertificateChain',
-              x509CertificateChain: {
-                certificates: [
-                  {
-                    rawBytes: Buffer.from(
-                      'MIIBzTCCAVOgAwIBAgIUQSFLFi9Qcj7aAn/JIVCBxeAkaEcwCgYIKoZIzj0EAwMwJjETMBEGA1UECgwKZm9vYmFyLmRldjEPMA0GA1UEAwwGZm9vYmFyMB4XDTkwMDEwMTAwMDAwMFoXDTQwMDEwMTAwMDAwMFowJjETMBEGA1UECgwKZm9vYmFyLmRldjEPMA0GA1UEAwwGZm9vYmFyMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEqOXVeodbskCgnezXR4wURjSvZjBps6WcqoGP+3DDYhHlZlyniQ1AutSp4oedGA0sfYNjA/FaVoUUm0QKiYEwtd6oPdkTwDcce/Pq84dR6cz/ue8JMNXEWExf9tRELxpLo0IwQDAdBgNVHQ4EFgQUW8l0k6NwpkGmRu2O9e3ggYlkc8swDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwCgYIKoZIzj0EAwMDaAAwZQIwPjVLiNY6tLnjCGChiCVSyMg2jBHKsW++lf0FJZ+XufJAZOrI3nfbUButmomgt0VAAjEAjDa7mLilx7Jx2FoSEVdDJU/RP8dtt5hUl4GSBmOtv8qfXI0/yCSCjpjMhbMwRixw',
-                      'base64'
-                    ),
-                  },
-                ],
-              },
-            },
-            tlogEntries: [],
-            timestampVerificationData: {
-              rfc3161Timestamps: [],
-            },
-          },
-        };
-
-        it('throws an error', () => {
-          expect(() => subject.verify(bundle, options)).toThrow(
-            InvalidBundleError
-          );
-        });
-      });
-
-      describe('when the certificate chain is empty', () => {
-        const bundle = sigstore.bundleFromJSON(
-          bundles.signature.invalid.emptyCertChain
-        );
-
-        it('throws an error', () => {
-          expect(() => subject.verify(bundle, options)).toThrow(
-            InvalidBundleError
-          );
-        });
-      });
-    });
-
     describe('when bundle type is messageSignature', () => {
       const payload = bundles.signature.artifact;
 
@@ -191,18 +138,6 @@ describe('Verifier', () => {
             });
           });
 
-          describe('when the message digest is missing', () => {
-            const bundle = sigstore.bundleFromJSON(
-              bundles.signature.invalid.missingDigest
-            );
-
-            it('throws an error', () => {
-              expect(() =>
-                subject.verify(bundle, optionsWithSigners, payload)
-              ).toThrow(InvalidBundleError);
-            });
-          });
-
           describe('when the bundle signature is incorrect', () => {
             const bundle = sigstore.bundleFromJSON(
               bundles.signature.invalid.badSignature
@@ -245,17 +180,6 @@ describe('Verifier', () => {
           it('throws an error', () => {
             expect(() => subject.verify(bundle, options)).toThrow(
               VerificationError
-            );
-          });
-        });
-
-        describe('when the signature is missing', () => {
-          const bundle = sigstore.bundleFromJSON(
-            bundles.dsse.invalid.noSignature
-          );
-          it('throws an error', () => {
-            expect(() => subject.verify(bundle, options)).toThrow(
-              InvalidBundleError
             );
           });
         });

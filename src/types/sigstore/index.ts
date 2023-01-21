@@ -18,6 +18,7 @@ import { encoding as enc, pem } from '../../util';
 import { x509Certificate } from '../../x509/cert';
 import { SignatureMaterial } from '../signature';
 import { WithRequired } from '../utility';
+import { assertValidBundle, ValidBundle } from './validate';
 import { Envelope } from './__generated__/envelope';
 import { Bundle, VerificationMaterial } from './__generated__/sigstore_bundle';
 import { HashAlgorithm } from './__generated__/sigstore_common';
@@ -34,7 +35,14 @@ export * from './__generated__/sigstore_trustroot';
 export * from './__generated__/sigstore_verification';
 
 export const bundleToJSON = Bundle.toJSON;
-export const bundleFromJSON = Bundle.fromJSON;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const bundleFromJSON = (obj: any): ValidBundle => {
+  const bundle = Bundle.fromJSON(obj);
+  assertValidBundle(bundle);
+  return bundle;
+};
+
 export const envelopeToJSON = Envelope.toJSON;
 export const envelopeFromJSON = Envelope.fromJSON;
 
