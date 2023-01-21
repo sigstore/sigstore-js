@@ -4,7 +4,7 @@ import { Bundle, VerificationMaterial } from './__generated__/sigstore_bundle';
 import { MessageSignature } from './__generated__/sigstore_common';
 
 // Sigstore bundle with all required fields populated
-type ValidBundle = Bundle & {
+export type ValidBundle = Bundle & {
   verificationMaterial: VerificationMaterial & {
     content: NonNullable<VerificationMaterial['content']>;
   };
@@ -20,69 +20,78 @@ type ValidBundle = Bundle & {
 // rather a check that the bundle is in a valid state to be processed by the
 // rest of the code.
 export function assertValidBundle(b: Bundle): asserts b is ValidBundle {
+  const invalidValues: string[] = [];
+
   // Content-related validation
   if (b.content === undefined) {
-    throw new InvalidBundleError('content is undefined');
-  }
+    invalidValues.push('content');
+  } else {
+    switch (b.content.$case) {
+      case 'messageSignature':
+        if (b.content.messageSignature.messageDigest === undefined) {
+          invalidValues.push('content.messageSignature.messageDigest');
+        } else {
+          if (b.content.messageSignature.messageDigest.digest.length === 0) {
+            invalidValues.push('content.messageSignature.messageDigest.digest');
+          }
+        }
 
-  switch (b.content.$case) {
-    case 'messageSignature':
-      if (b.content.messageSignature.messageDigest === undefined) {
-        throw new InvalidBundleError('messageDigest is undefined');
-      }
+        if (b.content.messageSignature.signature.length === 0) {
+          invalidValues.push('content.messageSignature.signature');
+        }
+        break;
+      case 'dsseEnvelope':
+        if (b.content.dsseEnvelope.payload.length === 0) {
+          invalidValues.push('content.dsseEnvelope.payload');
+        }
 
-      if (b.content.messageSignature.messageDigest.digest.length === 0) {
-        throw new InvalidBundleError('digest is undefined');
-      }
+        if (b.content.dsseEnvelope.signatures.length !== 1) {
+          invalidValues.push('content.dsseEnvelope.signatures');
+        } else {
+          if (b.content.dsseEnvelope.signatures[0].sig.length === 0) {
+            invalidValues.push('content.dsseEnvelope.signatures[0].sig');
+          }
+        }
 
-      if (b.content.messageSignature.signature.length === 0) {
-        throw new InvalidBundleError('signature is undefined');
-      }
-      break;
-    case 'dsseEnvelope':
-      if (b.content.dsseEnvelope.payload.length === 0) {
-        throw new InvalidBundleError('payload is undefined');
-      }
-
-      if (b.content.dsseEnvelope.signatures.length !== 1) {
-        throw new InvalidBundleError(
-          'dsseEnvelope must have exactly one signature'
-        );
-      }
-
-      if (b.content.dsseEnvelope.signatures[0].sig.length === 0) {
-        throw new InvalidBundleError('dsseEnvelope sig is undefined');
-      }
-      break;
+        break;
+    }
   }
 
   // Verification material-related validation
   if (b.verificationMaterial === undefined) {
-    throw new InvalidBundleError('verificationMaterial is undefined');
-  }
-
-  if (b.verificationMaterial.content === undefined) {
-    throw new InvalidBundleError('verificationMaterial content is undefined');
-  }
-
-  switch (b.verificationMaterial.content.$case) {
-    case 'x509CertificateChain':
-      if (
-        b.verificationMaterial.content.x509CertificateChain.certificates
-          .length === 0
-      ) {
-        throw new InvalidBundleError('x509CertificateChain is empty');
-      }
-
-      b.verificationMaterial.content.x509CertificateChain.certificates.forEach(
-        (cert, i) => {
-          if (cert.rawBytes.length === 0) {
-            throw new InvalidBundleError(
-              `certificate ${i} in x509CertificateChain is empty`
+    invalidValues.push('verificationMaterial');
+  } else {
+    if (b.verificationMaterial.content === undefined) {
+      invalidValues.push('verificationMaterial.content');
+    } else {
+      switch (b.verificationMaterial.content.$case) {
+        case 'x509CertificateChain':
+          if (
+            b.verificationMaterial.content.x509CertificateChain.certificates
+              .length === 0
+          ) {
+            invalidValues.push(
+              'verificationMaterial.content.x509CertificateChain.certificates'
             );
           }
-        }
-      );
-      break;
+
+          b.verificationMaterial.content.x509CertificateChain.certificates.forEach(
+            (cert, i) => {
+              if (cert.rawBytes.length === 0) {
+                invalidValues.push(
+                  `verificationMaterial.content.x509CertificateChain.certificates[${i}].rawBytes`
+                );
+              }
+            }
+          );
+          break;
+      }
+    }
+  }
+
+  if (invalidValues.length > 0) {
+    throw new InvalidBundleError(
+      `invalid/missing bundle values: ${invalidValues.join(', ')}`
+    );
   }
 }
