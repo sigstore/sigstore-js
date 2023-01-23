@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { KeyLike } from 'crypto';
-import { verifySigningCertificate } from './ca/verify';
+import * as ca from './ca/verify';
 import { InvalidBundleError, VerificationError } from './error';
-import { verifyTLogEntries } from './tlog/verify';
+import * as tlog from './tlog/verify';
 import * as sigstore from './types/sigstore';
 import { crypto, dsse, pem } from './util';
 
@@ -96,7 +96,7 @@ export class Verifier {
       );
     }
 
-    verifySigningCertificate(bundle, this.trustedRoot, options);
+    ca.verifySigningCertificate(bundle, this.trustedRoot, options);
   }
 
   // Performs verification of the bundle's transparency log entries. The bundle
@@ -109,7 +109,7 @@ export class Verifier {
       throw new InvalidBundleError('no tlog entries found');
     }
 
-    verifyTLogEntries(bundle, this.trustedRoot, options.tlogOptions);
+    tlog.verifyTLogEntries(bundle, this.trustedRoot, options.tlogOptions);
   }
 
   // Returns the public key which will be used to verify the bundle signature.
