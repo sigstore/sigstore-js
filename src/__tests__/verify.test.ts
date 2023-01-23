@@ -183,7 +183,7 @@ describe('Verifier', () => {
             });
           });
 
-          describe('when the signature and the cert do NOT match', () => {
+          describe('when the payload digest does not match the value in the bundle', () => {
             it('throws an error', () => {
               expect(() =>
                 subject.verify(bundle, optionsWithSigners, Buffer.from(''))

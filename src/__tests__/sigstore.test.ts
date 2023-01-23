@@ -235,7 +235,7 @@ describe('#verify', () => {
     });
   });
 
-  describe('when the bundle was signed by an trusted identity', () => {
+  describe('when the bundle was signed by a trusted identity', () => {
     const bundle = bundles.signature.valid.withSigningCert;
     const artifact = bundles.signature.artifact;
 
@@ -247,8 +247,23 @@ describe('#verify', () => {
       ).toString('ascii'),
     };
 
-    it('throws an error', async () => {
+    it('does not throw an error', async () => {
       await expect(verify(bundle, options, artifact)).resolves.toBeUndefined();
+    });
+  });
+
+  describe('when an issuer is specified w/o a SAN identity', () => {
+    const bundle = bundles.signature.valid.withSigningCert;
+    const artifact = bundles.signature.artifact;
+
+    const options: VerifyOptions = {
+      certificateIssuer: 'https://github.com/login/oauth',
+    };
+
+    it('throws an error', async () => {
+      await expect(verify(bundle, options, artifact)).rejects.toThrowError(
+        VerificationError
+      );
     });
   });
 
