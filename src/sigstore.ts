@@ -114,7 +114,7 @@ export async function verify(
   const trustedRoot = tuf.getTrustedRoot();
   const verifier = new Verifier(trustedRoot, options.keySelector);
 
-  const deserializedBundle = sigstore.Bundle.fromJSON(bundle);
+  const deserializedBundle = sigstore.bundleFromJSON(bundle);
   const opts = collectArtifactVerificationOptions(options);
   return verifier.verify(deserializedBundle, opts, data);
 }

@@ -15,9 +15,10 @@ limitations under the License.
 */
 import { KeyLike } from 'crypto';
 import * as ca from './ca/verify';
-import { InvalidBundleError, VerificationError } from './error';
+import { VerificationError } from './error';
 import * as tlog from './tlog/verify';
 import * as sigstore from './types/sigstore';
+import { WithRequired } from './types/utility';
 import { crypto, dsse, pem } from './util';
 
 export type KeySelector = (
@@ -37,7 +38,7 @@ export class Verifier {
   // Verifies the bundle signature, the bundle's certificate chain (if present)
   // and the bundle's transparency log entries.
   public verify(
-    bundle: sigstore.Bundle,
+    bundle: sigstore.ValidBundle,
     options: sigstore.RequiredArtifactVerificationOptions,
     data?: Buffer
   ): void {
@@ -53,7 +54,7 @@ export class Verifier {
   // Performs bundle signature verification. Determines the type of the bundle
   // content and delegates to the appropriate signature verification function.
   private verifyArtifactSignature(
-    bundle: sigstore.Bundle,
+    bundle: sigstore.ValidBundle,
     options: sigstore.ArtifactVerificationOptions,
     data?: Buffer
   ): void {
@@ -75,8 +76,6 @@ export class Verifier {
       case 'dsseEnvelope':
         verifyDSSESignature(bundle.content.dsseEnvelope, publicKey);
         break;
-      default:
-        throw new InvalidBundleError('no content found');
     }
   }
 
@@ -102,13 +101,9 @@ export class Verifier {
   // Performs verification of the bundle's transparency log entries. The bundle
   // must contain a list of transparency log entries.
   private verifyTLogEntries(
-    bundle: sigstore.Bundle,
+    bundle: sigstore.ValidBundle,
     options: sigstore.RequiredArtifactVerificationOptions
   ): void {
-    if (!sigstore.isBundleWithVerificationMaterial(bundle)) {
-      throw new InvalidBundleError('no tlog entries found');
-    }
-
     tlog.verifyTLogEntries(bundle, this.trustedRoot, options.tlogOptions);
   }
 
@@ -116,7 +111,7 @@ export class Verifier {
   // The public key is selected based on the verification material in the bundle
   // and the options provided.
   private getPublicKey(
-    bundle: sigstore.Bundle,
+    bundle: sigstore.ValidBundle,
     options: sigstore.ArtifactVerificationOptions
   ): KeyLike {
     // Select the key which will be used to verify the signature
@@ -136,8 +131,6 @@ export class Verifier {
           options,
           this.keySelector
         );
-      default:
-        throw new InvalidBundleError('no verification material found');
     }
   }
 }
@@ -146,10 +139,6 @@ export class Verifier {
 function getPublicKeyFromCertificateChain(
   certificateChain: sigstore.X509CertificateChain
 ): KeyLike {
-  if (certificateChain.certificates.length === 0) {
-    throw new InvalidBundleError('empty certificate chain');
-  }
-
   const cert = pem.fromDER(certificateChain.certificates[0].rawBytes);
   return crypto.createPublicKey(cert);
 }
@@ -184,15 +173,11 @@ function getPublicKeyFromHint(
 // provided data.
 function verifyMessageSignature(
   data: Buffer,
-  messageSignature: sigstore.MessageSignature,
+  messageSignature: WithRequired<sigstore.MessageSignature, 'messageDigest'>,
   publicKey: KeyLike
 ): void {
   // Extract signature for message
   const { signature, messageDigest } = messageSignature;
-
-  if (!messageDigest) {
-    throw new InvalidBundleError('no message digest found');
-  }
 
   const calculatedDigest = crypto.hash(data);
   if (!calculatedDigest.equals(messageDigest.digest)) {
@@ -214,11 +199,6 @@ function verifyDSSESignature(
   // Construct payload over which the signature was originally created
   const { payloadType, payload } = envelope;
   const data = dsse.preAuthEncoding(payloadType, payload);
-
-  // Extract signature from DSSE envelope
-  if (envelope.signatures.length === 0) {
-    throw new InvalidBundleError('no signatures found in DSSE envelope');
-  }
 
   // Only support a single signature in DSSE
   const signature = envelope.signatures[0].sig;
