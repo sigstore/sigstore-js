@@ -21,4 +21,3 @@ export * as oidc from './oidc';
 export * as pem from './pem';
 export * as promise from './promise';
 export * as ua from './ua';
-export * as x509 from './x509';

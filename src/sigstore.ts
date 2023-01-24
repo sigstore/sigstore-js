@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The Sigstore Authors.
+Copyright 2023 The Sigstore Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,17 +17,15 @@ import { CA, CAClient } from './ca';
 import identity, { Provider } from './identity';
 import { Signer } from './sign';
 import { TLog, TLogClient } from './tlog';
-import { getKeys } from './tlog/keys';
-import {
-  bundleFromJSON,
-  bundleToJSON,
-  SerializedBundle,
-  SerializedEnvelope,
-} from './types/sigstore';
-import { assertValidBundle } from './types/sigstore/validate';
-import { GetPublicKeyFunc, Verifier } from './verify';
+import * as tuf from './tuf';
+import * as sigstore from './types/sigstore';
+import { KeySelector, Verifier } from './verify';
 
 export * as utils from './sigstore-utils';
+export {
+  SerializedBundle as Bundle,
+  SerializedEnvelope as Envelope,
+} from './types/sigstore';
 
 export const DEFAULT_FULCIO_BASE_URL = 'https://fulcio.sigstore.dev';
 export const DEFAULT_REKOR_BASE_URL = 'https://rekor.sigstore.dev';
@@ -45,13 +43,16 @@ export type SignOptions = {
   oidcClientSecret?: string;
 } & TLogOptions;
 
-export type VerifierOptions = {
-  getPublicKey?: GetPublicKeyFunc;
+export type VerifyOptions = {
+  ctLogThreshold?: number;
+  tlogThreshold?: number;
+  certificateIssuer?: string;
+  certificateIdentityEmail?: string;
+  certificateIdentityURI?: string;
+  keySelector?: KeySelector;
 } & TLogOptions;
 
-export type Bundle = SerializedBundle;
-
-export type Envelope = SerializedEnvelope;
+type Bundle = sigstore.SerializedBundle;
 
 type IdentityProviderOptions = Pick<
   SignOptions,
@@ -84,7 +85,7 @@ export async function sign(
   });
 
   const bundle = await signer.signBlob(payload);
-  return bundleToJSON(bundle) as Bundle;
+  return sigstore.Bundle.toJSON(bundle) as Bundle;
 }
 
 export async function signAttestation(
@@ -102,25 +103,20 @@ export async function signAttestation(
   });
 
   const bundle = await signer.signAttestation(payload, payloadType);
-  return bundleToJSON(bundle) as Bundle;
+  return sigstore.Bundle.toJSON(bundle) as Bundle;
 }
 
 export async function verify(
   bundle: Bundle,
-  data?: Buffer,
-  options: VerifierOptions = {}
+  options: VerifyOptions,
+  data?: Buffer
 ): Promise<void> {
-  const tlog = createTLogClient(options);
-  const tlogKeys = getKeys();
-  const verifier = new Verifier({
-    tlog,
-    tlogKeys,
-    getPublicKey: options.getPublicKey,
-  });
+  const trustedRoot = tuf.getTrustedRoot();
+  const verifier = new Verifier(trustedRoot, options.keySelector);
 
-  const b = bundleFromJSON(bundle);
-  assertValidBundle(b);
-  return verifier.verifyOffline(b, data);
+  const deserializedBundle = sigstore.Bundle.fromJSON(bundle);
+  const opts = collectArtifactVerificationOptions(options);
+  return verifier.verify(deserializedBundle, opts, data);
 }
 
 // Translates the IdenityProviderOptions into a list of Providers which
@@ -150,4 +146,61 @@ function configureIdentityProviders(
   }
 
   return idps;
+}
+
+// Assembles the AtifactVerificationOptions from the supplied VerifyOptions.
+function collectArtifactVerificationOptions(
+  options: VerifyOptions
+): sigstore.RequiredArtifactVerificationOptions {
+  // The trusted signers are only used if the options contain a certificate
+  // issuer
+  let signers: sigstore.RequiredArtifactVerificationOptions['signers'];
+  if (options.certificateIssuer) {
+    let san: sigstore.SubjectAlternativeName | undefined = undefined;
+    if (options.certificateIdentityEmail) {
+      san = {
+        type: sigstore.SubjectAlternativeNameType.EMAIL,
+        identity: {
+          $case: 'value',
+          value: options.certificateIdentityEmail,
+        },
+      };
+    } else if (options.certificateIdentityURI) {
+      san = {
+        type: sigstore.SubjectAlternativeNameType.URI,
+        identity: {
+          $case: 'value',
+          value: options.certificateIdentityURI,
+        },
+      };
+    }
+
+    signers = {
+      $case: 'certificateIdentities',
+      certificateIdentities: {
+        identities: [
+          {
+            issuer: options.certificateIssuer,
+            san: san,
+            oids: [],
+          },
+        ],
+      },
+    };
+  }
+
+  // Construct the artifact verification options w/ defaults
+  return {
+    ctlogOptions: {
+      disable: false,
+      threshold: options.ctLogThreshold || 1,
+      detachedSct: false,
+    },
+    tlogOptions: {
+      disable: false,
+      threshold: options.tlogThreshold || 1,
+      performOnlineVerification: false,
+    },
+    signers,
+  };
 }
