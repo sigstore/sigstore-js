@@ -119,7 +119,7 @@ describe('assertValidBundle', () => {
       });
     });
 
-    describe('when there the signature value is undefined', () => {
+    describe('when the signature value is undefined', () => {
       const bundle = {
         content: {
           $case: 'dsseEnvelope',
