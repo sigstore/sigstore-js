@@ -245,6 +245,9 @@ describe('#verify', () => {
         'YnJpYW5AZGVoYW1lci5jb20=',
         'base64'
       ).toString('ascii'),
+      certificateOIDs: {
+        '1.3.6.1.4.1.57264.1.1': 'https://github.com/login/oauth',
+      },
     };
 
     it('does not throw an error', async () => {
