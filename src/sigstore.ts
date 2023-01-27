@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import os from 'os';
+import path from 'path';
 import { CA, CAClient } from './ca';
 import identity, { Provider } from './identity';
 import { Signer } from './sign';
@@ -112,7 +114,8 @@ export async function verify(
   options: VerifyOptions,
   data?: Buffer
 ): Promise<void> {
-  const trustedRoot = tuf.getTrustedRoot();
+  const cacheDir = path.join(os.homedir(), '.sigstore', 'cache');
+  const trustedRoot = await tuf.getTrustedRoot(cacheDir);
   const verifier = new Verifier(trustedRoot, options.keySelector);
 
   const deserializedBundle = sigstore.bundleFromJSON(bundle);
