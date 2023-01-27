@@ -14,21 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import crypto from 'crypto';
-import fs from 'fs';
 import { VerificationError } from '../error';
 import * as sigstore from '../types/sigstore';
 import { Verifier } from '../verify';
 import bundles from './__fixtures__/bundles';
+import { trustedRoot } from './__fixtures__/trust';
 
 describe('Verifier', () => {
-  const trustedRootJSON = JSON.parse(
-    fs
-      .readFileSync(require.resolve('../../store/trusted_root.json'))
-      .toString('utf8')
-  );
-  const trustedRoot: sigstore.TrustedRoot =
-    sigstore.TrustedRoot.fromJSON(trustedRootJSON);
-
   const options: sigstore.RequiredArtifactVerificationOptions = {
     ctlogOptions: {
       disable: false,

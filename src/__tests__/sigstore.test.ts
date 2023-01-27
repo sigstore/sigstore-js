@@ -22,6 +22,7 @@ import {
   verify,
   VerifyOptions,
 } from '../sigstore';
+import { getTrustedRoot } from '../tuf';
 import {
   Bundle,
   HashAlgorithm,
@@ -30,8 +31,10 @@ import {
   X509CertificateChain,
 } from '../types/sigstore';
 import bundles from './__fixtures__/bundles';
+import { trustedRoot } from './__fixtures__/trust';
 
 jest.mock('../sign');
+jest.mock('../tuf');
 
 const tlogEntries: TransparencyLogEntry[] = [
   {
@@ -216,6 +219,10 @@ describe('signAttestation', () => {
 });
 
 describe('#verify', () => {
+  // Mock the getTrustedRoot function so that we don't have to interact
+  // with the real Sigstore TUF repo
+  jest.mocked(getTrustedRoot).mockResolvedValue(trustedRoot);
+
   describe('when everything in the bundle is valid', () => {
     const bundle = bundles.signature.valid.withSigningCert;
     const artifact = bundles.signature.artifact;

@@ -13,10 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import fs from 'fs';
 import { verifySigningCertificate } from '../../../ca/verify';
 import * as sigstore from '../../../types/sigstore';
 import bundles from '../../__fixtures__/bundles/';
+import { trustedRoot } from '../../__fixtures__/trust';
 
 describe('verifySigningCertificate', () => {
   // Temporary until we reconsole bundle formats
@@ -24,14 +24,6 @@ describe('verifySigningCertificate', () => {
   const bundle = sigstore.Bundle.fromJSON(
     bundleJSON
   ) as sigstore.BundleWithCertificateChain;
-
-  const trustedRootJSON = JSON.parse(
-    fs
-      .readFileSync(require.resolve('../../../../store/trusted_root.json'))
-      .toString('utf8')
-  );
-  const trustedRoot: sigstore.TrustedRoot =
-    sigstore.TrustedRoot.fromJSON(trustedRootJSON);
 
   const ctlogOptions: sigstore.ArtifactVerificationOptions_CtlogOptions = {
     disable: false,
