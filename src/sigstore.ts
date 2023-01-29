@@ -49,6 +49,7 @@ export type VerifyOptions = {
   certificateIssuer?: string;
   certificateIdentityEmail?: string;
   certificateIdentityURI?: string;
+  certificateOIDs?: Record<string, string>;
   keySelector?: KeySelector;
 } & TLogOptions;
 
@@ -175,6 +176,13 @@ function collectArtifactVerificationOptions(
       };
     }
 
+    const oids = Object.entries(
+      options.certificateOIDs || {}
+    ).map<sigstore.ObjectIdentifierValuePair>(([oid, value]) => ({
+      oid: { id: oid.split('.').map((s) => parseInt(s, 10)) },
+      value: Buffer.from(value),
+    }));
+
     signers = {
       $case: 'certificateIdentities',
       certificateIdentities: {
@@ -182,7 +190,7 @@ function collectArtifactVerificationOptions(
           {
             issuer: options.certificateIssuer,
             san: san,
-            oids: [],
+            oids: oids,
           },
         ],
       },
