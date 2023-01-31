@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { CA, CAClient } from './ca';
@@ -114,7 +115,7 @@ export async function verify(
   options: VerifyOptions,
   data?: Buffer
 ): Promise<void> {
-  const cacheDir = path.join(os.homedir(), '.sigstore', 'cache');
+  const cacheDir = defaultCacheDir();
   const trustedRoot = await tuf.getTrustedRoot(cacheDir);
   const verifier = new Verifier(trustedRoot, options.keySelector);
 
@@ -150,6 +151,17 @@ function configureIdentityProviders(
   }
 
   return idps;
+}
+
+function defaultCacheDir(): string {
+  let cacheRootDir = os.homedir();
+  try {
+    fs.accessSync(os.homedir(), fs.constants.W_OK | fs.constants.R_OK);
+  } catch (e) {
+    cacheRootDir = os.tmpdir();
+  }
+
+  return path.join(cacheRootDir, '.sigstore', 'cache');
 }
 
 // Assembles the AtifactVerificationOptions from the supplied VerifyOptions.
