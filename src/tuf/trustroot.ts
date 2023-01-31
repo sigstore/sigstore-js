@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { TargetFile, Updater } from 'tuf-js';
+import { TrustedRootError } from '../error';
 import * as sigstore from '../types/sigstore';
 import { crypto, pem } from '../util';
 
@@ -55,7 +56,12 @@ export class TrustedRootFetcher {
   // with a story for target discovery.
   // https://docs.google.com/document/d/1rWHAM2qCUtnjWD4lOrGWE2EIDLoA7eSy4-jB66Wgh0o
   private async allTargets(): Promise<TargetFile[]> {
-    await this.tuf.refresh();
+    try {
+      await this.tuf.refresh();
+    } catch (e) {
+      throw new TrustedRootError('error refreshing trust metadata');
+    }
+
     return Object.values(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this.tuf as any).trustedSet.targets?.signed.targets || {}
@@ -128,16 +134,20 @@ export class TrustedRootFetcher {
   // Reads the contents of the specified target file, and returns the
   // contents as a DER-encoded buffer.
   private async readKey(target: TargetFile): Promise<Buffer> {
-    let path = await this.tuf.findCachedTarget(target);
+    try {
+      let path = await this.tuf.findCachedTarget(target);
 
-    // An empty path here means the target has not been cached locally, or is
-    // out of date. In either case, we need to download it.
-    if (!path) {
-      path = await this.tuf.downloadTarget(target);
+      // An empty path here means the target has not been cached locally, or is
+      // out of date. In either case, we need to download it.
+      if (!path) {
+        path = await this.tuf.downloadTarget(target);
+      }
+
+      const file = fs.readFileSync(path);
+      return pem.toDER(file.toString('utf-8'));
+    } catch (err) {
+      throw new TrustedRootError('error reading key');
     }
-
-    const file = fs.readFileSync(path);
-    return pem.toDER(file.toString('utf-8'));
   }
 }
 

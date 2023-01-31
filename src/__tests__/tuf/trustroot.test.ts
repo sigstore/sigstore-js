@@ -2,6 +2,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { Updater } from 'tuf-js';
+import { TrustedRootError } from '../../error';
 import { TrustedRootFetcher } from '../../tuf/trustroot';
 
 describe('TrustedRootFetcher', () => {
@@ -49,43 +50,85 @@ VQ3bF01uZKteMdcV/3qhCmWOecoxRqwrbYTshGg9NyXcBbve6zKwZVTLeg==
     },
   };
 
-  // Dummy TUF Updater
-  const tuf = {
-    refresh: jest.fn(),
-    findCachedTarget: jest.fn().mockReturnValue(targetFile),
-    trustedSet: {
-      targets: {
-        signed: {
-          targets: [caCertTarget, tlogKeyTarget, ctlogKeyTarget],
-        },
-      },
-    },
-  };
-
-  const subject = new TrustedRootFetcher(tuf as unknown as Updater);
-
   describe('getTrustedRoot', () => {
-    it('assembles and returns the TrustedRoot', async () => {
-      const root = await subject.getTrustedRoot();
+    describe('when the targets can be retrieved', () => {
+      // Dummy TUF Updater
+      const tuf = {
+        refresh: jest.fn(),
+        findCachedTarget: jest.fn().mockReturnValue(targetFile),
+        trustedSet: {
+          targets: {
+            signed: { targets: [caCertTarget, tlogKeyTarget, ctlogKeyTarget] },
+          },
+        },
+      };
 
-      expect(root).toBeDefined();
-      expect(root.certificateAuthorities).toHaveLength(1);
-      expect(root.tlogs).toHaveLength(1);
-      expect(root.ctlogs).toHaveLength(1);
-      expect(root.timestampAuthorities).toHaveLength(0);
+      const subject = new TrustedRootFetcher(tuf as unknown as Updater);
 
-      const ca = root.certificateAuthorities[0];
-      expect(ca.uri).toEqual('');
-      expect(ca.certChain?.certificates).toHaveLength(1);
-      expect(ca.certChain?.certificates[0].rawBytes).toBeDefined();
+      it('assembles and returns the TrustedRoot', async () => {
+        const root = await subject.getTrustedRoot();
 
-      const tlog = root.tlogs[0];
-      expect(tlog.baseUrl).toEqual(tlogKeyTarget.custom.sigstore.uri);
-      expect(tlog.publicKey?.rawBytes).toBeDefined();
+        expect(root).toBeDefined();
+        expect(root.certificateAuthorities).toHaveLength(1);
+        expect(root.tlogs).toHaveLength(1);
+        expect(root.ctlogs).toHaveLength(1);
+        expect(root.timestampAuthorities).toHaveLength(0);
 
-      const ctlog = root.ctlogs[0];
-      expect(ctlog.baseUrl).toEqual(ctlogKeyTarget.custom.sigstore.uri);
-      expect(ctlog.publicKey?.rawBytes).toBeDefined();
+        const ca = root.certificateAuthorities[0];
+        expect(ca.uri).toEqual('');
+        expect(ca.certChain?.certificates).toHaveLength(1);
+        expect(ca.certChain?.certificates[0].rawBytes).toBeDefined();
+
+        const tlog = root.tlogs[0];
+        expect(tlog.baseUrl).toEqual(tlogKeyTarget.custom.sigstore.uri);
+        expect(tlog.publicKey?.rawBytes).toBeDefined();
+
+        const ctlog = root.ctlogs[0];
+        expect(ctlog.baseUrl).toEqual(ctlogKeyTarget.custom.sigstore.uri);
+        expect(ctlog.publicKey?.rawBytes).toBeDefined();
+      });
+    });
+
+    describe('when the TUF refresh throws an error', () => {
+      // Dummy TUF Updater
+      const tuf = {
+        refresh: jest.fn().mockRejectedValue(new Error('oops')),
+        trustedSet: {
+          targets: {
+            signed: { targets: [caCertTarget, tlogKeyTarget, ctlogKeyTarget] },
+          },
+        },
+      };
+
+      const subject = new TrustedRootFetcher(tuf as unknown as Updater);
+
+      it('assembles and returns the TrustedRoot', async () => {
+        await expect(() => subject.getTrustedRoot()).rejects.toThrow(
+          TrustedRootError
+        );
+      });
+    });
+
+    describe('when the TUF target download throws an error', () => {
+      // Dummy TUF Updater
+      const tuf = {
+        refresh: jest.fn(),
+        findCachedTarget: jest.fn().mockResolvedValue(undefined),
+        downloadTarget: jest.fn().mockRejectedValue(new Error('oops')),
+        trustedSet: {
+          targets: {
+            signed: { targets: [caCertTarget, tlogKeyTarget, ctlogKeyTarget] },
+          },
+        },
+      };
+
+      const subject = new TrustedRootFetcher(tuf as unknown as Updater);
+
+      it('assembles and returns the TrustedRoot', async () => {
+        await expect(() => subject.getTrustedRoot()).rejects.toThrow(
+          TrustedRootError
+        );
+      });
     });
   });
 });
