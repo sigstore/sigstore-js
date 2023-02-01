@@ -79,7 +79,7 @@ export class TrustedRootFetcher {
 
     return Promise.all(
       filteredTargets.map(async (target) => {
-        const keyBytes = await this.readKey(target);
+        const keyBytes = await this.readTargetBytes(target);
         const uri = isTargetMetadata(target.custom.sigstore)
           ? target.custom.sigstore.uri
           : '';
@@ -116,7 +116,7 @@ export class TrustedRootFetcher {
     const filteredTargets = filterByUsage(targets, usage);
 
     const certs = await Promise.all(
-      filteredTargets.map(async (target) => await this.readKey(target))
+      filteredTargets.map(async (target) => await this.readTargetBytes(target))
     );
 
     return [
@@ -131,9 +131,8 @@ export class TrustedRootFetcher {
     ];
   }
 
-  // Reads the contents of the specified target file, and returns the
-  // contents as a DER-encoded buffer.
-  private async readKey(target: TargetFile): Promise<Buffer> {
+  // Reads the contents of the specified target file as a DER-encoded buffer.
+  private async readTargetBytes(target: TargetFile): Promise<Buffer> {
     try {
       let path = await this.tuf.findCachedTarget(target);
 
@@ -146,7 +145,9 @@ export class TrustedRootFetcher {
       const file = fs.readFileSync(path);
       return pem.toDER(file.toString('utf-8'));
     } catch (err) {
-      throw new TrustedRootError('error reading key');
+      throw new TrustedRootError(
+        `error reading key/certificate for ${target.path}`
+      );
     }
   }
 }

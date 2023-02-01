@@ -53,11 +53,11 @@ function initRepoMap(rootDir: string): RepositoryMap {
 
 function initClient(name: string, url: string, rootDir: string): Updater {
   const repoCachePath = path.join(rootDir, name);
-  const targetCachePath = path.join(rootDir, 'targets');
+  const targetCachePath = path.join(repoCachePath, 'targets');
   const tufRootDest = path.join(repoCachePath, 'root.json');
 
-  // Only copy the trusted root if it doesn't already exist. It's possible that
-  // the cached root has already been updated, so we don't want to roll it
+  // Only copy the TUF trusted root if it doesn't already exist. It's possible
+  // that the cached root has already been updated, so we don't want to roll it
   // back.
   if (!fs.existsSync(tufRootDest)) {
     const tufRootSrc = require.resolve(`../../store/${name}-root.json`);

@@ -53,6 +53,7 @@ export type VerifyOptions = {
   certificateIdentityEmail?: string;
   certificateIdentityURI?: string;
   certificateOIDs?: Record<string, string>;
+  tufRootPath?: string;
   keySelector?: KeySelector;
 } & TLogOptions;
 
@@ -115,7 +116,7 @@ export async function verify(
   options: VerifyOptions,
   data?: Buffer
 ): Promise<void> {
-  const cacheDir = defaultCacheDir();
+  const cacheDir = options.tufRootPath || defaultCacheDir();
   const trustedRoot = await tuf.getTrustedRoot(cacheDir);
   const verifier = new Verifier(trustedRoot, options.keySelector);
 
@@ -161,7 +162,7 @@ function defaultCacheDir(): string {
     cacheRootDir = os.tmpdir();
   }
 
-  return path.join(cacheRootDir, '.sigstore', 'cache');
+  return path.join(cacheRootDir, '.sigstore', 'js-root');
 }
 
 // Assembles the AtifactVerificationOptions from the supplied VerifyOptions.
