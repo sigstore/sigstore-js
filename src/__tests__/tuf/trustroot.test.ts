@@ -2,7 +2,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { Updater } from 'tuf-js';
-import { TrustedRootError } from '../../error';
+import { InternalError } from '../../error';
 import { TrustedRootFetcher } from '../../tuf/trustroot';
 
 describe('TrustedRootFetcher', () => {
@@ -104,7 +104,7 @@ VQ3bF01uZKteMdcV/3qhCmWOecoxRqwrbYTshGg9NyXcBbve6zKwZVTLeg==
 
       it('assembles and returns the TrustedRoot', async () => {
         await expect(() => subject.getTrustedRoot()).rejects.toThrow(
-          TrustedRootError
+          InternalError
         );
       });
     });
@@ -126,7 +126,7 @@ VQ3bF01uZKteMdcV/3qhCmWOecoxRqwrbYTshGg9NyXcBbve6zKwZVTLeg==
 
       it('assembles and returns the TrustedRoot', async () => {
         await expect(() => subject.getTrustedRoot()).rejects.toThrow(
-          TrustedRootError
+          InternalError
         );
       });
     });

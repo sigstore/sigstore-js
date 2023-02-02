@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import nock from 'nock';
+import { InternalError } from '../../error';
 import {
   toProposedHashedRekordEntry,
   toProposedIntotoEntry,
@@ -64,7 +65,7 @@ describe('TLogClient', () => {
       it('returns an error', async () => {
         await expect(
           subject.createMessageSignatureEntry(digest, sigMaterial)
-        ).rejects.toThrow('HTTP Error: 500 Internal Server Error');
+        ).rejects.toThrow(InternalError);
       });
     });
 
@@ -213,7 +214,7 @@ describe('TLogClient', () => {
       it('returns an error', async () => {
         await expect(
           subject.createDSSEEntry(dsse, sigMaterial)
-        ).rejects.toThrow('HTTP Error: 500 Internal Server Error');
+        ).rejects.toThrow(InternalError);
       });
     });
 
@@ -235,7 +236,7 @@ describe('TLogClient', () => {
             subject.createDSSEEntry(dsse, sigMaterial, {
               fetchOnConflict: false,
             })
-          ).rejects.toThrow('HTTP Error: 409 Conflict');
+          ).rejects.toThrow(InternalError);
         });
       });
 

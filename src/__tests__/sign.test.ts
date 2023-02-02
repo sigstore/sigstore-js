@@ -15,6 +15,7 @@ limitations under the License.
 */
 import nock from 'nock';
 import { CAClient } from '../ca';
+import { InternalError } from '../error';
 import { Signer } from '../sign';
 import { TLogClient } from '../tlog';
 import { SignatureMaterial, SignerFunc } from '../types/signature';
@@ -70,7 +71,7 @@ describe('Signer', () => {
 
         it('returns an error', async () => {
           await expect(subject.signBlob(payload)).rejects.toThrow(
-            'HTTP Error: 500 Internal Server Error'
+            InternalError
           );
         });
       });
@@ -215,7 +216,7 @@ describe('Signer', () => {
 
           it('returns an error', async () => {
             await expect(subject.signBlob(payload)).rejects.toThrow(
-              'HTTP Error: 500 Internal Server Error'
+              InternalError
             );
           });
         });

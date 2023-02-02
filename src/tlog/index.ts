@@ -15,6 +15,7 @@ limitations under the License.
 */
 import { Rekor } from '../client';
 import { HTTPError } from '../client/error';
+import { InternalError } from '../error';
 import { SignatureMaterial } from '../types/signature';
 import { bundle, Bundle, Envelope } from '../types/sigstore';
 import { toProposedHashedRekordEntry, toProposedIntotoEntry } from './format';
@@ -56,8 +57,12 @@ export class TLogClient implements TLog {
   ): Promise<Bundle> {
     const proposedEntry = toProposedHashedRekordEntry(digest, sigMaterial);
 
-    const entry = await this.rekor.createEntry(proposedEntry);
-    return bundle.toMessageSignatureBundle(digest, sigMaterial, entry);
+    try {
+      const entry = await this.rekor.createEntry(proposedEntry);
+      return bundle.toMessageSignatureBundle(digest, sigMaterial, entry);
+    } catch (err) {
+      throw new InternalError('error creating tlog entry', err);
+    }
   }
 
   async createDSSEEntry(
@@ -78,7 +83,7 @@ export class TLogClient implements TLog {
         const uuid = err.location.split('/').pop() || '';
         entry = await this.rekor.getEntry(uuid);
       } else {
-        throw err;
+        throw new InternalError('error creating tlog entry', err);
       }
     }
 

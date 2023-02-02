@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { UnsupportedVersionError, VerificationError } from '../../error';
+import { VerificationError } from '../../error';
 import * as sigstore from '../../types/sigstore';
 import { crypto, encoding as enc } from '../../util';
 import { EntryKind, HashedRekordKind, IntotoKind } from '../types';
@@ -41,9 +41,7 @@ export function verifyTLogBody(
         verifyHashedRekordTLogBody(body, bundleContent);
         break;
       default:
-        throw new UnsupportedVersionError(
-          `unsupported kind in tlog entry: ${kind}`
-        );
+        throw new VerificationError(`unsupported kind in tlog entry: ${kind}`);
     }
     return true;
   } catch (e) {
@@ -57,7 +55,7 @@ function verifyIntotoTLogBody(
   content: sigstore.Bundle['content']
 ): void {
   if (content?.$case !== 'dsseEnvelope') {
-    throw new UnsupportedVersionError(
+    throw new VerificationError(
       `unsupported bundle content: ${content?.$case || 'unknown'}`
     );
   }
@@ -69,7 +67,7 @@ function verifyIntotoTLogBody(
       verifyIntoto002TLogBody(tlogEntry, dsse);
       break;
     default:
-      throw new UnsupportedVersionError(
+      throw new VerificationError(
         `unsupported intoto version: ${tlogEntry.apiVersion}`
       );
   }
@@ -81,7 +79,7 @@ function verifyHashedRekordTLogBody(
   content: sigstore.Bundle['content']
 ): void {
   if (content?.$case !== 'messageSignature') {
-    throw new UnsupportedVersionError(
+    throw new VerificationError(
       `unsupported bundle content: ${content?.$case || 'unknown'}`
     );
   }
@@ -93,7 +91,7 @@ function verifyHashedRekordTLogBody(
       verifyHashedrekor001TLogBody(tlogEntry, messageSignature);
       break;
     default:
-      throw new UnsupportedVersionError(
+      throw new VerificationError(
         `unsupported hashedrekord version: ${tlogEntry.apiVersion}`
       );
   }
