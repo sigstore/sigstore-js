@@ -13,6 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import { CA, CAClient } from './ca';
 import identity, { Provider } from './identity';
 import { Signer } from './sign';
@@ -50,6 +53,7 @@ export type VerifyOptions = {
   certificateIdentityEmail?: string;
   certificateIdentityURI?: string;
   certificateOIDs?: Record<string, string>;
+  tufRootPath?: string;
   keySelector?: KeySelector;
 } & TLogOptions;
 
@@ -112,7 +116,8 @@ export async function verify(
   options: VerifyOptions,
   data?: Buffer
 ): Promise<void> {
-  const trustedRoot = tuf.getTrustedRoot();
+  const cacheDir = options.tufRootPath || defaultCacheDir();
+  const trustedRoot = await tuf.getTrustedRoot(cacheDir);
   const verifier = new Verifier(trustedRoot, options.keySelector);
 
   const deserializedBundle = sigstore.bundleFromJSON(bundle);
@@ -147,6 +152,17 @@ function configureIdentityProviders(
   }
 
   return idps;
+}
+
+function defaultCacheDir(): string {
+  let cacheRootDir = os.homedir();
+  try {
+    fs.accessSync(os.homedir(), fs.constants.W_OK | fs.constants.R_OK);
+  } catch (e) {
+    cacheRootDir = os.tmpdir();
+  }
+
+  return path.join(cacheRootDir, '.sigstore', 'js-root');
 }
 
 // Assembles the AtifactVerificationOptions from the supplied VerifyOptions.

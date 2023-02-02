@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
-const PEM_FOOTER = '-----END CERTIFICATE-----';
+const PEM_HEADER = /-----BEGIN (.*)-----/;
+const PEM_FOOTER = /-----END (.*)-----/;
 
 // Given a set of PEM-encoded certificates bundled in a single string, returns
 // an array of certificates. Standard PEM encoding dictates that each certificate
@@ -25,7 +25,7 @@ export function split(certificate: string): string[] {
 
   certificate.split('\n').forEach((line) => {
     line.includes;
-    if (line === PEM_HEADER) {
+    if (line.match(PEM_HEADER)) {
       cert = [];
     }
 
@@ -33,7 +33,7 @@ export function split(certificate: string): string[] {
       cert.push(line);
     }
 
-    if (line === PEM_FOOTER) {
+    if (line.match(PEM_FOOTER)) {
       certs.push(cert.join('\n').concat('\n'));
     }
   });
@@ -45,7 +45,7 @@ export function toDER(certificate: string): Buffer {
   let der = '';
 
   certificate.split('\n').forEach((line) => {
-    if (line === PEM_HEADER || line === PEM_FOOTER) {
+    if (line.match(PEM_HEADER) || line.match(PEM_FOOTER)) {
       return;
     }
 
@@ -58,11 +58,13 @@ export function toDER(certificate: string): Buffer {
 // Translates a DER-encoded buffer into a PEM-encoded string. Standard PEM
 // encoding dictates that each certificate should have a trailing newline after
 // the footer.
-export function fromDER(certificate: Buffer): string {
+export function fromDER(certificate: Buffer, type = 'CERTIFICATE'): string {
   // Base64-encode the certificate.
   const der = certificate.toString('base64');
   // Split the certificate into lines of 64 characters.
   const lines = der.match(/.{1,64}/g) || '';
 
-  return [PEM_HEADER, ...lines, PEM_FOOTER].join('\n').concat('\n');
+  return [`-----BEGIN ${type}-----`, ...lines, `-----END ${type}-----`]
+    .join('\n')
+    .concat('\n');
 }

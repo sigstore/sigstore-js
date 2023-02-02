@@ -46,9 +46,21 @@ describe('pem', () => {
   });
 
   describe('toDER', () => {
-    it('returns a DER-encoded certificate', () => {
-      const der = toDER(cert1);
-      expect(der).toEqual(Buffer.from('ABCD', 'base64'));
+    describe('when the object is a certificate', () => {
+      const pem = cert1;
+      it('returns a DER-encoded certificate', () => {
+        const der = toDER(pem);
+        expect(der).toEqual(Buffer.from('ABCD', 'base64'));
+      });
+    });
+
+    describe('when the object is a key', () => {
+      const pem =
+        '-----BEGIN PUBLIC KEY-----\nDEFG\n-----END PUBLIC KEY-----\n';
+      it('returns a DER-encoded key', () => {
+        const der = toDER(pem);
+        expect(der).toEqual(Buffer.from('DEFG', 'base64'));
+      });
     });
   });
 
