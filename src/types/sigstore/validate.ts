@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { InvalidBundleError } from '../../error';
+import { ValidationError } from '../../error';
 import { WithRequired } from '../utility';
 import { Bundle, VerificationMaterial } from './__generated__/sigstore_bundle';
 import { MessageSignature } from './__generated__/sigstore_common';
@@ -105,7 +105,7 @@ export function assertValidBundle(b: Bundle): asserts b is ValidBundle {
   }
 
   if (invalidValues.length > 0) {
-    throw new InvalidBundleError(
+    throw new ValidationError(
       `invalid/missing bundle values: ${invalidValues.join(', ')}`
     );
   }

@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import nock from 'nock';
+import { InternalError } from '../../error';
 import {
   toProposedHashedRekordEntry,
   toProposedIntotoEntry,
@@ -64,7 +65,7 @@ describe('TLogClient', () => {
       it('returns an error', async () => {
         await expect(
           subject.createMessageSignatureEntry(digest, sigMaterial)
-        ).rejects.toThrow('HTTP Error: 500 Internal Server Error');
+        ).rejects.toThrow(InternalError);
       });
     });
 
@@ -213,7 +214,7 @@ describe('TLogClient', () => {
       it('returns an error', async () => {
         await expect(
           subject.createDSSEEntry(dsse, sigMaterial)
-        ).rejects.toThrow('HTTP Error: 500 Internal Server Error');
+        ).rejects.toThrow(InternalError);
       });
     });
 
@@ -235,52 +236,68 @@ describe('TLogClient', () => {
             subject.createDSSEEntry(dsse, sigMaterial, {
               fetchOnConflict: false,
             })
-          ).rejects.toThrow('HTTP Error: 409 Conflict');
+          ).rejects.toThrow(InternalError);
         });
       });
 
       describe('when fetchOnConflict is true', () => {
-        const signatureBundle = {
-          kind: 'intoto',
-          apiVersion: '0.0.2',
-          spec: {
-            signature: {
-              content: signature,
-              publicKey: { content: leafCertificate },
+        describe('when the fetch is successful', () => {
+          const signatureBundle = {
+            kind: 'intoto',
+            apiVersion: '0.0.2',
+            spec: {
+              signature: {
+                content: signature,
+                publicKey: { content: leafCertificate },
+              },
             },
-          },
-        };
+          };
 
-        const rekorEntry = {
-          [uuid]: {
-            body: Buffer.from(JSON.stringify(signatureBundle)).toString(
-              'base64'
-            ),
-            integratedTime: 1654015743,
-            logID:
-              'c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d',
-            logIndex: 2513258,
-            verification: {
-              signedEntryTimestamp:
-                'MEUCIQD6CD7ZNLUipFoxzmSL/L8Ewic4SRkXN77UjfJZ7d/wAAIgatokSuX9Rg0iWxAgSfHMtcsagtDCQalU5IvXdQ+yLEA=',
+          const rekorEntry = {
+            [uuid]: {
+              body: Buffer.from(JSON.stringify(signatureBundle)).toString(
+                'base64'
+              ),
+              integratedTime: 1654015743,
+              logID:
+                'c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d',
+              logIndex: 2513258,
+              verification: {
+                signedEntryTimestamp:
+                  'MEUCIQD6CD7ZNLUipFoxzmSL/L8Ewic4SRkXN77UjfJZ7d/wAAIgatokSuX9Rg0iWxAgSfHMtcsagtDCQalU5IvXdQ+yLEA=',
+              },
             },
-          },
-        };
+          };
 
-        beforeEach(() => {
-          nock(baseURL)
-            .get(`/api/v1/log/entries/${uuid}`)
-            .reply(200, rekorEntry);
+          beforeEach(() => {
+            nock(baseURL)
+              .get(`/api/v1/log/entries/${uuid}`)
+              .reply(200, rekorEntry);
+          });
+
+          it('returns a signature bundle', async () => {
+            const bundle = await subject.createDSSEEntry(dsse, sigMaterial, {
+              fetchOnConflict: true,
+            });
+            expect(bundle).toBeTruthy();
+            expect(bundle.mediaType).toEqual(
+              'application/vnd.dev.sigstore.bundle+json;version=0.1'
+            );
+          });
         });
 
-        it('returns a signature bundle', async () => {
-          const bundle = await subject.createDSSEEntry(dsse, sigMaterial, {
-            fetchOnConflict: true,
+        describe('when the fetch returns an error', () => {
+          beforeEach(() => {
+            nock(baseURL).get(`/api/v1/log/entries/${uuid}`).reply(404, {});
           });
-          expect(bundle).toBeTruthy();
-          expect(bundle.mediaType).toEqual(
-            'application/vnd.dev.sigstore.bundle+json;version=0.1'
-          );
+
+          it('returns an error', async () => {
+            await expect(
+              subject.createDSSEEntry(dsse, sigMaterial, {
+                fetchOnConflict: true,
+              })
+            ).rejects.toThrow(InternalError);
+          });
         });
       });
     });

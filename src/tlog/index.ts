@@ -15,10 +15,11 @@ limitations under the License.
 */
 import { Rekor } from '../client';
 import { HTTPError } from '../client/error';
+import { InternalError } from '../error';
 import { SignatureMaterial } from '../types/signature';
 import { bundle, Bundle, Envelope } from '../types/sigstore';
 import { toProposedHashedRekordEntry, toProposedIntotoEntry } from './format';
-import { Entry } from './types';
+import { Entry, EntryKind } from './types';
 
 interface CreateEntryOptions {
   fetchOnConflict?: boolean;
@@ -52,11 +53,14 @@ export class TLogClient implements TLog {
 
   async createMessageSignatureEntry(
     digest: Buffer,
-    sigMaterial: SignatureMaterial
+    sigMaterial: SignatureMaterial,
+    options: CreateEntryOptions = {}
   ): Promise<Bundle> {
     const proposedEntry = toProposedHashedRekordEntry(digest, sigMaterial);
-
-    const entry = await this.rekor.createEntry(proposedEntry);
+    const entry = await this.createEntry(
+      proposedEntry,
+      options.fetchOnConflict
+    );
     return bundle.toMessageSignatureBundle(digest, sigMaterial, entry);
   }
 
@@ -65,24 +69,38 @@ export class TLogClient implements TLog {
     sigMaterial: SignatureMaterial,
     options: CreateEntryOptions = {}
   ): Promise<Bundle> {
-    const fetchOnConflict = options.fetchOnConflict ?? false;
+    const proposedEntry = toProposedIntotoEntry(envelope, sigMaterial);
+    const entry = await this.createEntry(
+      proposedEntry,
+      options.fetchOnConflict
+    );
+    return bundle.toDSSEBundle(envelope, sigMaterial, entry);
+  }
+
+  private async createEntry(
+    proposedEntry: EntryKind,
+    fetchOnConflict = false
+  ): Promise<Entry> {
     let entry: Entry;
 
     try {
-      const proposedEntry = toProposedIntotoEntry(envelope, sigMaterial);
       entry = await this.rekor.createEntry(proposedEntry);
     } catch (err) {
       // If the entry already exists, fetch it (if enabled)
       if (entryExistsError(err) && fetchOnConflict) {
         // Grab the UUID of the existing entry from the location header
         const uuid = err.location.split('/').pop() || '';
-        entry = await this.rekor.getEntry(uuid);
+        try {
+          entry = await this.rekor.getEntry(uuid);
+        } catch (err) {
+          throw new InternalError('error fetching tlog entry', err);
+        }
       } else {
-        throw err;
+        throw new InternalError('error creating tlog entry', err);
       }
     }
 
-    return bundle.toDSSEBundle(envelope, sigMaterial, entry);
+    return entry;
   }
 }
 

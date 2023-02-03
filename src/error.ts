@@ -13,12 +13,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-export class VerificationError extends Error {}
+/* eslint-disable @typescript-eslint/no-explicit-any */
+class BaseError extends Error {
+  cause: any | undefined;
 
-export class InvalidBundleError extends Error {}
+  constructor(message: string, cause?: any) {
+    super(message);
+    this.name = this.constructor.name;
+    this.cause = cause;
+  }
+}
 
-export class UnsupportedVersionError extends Error {}
+export class VerificationError extends BaseError {}
 
-export class CertificateChainVerificationError extends VerificationError {}
+export class ValidationError extends BaseError {}
 
-export class TrustedRootError extends Error {}
+export class InternalError extends BaseError {}
+
+export class PolicyError extends BaseError {}

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { InvalidBundleError } from '../../../error';
+import { ValidationError } from '../../../error';
 import {
   assertValidBundle,
   Bundle,
@@ -26,7 +26,7 @@ describe('assertValidBundle', () => {
     const bundle = {} as Bundle;
 
     it('throws an error', () => {
-      expect(() => assertValidBundle(bundle)).toThrow(InvalidBundleError);
+      expect(() => assertValidBundle(bundle)).toThrow(ValidationError);
     });
   });
 
@@ -42,7 +42,7 @@ describe('assertValidBundle', () => {
       } as Bundle;
 
       it('throws an error', () => {
-        expect(() => assertValidBundle(bundle)).toThrow(InvalidBundleError);
+        expect(() => assertValidBundle(bundle)).toThrow(ValidationError);
       });
     });
 
@@ -58,7 +58,7 @@ describe('assertValidBundle', () => {
       } as Bundle;
 
       it('throws an error', () => {
-        expect(() => assertValidBundle(bundle)).toThrow(InvalidBundleError);
+        expect(() => assertValidBundle(bundle)).toThrow(ValidationError);
       });
     });
 
@@ -74,7 +74,7 @@ describe('assertValidBundle', () => {
       } as Bundle;
 
       it('throws an error', () => {
-        expect(() => assertValidBundle(bundle)).toThrow(InvalidBundleError);
+        expect(() => assertValidBundle(bundle)).toThrow(ValidationError);
       });
     });
   });
@@ -93,7 +93,7 @@ describe('assertValidBundle', () => {
       } as Bundle;
 
       it('throws an error', () => {
-        expect(() => assertValidBundle(bundle)).toThrow(InvalidBundleError);
+        expect(() => assertValidBundle(bundle)).toThrow(ValidationError);
       });
     });
 
@@ -110,7 +110,7 @@ describe('assertValidBundle', () => {
       } as Bundle;
 
       it('throws an error', () => {
-        expect(() => assertValidBundle(bundle)).toThrow(InvalidBundleError);
+        expect(() => assertValidBundle(bundle)).toThrow(ValidationError);
       });
     });
 
@@ -130,7 +130,7 @@ describe('assertValidBundle', () => {
       } as Bundle;
 
       it('throws an error', () => {
-        expect(() => assertValidBundle(bundle)).toThrow(InvalidBundleError);
+        expect(() => assertValidBundle(bundle)).toThrow(ValidationError);
       });
     });
 
@@ -147,7 +147,7 @@ describe('assertValidBundle', () => {
       } as Bundle;
 
       it('throws an error', () => {
-        expect(() => assertValidBundle(bundle)).toThrow(InvalidBundleError);
+        expect(() => assertValidBundle(bundle)).toThrow(ValidationError);
       });
     });
   });
@@ -164,7 +164,7 @@ describe('assertValidBundle', () => {
     } as Bundle;
 
     it('throws an error', () => {
-      expect(() => assertValidBundle(bundle)).toThrow(InvalidBundleError);
+      expect(() => assertValidBundle(bundle)).toThrow(ValidationError);
     });
   });
 
@@ -181,7 +181,7 @@ describe('assertValidBundle', () => {
     } as Bundle;
 
     it('throws an error', () => {
-      expect(() => assertValidBundle(bundle)).toThrow(InvalidBundleError);
+      expect(() => assertValidBundle(bundle)).toThrow(ValidationError);
     });
   });
 
@@ -206,7 +206,7 @@ describe('assertValidBundle', () => {
       } as Bundle;
 
       it('throws an error', () => {
-        expect(() => assertValidBundle(bundle)).toThrow(InvalidBundleError);
+        expect(() => assertValidBundle(bundle)).toThrow(ValidationError);
       });
     });
 
@@ -230,7 +230,7 @@ describe('assertValidBundle', () => {
       } as Bundle;
 
       it('throws an error', () => {
-        expect(() => assertValidBundle(bundle)).toThrow(InvalidBundleError);
+        expect(() => assertValidBundle(bundle)).toThrow(ValidationError);
       });
     });
   });

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { VerificationError } from '../../error';
+import { PolicyError } from '../../error';
 import * as sigstore from '../../types/sigstore';
 import { x509Certificate } from '../../x509/cert';
 
@@ -38,7 +38,7 @@ export function verifySignerIdentity(
   );
 
   if (!signerVerified) {
-    throw new VerificationError('Certificate issued to untrusted signer');
+    throw new PolicyError('Certificate issued to untrusted signer');
   }
 }
 
