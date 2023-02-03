@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { TargetFile, Updater } from 'tuf-js';
-import { TrustedRootError } from '../error';
+import { InternalError } from '../error';
 import * as sigstore from '../types/sigstore';
 import { crypto, pem } from '../util';
 
@@ -59,7 +59,7 @@ export class TrustedRootFetcher {
     try {
       await this.tuf.refresh();
     } catch (e) {
-      throw new TrustedRootError('error refreshing trust metadata');
+      throw new InternalError('error refreshing trust metadata');
     }
 
     return Object.values(
@@ -145,7 +145,7 @@ export class TrustedRootFetcher {
       const file = fs.readFileSync(path);
       return pem.toDER(file.toString('utf-8'));
     } catch (err) {
-      throw new TrustedRootError(
+      throw new InternalError(
         `error reading key/certificate for ${target.path}`
       );
     }

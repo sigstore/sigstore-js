@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { VerificationError } from '../error';
+import { PolicyError, VerificationError } from '../error';
 import { Signer } from '../sign';
 import {
   sign,
@@ -272,7 +272,7 @@ describe('#verify', () => {
 
     it('throws an error', async () => {
       await expect(verify(bundle, options, artifact)).rejects.toThrowError(
-        VerificationError
+        PolicyError
       );
     });
   });
@@ -288,7 +288,7 @@ describe('#verify', () => {
 
     it('throws an error', async () => {
       await expect(verify(bundle, options, artifact)).rejects.toThrowError(
-        VerificationError
+        PolicyError
       );
     });
   });
