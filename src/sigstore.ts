@@ -30,16 +30,15 @@ export {
   SerializedEnvelope as Envelope,
 } from './types/sigstore';
 
-export const DEFAULT_FULCIO_BASE_URL = 'https://fulcio.sigstore.dev';
-export const DEFAULT_REKOR_BASE_URL = 'https://rekor.sigstore.dev';
+export const DEFAULT_FULCIO_URL = 'https://fulcio.sigstore.dev';
+export const DEFAULT_REKOR_URL = 'https://rekor.sigstore.dev';
 
 interface TLogOptions {
-  rekorBaseURL?: string;
+  rekorURL?: string;
 }
 
 export type SignOptions = {
-  fulcioBaseURL?: string;
-  rekorBaseURL?: string;
+  fulcioURL?: string;
   identityToken?: string;
   oidcIssuer?: string;
   oidcClientID?: string;
@@ -53,7 +52,6 @@ export type VerifyOptions = {
   certificateIdentityEmail?: string;
   certificateIdentityURI?: string;
   certificateOIDs?: Record<string, string>;
-  tufRootPath?: string;
   keySelector?: KeySelector;
 } & TLogOptions;
 
@@ -64,15 +62,15 @@ type IdentityProviderOptions = Pick<
   'identityToken' | 'oidcIssuer' | 'oidcClientID' | 'oidcClientSecret'
 >;
 
-function createCAClient(options: { fulcioBaseURL?: string }): CA {
+function createCAClient(options: { fulcioURL?: string }): CA {
   return new CAClient({
-    fulcioBaseURL: options.fulcioBaseURL || DEFAULT_FULCIO_BASE_URL,
+    fulcioBaseURL: options.fulcioURL || DEFAULT_FULCIO_URL,
   });
 }
 
-function createTLogClient(options: { rekorBaseURL?: string }): TLog {
+function createTLogClient(options: { rekorURL?: string }): TLog {
   return new TLogClient({
-    rekorBaseURL: options.rekorBaseURL || DEFAULT_REKOR_BASE_URL,
+    rekorBaseURL: options.rekorURL || DEFAULT_REKOR_URL,
   });
 }
 
@@ -93,7 +91,7 @@ export async function sign(
   return sigstore.Bundle.toJSON(bundle) as Bundle;
 }
 
-export async function signAttestation(
+export async function attest(
   payload: Buffer,
   payloadType: string,
   options: SignOptions = {}
@@ -113,16 +111,16 @@ export async function signAttestation(
 
 export async function verify(
   bundle: Bundle,
-  options: VerifyOptions,
-  data?: Buffer
+  payload?: Buffer,
+  options: VerifyOptions = {}
 ): Promise<void> {
-  const cacheDir = options.tufRootPath || defaultCacheDir();
+  const cacheDir = defaultCacheDir();
   const trustedRoot = await tuf.getTrustedRoot(cacheDir);
   const verifier = new Verifier(trustedRoot, options.keySelector);
 
   const deserializedBundle = sigstore.bundleFromJSON(bundle);
   const opts = collectArtifactVerificationOptions(options);
-  return verifier.verify(deserializedBundle, opts, data);
+  return verifier.verify(deserializedBundle, opts, payload);
 }
 
 // Translates the IdenityProviderOptions into a list of Providers which

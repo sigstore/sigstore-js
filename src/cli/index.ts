@@ -23,8 +23,8 @@ async function cli(args: string[]) {
     case 'sign':
       await sign(args[1]);
       break;
-    case 'sign-dsse':
-      await signDSSE(args[1], args[2]);
+    case 'attest':
+      await attest(args[1], args[2]);
       break;
     case 'verify':
       await verify(args[1], args[2]);
@@ -53,7 +53,7 @@ function printUsage() {
   Usage:
 
   sigstore sign         sign an artifact
-  sigstore sign-dsse    sign an artifact using dsse (Dead Simple Signing Envelope)
+  sigstore attest       sign an artifact using dsse (Dead Simple Signing Envelope)
   sigstore verify       verify an artifact
   sigstore version      print version information
   sigstore help         print help information
@@ -63,14 +63,14 @@ function printUsage() {
 const signOptions = {
   oidcClientID: 'sigstore',
   oidcIssuer: 'https://oauth2.sigstore.dev/auth',
-  rekorBaseURL: sigstore.DEFAULT_REKOR_BASE_URL,
+  rekorURL: sigstore.DEFAULT_REKOR_URL,
 };
 
 async function sign(artifactPath: string) {
   const buffer = fs.readFileSync(artifactPath);
   const bundle = await sigstore.sign(buffer, signOptions);
 
-  const url = `${signOptions.rekorBaseURL}/api/v1/log/entries`;
+  const url = `${signOptions.rekorURL}/api/v1/log/entries`;
   const logIndex = bundle.verificationMaterial?.tlogEntries[0].logIndex;
   console.error(`Created entry at index ${logIndex}, available at`);
   console.error(`${url}?logIndex=${logIndex}`);
@@ -78,16 +78,9 @@ async function sign(artifactPath: string) {
   console.log(JSON.stringify(bundle));
 }
 
-async function signDSSE(
-  artifactPath: string,
-  payloadType = INTOTO_PAYLOAD_TYPE
-) {
+async function attest(artifactPath: string, payloadType = INTOTO_PAYLOAD_TYPE) {
   const buffer = fs.readFileSync(artifactPath);
-  const bundle = await sigstore.signAttestation(
-    buffer,
-    payloadType,
-    signOptions
-  );
+  const bundle = await sigstore.attest(buffer, payloadType, signOptions);
   console.log(JSON.stringify(bundle));
 }
 
@@ -102,7 +95,7 @@ async function verify(bundlePath: string, artifactPath: string) {
   const bundle = JSON.parse(bundleFile.toString('utf-8'));
 
   try {
-    await sigstore.verify(bundle, {}, payload);
+    await sigstore.verify(bundle, payload, {});
     console.error('Verified OK');
   } catch (e) {
     console.error('Verification failed');

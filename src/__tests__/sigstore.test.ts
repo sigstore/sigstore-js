@@ -15,13 +15,7 @@ limitations under the License.
 */
 import { PolicyError, VerificationError } from '../error';
 import { Signer } from '../sign';
-import {
-  sign,
-  signAttestation,
-  utils,
-  verify,
-  VerifyOptions,
-} from '../sigstore';
+import { attest, sign, utils, verify, VerifyOptions } from '../sigstore';
 import { getTrustedRoot } from '../tuf';
 import {
   Bundle,
@@ -189,7 +183,7 @@ describe('signAttestation', () => {
   });
 
   it('constructs the Signer with the correct options', async () => {
-    await signAttestation(payload, payloadType);
+    await attest(payload, payloadType);
 
     // Signer was constructed
     expect(mockSigner).toHaveBeenCalledTimes(1);
@@ -206,13 +200,13 @@ describe('signAttestation', () => {
   });
 
   it('invokes the Signer instance with the correct params', async () => {
-    await signAttestation(payload, payloadType);
+    await attest(payload, payloadType);
 
     expect(mockSign).toHaveBeenCalledWith(payload, payloadType);
   });
 
   it('returns the correct envelope', async () => {
-    const sig = await signAttestation(payload, payloadType);
+    const sig = await attest(payload, payloadType);
 
     expect(sig).toEqual(Bundle.toJSON(bundle));
   });
@@ -228,7 +222,7 @@ describe('#verify', () => {
     const artifact = bundles.signature.artifact;
 
     it('does not throw an error', async () => {
-      await expect(verify(bundle, {}, artifact)).resolves.toBe(undefined);
+      await expect(verify(bundle, artifact, {})).resolves.toBe(undefined);
     });
   });
 
@@ -236,7 +230,7 @@ describe('#verify', () => {
     const bundle = bundles.signature.valid.withSigningCert;
     const artifact = Buffer.from('');
     it('throws an error', async () => {
-      await expect(verify(bundle, {}, artifact)).rejects.toThrowError(
+      await expect(verify(bundle, artifact, {})).rejects.toThrowError(
         VerificationError
       );
     });
@@ -258,7 +252,7 @@ describe('#verify', () => {
     };
 
     it('does not throw an error', async () => {
-      await expect(verify(bundle, options, artifact)).resolves.toBeUndefined();
+      await expect(verify(bundle, artifact, options)).resolves.toBeUndefined();
     });
   });
 
@@ -271,7 +265,7 @@ describe('#verify', () => {
     };
 
     it('throws an error', async () => {
-      await expect(verify(bundle, options, artifact)).rejects.toThrowError(
+      await expect(verify(bundle, artifact, options)).rejects.toThrowError(
         PolicyError
       );
     });
@@ -287,7 +281,7 @@ describe('#verify', () => {
     };
 
     it('throws an error', async () => {
-      await expect(verify(bundle, options, artifact)).rejects.toThrowError(
+      await expect(verify(bundle, artifact, options)).rejects.toThrowError(
         PolicyError
       );
     });
@@ -298,7 +292,7 @@ describe('#verify', () => {
     const artifact = bundles.signature.artifact;
 
     it('throws an error', async () => {
-      await expect(verify(bundle, {}, artifact)).rejects.toThrowError(
+      await expect(verify(bundle, artifact, {})).rejects.toThrowError(
         VerificationError
       );
     });
