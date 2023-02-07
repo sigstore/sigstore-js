@@ -1,32 +1,63 @@
 # sigstore-js
 
-⚠️ This project is not ready for general-purpose use! ⚠️
-
 A tool for signing and verifying signatures using JavaScript.
 One of the intended uses is to sign and verify npm packages
 but it can be used to sign and verify any file.
 
 ## Features
 
-* Support for signing npm packages using an OpenID Connect identity
+* Support for signing using an OpenID Connect identity
 * Support for publishing signatures to a [Rekor][1] instance
-* Support for verifying signatures on npm packages
-
-## TODO
-
-* Verify audience of received identity token
-* Verify signing certificate
-  * Verify against Fulcio certificate chain
-  * Verify the [Signed Certificate Timestamp]([url](https://datatracker.ietf.org/doc/html/rfc6962)) (SCT) against the transparency log's public key
-* Verification of Rekor response
-  * Verify the record's inclusion proof
-  * Verify signed entry timestamp
-* Support offline and online signature verification
-* Retrieve root cert and public keys via TUF client
+* Support for verifying Sigstore bundles
 
 ## Prerequisites
 
-- Node.js version 16+ (LTS)
+- Node.js version >= 14.17.0
+
+## Functions
+
+### sign(payload[, options])
+
+Generates a Sigstore signature for the supplied payload.
+Returns a [Sigstore bundle](https://github.com/sigstore/protobuf-specs/blob/9b722b68a717778ba4f11543afa4ef93205ab502/protos/sigstore_bundle.proto#L63-L84) containing the signature and the verification
+material necessary to verify the signature.
+
+* `payload` `<Buffer>`: The bytes of the artifact to be signed.
+* `options` `<Object>`
+  * `fulcioBaseURL` `<string>`: The base URL of the Fulcio instance to use for retrieving the signing certificate. Defaults to `'https://fulcio.sigstore.dev'`.
+  * `rekorBaseURL` `<string>`: The base URL of the Rekor instance to use when adding the signature to the transparency log. Defaults to `'https://rekor.sigstore.dev'`.
+  * `identityToken` `<string>`: The OIDC token identifying the signer. If no explicit token is supplied, an attempt will be made to retrieve one from the environment.
+
+### signAttestation(payload, payloadType[, options])
+
+Generates a Sigstore signature for the supplied in-toto statement.
+Returns a [Sigstore bundle](https://github.com/sigstore/protobuf-specs/blob/9b722b68a717778ba4f11543afa4ef93205ab502/protos/sigstore_bundle.proto#L63-L84) containing the [DSSE](https://github.com/secure-systems-lab/dsse)-wrapped statement and signature as well as the verification material necessary to verify the signature.
+
+* `payload` `<Buffer>`: The bytes of the statement to be signed.
+* `payloadType` `<string>`: MIME or content type describing the statement to be signed.
+* `options` `<Object>`
+  * `fulcioBaseURL` `<string>`: The base URL of the Fulcio instance to use for retrieving the signing certificate. Defaults to `'https://fulcio.sigstore.dev'`.
+  * `rekorBaseURL` `<string>`: The base URL of the Rekor instance to use when adding the signature to the transparency log. Defaults to `'https://rekor.sigstore.dev'`.
+  * `identityToken` `<string>`: The OIDC token identifying the signer. If no explicit token is supplied, an attempt will be made to retrieve one from the environment.
+
+
+### verify(bundle, options[, data])
+
+Verifies the signature in the supplied bundle.
+
+* `bundle` `<Bundle>`: The Sigstore bundle containing the signature to be verified and the verification material necessary to verify the signature.
+* `options` `<Object>`
+  * `ctLogThreshold` `<number>`: The number of certificate transparency logs on which the signing certificate must appear. Defaults to `1`.
+  * `tlogThreshold` `<number>`: The number of transparency logs on which the signature must appear. Defaults to `1`.
+  * `certificateIssuer` `<string>`: Value that must appear in the signing certificate's issuer extension (OID 1.3.6.1.4.1.57264.1.1). Not verified if no value is supplied.
+  * `certificateIdentityEmail` `<string>`: Email address which must appear in the signing certificate's Subject Alternative Name (SAN) extension. Must be specified in conjunction with the `certificateIssuer` option. Takes precedence over the `certificateIdentityURI` option. Not verified if no value is supplied.
+  * `certificateIdentityURI` `<string>`: URI which must appear in the signing certificate's Subject Alternative Name (SAN) extension. Must be specified in conjunction with the `certificateIssuer` option. Ignored if the `certificateIdentityEmail` option is set. Not verified if no value is supplied.
+  * `certificateOIDs` `<Object>`: A collection of OID/value pairs which must be present in the certificate's extension list. Not verified if no value is supplied.
+  * `tufRootPath` `<string>`: Fully-qualified path to use as the local cache for data retrieved from the Sigstore TUF repository. Defaults to `~/.sigstore/js-root`.
+* `data` `<Buffer>`: The bytes of the artifact over which the signature was created. Only necessary when the `sign` function was used to generate the signature since the Bundle does not contain any information about the artifact which was signed. Not required when the `signAttestation` function was used to generate the Bundle.
+
+
+## Development
 
 ### Updating protobufs
 
@@ -184,7 +215,7 @@ Certificate:
         Validity
             Not Before: Oct  5 22:28:19 2022 GMT
             Not After : Oct  5 22:38:19 2022 GMT
-        Subject: 
+        Subject:
         Subject Public Key Info:
             Public Key Algorithm: id-ecPublicKey
                 Public-Key: (256 bit)
@@ -199,17 +230,17 @@ Certificate:
         X509v3 extensions:
             X509v3 Key Usage: critical
                 Digital Signature
-            X509v3 Extended Key Usage: 
+            X509v3 Extended Key Usage:
                 Code Signing
-            X509v3 Subject Key Identifier: 
+            X509v3 Subject Key Identifier:
                 AE:CD:A1:C5:18:1C:64:25:74:6C:B9:8D:F6:AD:E0:25:1B:27:2B:71
-            X509v3 Authority Key Identifier: 
+            X509v3 Authority Key Identifier:
                 DF:D3:E9:CF:56:24:11:96:F9:A8:D8:E9:28:55:A2:C6:2E:18:64:3F
             X509v3 Subject Alternative Name: critical
                 email:brian@dehamer.com
-            1.3.6.1.4.1.57264.1.1: 
+            1.3.6.1.4.1.57264.1.1:
                 https://github.com/login/oauth
-            CT Precertificate SCTs: 
+            CT Precertificate SCTs:
                 Signed Certificate Timestamp:
                     Version   : v1 (0x0)
                     Log ID    : 08:60:92:F0:28:52:FF:68:45:D1:D1:6B:27:84:9C:45:
