@@ -29,7 +29,7 @@ jobs:
         echo -n "hello world" > artifact
     - name: Sign artifact
       run: |
-        ./bin/sigstore.js sign-dsse artifact "text/plain" > bundle.sigstore
+        ./bin/sigstore.js attest artifact "text/plain" > bundle.sigstore
     - name: Verify bundle
       run: |
         ./bin/sigstore.js verify bundle.sigstore
