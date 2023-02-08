@@ -69,6 +69,8 @@ Verifies the signature in the supplied bundle.
   * `certificateIdentityEmail` `<string>`: Email address which must appear in the signing certificate's Subject Alternative Name (SAN) extension. Must be specified in conjunction with the `certificateIssuer` option. Takes precedence over the `certificateIdentityURI` option. Not verified if no value is supplied.
   * `certificateIdentityURI` `<string>`: URI which must appear in the signing certificate's Subject Alternative Name (SAN) extension. Must be specified in conjunction with the `certificateIssuer` option. Ignored if the `certificateIdentityEmail` option is set. Not verified if no value is supplied.
   * `certificateOIDs` `<Object>`: A collection of OID/value pairs which must be present in the certificate's extension list. Not verified if no value is supplied.
+  * `keySelector` `<Function>`: Callback invoked to retrieve the public key (as either `string` or `Buffer`) necessary to verify the bundle signature. Not used when the signature was generated from a Fulcio-issued signing certificate.
+    * `hint` `<String>`: The hint from the bundle used to identify the the signing key.
 
 
 ### utils
