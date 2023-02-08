@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import crypto from 'crypto';
 import { VerificationError } from '../error';
 import * as sigstore from '../types/sigstore';
 import { Verifier } from '../verify';
@@ -89,35 +88,20 @@ describe('Verifier', () => {
         });
       });
 
-      describe('when the key comes from the trusted signers', () => {
+      describe('when the key comes from the key selector callback', () => {
+        const subject = new Verifier(
+          trustedRoot,
+          () => bundles.signature.publicKey
+        );
         const bundle = sigstore.bundleFromJSON(
           bundles.signature.valid.withPublicKey
         );
-
-        const publicKey = crypto.createPublicKey(bundles.signature.publicKey);
-
-        const optionsWithSigners: sigstore.RequiredArtifactVerificationOptions =
-          {
-            ...options,
-            signers: {
-              $case: 'publicKeys',
-              publicKeys: {
-                publicKeys: [
-                  {
-                    keyDetails:
-                      sigstore.PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
-                    rawBytes: publicKey.export({ format: 'der', type: 'spki' }),
-                  },
-                ],
-              },
-            },
-          };
 
         describe('when the key is available', () => {
           describe('when the signature and the cert match', () => {
             it('does NOT throw an error', () => {
               expect(() =>
-                subject.verify(bundle, optionsWithSigners, payload)
+                subject.verify(bundle, options, payload)
               ).not.toThrow();
             });
           });
@@ -125,7 +109,7 @@ describe('Verifier', () => {
           describe('when the payload digest does not match the value in the bundle', () => {
             it('throws an error', () => {
               expect(() =>
-                subject.verify(bundle, optionsWithSigners, Buffer.from(''))
+                subject.verify(bundle, options, Buffer.from(''))
               ).toThrow(VerificationError);
             });
           });
@@ -136,14 +120,16 @@ describe('Verifier', () => {
             );
 
             it('throws an error', () => {
-              expect(() =>
-                subject.verify(bundle, optionsWithSigners, payload)
-              ).toThrow(VerificationError);
+              expect(() => subject.verify(bundle, options, payload)).toThrow(
+                VerificationError
+              );
             });
           });
         });
 
         describe('when the key is NOT available', () => {
+          const subject = new Verifier(trustedRoot, undefined);
+
           it('throws an error', () => {
             expect(() => subject.verify(bundle, options, payload)).toThrow(
               VerificationError
@@ -177,25 +163,8 @@ describe('Verifier', () => {
         });
       });
 
-      describe('when the key comes from the trusted signers', () => {
-        const publicKey = crypto.createPublicKey(bundles.dsse.publicKey);
-
-        const optionsWithSigners: sigstore.RequiredArtifactVerificationOptions =
-          {
-            ...options,
-            signers: {
-              $case: 'publicKeys',
-              publicKeys: {
-                publicKeys: [
-                  {
-                    keyDetails:
-                      sigstore.PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
-                    rawBytes: publicKey.export({ format: 'der', type: 'spki' }),
-                  },
-                ],
-              },
-            },
-          };
+      describe('when the key comes from the key selector callback', () => {
+        const subject = new Verifier(trustedRoot, () => bundles.dsse.publicKey);
 
         describe('when the signature and the cert match', () => {
           const bundle = sigstore.bundleFromJSON(
@@ -203,9 +172,7 @@ describe('Verifier', () => {
           );
 
           it('does NOT throw an error', () => {
-            expect(() =>
-              subject.verify(bundle, optionsWithSigners)
-            ).not.toThrow();
+            expect(() => subject.verify(bundle, options)).not.toThrow();
           });
         });
 
@@ -215,35 +182,20 @@ describe('Verifier', () => {
           );
 
           it('throws an error', () => {
-            expect(() => subject.verify(bundle, optionsWithSigners)).toThrow(
+            expect(() => subject.verify(bundle, options)).toThrow(
               VerificationError
             );
           });
         });
 
         describe('when the trusted key is malformed', () => {
+          const subject = new Verifier(trustedRoot, () => Buffer.from(''));
           const bundle = sigstore.bundleFromJSON(
             bundles.dsse.valid.withPublicKey
           );
 
-          const optionsWithSigners: sigstore.RequiredArtifactVerificationOptions =
-            {
-              ...options,
-              signers: {
-                $case: 'publicKeys',
-                publicKeys: {
-                  publicKeys: [
-                    {
-                      keyDetails:
-                        sigstore.PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
-                    },
-                  ],
-                },
-              },
-            };
-
           it('throws an error', () => {
-            expect(() => subject.verify(bundle, optionsWithSigners)).toThrow(
+            expect(() => subject.verify(bundle, options)).toThrow(
               VerificationError
             );
           });
