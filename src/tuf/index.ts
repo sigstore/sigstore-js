@@ -19,6 +19,10 @@ import { Updater } from 'tuf-js';
 import * as sigstore from '../types/sigstore';
 import { TrustedRootFetcher } from './trustroot';
 
+export type TrustedRootResolver = (
+  cacheDir: string
+) => Promise<sigstore.TrustedRoot>;
+
 interface RepositoryMap {
   repositories: Record<string, string[]>;
   mapping: {

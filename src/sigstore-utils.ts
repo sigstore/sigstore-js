@@ -16,12 +16,7 @@ limitations under the License.
 import { Bundle, DEFAULT_REKOR_URL, Envelope, SignOptions } from './sigstore';
 import { TLog, TLogClient } from './tlog';
 import { extractSignatureMaterial, SignerFunc } from './types/signature';
-import {
-  bundleToJSON,
-  Envelope as DSSEEnvelope,
-  envelopeFromJSON,
-  envelopeToJSON,
-} from './types/sigstore';
+import * as sigstore from './types/sigstore';
 import { dsse } from './util';
 
 function createTLogClient(options: { rekorURL?: string }): TLog {
@@ -43,7 +38,7 @@ export async function createDSSEEnvelope(
   // Get signature and verification material for pae
   const sigMaterial = await options.signer(paeBuffer);
 
-  const envelope: DSSEEnvelope = {
+  const envelope: sigstore.Envelope = {
     payloadType,
     payload,
     signatures: [
@@ -54,7 +49,7 @@ export async function createDSSEEnvelope(
     ],
   };
 
-  return envelopeToJSON(envelope) as Envelope;
+  return sigstore.Envelope.toJSON(envelope) as Envelope;
 }
 
 // Accepts a signed DSSE envelope and a PEM-encoded public key to be added to the
@@ -64,7 +59,7 @@ export async function createRekorEntry(
   publicKey: string,
   options: SignOptions = {}
 ): Promise<Bundle> {
-  const envelope = envelopeFromJSON(dsseEnvelope);
+  const envelope = sigstore.Envelope.fromJSON(dsseEnvelope);
   const tlog = createTLogClient(options);
 
   const sigMaterial = extractSignatureMaterial(envelope, publicKey);
@@ -72,5 +67,9 @@ export async function createRekorEntry(
     fetchOnConflict: true,
   });
 
-  return bundleToJSON(bundle) as Bundle;
+  return sigstore.Bundle.toJSON(bundle) as Bundle;
 }
+
+export const TrustedRoot = {
+  fromJSON: sigstore.TrustedRoot.fromJSON,
+};

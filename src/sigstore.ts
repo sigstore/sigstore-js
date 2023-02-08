@@ -53,6 +53,7 @@ export type VerifyOptions = {
   certificateIdentityURI?: string;
   certificateOIDs?: Record<string, string>;
   keySelector?: KeySelector;
+  trustedRootResolver?: tuf.TrustedRootResolver;
 } & TLogOptions;
 
 type Bundle = sigstore.SerializedBundle;
@@ -115,7 +116,8 @@ export async function verify(
   options: VerifyOptions = {}
 ): Promise<void> {
   const cacheDir = defaultCacheDir();
-  const trustedRoot = await tuf.getTrustedRoot(cacheDir);
+  const trustedRootResolver = options.trustedRootResolver || tuf.getTrustedRoot;
+  const trustedRoot = await trustedRootResolver(cacheDir);
   const verifier = new Verifier(trustedRoot, options.keySelector);
 
   const deserializedBundle = sigstore.bundleFromJSON(bundle);

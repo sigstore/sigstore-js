@@ -16,7 +16,6 @@ limitations under the License.
 import { PolicyError, VerificationError } from '../error';
 import { Signer } from '../sign';
 import { attest, sign, utils, verify, VerifyOptions } from '../sigstore';
-import { getTrustedRoot } from '../tuf';
 import {
   Bundle,
   HashAlgorithm,
@@ -213,16 +212,15 @@ describe('signAttestation', () => {
 });
 
 describe('#verify', () => {
-  // Mock the getTrustedRoot function so that we don't have to interact
-  // with the real Sigstore TUF repo
-  jest.mocked(getTrustedRoot).mockResolvedValue(trustedRoot);
+  const trustedRootResolver = () => Promise.resolve(trustedRoot);
+  const options = { trustedRootResolver };
 
   describe('when everything in the bundle is valid', () => {
     const bundle = bundles.signature.valid.withSigningCert;
     const artifact = bundles.signature.artifact;
 
     it('does not throw an error', async () => {
-      await expect(verify(bundle, artifact, {})).resolves.toBe(undefined);
+      await expect(verify(bundle, artifact, options)).resolves.toBe(undefined);
     });
   });
 
@@ -230,7 +228,7 @@ describe('#verify', () => {
     const bundle = bundles.signature.valid.withSigningCert;
     const artifact = Buffer.from('');
     it('throws an error', async () => {
-      await expect(verify(bundle, artifact, {})).rejects.toThrowError(
+      await expect(verify(bundle, artifact, options)).rejects.toThrowError(
         VerificationError
       );
     });
@@ -249,6 +247,7 @@ describe('#verify', () => {
       certificateOIDs: {
         '1.3.6.1.4.1.57264.1.1': 'https://github.com/login/oauth',
       },
+      trustedRootResolver,
     };
 
     it('does not throw an error', async () => {
@@ -262,6 +261,7 @@ describe('#verify', () => {
 
     const options: VerifyOptions = {
       certificateIssuer: 'https://github.com/login/oauth',
+      trustedRootResolver,
     };
 
     it('throws an error', async () => {
@@ -278,6 +278,7 @@ describe('#verify', () => {
     const options: VerifyOptions = {
       certificateIssuer: 'https://github.com/login/oauth',
       certificateIdentityURI: 'https://foo.bar/',
+      trustedRootResolver,
     };
 
     it('throws an error', async () => {
@@ -292,7 +293,7 @@ describe('#verify', () => {
     const artifact = bundles.signature.artifact;
 
     it('throws an error', async () => {
-      await expect(verify(bundle, artifact, {})).rejects.toThrowError(
+      await expect(verify(bundle, artifact, options)).rejects.toThrowError(
         VerificationError
       );
     });
