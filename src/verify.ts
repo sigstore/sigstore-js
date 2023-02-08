@@ -21,10 +21,7 @@ import * as sigstore from './types/sigstore';
 import { WithRequired } from './types/utility';
 import { crypto, dsse, pem } from './util';
 
-export type KeySelector = (
-  hint: string,
-  trustedKeys: sigstore.PublicKey[]
-) => sigstore.PublicKey | undefined;
+export type KeySelector = (hint: string) => string | Buffer | undefined;
 
 export class Verifier {
   private trustedRoot: sigstore.TrustedRoot;
@@ -32,7 +29,7 @@ export class Verifier {
 
   constructor(trustedRoot: sigstore.TrustedRoot, keySelector?: KeySelector) {
     this.trustedRoot = trustedRoot;
-    this.keySelector = keySelector || ((_, keys) => keys[0]);
+    this.keySelector = keySelector || (() => undefined);
   }
 
   // Verifies the bundle signature, the bundle's certificate chain (if present)
@@ -143,29 +140,26 @@ function getPublicKeyFromCertificateChain(
   return crypto.createPublicKey(cert);
 }
 
-// Retrieves the public key from the list of trusted keys in the options
-// using the public key hint in the bundle
+// Retrieves the public key through the key selector callback, passing the
+// public key hint from the bundle
 function getPublicKeyFromHint(
   publicKeyID: sigstore.PublicKeyIdentifier,
   options: sigstore.ArtifactVerificationOptions,
   keySelector: KeySelector
 ): KeyLike {
-  if (options.signers?.$case !== 'publicKeys') {
-    throw new VerificationError('no trusted keys provided for verification');
-  }
+  const key = keySelector(publicKeyID.hint);
 
-  const key = keySelector(
-    publicKeyID.hint,
-    options.signers.publicKeys.publicKeys
-  );
-
-  if (!key?.rawBytes) {
+  if (!key) {
     throw new VerificationError(
       'no public key found for signature verification'
     );
   }
 
-  return crypto.createPublicKey(key.rawBytes);
+  try {
+    return crypto.createPublicKey(key);
+  } catch (e) {
+    throw new VerificationError('invalid public key');
+  }
 }
 
 // Performs signature verification for bundle containing a message signature.
