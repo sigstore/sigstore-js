@@ -39,7 +39,7 @@ export class Verifier {
     options: sigstore.RequiredArtifactVerificationOptions,
     data?: Buffer
   ): void {
-    this.verifyArtifactSignature(bundle, options, data);
+    this.verifyArtifactSignature(bundle, data);
 
     if (sigstore.isBundleWithCertificateChain(bundle)) {
       this.verifySigningCertificate(bundle, options);
@@ -52,10 +52,9 @@ export class Verifier {
   // content and delegates to the appropriate signature verification function.
   private verifyArtifactSignature(
     bundle: sigstore.ValidBundle,
-    options: sigstore.ArtifactVerificationOptions,
     data?: Buffer
   ): void {
-    const publicKey = this.getPublicKey(bundle, options);
+    const publicKey = this.getPublicKey(bundle);
 
     switch (bundle.content?.$case) {
       case 'messageSignature':
@@ -107,10 +106,7 @@ export class Verifier {
   // Returns the public key which will be used to verify the bundle signature.
   // The public key is selected based on the verification material in the bundle
   // and the options provided.
-  private getPublicKey(
-    bundle: sigstore.ValidBundle,
-    options: sigstore.ArtifactVerificationOptions
-  ): KeyLike {
+  private getPublicKey(bundle: sigstore.ValidBundle): KeyLike {
     // Select the key which will be used to verify the signature
     switch (bundle.verificationMaterial?.content?.$case) {
       // If the bundle contains a certificate chain, the public key is the
@@ -125,7 +121,6 @@ export class Verifier {
       case 'publicKey':
         return getPublicKeyFromHint(
           bundle.verificationMaterial.content.publicKey,
-          options,
           this.keySelector
         );
     }
@@ -144,7 +139,6 @@ function getPublicKeyFromCertificateChain(
 // public key hint from the bundle
 function getPublicKeyFromHint(
   publicKeyID: sigstore.PublicKeyIdentifier,
-  options: sigstore.ArtifactVerificationOptions,
   keySelector: KeySelector
 ): KeyLike {
   const key = keySelector(publicKeyID.hint);
