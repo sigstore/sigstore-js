@@ -92,7 +92,7 @@ async function verify(bundlePath: string, artifactPath: string) {
   }
 
   const bundleFile = fs.readFileSync(bundlePath);
-  const bundle = JSON.parse(bundleFile.toString('utf-8'));
+  const bundle: sigstore.Bundle = JSON.parse(bundleFile.toString('utf-8'));
 
   try {
     await sigstore.verify(bundle, payload, {});
