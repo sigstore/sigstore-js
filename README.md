@@ -101,29 +101,7 @@ sigstore <command> <artifact>
 
 ## Development
 
-### Updating protobufs
-
-[Docker](https://docs.docker.com/engine/install/) is required to generate protobufs for the `.sigstore` bundle format.
-
-Install Docker on MacOS using [Homebrew](https://brew.sh/):
-
-```
-brew install --cask docker && open -a Docker
-```
-
-View [Docker install instructions](https://docs.docker.com/engine/install/) for other platforms.
-
-#### Updating Sigstore Protobufs
-
-Update the Git `REF` in `hack/generate-bundle-types` from the [sigstore/protobuf-specs][5] repository.
-
-Generate TypeScript protobufs (should update files in scr/types/sigstore/\_\_generated\_\_):
-
-```
-npm run codegen:bundle
-```
-
-#### Updating Rekor Types
+### Updating Rekor Types
 
 Update the git `REF` in `hack/generate-rekor-types` from the [sigstore/rekor][1] repository.
 

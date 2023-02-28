@@ -13,10 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import {
+  Bundle,
+  MessageSignature,
+  VerificationMaterial,
+} from '@sigstore/protobuf-specs';
 import { ValidationError } from '../../error';
 import { WithRequired } from '../utility';
-import { Bundle, VerificationMaterial } from './__generated__/sigstore_bundle';
-import { MessageSignature } from './__generated__/sigstore_common';
 
 // Sigstore bundle with all required fields populated
 export type ValidBundle = Bundle & {

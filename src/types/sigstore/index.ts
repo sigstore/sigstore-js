@@ -13,26 +13,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import {
+  ArtifactVerificationOptions,
+  Bundle,
+  Envelope,
+  HashAlgorithm,
+  TransparencyLogEntry,
+  VerificationMaterial,
+} from '@sigstore/protobuf-specs';
 import { Entry, EntryKind } from '../../tlog';
 import { encoding as enc, pem } from '../../util';
 import { x509Certificate } from '../../x509/cert';
 import { SignatureMaterial } from '../signature';
 import { WithRequired } from '../utility';
 import { assertValidBundle, ValidBundle } from './validate';
-import { Envelope } from './__generated__/envelope';
-import { Bundle, VerificationMaterial } from './__generated__/sigstore_bundle';
-import { HashAlgorithm } from './__generated__/sigstore_common';
-import { TransparencyLogEntry } from './__generated__/sigstore_rekor';
-import { ArtifactVerificationOptions } from './__generated__/sigstore_verification';
 
+export * from '@sigstore/protobuf-specs';
 export * from './serialized';
 export * from './validate';
-export * from './__generated__/envelope';
-export * from './__generated__/sigstore_bundle';
-export * from './__generated__/sigstore_common';
-export { TransparencyLogEntry } from './__generated__/sigstore_rekor';
-export * from './__generated__/sigstore_trustroot';
-export * from './__generated__/sigstore_verification';
 
 export const bundleToJSON = Bundle.toJSON;
 
