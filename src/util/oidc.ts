@@ -15,9 +15,15 @@ limitations under the License.
 */
 import * as enc from './encoding';
 
+type JWTSubject = {
+  iss: string;
+  sub: string;
+  email: string;
+};
+
 export function extractJWTSubject(jwt: string): string {
   const parts = jwt.split('.', 3);
-  const payload = JSON.parse(enc.base64Decode(parts[1]));
+  const payload: JWTSubject = JSON.parse(enc.base64Decode(parts[1]));
 
   switch (payload.iss) {
     case 'https://accounts.google.com':

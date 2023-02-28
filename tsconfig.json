@@ -2,11 +2,20 @@
   "extends": "@tsconfig/node14/tsconfig.json",
   "compilerOptions": {
     "declaration": true,
-    "noImplicitAny": true,
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "allowUnreachableCode": false,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "noUnusedParameters": true,
     "outDir": "./dist"
   },
   "include": [
     "src/**/*"
   ],
-  "exclude": ["node_modules", "**/__tests__"]
+  "exclude": [
+    "node_modules",
+    "**/__tests__"
+  ]
 }
