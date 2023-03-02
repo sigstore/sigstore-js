@@ -53,6 +53,9 @@
     "make-fetch-happen": "^11.0.1",
     "tuf-js": "^1.0.0"
   },
+  "bundleDependencies": [
+    "@sigstore/protobuf-specs"
+  ],
   "engines": {
     "node": "^14.17.0 || ^16.13.0 || >=18.0.0"
   }
