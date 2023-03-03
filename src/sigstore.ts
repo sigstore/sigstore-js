@@ -13,15 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
 import { CA, CAClient } from './ca';
 import identity, { Provider } from './identity';
 import { Signer } from './sign';
 import { TLog, TLogClient } from './tlog';
 import * as tuf from './tuf';
 import * as sigstore from './types/sigstore';
+import { appdata } from './util';
 import { KeySelector, Verifier } from './verify';
 
 export * as utils from './sigstore-utils';
@@ -35,6 +33,11 @@ export const DEFAULT_REKOR_URL = 'https://rekor.sigstore.dev';
 
 interface TLogOptions {
   rekorURL?: string;
+}
+
+interface TUFOptions {
+  tufMirrorURL?: string;
+  tufRootPath?: string;
 }
 
 export type SignOptions = {
@@ -53,7 +56,8 @@ export type VerifyOptions = {
   certificateIdentityURI?: string;
   certificateOIDs?: Record<string, string>;
   keySelector?: KeySelector;
-} & TLogOptions;
+} & TLogOptions &
+  TUFOptions;
 
 type Bundle = sigstore.SerializedBundle;
 
@@ -73,6 +77,8 @@ function createTLogClient(options: { rekorURL?: string }): TLog {
     rekorBaseURL: options.rekorURL || DEFAULT_REKOR_URL,
   });
 }
+
+const tufCacheDir = appdata.appDataPath('sigstore-js');
 
 export async function sign(
   payload: Buffer,
@@ -114,8 +120,10 @@ export async function verify(
   payload?: Buffer,
   options: VerifyOptions = {}
 ): Promise<void> {
-  const cacheDir = defaultCacheDir();
-  const trustedRoot = await tuf.getTrustedRoot(cacheDir);
+  const trustedRoot = await tuf.getTrustedRoot(tufCacheDir, {
+    mirrorURL: options.tufMirrorURL,
+    rootPath: options.tufRootPath,
+  });
   const verifier = new Verifier(trustedRoot, options.keySelector);
 
   const deserializedBundle = sigstore.bundleFromJSON(bundle);
@@ -150,17 +158,6 @@ function configureIdentityProviders(
   }
 
   return idps;
-}
-
-function defaultCacheDir(): string {
-  let cacheRootDir = os.homedir();
-  try {
-    fs.accessSync(os.homedir(), fs.constants.W_OK | fs.constants.R_OK);
-  } catch (e) {
-    cacheRootDir = os.tmpdir();
-  }
-
-  return path.join(cacheRootDir, '.sigstore', 'js-root');
 }
 
 // Assembles the AtifactVerificationOptions from the supplied VerifyOptions.
