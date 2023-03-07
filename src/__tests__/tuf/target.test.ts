@@ -89,7 +89,7 @@ describe('TrustedRootFetcher', () => {
         refresh: jest.fn().mockRejectedValue(new Error('oops')),
       } as unknown as Updater;
 
-      it('assembles and returns the TrustedRoot', async () => {
+      it('throws an error', async () => {
         await expect(() => getTarget(tuf, targetPath)).rejects.toThrow(
           InternalError
         );
@@ -102,7 +102,7 @@ describe('TrustedRootFetcher', () => {
         getTargetInfo: jest.fn().mockResolvedValue(undefined),
       } as unknown as Updater;
 
-      it('assembles and returns the TrustedRoot', async () => {
+      it('throws an error', async () => {
         await expect(() => getTarget(tuf, targetPath)).rejects.toThrow(
           InternalError
         );
@@ -117,7 +117,7 @@ describe('TrustedRootFetcher', () => {
       findCachedTarget: jest.fn().mockReturnValue('invalidpath'),
     } as unknown as Updater;
 
-    it('assembles and returns the TrustedRoot', async () => {
+    it('throws an error', async () => {
       await expect(() => getTarget(tuf, targetPath)).rejects.toThrow(
         InternalError
       );
