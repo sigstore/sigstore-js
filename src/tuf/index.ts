@@ -20,7 +20,7 @@ import * as sigstore from '../types/sigstore';
 import { TrustedRootFetcher } from './trustroot';
 
 const DEFAULT_MIRROR_URL = 'https://sigstore-tuf-root.storage.googleapis.com';
-const DEFAULT_ROOT_PATH = '../../store/public-good-instance-root.json';
+const DEFAULT_TUF_ROOT_PATH = '../../store/public-good-instance-root.json';
 
 export interface TUFOptions {
   mirrorURL?: string;
@@ -35,16 +35,24 @@ export async function getTrustedRoot(
   cachePath: string,
   options: TUFOptions = {}
 ): Promise<sigstore.TrustedRoot> {
-  initTufCache(cachePath, options.rootPath);
-  const mirror = initRemoteConfig(cachePath, options.mirrorURL);
-  const repoClient = initClient(cachePath, mirror);
+  const tufRootPath =
+    options.rootPath || require.resolve(DEFAULT_TUF_ROOT_PATH);
+  const mirrorURL = options.mirrorURL || DEFAULT_MIRROR_URL;
+
+  initTufCache(cachePath, tufRootPath);
+  const remote = initRemoteConfig(cachePath, mirrorURL);
+  const repoClient = initClient(cachePath, remote);
 
   const fetcher = new TrustedRootFetcher(repoClient);
   return fetcher.getTrustedRoot();
 }
 
-// Initializes the TUF cache directory structure
-function initTufCache(cachePath: string, rootPath: string | undefined): string {
+// Initializes the TUF cache directory structure including the initial
+// root.json file. If the cache directory does not exist, it will be
+// created. If the targets directory does not exist, it will be created.
+// If the root.json file does not exist, it will be copied from the
+// rootPath argument.
+function initTufCache(cachePath: string, tufRootPath: string): string {
   const targetsPath = path.join(cachePath, 'targets');
   const cachedRootPath = path.join(cachePath, 'root.json');
 
@@ -57,31 +65,27 @@ function initTufCache(cachePath: string, rootPath: string | undefined): string {
   }
 
   if (!fs.existsSync(cachedRootPath)) {
-    const initialRootPath = rootPath || require.resolve(DEFAULT_ROOT_PATH);
-    fs.copyFileSync(initialRootPath, cachedRootPath);
+    fs.copyFileSync(tufRootPath, cachedRootPath);
   }
 
   return cachePath;
 }
 
 // Initializes the remote.json file, which contains the URL of the TUF
-// repository. If the file does not exist, it will be created with the
-// default URL. If the file exists, it will be parsed and returned.
-function initRemoteConfig(
-  rootDir: string,
-  mirrorURL: string | undefined
-): RemoteConfig {
+// repository. If the file does not exist, it will be created. If the file
+// exists, it will be parsed and returned.
+function initRemoteConfig(rootDir: string, mirrorURL: string): RemoteConfig {
   let remoteConfig: RemoteConfig | undefined;
-  const remoteConfigpath = path.join(rootDir, 'remote.json');
+  const remoteConfigPath = path.join(rootDir, 'remote.json');
 
-  if (fs.existsSync(remoteConfigpath)) {
-    const buf = fs.readFileSync(remoteConfigpath);
-    remoteConfig = JSON.parse(buf.toString('utf-8'));
+  if (fs.existsSync(remoteConfigPath)) {
+    const data = fs.readFileSync(remoteConfigPath, 'utf-8');
+    remoteConfig = JSON.parse(data);
   }
 
   if (!remoteConfig) {
-    remoteConfig = { mirror: mirrorURL || DEFAULT_MIRROR_URL };
-    fs.writeFileSync(remoteConfigpath, JSON.stringify(remoteConfig));
+    remoteConfig = { mirror: mirrorURL };
+    fs.writeFileSync(remoteConfigPath, JSON.stringify(remoteConfig));
   }
 
   return remoteConfig;
