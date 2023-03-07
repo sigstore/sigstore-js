@@ -2,11 +2,9 @@
   "extends": "@tsconfig/node14/tsconfig.json",
   "compilerOptions": {
     "declaration": true,
-    "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "allowUnreachableCode": false,
-    "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
     "noUnusedParameters": true,
     "outDir": "./dist"
