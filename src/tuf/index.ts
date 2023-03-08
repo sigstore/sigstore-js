@@ -19,77 +19,85 @@ import { Updater } from 'tuf-js';
 import * as sigstore from '../types/sigstore';
 import { TrustedRootFetcher } from './trustroot';
 
-interface RepositoryMap {
-  repositories: Record<string, string[]>;
-  mapping: {
-    paths: string[];
-    repositories: string[];
-    threshold: number;
-    terminating: boolean;
-  }[];
+const DEFAULT_MIRROR_URL = 'https://sigstore-tuf-root.storage.googleapis.com';
+const DEFAULT_TUF_ROOT_PATH = '../../store/public-good-instance-root.json';
+
+export interface TUFOptions {
+  mirrorURL?: string;
+  rootPath?: string;
+}
+
+interface RemoteConfig {
+  mirror: string;
 }
 
 export async function getTrustedRoot(
-  cacheDir: string
+  cachePath: string,
+  options: TUFOptions = {}
 ): Promise<sigstore.TrustedRoot> {
-  initTufCache(cacheDir);
-  const repoMap = initRepoMap(cacheDir);
+  const tufRootPath =
+    options.rootPath || require.resolve(DEFAULT_TUF_ROOT_PATH);
+  const mirrorURL = options.mirrorURL || DEFAULT_MIRROR_URL;
 
-  const repoClients = Object.entries(repoMap.repositories).map(([name, urls]) =>
-    initClient(name, urls[0], cacheDir)
-  );
+  initTufCache(cachePath, tufRootPath);
+  const remote = initRemoteConfig(cachePath, mirrorURL);
+  const repoClient = initClient(cachePath, remote);
 
-  // TODO: Add support for multiple repositories. For now, we just use the first
-  // one (the production Sigstore TUF repository).
-  const fetcher = new TrustedRootFetcher(repoClients[0]);
+  const fetcher = new TrustedRootFetcher(repoClient);
   return fetcher.getTrustedRoot();
 }
 
-// Initializes the root TUF cache directory
-function initTufCache(cacheDir: string): void {
-  if (!fs.existsSync(cacheDir)) {
-    fs.mkdirSync(cacheDir, { recursive: true });
+// Initializes the TUF cache directory structure including the initial
+// root.json file. If the cache directory does not exist, it will be
+// created. If the targets directory does not exist, it will be created.
+// If the root.json file does not exist, it will be copied from the
+// rootPath argument.
+function initTufCache(cachePath: string, tufRootPath: string): string {
+  const targetsPath = path.join(cachePath, 'targets');
+  const cachedRootPath = path.join(cachePath, 'root.json');
+
+  if (!fs.existsSync(cachePath)) {
+    fs.mkdirSync(cachePath, { recursive: true });
   }
+
+  if (!fs.existsSync(targetsPath)) {
+    fs.mkdirSync(targetsPath);
+  }
+
+  if (!fs.existsSync(cachedRootPath)) {
+    fs.copyFileSync(tufRootPath, cachedRootPath);
+  }
+
+  return cachePath;
 }
 
-// Initializes the repo map (copying it to the cache root dir) and returns the
-// content of the repository map.
-function initRepoMap(rootDir: string): RepositoryMap {
-  const mapDest = path.join(rootDir, 'map.json');
+// Initializes the remote.json file, which contains the URL of the TUF
+// repository. If the file does not exist, it will be created. If the file
+// exists, it will be parsed and returned.
+function initRemoteConfig(rootDir: string, mirrorURL: string): RemoteConfig {
+  let remoteConfig: RemoteConfig | undefined;
+  const remoteConfigPath = path.join(rootDir, 'remote.json');
 
-  if (!fs.existsSync(mapDest)) {
-    const mapSrc = require.resolve('../../store/map.json');
-    fs.copyFileSync(mapSrc, mapDest);
+  if (fs.existsSync(remoteConfigPath)) {
+    const data = fs.readFileSync(remoteConfigPath, 'utf-8');
+    remoteConfig = JSON.parse(data);
   }
 
-  const buf = fs.readFileSync(mapDest);
-  return JSON.parse(buf.toString('utf-8'));
+  if (!remoteConfig) {
+    remoteConfig = { mirror: mirrorURL };
+    fs.writeFileSync(remoteConfigPath, JSON.stringify(remoteConfig));
+  }
+
+  return remoteConfig;
 }
 
-function initClient(name: string, url: string, rootDir: string): Updater {
-  const repoCachePath = path.join(rootDir, name);
-  const targetCachePath = path.join(repoCachePath, 'targets');
-  const tufRootDest = path.join(repoCachePath, 'root.json');
+function initClient(cachePath: string, remote: RemoteConfig): Updater {
+  const baseURL = remote.mirror;
 
-  // Only copy the TUF trusted root if it doesn't already exist. It's possible
-  // that the cached root has already been updated, so we don't want to roll it
-  // back.
-  if (!fs.existsSync(tufRootDest)) {
-    const tufRootSrc = require.resolve(`../../store/${name}-root.json`);
-    fs.mkdirSync(repoCachePath);
-    fs.copyFileSync(tufRootSrc, tufRootDest);
-  }
-
-  if (!fs.existsSync(targetCachePath)) {
-    fs.mkdirSync(targetCachePath);
-  }
-
-  // TODO: Is there some better way to derive the base URL for the targets?
-  // Hard-coding for now based on current Sigstore TUF repo layout.
   return new Updater({
-    metadataBaseUrl: url,
-    targetBaseUrl: `${url}/targets`,
-    metadataDir: repoCachePath,
-    targetDir: targetCachePath,
+    metadataBaseUrl: baseURL,
+    targetBaseUrl: `${baseURL}/targets`,
+    metadataDir: cachePath,
+    targetDir: path.join(cachePath, 'targets'),
   });
 }
