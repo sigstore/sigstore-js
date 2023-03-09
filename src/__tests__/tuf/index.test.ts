@@ -17,9 +17,10 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { getTrustedRoot } from '../../tuf';
-import { TrustedRootFetcher } from '../../tuf/trustroot';
+import { getTarget } from '../../tuf/target';
+import * as sigstore from '../../types/sigstore';
 
-jest.mock('../../tuf/trustroot');
+jest.mock('../../tuf/target');
 
 describe('getTrustedRoot', () => {
   // Set-up temp dir for local TUF cache
@@ -29,20 +30,21 @@ describe('getTrustedRoot', () => {
     fs.rmSync(tempDir, { recursive: true });
   });
 
-  const trustedRoot = {
+  const trustedRoot: sigstore.TrustedRoot = {
     mediaType: 'application/vnd.dev.sigstore.trustedroot+json;version=0.1',
     certificateAuthorities: [],
     tlogs: [],
     ctlogs: [],
+    timestampAuthorities: [],
   };
 
   // Mock out the entire TrustedRootFetcher class since we don't want to test
   // the TUF updater here
-  jest.mocked(TrustedRootFetcher).mockImplementation(() => {
-    return {
-      getTrustedRoot: jest.fn().mockResolvedValueOnce(trustedRoot),
-    } as unknown as TrustedRootFetcher;
-  });
+  jest
+    .mocked(getTarget)
+    .mockResolvedValueOnce(
+      JSON.stringify(sigstore.TrustedRoot.toJSON(trustedRoot))
+    );
 
   it('returns the trust root', async () => {
     const root = await getTrustedRoot(tempDir);
