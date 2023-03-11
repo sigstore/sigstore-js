@@ -1,4 +1,4 @@
-# sigstore-js
+# sigstore-js &middot; [![npm version](https://img.shields.io/npm/v/sigstore.svg?style=flat)](https://www.npmjs.com/package/sigstore) [![CI Status](https://github.com/sigstore/sigstore-js/workflows/ci/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/ci.yml) [![Smoke Test Status](https://github.com/sigstore/sigstore-js/workflows/smoke-test/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/smoke-test.yml)
 
 A JavaScript library for generating and verifying Sigstore signatures. One of
 the intended uses is to sign and verify npm packages but it can be used to sign

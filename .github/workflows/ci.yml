@@ -1,4 +1,4 @@
-name: main
+name: CI
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   lint-source:
-    name: Lint code
+    name: Lint/build code
     runs-on: ubuntu-latest
     steps:
     - name: Checkout source
@@ -22,6 +22,8 @@ jobs:
       run: npm ci
     - name: Run linter
       run: npm run lint:check
+    - name: Run build
+      run: npm run build
 
   run-tests:
     name: Run tests
