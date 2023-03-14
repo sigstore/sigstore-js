@@ -1,5 +1,11 @@
 # sigstore
 
+## 1.1.1
+
+### Patch Changes
+
+- 62de8cd: Unbundles the @sigstore/protobuf-specs dependency
+
 ## 1.1.0
 
 ### Minor Changes
