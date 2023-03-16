@@ -63,6 +63,7 @@ function printUsage() {
 const signOptions = {
   oidcClientID: 'sigstore',
   oidcIssuer: 'https://oauth2.sigstore.dev/auth',
+  oidcRedirectURL: process.env.OIDC_REDIRECT_URL,
   rekorURL: sigstore.DEFAULT_REKOR_URL,
 };
 
