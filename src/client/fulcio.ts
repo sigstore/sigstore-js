@@ -21,9 +21,25 @@ export interface FulcioOptions {
   baseURL: string;
 }
 
-export interface CertificateRequest {
-  publicKey: { content: string };
-  signedEmailAddress: string;
+export interface SigningCertificateRequest {
+  credentials: {
+    oidcIdentityToken: string;
+  };
+  publicKeyRequest: {
+    publicKey: {
+      algorithm: string;
+      content: string;
+    };
+    proofOfPossession: string;
+  };
+}
+
+export interface SigningCertificateResponse {
+  signedCertificateEmbeddedSct: {
+    chain: {
+      certificates: string[];
+    };
+  };
 }
 
 /**
@@ -38,7 +54,6 @@ export class Fulcio {
       retry: { retries: 2 },
       timeout: 5000,
       headers: {
-        Accept: 'application/pem-certificate-chain',
         'Content-Type': 'application/json',
         'User-Agent': ua.getUserAgent(),
       },
@@ -47,19 +62,17 @@ export class Fulcio {
   }
 
   public async createSigningCertificate(
-    idToken: string,
-    request: CertificateRequest
-  ): Promise<string> {
-    const url = `${this.baseUrl}/api/v1/signingCert`;
+    request: SigningCertificateRequest
+  ): Promise<SigningCertificateResponse> {
+    const url = `${this.baseUrl}/api/v2/signingCert`;
 
     const response = await this.fetch(url, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${idToken}` },
       body: JSON.stringify(request),
     });
     checkStatus(response);
 
-    const data = await response.text();
+    const data = await response.json();
     return data;
   }
 }

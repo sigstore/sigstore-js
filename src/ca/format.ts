@@ -14,18 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { KeyObject } from 'crypto';
-import { CertificateRequest } from '../client/fulcio';
+import { SigningCertificateRequest } from '../client/fulcio';
 
 export function toCertificateRequest(
+  identityToken: string,
   publicKey: KeyObject,
   challenge: Buffer
-): CertificateRequest {
+): SigningCertificateRequest {
   return {
-    publicKey: {
-      content: publicKey
-        .export({ type: 'spki', format: 'der' })
-        .toString('base64'),
+    credentials: {
+      oidcIdentityToken: identityToken,
     },
-    signedEmailAddress: challenge.toString('base64'),
+    publicKeyRequest: {
+      publicKey: {
+        algorithm: 'ECDSA',
+        content: publicKey
+          .export({ format: 'pem', type: 'spki' })
+          .toString('ascii'),
+      },
+      proofOfPossession: challenge.toString('base64'),
+    },
   };
 }

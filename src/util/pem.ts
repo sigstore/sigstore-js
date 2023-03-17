@@ -16,31 +16,6 @@ limitations under the License.
 const PEM_HEADER = /-----BEGIN (.*)-----/;
 const PEM_FOOTER = /-----END (.*)-----/;
 
-// Given a set of PEM-encoded certificates bundled in a single string, returns
-// an array of certificates. Standard PEM encoding dictates that each certificate
-// should have a trailing newline after the footer.
-export function split(certificate: string): string[] {
-  const certs: string[] = [];
-  let cert: string[] = [];
-
-  certificate.split('\n').forEach((line) => {
-    line.includes;
-    if (line.match(PEM_HEADER)) {
-      cert = [];
-    }
-
-    if (line.length > 0) {
-      cert.push(line);
-    }
-
-    if (line.match(PEM_FOOTER)) {
-      certs.push(cert.join('\n').concat('\n'));
-    }
-  });
-
-  return certs;
-}
-
 export function toDER(certificate: string): Buffer {
   let der = '';
 

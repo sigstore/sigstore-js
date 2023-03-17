@@ -80,25 +80,34 @@ describe('Signer', () => {
         // Fulcio output
         const leafCertificate = `-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----`;
         const rootCertificate = `-----BEGIN CERTIFICATE-----\nxyz\n-----END CERTIFICATE-----`;
-        const certificate = [leafCertificate, rootCertificate].join('\n');
 
         beforeEach(() => {
           // Mock Fulcio request
           nock(fulcioBaseURL)
-            .matchHeader('Accept', 'application/pem-certificate-chain')
             .matchHeader('Content-Type', 'application/json')
-            .matchHeader('Authorization', `Bearer ${jwt}`)
-            .post('/api/v1/signingCert', {
-              publicKey: { content: /.+/i },
-              signedEmailAddress: /.+/i,
+            .post('/api/v2/signingCert', {
+              credentials: {
+                oidcIdentityToken: jwt,
+              },
+              publicKeyRequest: {
+                publicKey: {
+                  algorithm: 'ECDSA',
+                  content: /.+/i,
+                },
+                proofOfPossession: /.+/i,
+              },
             })
-            .reply(200, certificate);
+            .reply(200, {
+              signedCertificateEmbeddedSct: {
+                chain: { certificates: [leafCertificate, rootCertificate] },
+              },
+            });
         });
 
         describe('when Rekor returns successfully', () => {
           // Rekor output
           const signature = 'ABC123';
-          const b64Cert = Buffer.from(certificate).toString('base64');
+          const b64Cert = Buffer.from(leafCertificate).toString('base64');
           const uuid =
             '69e5a0c1663ee4452674a5c9d5050d866c2ee31e2faaf79913aea7cc27293cf6';
 
@@ -270,14 +279,24 @@ describe('Signer', () => {
       beforeEach(() => {
         // Mock Fulcio request
         nock(fulcioBaseURL)
-          .matchHeader('Accept', 'application/pem-certificate-chain')
           .matchHeader('Content-Type', 'application/json')
-          .matchHeader('Authorization', `Bearer ${jwt}`)
-          .post('/api/v1/signingCert', {
-            publicKey: { content: /.+/i },
-            signedEmailAddress: /.+/i,
+          .post('/api/v2/signingCert', {
+            credentials: {
+              oidcIdentityToken: jwt,
+            },
+            publicKeyRequest: {
+              publicKey: {
+                algorithm: 'ECDSA',
+                content: /.+/i,
+              },
+              proofOfPossession: /.+/i,
+            },
           })
-          .reply(200, certificate);
+          .reply(200, {
+            signedCertificateEmbeddedSct: {
+              chain: { certificates: [certificate] },
+            },
+          });
       });
 
       describe('when Rekor returns successfully', () => {
