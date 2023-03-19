@@ -28,38 +28,17 @@ import { ASN1Tag } from './tag';
 export class ASN1Obj {
   readonly tag: ASN1Tag;
   readonly subs: ASN1Obj[];
-  private buf: Buffer;
-  private headerLength: number;
+  readonly value: Buffer;
 
-  constructor(
-    tag: ASN1Tag,
-    headerLength: number,
-    buf: Buffer,
-    subs: ASN1Obj[]
-  ) {
+  constructor(tag: ASN1Tag, value: Buffer, subs: ASN1Obj[]) {
     this.tag = tag;
-    this.headerLength = headerLength;
-    this.buf = buf;
+    this.value = value;
     this.subs = subs;
   }
 
   // Constructs an ASN.1 object from a Buffer of DER-encoded bytes.
   public static parseBuffer(buf: Buffer): ASN1Obj {
     return parseStream(new ByteStream(buf));
-  }
-
-  // Returns the raw bytes of the ASN.1 object's value. For constructed objects,
-  // this is the concatenation of the raw bytes of the values of its children.
-  // For primitive objects, this is the raw bytes of the object's value.
-  // Use the various to* methods to parse the value into a specific type.
-  get value(): Buffer {
-    return this.buf.subarray(this.headerLength);
-  }
-
-  // Returns the raw bytes of the entire ASN.1 object (including tag, length,
-  // and value)
-  get raw(): Buffer {
-    return this.buf;
   }
 
   public toDER(): Buffer {
@@ -146,15 +125,12 @@ export class ASN1Obj {
 // Internal stream parsing functions
 
 function parseStream(stream: ByteStream): ASN1Obj {
-  // Capture current stream position so we know where this object starts
-  const startPos = stream.position;
-
-  // Parse tag and length from stream
+  // Parse tag, length, and value from stream
   const tag = new ASN1Tag(stream.getUint8());
   const len = decodeLength(stream);
+  const value = stream.slice(stream.position, len);
 
-  // Calculate length of header (tag + length)
-  const header = stream.position - startPos;
+  const start = stream.position;
 
   let subs: ASN1Obj[] = [];
   // If the object is constructed, parse its children. Sometimes, children
@@ -174,13 +150,10 @@ function parseStream(stream: ByteStream): ASN1Obj {
 
   // If there are no children, move stream cursor to the end of the object
   if (subs.length === 0) {
-    stream.seek(startPos + header + len);
+    stream.seek(start + len);
   }
 
-  // Capture the raw bytes of the object (including tag, length, and value)
-  const buf = stream.slice(startPos, header + len);
-
-  return new ASN1Obj(tag, header, buf, subs);
+  return new ASN1Obj(tag, value, subs);
 }
 
 function collectSubs(stream: ByteStream, len: number): ASN1Obj[] {

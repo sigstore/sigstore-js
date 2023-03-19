@@ -100,7 +100,7 @@ export class x509Certificate {
   }
 
   get publicKey(): Buffer {
-    return this.subjectPublicKeyInfoObj.raw;
+    return this.subjectPublicKeyInfoObj.toDER();
   }
 
   get signatureAlgorithm(): string {
@@ -172,7 +172,7 @@ export class x509Certificate {
     const key = crypto.createPublicKey(publicKey);
 
     return crypto.verifyBlob(
-      this.tbsCertificate.raw,
+      this.tbsCertificate.toDER(),
       key,
       this.signatureValue,
       this.signatureAlgorithm
@@ -184,7 +184,7 @@ export class x509Certificate {
   }
 
   public equals(other: x509Certificate): boolean {
-    return this.root.raw.equals(other.root.raw);
+    return this.root.toDER().equals(other.root.toDER());
   }
 
   public verifySCTs(
@@ -245,8 +245,9 @@ export class x509Certificate {
 
   // Creates a copy of the certificate with a new buffer
   private clone(): x509Certificate {
-    const clone = Buffer.alloc(this.root.raw.length);
-    this.root.raw.copy(clone);
+    const der = this.root.toDER();
+    const clone = Buffer.alloc(der.length);
+    der.copy(clone);
     return x509Certificate.parse(clone);
   }
 
