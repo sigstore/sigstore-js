@@ -33,7 +33,7 @@ describe('CAClient', () => {
 
     const leafCertificate = `-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----\n`;
     const rootCertificate = `-----BEGIN CERTIFICATE-----\nxyz\n-----END CERTIFICATE-----\n`;
-    const certChain = [leafCertificate, rootCertificate].join('');
+    const certChain = [leafCertificate, rootCertificate];
 
     // Request data
     const identityToken = 'a.b.c';
@@ -46,24 +46,32 @@ tbn02XdfIl+ZhQqUZv88dgDB86bfKyoOokA7fagAEOulkquhKKoOxdOySQ==
     const challenge = Buffer.from('challenge');
 
     const certRequest = {
-      publicKey: {
-        content: publicKey
-          .export({ type: 'spki', format: 'der' })
-          .toString('base64'),
+      credentials: {
+        oidcIdentityToken: identityToken,
       },
-      signedEmailAddress: challenge.toString('base64'),
+      publicKeyRequest: {
+        publicKey: {
+          algorithm: 'ECDSA',
+          content: publicKey
+            .export({ type: 'spki', format: 'pem' })
+            .toString('ascii'),
+        },
+        proofOfPossession: challenge.toString('base64'),
+      },
     };
 
     describe('when Fulcio returns a valid response', () => {
       beforeEach(() => {
         // Mock Fulcio request
         nock(baseURL)
-          .matchHeader('Accept', 'application/pem-certificate-chain')
           .matchHeader('Content-Type', 'application/json')
-          .matchHeader('Authorization', `Bearer ${identityToken}`)
           .matchHeader('User-Agent', new RegExp('sigstore-js\\/\\d+.\\d+.\\d+'))
-          .post('/api/v1/signingCert', certRequest)
-          .reply(201, certChain);
+          .post('/api/v2/signingCert', certRequest)
+          .reply(201, {
+            signedCertificateEmbeddedSct: {
+              chain: { certificates: certChain },
+            },
+          });
       });
 
       it('returns the certificate chain', async () => {

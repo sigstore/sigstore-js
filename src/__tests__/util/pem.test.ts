@@ -13,41 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fromDER, split, toDER } from '../../util/pem';
+import { fromDER, toDER } from '../../util/pem';
 
 describe('pem', () => {
-  const cert1 =
-    '-----BEGIN CERTIFICATE-----\nABCD\n-----END CERTIFICATE-----\n';
-  const cert2 =
-    '-----BEGIN CERTIFICATE-----\nDEFG\n-----END CERTIFICATE-----\n';
-
-  describe('split', () => {
-    describe('when certificate is empty', () => {
-      it('should return empty array', () => {
-        expect(split('')).toEqual([]);
-      });
-    });
-
-    describe('when given a certificate with a single certificate', () => {
-      it('returns an array with a single certificate', () => {
-        expect(split(cert1)).toEqual([cert1]);
-      });
-    });
-
-    describe('when given a certificate with multiple certificates', () => {
-      it('returns an array with all the certificates', () => {
-        const certs = split([cert1, cert2].join('\n'));
-
-        expect(certs).toHaveLength(2);
-        expect(certs[0]).toEqual(cert1);
-        expect(certs[1]).toEqual(cert2);
-      });
-    });
-  });
-
   describe('toDER', () => {
     describe('when the object is a certificate', () => {
-      const pem = cert1;
+      const pem =
+        '-----BEGIN CERTIFICATE-----\nABCD\n-----END CERTIFICATE-----\n';
       it('returns a DER-encoded certificate', () => {
         const der = toDER(pem);
         expect(der).toEqual(Buffer.from('ABCD', 'base64'));
