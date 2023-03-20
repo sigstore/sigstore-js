@@ -16,7 +16,6 @@ limitations under the License.
 import { KeyObject } from 'crypto';
 import { Fulcio } from '../client';
 import { InternalError } from '../error';
-import { pem } from '../util';
 import { toCertificateRequest } from './format';
 
 export interface CA {
@@ -43,15 +42,12 @@ export class CAClient implements CA {
     publicKey: KeyObject,
     challenge: Buffer
   ): Promise<string[]> {
-    const request = toCertificateRequest(publicKey, challenge);
+    const request = toCertificateRequest(identityToken, publicKey, challenge);
 
     try {
-      const certificate = await this.fulcio.createSigningCertificate(
-        identityToken,
-        request
-      );
+      const certificate = await this.fulcio.createSigningCertificate(request);
 
-      return pem.split(certificate);
+      return certificate.signedCertificateEmbeddedSct.chain.certificates;
     } catch (err) {
       throw new InternalError('error creating signing certificate', err);
     }

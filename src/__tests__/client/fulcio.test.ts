@@ -15,7 +15,11 @@ limitations under the License.
 */
 import nock from 'nock';
 
-import { Fulcio } from '../../client/fulcio';
+import {
+  Fulcio,
+  SigningCertificateRequest,
+  SigningCertificateResponse,
+} from '../../client/fulcio';
 
 describe('Fulcio', () => {
   const baseURL = 'http://localhost:8000';
@@ -28,32 +32,41 @@ describe('Fulcio', () => {
   describe('#createSigningCertificate', () => {
     const identityToken = `a.b.c`;
     const certRequest = {
-      publicKey: {
-        content:
-          'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==',
+      credentials: {
+        oidcIdentityToken: identityToken,
       },
-      signedEmailAddress: 'MEUCIEntw6QwoyDHb52HUIUVDnqFeGBI4oaCBMCoOtcbVKQ=',
-    };
+      publicKeyRequest: {
+        publicKey: {
+          algorithm: 'ECDSA',
+          content:
+            'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==',
+        },
+        proofOfPossession: 'MEUCIEntw6QwoyDHb52HUIUVDnqFeGBI4oaCBMCoOtcbVKQ=',
+      },
+    } satisfies SigningCertificateRequest;
 
     describe('when the certificate request is valid', () => {
-      const certificate = `-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----`;
+      const certificateResponse: SigningCertificateResponse = {
+        signedCertificateEmbeddedSct: {
+          chain: {
+            certificates: [
+              `-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----`,
+            ],
+          },
+        },
+      };
 
       beforeEach(() => {
         nock(baseURL)
-          .matchHeader('Accept', 'application/pem-certificate-chain')
           .matchHeader('Content-Type', 'application/json')
-          .matchHeader('Authorization', `Bearer ${identityToken}`)
           .matchHeader('User-Agent', new RegExp('sigstore-js\\/\\d+.\\d+.\\d+'))
-          .post('/api/v1/signingCert', certRequest)
-          .reply(200, certificate);
+          .post('/api/v2/signingCert', certRequest)
+          .reply(200, certificateResponse);
       });
 
       it('returns the signing certificate', async () => {
-        const result = await subject.createSigningCertificate(
-          identityToken,
-          certRequest
-        );
-        expect(result).toBe(certificate);
+        const result = await subject.createSigningCertificate(certRequest);
+        expect(result).toEqual(certificateResponse);
       });
     });
 
@@ -64,12 +77,12 @@ describe('Fulcio', () => {
       };
 
       beforeEach(() => {
-        nock(baseURL).post('/api/v1/signingCert').reply(400, responseBody);
+        nock(baseURL).post('/api/v2/signingCert').reply(400, responseBody);
       });
 
       it('returns an error', async () => {
         await expect(
-          subject.createSigningCertificate(identityToken, certRequest)
+          subject.createSigningCertificate(certRequest)
         ).rejects.toThrow('HTTP Error: 400 Bad Request');
       });
     });
