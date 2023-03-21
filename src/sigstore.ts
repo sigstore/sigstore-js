@@ -46,6 +46,7 @@ export type SignOptions = {
   oidcIssuer?: string;
   oidcClientID?: string;
   oidcClientSecret?: string;
+  oidcRedirectURL?: string;
 } & TLogOptions;
 
 export type VerifyOptions = {
@@ -63,7 +64,11 @@ type Bundle = sigstore.SerializedBundle;
 
 type IdentityProviderOptions = Pick<
   SignOptions,
-  'identityToken' | 'oidcIssuer' | 'oidcClientID' | 'oidcClientSecret'
+  | 'identityToken'
+  | 'oidcIssuer'
+  | 'oidcClientID'
+  | 'oidcClientSecret'
+  | 'oidcRedirectURL'
 >;
 
 function createCAClient(options: { fulcioURL?: string }): CA {
@@ -148,11 +153,12 @@ function configureIdentityProviders(
     idps.push(identity.ciContextProvider());
     if (options.oidcIssuer && options.oidcClientID) {
       idps.push(
-        identity.oauthProvider(
-          options.oidcIssuer,
-          options.oidcClientID,
-          options.oidcClientSecret
-        )
+        identity.oauthProvider({
+          issuer: options.oidcIssuer,
+          clientID: options.oidcClientID,
+          clientSecret: options.oidcClientSecret,
+          redirectURL: options.oidcRedirectURL,
+        })
       );
     }
   }
