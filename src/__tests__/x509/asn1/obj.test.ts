@@ -29,7 +29,8 @@ describe('ASN1Obj', () => {
         expect(obj.tag.number).toBe(2);
         expect(obj.value.toString('hex')).toBe('1010');
         expect(obj.subs).toHaveLength(0);
-        expect(obj.raw).toEqual(buffer);
+
+        expect(obj.toDER()).toEqual(buffer);
       });
     });
 
