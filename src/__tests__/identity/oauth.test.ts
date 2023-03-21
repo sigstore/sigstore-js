@@ -28,7 +28,7 @@ jest.mock('child_process', () => ({
 describe('OAuthProvider', () => {
   const baseURL = 'http://localhost:8080';
   const issuer = new Issuer(baseURL);
-  const subject = new OAuthProvider(issuer, 'sigstore', '');
+  const subject = new OAuthProvider({ issuer, clientID: 'sigstore' });
 
   const mockedExec = jest.mocked(child_process.exec);
 

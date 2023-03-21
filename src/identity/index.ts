@@ -27,12 +27,18 @@ import { Provider } from './provider';
  * @param clientSecret Client secret for the issuer (optional)
  * @returns {Provider}
  */
-function oauthProvider(
-  issuer: string,
-  clientID: string,
-  clientSecret?: string
-): Provider {
-  return new OAuthProvider(new Issuer(issuer), clientID, clientSecret);
+function oauthProvider(options: {
+  issuer: string;
+  clientID: string;
+  clientSecret?: string;
+  redirectURL?: string;
+}): Provider {
+  return new OAuthProvider({
+    issuer: new Issuer(options.issuer),
+    clientID: options.clientID,
+    clientSecret: options.clientSecret,
+    redirectURL: options.redirectURL,
+  });
 }
 
 /**

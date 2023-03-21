@@ -24,6 +24,13 @@ import { crypto, encoding as enc } from '../util';
 import { Issuer } from './issuer';
 import { Provider } from './provider';
 
+interface OAuthProviderOptions {
+  issuer: Issuer;
+  clientID: string;
+  clientSecret?: string;
+  redirectURL?: string;
+}
+
 export class OAuthProvider implements Provider {
   private clientID: string;
   private clientSecret: string;
@@ -32,10 +39,11 @@ export class OAuthProvider implements Provider {
   private state: string;
   private redirectURI?: string;
 
-  constructor(issuer: Issuer, clientID: string, clientSecret?: string) {
-    this.clientID = clientID;
-    this.clientSecret = clientSecret || '';
-    this.issuer = issuer;
+  constructor(options: OAuthProviderOptions) {
+    this.clientID = options.clientID;
+    this.clientSecret = options.clientSecret || '';
+    this.issuer = options.issuer;
+    this.redirectURI = options.redirectURL;
     this.codeVerifier = generateRandomString(32);
     this.state = generateRandomString(16);
   }
@@ -52,9 +60,19 @@ export class OAuthProvider implements Provider {
     const server = http.createServer();
     const sockets = new Set<Socket>();
 
-    // Start server and wait till it is listening
+    // Start server and wait till it is listening. If a redirect URL was
+    // provided, use that. Otherwise, use a random port and construct the
+    // redirect URL.
     await new Promise<void>((resolve) => {
-      server.listen(0, resolve);
+      if (this.redirectURI) {
+        const url = new URL(this.redirectURI);
+        server.listen(Number(url.port), url.hostname, resolve);
+      } else {
+        server.listen(0, resolve);
+        // Get port the server is listening on and construct the server URL
+        const port = (server.address() as AddressInfo).port;
+        this.redirectURI = `http://localhost:${port}`;
+      }
     });
 
     // Keep track of connections to the server so we can force a shutdown
@@ -64,10 +82,6 @@ export class OAuthProvider implements Provider {
         sockets.delete(socket);
       });
     });
-
-    // Get port the server is listening on and construct the server URL
-    const port = (server.address() as AddressInfo).port;
-    this.redirectURI = `http://localhost:${port}`;
 
     const result = new Promise<string>((resolve, reject) => {
       // Set-up handler for post-auth redirect
