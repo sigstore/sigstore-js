@@ -1,0 +1,17 @@
+name: "Dependabot Changesets"
+
+on: pull_request
+
+permissions:
+  contents: read
+
+jobs:
+  changesets:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    if: ${{ github.repository_owner == 'sigstore' &&  github.actor == 'dependabot[bot]' }}
+    steps:
+      - name: Dependabot Changesets
+        uses: feelepxyz/dependabot-changesets@088619209e26134e4817fc0e7aba82cfdc10373a # v1.1.2
