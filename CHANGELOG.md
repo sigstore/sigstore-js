@@ -1,5 +1,16 @@
 # sigstore
 
+## 1.2.0
+
+### Minor Changes
+
+- 54d6de4: Adds new `redirectURL` config option when signing with an OAuth identity provider
+
+### Patch Changes
+
+- 8b9375f: Update to tuf-js@1.1.2
+- 8f9f994: Use the Fulcio v2 API for requesting signing certificates
+
 ## 1.1.1
 
 ### Patch Changes
