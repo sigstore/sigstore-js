@@ -17,14 +17,17 @@ import fs from 'fs';
 import path from 'path';
 import { Updater } from 'tuf-js';
 import * as sigstore from '../types/sigstore';
-import { getTarget } from './target';
+import { appdata } from '../util';
+import { readTarget } from './target';
 
 const TRUSTED_ROOT_TARGET = 'trusted_root.json';
 
+const DEFAULT_CACHE_DIR = appdata.appDataPath('sigstore-js');
 const DEFAULT_MIRROR_URL = 'https://sigstore-tuf-root.storage.googleapis.com';
 const DEFAULT_TUF_ROOT_PATH = '../../store/public-good-instance-root.json';
 
 export interface TUFOptions {
+  cachePath?: string;
   mirrorURL?: string;
   rootPath?: string;
 }
@@ -34,9 +37,17 @@ interface RemoteConfig {
 }
 
 export async function getTrustedRoot(
-  cachePath: string,
   options: TUFOptions = {}
 ): Promise<sigstore.TrustedRoot> {
+  const trustedRoot = await getTarget(TRUSTED_ROOT_TARGET, options);
+  return sigstore.TrustedRoot.fromJSON(JSON.parse(trustedRoot));
+}
+
+export async function getTarget(
+  targetName: string,
+  options: TUFOptions = {}
+): Promise<string> {
+  const cachePath = options.cachePath || DEFAULT_CACHE_DIR;
   const tufRootPath =
     options.rootPath || require.resolve(DEFAULT_TUF_ROOT_PATH);
   const mirrorURL = options.mirrorURL || DEFAULT_MIRROR_URL;
@@ -45,8 +56,7 @@ export async function getTrustedRoot(
   const remote = initRemoteConfig(cachePath, mirrorURL);
   const repoClient = initClient(cachePath, remote);
 
-  const trustedRoot = await getTarget(repoClient, TRUSTED_ROOT_TARGET);
-  return sigstore.TrustedRoot.fromJSON(JSON.parse(trustedRoot));
+  return readTarget(repoClient, targetName);
 }
 
 // Initializes the TUF cache directory structure including the initial

@@ -19,7 +19,6 @@ import { Signer } from './sign';
 import { TLog, TLogClient } from './tlog';
 import * as tuf from './tuf';
 import * as sigstore from './types/sigstore';
-import { appdata } from './util';
 import { KeySelector, Verifier } from './verify';
 
 export * as utils from './sigstore-utils';
@@ -83,8 +82,6 @@ function createTLogClient(options: { rekorURL?: string }): TLog {
   });
 }
 
-const tufCacheDir = appdata.appDataPath('sigstore-js');
-
 export async function sign(
   payload: Buffer,
   options: SignOptions = {}
@@ -125,7 +122,7 @@ export async function verify(
   payload?: Buffer,
   options: VerifyOptions = {}
 ): Promise<void> {
-  const trustedRoot = await tuf.getTrustedRoot(tufCacheDir, {
+  const trustedRoot = await tuf.getTrustedRoot({
     mirrorURL: options.tufMirrorURL,
     rootPath: options.tufRootPath,
   });

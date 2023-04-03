@@ -18,7 +18,7 @@ import os from 'os';
 import path from 'path';
 import { TargetFile, Updater } from 'tuf-js';
 import { InternalError } from '../../error';
-import { getTarget } from '../../tuf/target';
+import { readTarget } from '../../tuf/target';
 
 describe('TrustedRootFetcher', () => {
   const targetContent = 'sample trusted root content';
@@ -48,7 +48,7 @@ describe('TrustedRootFetcher', () => {
       } as unknown as Updater;
 
       it('returns the target', async () => {
-        const target = await getTarget(tuf, targetPath);
+        const target = await readTarget(tuf, targetPath);
         expect(target).toEqual(targetContent);
       });
     });
@@ -63,7 +63,7 @@ describe('TrustedRootFetcher', () => {
         } as unknown as Updater;
 
         it('downloads and returns the target', async () => {
-          const target = await getTarget(tuf, targetPath);
+          const target = await readTarget(tuf, targetPath);
           expect(target).toEqual(targetContent);
         });
       });
@@ -77,7 +77,7 @@ describe('TrustedRootFetcher', () => {
         } as unknown as Updater;
 
         it('throw an error', async () => {
-          await expect(() => getTarget(tuf, targetPath)).rejects.toThrow(
+          await expect(() => readTarget(tuf, targetPath)).rejects.toThrow(
             InternalError
           );
         });
@@ -90,7 +90,7 @@ describe('TrustedRootFetcher', () => {
       } as unknown as Updater;
 
       it('throws an error', async () => {
-        await expect(() => getTarget(tuf, targetPath)).rejects.toThrow(
+        await expect(() => readTarget(tuf, targetPath)).rejects.toThrow(
           InternalError
         );
       });
@@ -103,7 +103,7 @@ describe('TrustedRootFetcher', () => {
       } as unknown as Updater;
 
       it('throws an error', async () => {
-        await expect(() => getTarget(tuf, targetPath)).rejects.toThrow(
+        await expect(() => readTarget(tuf, targetPath)).rejects.toThrow(
           InternalError
         );
       });
@@ -118,7 +118,7 @@ describe('TrustedRootFetcher', () => {
     } as unknown as Updater;
 
     it('throws an error', async () => {
-      await expect(() => getTarget(tuf, targetPath)).rejects.toThrow(
+      await expect(() => readTarget(tuf, targetPath)).rejects.toThrow(
         InternalError
       );
     });
