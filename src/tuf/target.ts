@@ -17,10 +17,8 @@ import fs from 'fs';
 import { TargetFile, Updater } from 'tuf-js';
 import { InternalError } from '../error';
 
-// Returns the local path to the specified target. If the target is not yet
-// cached locally, the provided TUF Updater will be used to download and
-// cache the target.
-export async function getTarget(
+// Downloads and returns the specified target from the provided TUF Updater.
+export async function readTarget(
   tuf: Updater,
   targetPath: string
 ): Promise<string> {
@@ -33,6 +31,9 @@ export async function getTarget(
   }
 }
 
+// Returns the local path to the specified target. If the target is not yet
+// cached locally, the provided TUF Updater will be used to download and
+// cache the target.
 async function getTargetPath(tuf: Updater, target: string): Promise<string> {
   let targetInfo: TargetFile | undefined;
   try {
