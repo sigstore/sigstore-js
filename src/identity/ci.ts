@@ -20,7 +20,7 @@ import { promise } from '../util';
 type ProviderFunc = (audience: string) => Promise<string>;
 
 // Collection of all the CI-specific providers we have implemented
-const providers: ProviderFunc[] = [getGHAToken];
+const providers: ProviderFunc[] = [getGHAToken, getEnv];
 
 /**
  * CIContextProvider is a composite identity provider which will iterate
@@ -69,4 +69,16 @@ async function getGHAToken(audience: string): Promise<string> {
   });
 
   return response.json().then((data) => data.value);
+}
+
+/**
+ * getEnv can retrieve an OIDC token from an environment variable.
+ * This matches the behavior of https://github.com/sigstore/cosign/tree/main/pkg/providers/envvar
+ */
+async function getEnv(): Promise<string> {
+  if (!process.env.SIGSTORE_ID_TOKEN) {
+    return Promise.reject('no token available');
+  }
+
+  return process.env.SIGSTORE_ID_TOKEN;
 }

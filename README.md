@@ -99,6 +99,28 @@ sigstore <command> <artifact>
   sigstore help         print help information
 ```
 
+## Credential Sources
+
+### GitHub Actions
+
+If sigstore-js detects that it is being executed on GitHub Actions, it will use `ACTIONS_ID_TOKEN_REQUEST_URL`
+and `ACTIONS_ID_TOKEN_REQUEST_TOKEN` environment variables to request an OIDC token with the correct scope.
+
+Note: the `id_token: write` permission must be granted to the GitHub Action Job.
+
+See https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect
+for more details.
+
+### Environment Variables
+
+If the `SIGSTORE_ID_TOKEN` environment variable is set, it will use this to authenticate to Fulcio.
+It is the callers responsibility to make sure that this token has the correct scopes.
+
+### Interactive Flow
+
+If sigstore-js cannot detect ambient credentials, then it will prompt the user to go through the
+interactive flow.
+
 ## Development
 
 ### Changesets

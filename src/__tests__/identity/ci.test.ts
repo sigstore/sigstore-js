@@ -58,4 +58,30 @@ describe('CIContextProvider', () => {
       });
     });
   });
+
+  describe('#getEnv', () => {
+    describe('when the sigstore environment variables are set', () => {
+      const token = 'hunter2';
+
+      beforeEach(() => {
+        process.env.SIGSTORE_ID_TOKEN = token;
+      });
+
+      afterEach(() => {
+        delete process.env.SIGSTORE_ID_TOKEN;
+      });
+
+      it('returns the token', async () => {
+        const token = await subject.getToken();
+        expect(token).toBe(token);
+      });
+    });
+
+    describe('when the sigstore environment variables are NOT set', () => {
+      it('returns undefined', async () => {
+        const token = subject.getToken();
+        await expect(token).rejects.toBe('CI: no tokens available');
+      });
+    });
+  });
 });
