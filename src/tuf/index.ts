@@ -23,7 +23,7 @@ import { readTarget } from './target';
 const TRUSTED_ROOT_TARGET = 'trusted_root.json';
 
 const DEFAULT_CACHE_DIR = appdata.appDataPath('sigstore-js');
-const DEFAULT_MIRROR_URL = 'https://sigstore-tuf-root.storage.googleapis.com';
+const DEFAULT_MIRROR_URL = 'https://tuf-repo-cdn.sigstore.dev';
 const DEFAULT_TUF_ROOT_PATH = '../../store/public-good-instance-root.json';
 
 export interface TUFOptions {
