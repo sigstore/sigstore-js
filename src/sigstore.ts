@@ -62,6 +62,7 @@ export async function verify(
   const trustedRoot = await tuf.getTrustedRoot({
     mirrorURL: options.tufMirrorURL,
     rootPath: options.tufRootPath,
+    cachePath: options.tufCachePath,
   });
   const verifier = new Verifier(trustedRoot, options.keySelector);
 
@@ -70,11 +71,25 @@ export async function verify(
   return verifier.verify(deserializedBundle, opts, payload);
 }
 
-export const DEFAULT_FULCIO_URL = config.DEFAULT_FULCIO_URL;
-export const DEFAULT_REKOR_URL = config.DEFAULT_REKOR_URL;
+const tufFuncs = {
+  getTarget: (
+    path: string,
+    options: config.TUFOptions = {}
+  ): Promise<string> => {
+    return tuf.getTarget(path, {
+      mirrorURL: options.tufMirrorURL,
+      rootPath: options.tufRootPath,
+      cachePath: options.tufCachePath,
+    });
+  },
+};
+
 export type { SignOptions, VerifyOptions } from './config';
 export * as utils from './sigstore-utils';
 export type {
   SerializedBundle as Bundle,
   SerializedEnvelope as Envelope,
 } from './types/sigstore';
+export { tufFuncs as tuf };
+export const DEFAULT_FULCIO_URL = config.DEFAULT_FULCIO_URL;
+export const DEFAULT_REKOR_URL = config.DEFAULT_REKOR_URL;
