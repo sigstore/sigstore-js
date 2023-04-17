@@ -23,7 +23,7 @@ describe('verifySignerIdentity', () => {
 
   const issuer = 'https://token.actions.githubusercontent.com';
   const workflowURI =
-    'https://github.com/sigstore/sigstore-js/.github/workflows/publish.yml@refs/tags/v0.4.0';
+    'https://github.com/npm/provenance-tests/.github/workflows/publish-with-provenance.yml@refs/heads/main';
 
   const workflowSAN: sigstore.SubjectAlternativeName = {
     type: sigstore.SubjectAlternativeNameType.URI,
@@ -35,12 +35,18 @@ describe('verifySignerIdentity', () => {
 
   const extFulcioWorkflowName: sigstore.ObjectIdentifierValuePair = {
     oid: { id: [1, 3, 6, 1, 4, 1, 57264, 1, 4] },
-    value: Buffer.from('publish'),
+    value: Buffer.from('publish-with-provenance'),
   };
 
   const extFulcioRepository: sigstore.ObjectIdentifierValuePair = {
     oid: { id: [1, 3, 6, 1, 4, 1, 57264, 1, 5] },
-    value: Buffer.from('sigstore/sigstore-js'),
+    value: Buffer.from('npm/provenance-tests'),
+  };
+
+  // Newer style extension w/ value encoded as UTF8String
+  const extFulcioBuildTrigger: sigstore.ObjectIdentifierValuePair = {
+    oid: { id: [1, 3, 6, 1, 4, 1, 57264, 1, 20] },
+    value: Buffer.from('workflow_dispatch'),
   };
 
   describe('when there is a matching identity', () => {
@@ -50,7 +56,11 @@ describe('verifySignerIdentity', () => {
           {
             issuer,
             san: workflowSAN,
-            oids: [extFulcioRepository, extFulcioWorkflowName],
+            oids: [
+              extFulcioRepository,
+              extFulcioWorkflowName,
+              extFulcioBuildTrigger,
+            ],
           },
         ],
       };

@@ -39,6 +39,10 @@ export class x509Extension {
     return this.extnValueObj.value;
   }
 
+  get valueObj(): ASN1Obj {
+    return this.extnValueObj;
+  }
+
   protected get extnValueObj(): ASN1Obj {
     // The extnValue field will be the last element of the extension sequence
     return this.root.subs[this.root.subs.length - 1];
