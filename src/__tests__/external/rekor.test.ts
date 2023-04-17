@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import nock from 'nock';
-import { Rekor } from '../../client/index';
+import { Rekor } from '../../external';
 import { HashedRekordKind } from '../../tlog';
 
 describe('Rekor', () => {

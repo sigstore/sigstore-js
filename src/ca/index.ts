@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { KeyObject } from 'crypto';
-import { Fulcio } from '../client';
 import { InternalError } from '../error';
+import { Fulcio } from '../external';
 import { toCertificateRequest } from './format';
 
 export interface CA {

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { KeyObject } from 'crypto';
-import { SigningCertificateRequest } from '../client/fulcio';
+import type { SigningCertificateRequest } from '../external/fulcio';
 
 export function toCertificateRequest(
   identityToken: string,

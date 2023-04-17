@@ -13,11 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { Rekor } from '../client';
-import { HTTPError } from '../client/error';
 import { InternalError } from '../error';
+import { HTTPError, Rekor } from '../external';
 import { SignatureMaterial } from '../types/signature';
-import { bundle, Bundle, Envelope } from '../types/sigstore';
+import { Bundle, Envelope, bundle } from '../types/sigstore';
 import { toProposedHashedRekordEntry, toProposedIntotoEntry } from './format';
 import { Entry, EntryKind } from './types';
 
