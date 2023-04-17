@@ -15,7 +15,7 @@ limitations under the License.
 */
 import { PolicyError, VerificationError } from '../error';
 import { Signer } from '../sign';
-import { attest, sign, utils, verify, VerifyOptions } from '../sigstore';
+import { attest, sign, verify } from '../sigstore';
 import { getTrustedRoot } from '../tuf';
 import {
   Bundle,
@@ -26,6 +26,8 @@ import {
 } from '../types/sigstore';
 import bundles from './__fixtures__/bundles';
 import { trustedRoot } from './__fixtures__/trust';
+
+import type { VerifyOptions } from '../config';
 
 jest.mock('../sign');
 jest.mock('../tuf');
@@ -64,13 +66,6 @@ const timestampVerificationData: TimestampVerificationData = {
 const x509CertificateChain: X509CertificateChain = {
   certificates: [{ rawBytes: Buffer.from('certificate') }],
 };
-
-describe('utils', () => {
-  it('exports utils', async () => {
-    expect(utils.createDSSEEnvelope).toBeInstanceOf(Function);
-    expect(utils.createRekorEntry).toBeInstanceOf(Function);
-  });
-});
 
 describe('sign', () => {
   const payload = Buffer.from('Hello, world!');
