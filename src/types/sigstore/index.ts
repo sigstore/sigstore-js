@@ -26,13 +26,11 @@ import { encoding as enc, pem } from '../../util';
 import { x509Certificate } from '../../x509/cert';
 import { SignatureMaterial } from '../signature';
 import { WithRequired } from '../utility';
-import { assertValidBundle, ValidBundle } from './validate';
+import { ValidBundle, assertValidBundle } from './validate';
 
 export * from '@sigstore/protobuf-specs';
 export * from './serialized';
 export * from './validate';
-
-export const bundleToJSON = Bundle.toJSON;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const bundleFromJSON = (obj: any): ValidBundle => {
@@ -40,9 +38,6 @@ export const bundleFromJSON = (obj: any): ValidBundle => {
   assertValidBundle(bundle);
   return bundle;
 };
-
-export const envelopeToJSON = Envelope.toJSON;
-export const envelopeFromJSON = Envelope.fromJSON;
 
 const BUNDLE_MEDIA_TYPE =
   'application/vnd.dev.sigstore.bundle+json;version=0.1';
