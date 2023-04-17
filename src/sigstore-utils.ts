@@ -13,22 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { Bundle, DEFAULT_REKOR_URL, Envelope, SignOptions } from './sigstore';
-import { TLog, TLogClient } from './tlog';
-import { extractSignatureMaterial, SignerFunc } from './types/signature';
-import {
-  bundleToJSON,
-  Envelope as DSSEEnvelope,
-  envelopeFromJSON,
-  envelopeToJSON,
-} from './types/sigstore';
+import { SignOptions, createTLogClient } from './config';
+import { SignerFunc, extractSignatureMaterial } from './types/signature';
+import * as sigstore from './types/sigstore';
 import { dsse } from './util';
-
-function createTLogClient(options: { rekorURL?: string }): TLog {
-  return new TLogClient({
-    rekorBaseURL: options.rekorURL || DEFAULT_REKOR_URL,
-  });
-}
 
 export async function createDSSEEnvelope(
   payload: Buffer,
@@ -36,14 +24,14 @@ export async function createDSSEEnvelope(
   options: {
     signer: SignerFunc;
   }
-): Promise<Envelope> {
+): Promise<sigstore.SerializedEnvelope> {
   // Pre-authentication encoding to be signed
   const paeBuffer = dsse.preAuthEncoding(payloadType, payload);
 
   // Get signature and verification material for pae
   const sigMaterial = await options.signer(paeBuffer);
 
-  const envelope: DSSEEnvelope = {
+  const envelope: sigstore.Envelope = {
     payloadType,
     payload,
     signatures: [
@@ -54,17 +42,17 @@ export async function createDSSEEnvelope(
     ],
   };
 
-  return envelopeToJSON(envelope) as Envelope;
+  return sigstore.Envelope.toJSON(envelope) as sigstore.SerializedEnvelope;
 }
 
 // Accepts a signed DSSE envelope and a PEM-encoded public key to be added to the
 // transparency log. Returns a Sigstore bundle suitable for offline verification.
 export async function createRekorEntry(
-  dsseEnvelope: Envelope,
+  dsseEnvelope: sigstore.SerializedEnvelope,
   publicKey: string,
   options: SignOptions = {}
-): Promise<Bundle> {
-  const envelope = envelopeFromJSON(dsseEnvelope);
+): Promise<sigstore.SerializedBundle> {
+  const envelope = sigstore.Envelope.fromJSON(dsseEnvelope);
   const tlog = createTLogClient(options);
 
   const sigMaterial = extractSignatureMaterial(envelope, publicKey);
@@ -72,5 +60,5 @@ export async function createRekorEntry(
     fetchOnConflict: true,
   });
 
-  return bundleToJSON(bundle) as Bundle;
+  return sigstore.Bundle.toJSON(bundle) as sigstore.SerializedBundle;
 }

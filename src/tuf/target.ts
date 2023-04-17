@@ -24,11 +24,15 @@ export async function readTarget(
 ): Promise<string> {
   const path = await getTargetPath(tuf, targetPath);
 
-  try {
-    return fs.readFileSync(path, 'utf-8');
-  } catch (err) {
-    throw new InternalError(`error reading trusted root: ${err}`);
-  }
+  return new Promise((resolve, reject) => {
+    fs.readFile(path, 'utf-8', (err, data) => {
+      if (err) {
+        reject(new InternalError(`error reading target: ${err}`));
+      } else {
+        resolve(data);
+      }
+    });
+  });
 }
 
 // Returns the local path to the specified target. If the target is not yet
