@@ -19,7 +19,7 @@ import {
   Fulcio,
   SigningCertificateRequest,
   SigningCertificateResponse,
-} from '../../client/fulcio';
+} from '../../external/fulcio';
 
 describe('Fulcio', () => {
   const baseURL = 'http://localhost:8000';
