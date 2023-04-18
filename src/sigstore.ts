@@ -71,7 +71,7 @@ export async function verify(
   return verifier.verify(deserializedBundle, opts, payload);
 }
 
-const tufFuncs = {
+const tufUtils = {
   getTarget: (
     path: string,
     options: config.TUFOptions = {}
@@ -90,6 +90,6 @@ export type {
   SerializedBundle as Bundle,
   SerializedEnvelope as Envelope,
 } from './types/sigstore';
-export { tufFuncs as tuf };
+export { tufUtils as tuf };
 export const DEFAULT_FULCIO_URL = config.DEFAULT_FULCIO_URL;
 export const DEFAULT_REKOR_URL = config.DEFAULT_REKOR_URL;
