@@ -31,4 +31,9 @@ describe('sigstore', () => {
     expect(sigstore.utils.createDSSEEnvelope).toBeInstanceOf(Function);
     expect(sigstore.utils.createRekorEntry).toBeInstanceOf(Function);
   });
+
+  it('exports TUF helpers', () => {
+    expect(sigstore.tuf).toBeDefined();
+    expect(sigstore.tuf.getTarget).toBeInstanceOf(Function);
+  });
 });

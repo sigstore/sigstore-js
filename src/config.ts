@@ -39,6 +39,7 @@ export interface IdentityProviderOptions {
 export interface TUFOptions {
   tufMirrorURL?: string;
   tufRootPath?: string;
+  tufCachePath?: string;
 }
 
 export type SignOptions = CAOptions & TLogOptions & IdentityProviderOptions;

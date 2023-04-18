@@ -72,6 +72,20 @@ Verifies the signature in the supplied bundle.
   * `keySelector` `<Function>`: Callback invoked to retrieve the public key (as either `string` or `Buffer`) necessary to verify the bundle signature. Not used when the signature was generated from a Fulcio-issued signing certificate.
     * `hint` `<String>`: The hint from the bundle used to identify the the signing key.
 
+### tuf
+
+The `tuf` object contains utility function for working with the Sigstore TUF repository.
+
+#### getTarget(path[, options])
+
+Returns the contents of the target at the specified path in the Sigstore TUF repository.
+
+* `path` `<string>`: The [path-relative-url string](https://url.spec.whatwg.org/#path-relative-url-string) that uniquely identifies the target within the Sigstore TUF repository.
+* `options` `<Object>`
+  * `tufMirrorURL` `<string>`: Base URL for the Sigstore TUF repository. Defaults to `'https://tuf-repo-cdn.sigstore.dev'`
+  * `tufRootPath` `<string>`: Path to the initial trusted root for the TUF repository. Defaults to the embedded root.
+  * `tufCachePath` `<string>`: Absolute path to the directory to be used for caching downloaded TUF metadata and targets. Defaults to a directory named "sigstore-js" within the platform-specific application data directory.
+
 
 ### utils
 
