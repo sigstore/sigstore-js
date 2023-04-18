@@ -71,7 +71,12 @@ async function sign(artifactPath: string) {
   const buffer = fs.readFileSync(artifactPath);
   const bundle = await sigstore.sign(buffer, signOptions);
 
-  const url = `${signOptions.rekorURL}/api/v1/log/entries`;
+  let url;
+  if (signOptions.rekorURL === sigstore.DEFAULT_REKOR_URL) {
+    url = `https://search.sigstore.dev`;
+  } else {
+    url = `${signOptions.rekorURL}/api/v1/log/entries`;
+  }
   const logIndex = bundle.verificationMaterial?.tlogEntries[0].logIndex;
   console.error(`Created entry at index ${logIndex}, available at`);
   console.error(`${url}?logIndex=${logIndex}`);
