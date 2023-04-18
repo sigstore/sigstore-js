@@ -1,5 +1,18 @@
 # sigstore
 
+## 1.3.0
+
+### Minor Changes
+
+- c2e3dd5: Add support for verification of certificate extension values encoded as UTF8String
+- 6fd6e22: Exposes a new `tuf.getTarget` function to retrieve targets from the Sigstore TUF repository
+- da0bfd7: Added new token provider for looking up OIDC tokens in the SIGSTORE_ID_TOKEN environment variable.
+
+### Patch Changes
+
+- 9dbb26d: Use CDN-backend endpoint to fetch TUF root material
+- 341b7bd: Update dependency - tuf-js@1.1.3
+
 ## 1.2.0
 
 ### Minor Changes
