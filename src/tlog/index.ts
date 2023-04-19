@@ -92,10 +92,18 @@ export class TLogClient implements TLog {
         try {
           entry = await this.rekor.getEntry(uuid);
         } catch (err) {
-          throw new InternalError('error fetching tlog entry', err);
+          throw new InternalError({
+            code: 'TLOG_FETCH_ENTRY_ERROR',
+            message: 'error fetching tlog entry',
+            cause: err,
+          });
         }
       } else {
-        throw new InternalError('error creating tlog entry', err);
+        throw new InternalError({
+          code: 'TLOG_CREATE_ENTRY_ERROR',
+          message: 'error creating tlog entry',
+          cause: err,
+        });
       }
     }
 

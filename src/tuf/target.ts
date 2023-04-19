@@ -27,7 +27,13 @@ export async function readTarget(
   return new Promise((resolve, reject) => {
     fs.readFile(path, 'utf-8', (err, data) => {
       if (err) {
-        reject(new InternalError(`error reading target: ${err}`));
+        reject(
+          new InternalError({
+            code: 'TUF_READ_TARGET_ERROR',
+            message: `error reading target ${path}`,
+            cause: err,
+          })
+        );
       } else {
         resolve(data);
       }
@@ -43,11 +49,18 @@ async function getTargetPath(tuf: Updater, target: string): Promise<string> {
   try {
     targetInfo = await tuf.refresh().then(() => tuf.getTargetInfo(target));
   } catch (err) {
-    throw new InternalError(`error refreshing TUF metadata: ${err}`);
+    throw new InternalError({
+      code: 'TUF_REFRESH_METADATA_ERROR',
+      message: 'error refreshing TUF metadata',
+      cause: err,
+    });
   }
 
   if (!targetInfo) {
-    throw new InternalError(`target ${target} not found`);
+    throw new InternalError({
+      code: 'TUF_FIND_TARGET_ERROR',
+      message: `target ${target} not found`,
+    });
   }
 
   let path = await tuf.findCachedTarget(targetInfo);
@@ -58,7 +71,11 @@ async function getTargetPath(tuf: Updater, target: string): Promise<string> {
     try {
       path = await tuf.downloadTarget(targetInfo);
     } catch (err) {
-      throw new InternalError(`error downloading target: ${err}`);
+      throw new InternalError({
+        code: 'TUF_DOWNLOAD_TARGET_ERROR',
+        message: `error downloading target ${path}`,
+        cause: err,
+      });
     }
   }
 
