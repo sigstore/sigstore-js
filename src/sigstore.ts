@@ -85,6 +85,12 @@ const tufUtils = {
 };
 
 export type { SignOptions, VerifyOptions } from './config';
+export {
+  InternalError,
+  PolicyError,
+  ValidationError,
+  VerificationError,
+} from './error';
 export * as utils from './sigstore-utils';
 export type {
   SerializedBundle as Bundle,
