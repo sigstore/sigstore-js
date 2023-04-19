@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { fromPartial } from '@total-typescript/shoehorn';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -41,11 +42,11 @@ describe('TrustedRootFetcher', () => {
 
   describe('getTrustedRoot', () => {
     describe('when the target is already cached', () => {
-      const tuf = {
+      const tuf: Updater = fromPartial({
         refresh: jest.fn().mockResolvedValue(undefined),
         getTargetInfo: jest.fn().mockResolvedValue(targetFile),
         findCachedTarget: jest.fn().mockReturnValue(targetFilePath),
-      } as unknown as Updater;
+      });
 
       it('returns the target', async () => {
         const target = await readTarget(tuf, targetPath);
@@ -55,12 +56,12 @@ describe('TrustedRootFetcher', () => {
 
     describe('when the target is not cached locally', () => {
       describe('when the target download is successful', () => {
-        const tuf = {
+        const tuf: Updater = fromPartial({
           refresh: jest.fn().mockResolvedValue(undefined),
           getTargetInfo: jest.fn().mockResolvedValue(targetFile),
           findCachedTarget: jest.fn().mockReturnValue(undefined),
           downloadTarget: jest.fn().mockReturnValue(targetFilePath),
-        } as unknown as Updater;
+        });
 
         it('downloads and returns the target', async () => {
           const target = await readTarget(tuf, targetPath);
@@ -69,12 +70,12 @@ describe('TrustedRootFetcher', () => {
       });
 
       describe('when the target download fails', () => {
-        const tuf = {
+        const tuf: Updater = fromPartial({
           refresh: jest.fn().mockResolvedValue(undefined),
           getTargetInfo: jest.fn().mockResolvedValue(targetFile),
           findCachedTarget: jest.fn().mockReturnValue(undefined),
           downloadTarget: jest.fn().mockRejectedValue(new Error('oops')),
-        } as unknown as Updater;
+        });
 
         it('throw an error', async () => {
           await expect(() => readTarget(tuf, targetPath)).rejects.toThrow(
@@ -85,9 +86,9 @@ describe('TrustedRootFetcher', () => {
     });
 
     describe('when the TUF refresh throws an error', () => {
-      const tuf = {
+      const tuf: Updater = fromPartial({
         refresh: jest.fn().mockRejectedValue(new Error('oops')),
-      } as unknown as Updater;
+      });
 
       it('throws an error', async () => {
         await expect(() => readTarget(tuf, targetPath)).rejects.toThrow(
@@ -97,10 +98,10 @@ describe('TrustedRootFetcher', () => {
     });
 
     describe('when the target cannot be found', () => {
-      const tuf = {
+      const tuf: Updater = fromPartial({
         refresh: jest.fn().mockResolvedValue(undefined),
         getTargetInfo: jest.fn().mockResolvedValue(undefined),
-      } as unknown as Updater;
+      });
 
       it('throws an error', async () => {
         await expect(() => readTarget(tuf, targetPath)).rejects.toThrow(
@@ -111,11 +112,11 @@ describe('TrustedRootFetcher', () => {
   });
 
   describe('when the cache read fails', () => {
-    const tuf = {
+    const tuf: Updater = fromPartial({
       refresh: jest.fn().mockResolvedValue(undefined),
       getTargetInfo: jest.fn().mockResolvedValue(targetFile),
       findCachedTarget: jest.fn().mockReturnValue('invalidpath'),
-    } as unknown as Updater;
+    });
 
     it('throws an error', async () => {
       await expect(() => readTarget(tuf, targetPath)).rejects.toThrow(

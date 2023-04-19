@@ -37,6 +37,7 @@
   "homepage": "https://github.com/sigstore/sigstore-js#readme",
   "devDependencies": {
     "@changesets/cli": "^2.26.0",
+    "@total-typescript/shoehorn": "^0.1.0",
     "@tsconfig/node14": "^1.0.3",
     "@tufjs/repo-mock": "^1.1.0",
     "@types/jest": "^29.4.0",
