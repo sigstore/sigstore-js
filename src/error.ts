@@ -28,6 +28,30 @@ export class VerificationError extends BaseError {}
 
 export class ValidationError extends BaseError {}
 
-export class InternalError extends BaseError {}
-
 export class PolicyError extends BaseError {}
+
+type InternalErrorCode =
+  | 'TLOG_FETCH_ENTRY_ERROR'
+  | 'TLOG_CREATE_ENTRY_ERROR'
+  | 'CA_CREATE_SIGNING_CERTIFICATE_ERROR'
+  | 'TUF_FIND_TARGET_ERROR'
+  | 'TUF_REFRESH_METADATA_ERROR'
+  | 'TUF_DOWNLOAD_TARGET_ERROR'
+  | 'TUF_READ_TARGET_ERROR';
+
+export class InternalError extends BaseError {
+  code: InternalErrorCode;
+
+  constructor({
+    code,
+    message,
+    cause,
+  }: {
+    code: InternalErrorCode;
+    message: string;
+    cause?: any;
+  }) {
+    super(message, cause);
+    this.code = code;
+  }
+}

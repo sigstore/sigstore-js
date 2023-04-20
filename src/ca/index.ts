@@ -49,7 +49,11 @@ export class CAClient implements CA {
 
       return certificate.signedCertificateEmbeddedSct.chain.certificates;
     } catch (err) {
-      throw new InternalError('error creating signing certificate', err);
+      throw new InternalError({
+        code: 'CA_CREATE_SIGNING_CERTIFICATE_ERROR',
+        message: 'error creating signing certificate',
+        cause: err,
+      });
     }
   }
 }

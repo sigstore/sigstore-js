@@ -36,4 +36,11 @@ describe('sigstore', () => {
     expect(sigstore.tuf).toBeDefined();
     expect(sigstore.tuf.getTarget).toBeInstanceOf(Function);
   });
+
+  it('exports errors', () => {
+    expect(sigstore.InternalError).toBeInstanceOf(Object);
+    expect(sigstore.PolicyError).toBeInstanceOf(Object);
+    expect(sigstore.VerificationError).toBeInstanceOf(Object);
+    expect(sigstore.ValidationError).toBeInstanceOf(Object);
+  });
 });
