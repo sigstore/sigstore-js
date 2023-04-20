@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { fromPartial } from '@total-typescript/shoehorn';
 import child_process, { ChildProcess } from 'child_process';
 import fetch from 'make-fetch-happen';
 import nock from 'nock';
@@ -117,6 +118,6 @@ function sendFakeAuthResponse(
       throw new Error('Invalid auth request');
     }
 
-    return {} as unknown as ChildProcess;
+    return fromPartial({});
   };
 }
