@@ -1,5 +1,17 @@
 # sigstore
 
+## 1.3.2
+
+### Patch Changes
+
+- 6ba4fd1: Print the rekor search entry when running the `sigstore attest` command
+
+## 1.3.1
+
+### Patch Changes
+
+- d2d0702: Update CLI sign cmd to output a link to search.sigstore.dev
+
 ## 1.3.0
 
 ### Minor Changes

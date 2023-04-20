@@ -18,6 +18,13 @@ import { sigstore } from '../index';
 
 const INTOTO_PAYLOAD_TYPE = 'application/vnd.in-toto+json';
 
+type CLISignOptions = {
+  oidcClientID: string;
+  oidcIssuer: string;
+  oidcRedirectURL?: string;
+  rekorURL: string;
+};
+
 async function cli(args: string[]) {
   switch (args[0]) {
     case 'sign':
@@ -60,7 +67,20 @@ function printUsage() {
   `);
 }
 
-const signOptions = {
+function printRekorEntry(bundle: sigstore.Bundle, options: CLISignOptions) {
+  let url;
+  if (options.rekorURL === sigstore.DEFAULT_REKOR_URL) {
+    url = `https://search.sigstore.dev`;
+  } else {
+    url = `${options.rekorURL}/api/v1/log/entries`;
+  }
+  const logIndex = bundle.verificationMaterial?.tlogEntries[0].logIndex;
+  console.error(`Created entry at index ${logIndex}, available at`);
+  console.error(`${url}?logIndex=${logIndex}`);
+}
+
+// TODO: Allow customing these options
+const signOptions: CLISignOptions = {
   oidcClientID: 'sigstore',
   oidcIssuer: 'https://oauth2.sigstore.dev/auth',
   oidcRedirectURL: process.env.OIDC_REDIRECT_URL,
@@ -70,23 +90,14 @@ const signOptions = {
 async function sign(artifactPath: string) {
   const buffer = fs.readFileSync(artifactPath);
   const bundle = await sigstore.sign(buffer, signOptions);
-
-  let url;
-  if (signOptions.rekorURL === sigstore.DEFAULT_REKOR_URL) {
-    url = `https://search.sigstore.dev`;
-  } else {
-    url = `${signOptions.rekorURL}/api/v1/log/entries`;
-  }
-  const logIndex = bundle.verificationMaterial?.tlogEntries[0].logIndex;
-  console.error(`Created entry at index ${logIndex}, available at`);
-  console.error(`${url}?logIndex=${logIndex}`);
-
+  printRekorEntry(bundle, signOptions);
   console.log(JSON.stringify(bundle));
 }
 
 async function attest(artifactPath: string, payloadType = INTOTO_PAYLOAD_TYPE) {
   const buffer = fs.readFileSync(artifactPath);
   const bundle = await sigstore.attest(buffer, payloadType, signOptions);
+  printRekorEntry(bundle, signOptions);
   console.log(JSON.stringify(bundle));
 }
 
