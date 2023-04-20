@@ -1,5 +1,12 @@
 # sigstore
 
+## 1.4.0
+
+### Minor Changes
+
+- 99093bb: add specific errors codes for `InternalError`s
+- 99093bb: export error classes
+
 ## 1.3.2
 
 ### Patch Changes
