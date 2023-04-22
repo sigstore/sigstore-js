@@ -16,7 +16,7 @@ limitations under the License.
 import { InternalError } from '../error';
 import { HTTPError, Rekor } from '../external';
 import { SignatureMaterial } from '../types/signature';
-import { Bundle, Envelope, bundle } from '../types/sigstore';
+import * as sigstore from '../types/sigstore';
 import { toProposedHashedRekordEntry, toProposedIntotoEntry } from './format';
 import { Entry, EntryKind } from './types';
 
@@ -30,13 +30,13 @@ export interface TLog {
   createMessageSignatureEntry: (
     digest: Buffer,
     sigMaterial: SignatureMaterial
-  ) => Promise<Bundle>;
+  ) => Promise<sigstore.Bundle>;
 
   createDSSEEntry: (
-    envelope: Envelope,
+    envelope: sigstore.Envelope,
     sigMaterial: SignatureMaterial,
     options?: CreateEntryOptions
-  ) => Promise<Bundle>;
+  ) => Promise<sigstore.Bundle>;
 }
 
 export interface TLogClientOptions {
@@ -54,26 +54,34 @@ export class TLogClient implements TLog {
     digest: Buffer,
     sigMaterial: SignatureMaterial,
     options: CreateEntryOptions = {}
-  ): Promise<Bundle> {
+  ): Promise<sigstore.Bundle> {
     const proposedEntry = toProposedHashedRekordEntry(digest, sigMaterial);
     const entry = await this.createEntry(
       proposedEntry,
       options.fetchOnConflict
     );
-    return bundle.toMessageSignatureBundle(digest, sigMaterial, entry);
+    return sigstore.toMessageSignatureBundle({
+      digest,
+      signature: sigMaterial,
+      tlogEntry: entry,
+    });
   }
 
   async createDSSEEntry(
-    envelope: Envelope,
+    envelope: sigstore.Envelope,
     sigMaterial: SignatureMaterial,
     options: CreateEntryOptions = {}
-  ): Promise<Bundle> {
+  ): Promise<sigstore.Bundle> {
     const proposedEntry = toProposedIntotoEntry(envelope, sigMaterial);
     const entry = await this.createEntry(
       proposedEntry,
       options.fetchOnConflict
     );
-    return bundle.toDSSEBundle(envelope, sigMaterial, entry);
+    return sigstore.toDSSEBundle({
+      envelope,
+      signature: sigMaterial,
+      tlogEntry: entry,
+    });
   }
 
   private async createEntry(
