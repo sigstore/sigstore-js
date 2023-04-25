@@ -21,8 +21,7 @@ import {
 } from '../../tlog/format';
 import { TLogClient } from '../../tlog/index';
 import { SignatureMaterial } from '../../types/signature';
-import { Envelope, HashAlgorithm } from '../../types/sigstore';
-import { pem } from '../../util';
+import { Envelope } from '../../types/sigstore';
 
 describe('TLogClient', () => {
   const baseURL = 'http://localhost:8080';
@@ -109,68 +108,20 @@ describe('TLogClient', () => {
           .reply(201, rekorEntry);
       });
 
-      it('returns a signature bundle', async () => {
-        const bundle = await subject.createMessageSignatureEntry(
+      it('returns a tlog entry', async () => {
+        const entry = await subject.createMessageSignatureEntry(
           digest,
           sigMaterial
         );
 
-        expect(bundle).toBeTruthy();
-        expect(bundle.mediaType).toEqual(
-          'application/vnd.dev.sigstore.bundle+json;version=0.1'
+        expect(entry.uuid).toEqual(uuid);
+        expect(entry.logID).toEqual(rekorEntry[uuid].logID);
+        expect(entry.logIndex).toEqual(rekorEntry[uuid].logIndex);
+        expect(entry.integratedTime).toEqual(rekorEntry[uuid].integratedTime);
+        expect(entry.verification.signedEntryTimestamp).toEqual(
+          rekorEntry[uuid].verification.signedEntryTimestamp
         );
-
-        if (bundle.content?.$case === 'messageSignature') {
-          const ms = bundle.content.messageSignature;
-          expect(ms.messageDigest).toBeTruthy();
-          expect(ms.messageDigest?.algorithm).toEqual(HashAlgorithm.SHA2_256);
-          expect(ms.messageDigest?.digest).toBeTruthy();
-          expect(ms.signature).toBeTruthy();
-        } else {
-          fail('Expected messageSignature');
-        }
-
-        // Verification material
-        if (
-          bundle.verificationMaterial?.content?.$case === 'x509CertificateChain'
-        ) {
-          const chain =
-            bundle.verificationMaterial.content.x509CertificateChain;
-          expect(chain).toBeTruthy();
-          expect(chain.certificates).toHaveLength(2);
-          expect(chain.certificates[0].rawBytes).toEqual(
-            pem.toDER(leafCertificate)
-          );
-          expect(chain.certificates[1].rawBytes).toEqual(
-            pem.toDER(rootCertificate)
-          );
-        } else {
-          fail('Expected x509CertificateChain');
-        }
-
-        expect(
-          bundle.verificationMaterial?.timestampVerificationData
-        ).toBeUndefined();
-        expect(bundle.verificationMaterial?.tlogEntries).toHaveLength(1);
-
-        const tlog = bundle.verificationMaterial?.tlogEntries[0];
-        expect(tlog?.inclusionPromise).toBeTruthy();
-        expect(tlog?.inclusionPromise?.signedEntryTimestamp).toBeTruthy();
-        expect(
-          tlog?.inclusionPromise?.signedEntryTimestamp.toString('base64')
-        ).toEqual(rekorEntry[uuid].verification.signedEntryTimestamp);
-        expect(tlog?.integratedTime).toEqual(
-          rekorEntry[uuid].integratedTime.toString()
-        );
-        expect(tlog?.logId).toBeTruthy();
-        expect(tlog?.logId?.keyId).toBeTruthy();
-        expect(tlog?.logId?.keyId.toString('hex')).toEqual(
-          rekorEntry[uuid].logID
-        );
-        expect(tlog?.logIndex).toEqual(rekorEntry[uuid].logIndex.toString());
-        expect(tlog?.inclusionProof).toBeFalsy();
-        expect(tlog?.kindVersion?.kind).toEqual('hashedrekord');
-        expect(tlog?.kindVersion?.version).toEqual('0.0.1');
+        expect(entry.body).toEqual(rekorEntry[uuid].body);
       });
     });
   });
@@ -275,14 +226,11 @@ describe('TLogClient', () => {
               .reply(200, rekorEntry);
           });
 
-          it('returns a signature bundle', async () => {
-            const bundle = await subject.createDSSEEntry(dsse, sigMaterial, {
+          it('returns a tlog entry', async () => {
+            const entry = await subject.createDSSEEntry(dsse, sigMaterial, {
               fetchOnConflict: true,
             });
-            expect(bundle).toBeTruthy();
-            expect(bundle.mediaType).toEqual(
-              'application/vnd.dev.sigstore.bundle+json;version=0.1'
-            );
+            expect(entry).toBeTruthy();
           });
         });
 
@@ -340,67 +288,17 @@ describe('TLogClient', () => {
           .reply(201, rekorEntry);
       });
 
-      it('returns a signature bundle', async () => {
-        const bundle = await subject.createDSSEEntry(dsse, sigMaterial);
+      it('returns a tlog entry', async () => {
+        const entry = await subject.createDSSEEntry(dsse, sigMaterial);
 
-        expect(bundle).toBeTruthy();
-        expect(bundle.mediaType).toEqual(
-          'application/vnd.dev.sigstore.bundle+json;version=0.1'
+        expect(entry.uuid).toEqual(uuid);
+        expect(entry.logID).toEqual(rekorEntry[uuid].logID);
+        expect(entry.logIndex).toEqual(rekorEntry[uuid].logIndex);
+        expect(entry.integratedTime).toEqual(rekorEntry[uuid].integratedTime);
+        expect(entry.verification.signedEntryTimestamp).toEqual(
+          rekorEntry[uuid].verification.signedEntryTimestamp
         );
-
-        if (bundle.content?.$case === 'dsseEnvelope') {
-          const env = bundle.content.dsseEnvelope;
-          expect(env.payloadType).toEqual(payloadType);
-          expect(env.payload.toString('base64')).toEqual(
-            payload.toString('base64')
-          );
-          expect(env.signatures).toHaveLength(1);
-          expect(env.signatures[0].keyid).toEqual('');
-        } else {
-          fail('Expected dsseEnvelope');
-        }
-
-        // Verification material
-        if (
-          bundle.verificationMaterial?.content?.$case === 'x509CertificateChain'
-        ) {
-          const chain =
-            bundle.verificationMaterial.content.x509CertificateChain;
-          expect(chain).toBeTruthy();
-          expect(chain.certificates).toHaveLength(2);
-          expect(chain.certificates[0].rawBytes).toEqual(
-            pem.toDER(leafCertificate)
-          );
-          expect(chain.certificates[1].rawBytes).toEqual(
-            pem.toDER(rootCertificate)
-          );
-        } else {
-          fail('Expected x509CertificateChain');
-        }
-
-        expect(
-          bundle.verificationMaterial?.timestampVerificationData
-        ).toBeUndefined();
-        expect(bundle.verificationMaterial?.tlogEntries).toHaveLength(1);
-
-        const tlog = bundle.verificationMaterial?.tlogEntries[0];
-        expect(tlog?.inclusionPromise).toBeTruthy();
-        expect(tlog?.inclusionPromise?.signedEntryTimestamp).toBeTruthy();
-        expect(
-          tlog?.inclusionPromise?.signedEntryTimestamp.toString('base64')
-        ).toEqual(rekorEntry[uuid].verification.signedEntryTimestamp);
-        expect(tlog?.integratedTime).toEqual(
-          rekorEntry[uuid].integratedTime.toString()
-        );
-        expect(tlog?.logId).toBeTruthy();
-        expect(tlog?.logId?.keyId).toBeTruthy();
-        expect(tlog?.logId?.keyId.toString('hex')).toEqual(
-          rekorEntry[uuid].logID
-        );
-        expect(tlog?.logIndex).toEqual(rekorEntry[uuid].logIndex.toString());
-        expect(tlog?.inclusionProof).toBeFalsy();
-        expect(tlog?.kindVersion?.kind).toEqual('intoto');
-        expect(tlog?.kindVersion?.version).toEqual('0.0.2');
+        expect(entry.body).toEqual(rekorEntry[uuid].body);
       });
     });
   });
