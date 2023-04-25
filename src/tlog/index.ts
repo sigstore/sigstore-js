@@ -30,13 +30,13 @@ export interface TLog {
   createMessageSignatureEntry: (
     digest: Buffer,
     sigMaterial: SignatureMaterial
-  ) => Promise<sigstore.Bundle>;
+  ) => Promise<Entry>;
 
   createDSSEEntry: (
     envelope: sigstore.Envelope,
     sigMaterial: SignatureMaterial,
     options?: CreateEntryOptions
-  ) => Promise<sigstore.Bundle>;
+  ) => Promise<Entry>;
 }
 
 export interface TLogClientOptions {
@@ -54,34 +54,18 @@ export class TLogClient implements TLog {
     digest: Buffer,
     sigMaterial: SignatureMaterial,
     options: CreateEntryOptions = {}
-  ): Promise<sigstore.Bundle> {
+  ): Promise<Entry> {
     const proposedEntry = toProposedHashedRekordEntry(digest, sigMaterial);
-    const entry = await this.createEntry(
-      proposedEntry,
-      options.fetchOnConflict
-    );
-    return sigstore.toMessageSignatureBundle({
-      digest,
-      signature: sigMaterial,
-      tlogEntry: entry,
-    });
+    return this.createEntry(proposedEntry, options.fetchOnConflict);
   }
 
   async createDSSEEntry(
     envelope: sigstore.Envelope,
     sigMaterial: SignatureMaterial,
     options: CreateEntryOptions = {}
-  ): Promise<sigstore.Bundle> {
+  ): Promise<Entry> {
     const proposedEntry = toProposedIntotoEntry(envelope, sigMaterial);
-    const entry = await this.createEntry(
-      proposedEntry,
-      options.fetchOnConflict
-    );
-    return sigstore.toDSSEBundle({
-      envelope,
-      signature: sigMaterial,
-      tlogEntry: entry,
-    });
+    return this.createEntry(proposedEntry, options.fetchOnConflict);
   }
 
   private async createEntry(
