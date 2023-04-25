@@ -21,12 +21,13 @@ import {
   TransparencyLogEntry,
   VerificationMaterial,
 } from '@sigstore/protobuf-specs';
-import { Entry, EntryKind } from '../../tlog';
 import { encoding as enc, pem } from '../../util';
 import { x509Certificate } from '../../x509/cert';
-import { SignatureMaterial } from '../signature';
 import { WithRequired } from '../utility';
 import { ValidBundle, assertValidBundle } from './validate';
+
+import type { Entry, EntryKind } from '../../tlog';
+import type { SignatureMaterial } from '../signature';
 
 export * from '@sigstore/protobuf-specs';
 export * from './serialized';
@@ -120,25 +121,32 @@ export function isVerifiableTransparencyLogEntry(
   );
 }
 
-export const bundle = {
-  toDSSEBundle: (
-    envelope: Envelope,
-    signature: SignatureMaterial,
-    rekorEntry: Entry
-  ): Bundle => ({
+export function toDSSEBundle({
+  envelope,
+  signature,
+  tlogEntry,
+}: {
+  envelope: Envelope;
+  signature: SignatureMaterial;
+  tlogEntry?: Entry;
+}): Bundle {
+  return {
     mediaType: BUNDLE_MEDIA_TYPE,
-    content: {
-      $case: 'dsseEnvelope',
-      dsseEnvelope: envelope,
-    },
-    verificationMaterial: toVerificationMaterial(signature, rekorEntry),
-  }),
+    content: { $case: 'dsseEnvelope', dsseEnvelope: envelope },
+    verificationMaterial: toVerificationMaterial({ signature, tlogEntry }),
+  };
+}
 
-  toMessageSignatureBundle: (
-    digest: Buffer,
-    signature: SignatureMaterial,
-    rekorEntry: Entry
-  ): Bundle => ({
+export function toMessageSignatureBundle({
+  digest,
+  signature,
+  tlogEntry,
+}: {
+  digest: Buffer;
+  signature: SignatureMaterial;
+  tlogEntry?: Entry;
+}): Bundle {
+  return {
     mediaType: BUNDLE_MEDIA_TYPE,
     content: {
       $case: 'messageSignature',
@@ -150,9 +158,9 @@ export const bundle = {
         signature: signature.signature,
       },
     },
-    verificationMaterial: toVerificationMaterial(signature, rekorEntry),
-  }),
-};
+    verificationMaterial: toVerificationMaterial({ signature, tlogEntry }),
+  };
+}
 
 function toTransparencyLogEntry(entry: Entry): TransparencyLogEntry {
   const set = Buffer.from(entry.verification.signedEntryTimestamp, 'base64');
@@ -180,15 +188,18 @@ function toTransparencyLogEntry(entry: Entry): TransparencyLogEntry {
   };
 }
 
-function toVerificationMaterial(
-  signature: SignatureMaterial,
-  entry: Entry
-): VerificationMaterial {
+function toVerificationMaterial({
+  signature,
+  tlogEntry,
+}: {
+  signature: SignatureMaterial;
+  tlogEntry?: Entry;
+}): VerificationMaterial {
   return {
     content: signature.certificates
       ? toVerificationMaterialx509CertificateChain(signature.certificates)
       : toVerificationMaterialPublicKey(signature.key.id || ''),
-    tlogEntries: [toTransparencyLogEntry(entry)],
+    tlogEntries: tlogEntry ? [toTransparencyLogEntry(tlogEntry)] : [],
     timestampVerificationData: undefined,
   };
 }
