@@ -17,7 +17,7 @@ import { CA } from './ca';
 import { Provider } from './identity';
 import { TLog } from './tlog';
 import { SignatureMaterial, SignerFunc } from './types/signature';
-import { Bundle, Envelope } from './types/sigstore';
+import * as sigstore from './types/sigstore';
 import { crypto, dsse, oidc } from './util';
 
 export interface SignOptions {
@@ -41,7 +41,7 @@ export class Signer {
     this.signer = options.signer || this.signWithEphemeralKey.bind(this);
   }
 
-  public async signBlob(payload: Buffer): Promise<Bundle> {
+  public async signBlob(payload: Buffer): Promise<sigstore.Bundle> {
     // Get signature and verification material for payload
     const sigMaterial = await this.signer(payload);
 
@@ -49,20 +49,29 @@ export class Signer {
     const digest = crypto.hash(payload);
 
     // Create Rekor entry
-    return this.tlog.createMessageSignatureEntry(digest, sigMaterial);
+    const entry = await this.tlog.createMessageSignatureEntry(
+      digest,
+      sigMaterial
+    );
+
+    return sigstore.toMessageSignatureBundle({
+      digest,
+      signature: sigMaterial,
+      tlogEntry: entry,
+    });
   }
 
   public async signAttestation(
     payload: Buffer,
     payloadType: string
-  ): Promise<Bundle> {
+  ): Promise<sigstore.Bundle> {
     // Pre-authentication encoding to be signed
     const paeBuffer = dsse.preAuthEncoding(payloadType, payload);
 
     // Get signature and verification material for pae
     const sigMaterial = await this.signer(paeBuffer);
 
-    const envelope: Envelope = {
+    const envelope: sigstore.Envelope = {
       payloadType,
       payload: payload,
       signatures: [
@@ -73,7 +82,14 @@ export class Signer {
       ],
     };
 
-    return this.tlog.createDSSEEntry(envelope, sigMaterial);
+    // Create Rekor entry
+    const entry = await this.tlog.createDSSEEntry(envelope, sigMaterial);
+
+    return sigstore.toDSSEBundle({
+      envelope,
+      signature: sigMaterial,
+      tlogEntry: entry,
+    });
   }
 
   private async signWithEphemeralKey(
