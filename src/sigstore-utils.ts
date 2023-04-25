@@ -56,9 +56,14 @@ export async function createRekorEntry(
   const tlog = createTLogClient(options);
 
   const sigMaterial = extractSignatureMaterial(envelope, publicKey);
-  const bundle = await tlog.createDSSEEntry(envelope, sigMaterial, {
+  const entry = await tlog.createDSSEEntry(envelope, sigMaterial, {
     fetchOnConflict: true,
   });
 
+  const bundle = sigstore.toDSSEBundle({
+    envelope,
+    signature: sigMaterial,
+    tlogEntry: entry,
+  });
   return sigstore.Bundle.toJSON(bundle) as sigstore.SerializedBundle;
 }

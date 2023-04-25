@@ -186,7 +186,11 @@ describe('bundle', () => {
     };
 
     it('returns a valid DSSE bundle', () => {
-      const b = sigstore.bundle.toDSSEBundle(envelope, sigMaterial, rekorEntry);
+      const b = sigstore.toDSSEBundle({
+        envelope,
+        signature: sigMaterial,
+        tlogEntry: rekorEntry,
+      });
 
       expect(b).toBeTruthy();
       expect(b.mediaType).toEqual(
@@ -233,34 +237,11 @@ describe('bundle', () => {
   describe('toMessageSignatureBundle', () => {
     const digest = Buffer.from('digest');
 
-    const entryKind = {
-      kind: 'hashedrekord',
-      apiVersion: '0.0.1',
-    };
-
-    const rekorEntry: Entry = {
-      uuid: 'a12bc3',
-      body: enc.base64Encode(JSON.stringify(entryKind)),
-      integratedTime: 1654015743,
-      logID: 'c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d',
-      logIndex: 2513258,
-      verification: {
-        signedEntryTimestamp: Buffer.from('set').toString('base64'),
-        inclusionProof: {
-          hashes: [],
-          logIndex: 0,
-          rootHash: '',
-          treeSize: 0,
-        },
-      },
-    };
-
     it('returns a valid message signature bundle', () => {
-      const b = sigstore.bundle.toMessageSignatureBundle(
+      const b = sigstore.toMessageSignatureBundle({
         digest,
-        sigMaterial,
-        rekorEntry
-      );
+        signature: sigMaterial,
+      });
 
       expect(b).toBeTruthy();
       expect(b.mediaType).toEqual(
@@ -289,23 +270,7 @@ describe('bundle', () => {
       }
 
       expect(b.verificationMaterial?.timestampVerificationData).toBeUndefined();
-      expect(b.verificationMaterial?.tlogEntries).toHaveLength(1);
-
-      const tlog = b.verificationMaterial?.tlogEntries[0];
-      expect(tlog?.inclusionPromise).toBeTruthy();
-      expect(
-        tlog?.inclusionPromise?.signedEntryTimestamp.toString('base64')
-      ).toEqual(rekorEntry.verification.signedEntryTimestamp);
-      expect(tlog?.integratedTime).toEqual(
-        rekorEntry.integratedTime.toString()
-      );
-      expect(tlog?.logId).toBeTruthy();
-      expect(tlog?.logId?.keyId).toBeTruthy();
-      expect(tlog?.logId?.keyId.toString('hex')).toEqual(rekorEntry.logID);
-      expect(tlog?.logIndex).toEqual(rekorEntry.logIndex.toString());
-      expect(tlog?.inclusionProof).toBeFalsy();
-      expect(tlog?.kindVersion?.kind).toEqual(entryKind.kind);
-      expect(tlog?.kindVersion?.version).toEqual(entryKind.apiVersion);
+      expect(b.verificationMaterial?.tlogEntries).toHaveLength(0);
     });
   });
 });
