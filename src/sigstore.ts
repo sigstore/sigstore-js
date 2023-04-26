@@ -30,6 +30,7 @@ export async function sign(
     ca,
     tlog,
     identityProviders: idps,
+    tlogUpload: options.tlogUpload,
   });
 
   const bundle = await signer.signBlob(payload);
@@ -48,6 +49,7 @@ export async function attest(
     ca,
     tlog,
     identityProviders: idps,
+    tlogUpload: options.tlogUpload,
   });
 
   const bundle = await signer.signAttestation(payload, payloadType);
