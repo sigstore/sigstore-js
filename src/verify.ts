@@ -45,7 +45,9 @@ export class Verifier {
       this.verifySigningCertificate(bundle, options);
     }
 
-    this.verifyTLogEntries(bundle, options);
+    if (options.tlogOptions.disable === false) {
+      this.verifyTLogEntries(bundle, options);
+    }
   }
 
   // Performs bundle signature verification. Determines the type of the bundle

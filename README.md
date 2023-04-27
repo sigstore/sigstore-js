@@ -40,6 +40,7 @@ necessary to verify the signature.
 * `options` `<Object>`
   * `fulcioURL` `<string>`: The base URL of the Fulcio instance to use for retrieving the signing certificate. Defaults to `'https://fulcio.sigstore.dev'`.
   * `rekorURL` `<string>`: The base URL of the Rekor instance to use when adding the signature to the transparency log. Defaults to `'https://rekor.sigstore.dev'`.
+  * `tlogUpload` `<boolean>`: Flag indicating whether or not the signature should be recorded on the Rekor transparency log. Defaults to `true`.
   * `identityToken` `<string>`: The OIDC token identifying the signer. If no explicit token is supplied, an attempt will be made to retrieve one from the environment.
 
 ### attest(payload, payloadType[, options])
@@ -53,6 +54,7 @@ as well as the verification material necessary to verify the signature.
 * `options` `<Object>`
   * `fulcioURL` `<string>`: The base URL of the Fulcio instance to use for retrieving the signing certificate. Defaults to `'https://fulcio.sigstore.dev'`.
   * `rekorURL` `<string>`: The base URL of the Rekor instance to use when adding the signature to the transparency log. Defaults to `'https://rekor.sigstore.dev'`.
+  * `tlogUpload` `<boolean>`: Flag indicating whether or not the signed statement should be recorded on the Rekor transparency log. Defaults to `true`.
   * `identityToken` `<string>`: The OIDC token identifying the signer. If no explicit token is supplied, an attempt will be made to retrieve one from the environment.
 
 

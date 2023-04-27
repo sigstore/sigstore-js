@@ -101,6 +101,40 @@ const validBundleWithPublicKey = {
   },
 };
 
+const validBundleWithNoTLogEntries = {
+  mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.1',
+  verificationMaterial: {
+    x509CertificateChain: {
+      certificates: [
+        {
+          rawBytes:
+            'MIICnzCCAiWgAwIBAgIUVHwehOtGn4KSD1H8RI581MfbyewwCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjIxMTA4MjI1ODA2WhcNMjIxMTA4MjMwODA2WjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEGg6Hjxt2UNiJ1kwwq5XQIIwMZnJfVQ3bF01uZKteMdcV/3qhCmWOecoxRqwrbYTshGg9NyXcBbve6zKwZVTLeqOCAUQwggFAMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQU7WpR60sCpgfu04wcsjvCFxt0fMkwHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGJBgorBgEEAdZ5AgQCBHsEeQB3AHUA3T0wasbHETJjGR4cmWc3AqJKXrjePK3/h4pygC8p7o4AAAGEWXcR8AAABAMARjBEAiBRTrGE5Y1EnYniaJB+nsv89VaYx3QZjocEin3r91wfkAIgMss+fssu5SLQkn7WDTKXgow7SxbHYSZj3ykxArVnuzEwCgYIKoZIzj0EAwMDaAAwZQIxAPjSGddLIvyUMGIkZ+u6JhE9p1Njt3dEtwYkMxfnEV2k7MH1BVmxg9PsJjqycfi+eAIwDaKn2CdOxKsxcgYNi4HviEnZqxmeDyo2YFItzpHfIMQmcRSl91UeOSC8+PuGgwMK',
+        },
+        {
+          rawBytes:
+            'MIICGjCCAaGgAwIBAgIUALnViVfnU0brJasmRkHrn/UnfaQwCgYIKoZIzj0EAwMwKjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0yMjA0MTMyMDA2MTVaFw0zMTEwMDUxMzU2NThaMDcxFTATBgNVBAoTDHNpZ3N0b3JlLmRldjEeMBwGA1UEAxMVc2lnc3RvcmUtaW50ZXJtZWRpYXRlMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE8RVS/ysH+NOvuDZyPIZtilgUF9NlarYpAd9HP1vBBH1U5CV77LSS7s0ZiH4nE7Hv7ptS6LvvR/STk798LVgMzLlJ4HeIfF3tHSaexLcYpSASr1kS0N/RgBJz/9jWCiXno3sweTAOBgNVHQ8BAf8EBAMCAQYwEwYDVR0lBAwwCgYIKwYBBQUHAwMwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0jBBgwFoAUWMAeX5FFpWapesyQoZMi0CrFxfowCgYIKoZIzj0EAwMDZwAwZAIwPCsQK4DYiZYDPIaDi5HFKnfxXx6ASSVmERfsynYBiX2X6SJRnZU84/9DZdnFvvxmAjBOt6QpBlc4J/0DxvkTCqpclvziL6BCCPnjdlIB3Pu3BxsPmygUY7Ii2zbdCdliiow=',
+        },
+        {
+          rawBytes:
+            'MIIB9zCCAXygAwIBAgIUALZNAPFdxHPwjeDloDwyYChAO/4wCgYIKoZIzj0EAwMwKjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0yMTEwMDcxMzU2NTlaFw0zMTEwMDUxMzU2NThaMCoxFTATBgNVBAoTDHNpZ3N0b3JlLmRldjERMA8GA1UEAxMIc2lnc3RvcmUwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAAT7XeFT4rb3PQGwS4IajtLk3/OlnpgangaBclYpsYBr5i+4ynB07ceb3LP0OIOZdxexX69c5iVuyJRQ+Hz05yi+UF3uBWAlHpiS5sh0+H2GHE7SXrk1EC5m1Tr19L9gg92jYzBhMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRYwB5fkUWlZql6zJChkyLQKsXF+jAfBgNVHSMEGDAWgBRYwB5fkUWlZql6zJChkyLQKsXF+jAKBggqhkjOPQQDAwNpADBmAjEAj1nHeXZp+13NWBNa+EDsDP8G1WWg1tCMWP/WHPqpaVo0jhsweNFZgSs0eE7wYI4qAjEA2WB9ot98sIkoF3vZYdd3/VtWB5b9TNMea7Ix/stJ5TfcLLeABLE4BNJOsQ4vnBHJ',
+        },
+      ],
+    },
+    tlogEntries: [],
+    timestampVerificationData: { rfc3161Timestamps: [] },
+  },
+  dsseEnvelope: {
+    payload: 'aGVsbG8sIHdvcmxkIQ==',
+    payloadType: 'text/plain',
+    signatures: [
+      {
+        sig: 'MEUCICUhAVewfwKlk5fVzpRDUPhEw9O8I2pxC5nTnPfYDBsOAiEA0ZFqs99QgR9mAtFMWtWrOjmUC47zgaoolKIoLH/OwdM=',
+        keyid: '',
+      },
+    ],
+  },
+};
+
 // Public key material for verifying the above bundle
 const publicKey = `-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEGg6Hjxt2UNiJ1kwwq5XQIIwMZnJf
@@ -544,6 +578,7 @@ export default {
   valid: {
     withSigningCert: validBundleWithSigningCert,
     withPublicKey: validBundleWithPublicKey,
+    withNoTLogEntries: validBundleWithNoTLogEntries,
   },
   invalid: {
     badSignature: invalidBadSignature,

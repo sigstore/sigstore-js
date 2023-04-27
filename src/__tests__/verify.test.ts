@@ -161,6 +161,61 @@ describe('Verifier', () => {
             );
           });
         });
+
+        describe('when there are no tlog entries in the bundle', () => {
+          const bundle = sigstore.bundleFromJSON(
+            bundles.dsse.valid.withNoTLogEntries
+          );
+
+          describe('when tlog verification is disabled', () => {
+            const opts: sigstore.RequiredArtifactVerificationOptions = {
+              ...options,
+              tlogOptions: {
+                disable: true,
+                threshold: 0,
+                performOnlineVerification: false,
+              },
+            };
+
+            it('does NOT throw an error', () => {
+              expect(() => subject.verify(bundle, opts)).not.toThrow();
+            });
+          });
+
+          describe('when tlog verification is enabled', () => {
+            describe('when tlog threshold is 0', () => {
+              const opts: sigstore.RequiredArtifactVerificationOptions = {
+                ...options,
+                tlogOptions: {
+                  disable: false,
+                  threshold: 0,
+                  performOnlineVerification: false,
+                },
+              };
+
+              it('does NOT throw an error', () => {
+                expect(() => subject.verify(bundle, opts)).not.toThrow();
+              });
+            });
+
+            describe('when tlog threshold is greater than 0', () => {
+              const opts: sigstore.RequiredArtifactVerificationOptions = {
+                ...options,
+                tlogOptions: {
+                  disable: false,
+                  threshold: 1,
+                  performOnlineVerification: false,
+                },
+              };
+
+              it('throws an error', () => {
+                expect(() => subject.verify(bundle, opts)).toThrow(
+                  VerificationError
+                );
+              });
+            });
+          });
+        });
       });
 
       describe('when the key comes from the key selector callback', () => {

@@ -24,12 +24,14 @@ export interface SignOptions {
   ca: CA;
   tlog: TLog;
   identityProviders: Provider[];
+  tlogUpload?: boolean;
   signer?: SignerFunc;
 }
 
 export class Signer {
   private ca: CA;
   private tlog: TLog;
+  private tlogUpload: boolean;
   private signer: SignerFunc;
 
   private identityProviders: Provider[] = [];
@@ -38,6 +40,7 @@ export class Signer {
     this.ca = options.ca;
     this.tlog = options.tlog;
     this.identityProviders = options.identityProviders;
+    this.tlogUpload = options.tlogUpload ?? true;
     this.signer = options.signer || this.signWithEphemeralKey.bind(this);
   }
 
@@ -48,11 +51,10 @@ export class Signer {
     // Calculate artifact digest
     const digest = crypto.hash(payload);
 
-    // Create Rekor entry
-    const entry = await this.tlog.createMessageSignatureEntry(
-      digest,
-      sigMaterial
-    );
+    // Create a Rekor entry (if tlogUpload is enabled)
+    const entry = this.tlogUpload
+      ? await this.tlog.createMessageSignatureEntry(digest, sigMaterial)
+      : undefined;
 
     return sigstore.toMessageSignatureBundle({
       digest,
@@ -82,8 +84,10 @@ export class Signer {
       ],
     };
 
-    // Create Rekor entry
-    const entry = await this.tlog.createDSSEEntry(envelope, sigMaterial);
+    // Create a Rekor entry (if tlogUpload is enabled)
+    const entry = this.tlogUpload
+      ? await this.tlog.createDSSEEntry(envelope, sigMaterial)
+      : undefined;
 
     return sigstore.toDSSEBundle({
       envelope,

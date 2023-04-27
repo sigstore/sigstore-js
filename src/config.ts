@@ -42,7 +42,11 @@ export interface TUFOptions {
   tufCachePath?: string;
 }
 
-export type SignOptions = CAOptions & TLogOptions & IdentityProviderOptions;
+export type SignOptions = {
+  tlogUpload?: boolean;
+} & CAOptions &
+  TLogOptions &
+  IdentityProviderOptions;
 
 export type VerifyOptions = {
   ctLogThreshold?: number;
