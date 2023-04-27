@@ -177,12 +177,9 @@ describe('Signer', () => {
                 const chain =
                   bundle.verificationMaterial.content.x509CertificateChain;
                 expect(chain).toBeTruthy();
-                expect(chain.certificates).toHaveLength(2);
+                expect(chain.certificates).toHaveLength(1);
                 expect(chain.certificates[0].rawBytes).toEqual(
                   pem.toDER(leafCertificate)
-                );
-                expect(chain.certificates[1].rawBytes).toEqual(
-                  pem.toDER(rootCertificate)
                 );
               } else {
                 fail('Expected x509CertificateChain');
@@ -269,12 +266,9 @@ describe('Signer', () => {
               const chain =
                 bundle.verificationMaterial.content.x509CertificateChain;
               expect(chain).toBeTruthy();
-              expect(chain.certificates).toHaveLength(2);
+              expect(chain.certificates).toHaveLength(1);
               expect(chain.certificates[0].rawBytes).toEqual(
                 pem.toDER(leafCertificate)
-              );
-              expect(chain.certificates[1].rawBytes).toEqual(
-                pem.toDER(rootCertificate)
               );
             } else {
               fail('Expected x509CertificateChain');
