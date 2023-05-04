@@ -18,7 +18,7 @@ import { x509Certificate } from './cert';
 
 interface VerifyCertificateChainOptions {
   trustedCerts: x509Certificate[];
-  certs: x509Certificate[];
+  untrustedCert: x509Certificate;
   validAt?: Date;
 }
 
@@ -30,23 +30,22 @@ export function verifyCertificateChain(
 }
 
 class CertificateChainVerifier {
-  private certs: x509Certificate[];
+  private untrustedCert: x509Certificate;
   private trustedCerts: x509Certificate[];
   private localCerts: x509Certificate[];
   private validAt: Date;
 
   constructor(opts: VerifyCertificateChainOptions) {
-    this.certs = opts.certs;
+    this.untrustedCert = opts.untrustedCert;
     this.trustedCerts = opts.trustedCerts;
-    this.localCerts = dedupeCertificates([...opts.trustedCerts, ...opts.certs]);
+    this.localCerts = dedupeCertificates([
+      ...opts.trustedCerts,
+      opts.untrustedCert,
+    ]);
     this.validAt = opts.validAt || new Date();
   }
 
   public verify(): x509Certificate[] {
-    if (this.certs.length === 0) {
-      throw new VerificationError('No certificates provided');
-    }
-
     // Construct certificate path from leaf to root
     const certificatePath = this.sort();
 
@@ -58,7 +57,7 @@ class CertificateChainVerifier {
   }
 
   private sort(): x509Certificate[] {
-    const leafCert = this.localCerts[this.localCerts.length - 1];
+    const leafCert = this.untrustedCert;
 
     // Construct all possible paths from the leaf
     let paths = this.buildPaths(leafCert);

@@ -19,17 +19,16 @@ import { x509Certificate } from '../../x509/cert';
 import { verifyCertificateChain } from '../../x509/verify';
 
 export function verifyChain(
-  bundleCerts: sigstore.X509Certificate[],
+  certificate: sigstore.X509Certificate,
   certificateAuthorities: sigstore.CertificateAuthority[]
 ): x509Certificate[] {
-  const certs = parseCerts(bundleCerts);
-  const signingCert = certs[0];
+  const untrustedCert = x509Certificate.parse(certificate.rawBytes);
 
   // Filter the list of certificate authorities to those which are valid for the
   // signing certificate's notBefore date.
   const validCAs = filterCertificateAuthorities(
     certificateAuthorities,
-    signingCert.notBefore
+    untrustedCert.notBefore
   );
 
   if (validCAs.length === 0) {
@@ -43,9 +42,9 @@ export function verifyChain(
     const trustedCerts = parseCerts(ca.certChain?.certificates || []);
     try {
       trustedChain = verifyCertificateChain({
+        untrustedCert,
         trustedCerts,
-        certs,
-        validAt: signingCert.notBefore,
+        validAt: untrustedCert.notBefore,
       });
       return true;
     } catch (e) {
