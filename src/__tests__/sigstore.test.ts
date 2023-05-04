@@ -209,22 +209,24 @@ describe('signAttestation', () => {
 });
 
 describe('#verify', () => {
+  let tufRepo: ReturnType<typeof mocktuf> | undefined;
+  let tufOptions: VerifyOptions | undefined;
+
+  beforeEach(() => {
+    tufRepo = mocktuf(target, { metadataPathPrefix: '' });
+    tufOptions = {
+      tufMirrorURL: tufRepo.baseURL,
+      tufCachePath: tufRepo.cachePath,
+    };
+  });
+
+  afterEach(() => tufRepo?.teardown());
+
   const trustedRootJSON = JSON.stringify(TrustedRoot.toJSON(trustedRoot));
   const target: Target = {
     name: 'trusted_root.json',
     content: Buffer.from(trustedRootJSON),
   };
-
-  const tufRepo = mocktuf(target, { metadataPathPrefix: '' });
-
-  const tufOptions: VerifyOptions = {
-    tufMirrorURL: tufRepo.baseURL,
-    tufCachePath: tufRepo.cachePath,
-  };
-
-  beforeEach(() => tufRepo.reset());
-
-  afterAll(() => tufRepo.teardown());
 
   describe('when everything in the bundle is valid', () => {
     const bundle = bundles.signature.valid.withSigningCert;
@@ -314,20 +316,23 @@ describe('#verify', () => {
 });
 
 describe('tuf', () => {
+  let tufRepo: ReturnType<typeof mocktuf> | undefined;
+  let options: VerifyOptions | undefined;
+
+  beforeEach(() => {
+    tufRepo = mocktuf(target, { metadataPathPrefix: '' });
+    options = {
+      tufMirrorURL: tufRepo.baseURL,
+      tufCachePath: tufRepo.cachePath,
+    };
+  });
+
+  afterEach(() => tufRepo?.teardown());
+
   const target: Target = {
     name: 'foo',
     content: 'bar',
   };
-
-  const tufRepo = mocktuf(target, { metadataPathPrefix: '' });
-  const options = {
-    tufMirrorURL: tufRepo.baseURL,
-    tufCachePath: tufRepo.cachePath,
-  };
-
-  beforeEach(() => tufRepo.reset());
-
-  afterAll(() => tufRepo.teardown());
 
   describe('getTarget', () => {
     describe('when the target exists', () => {
