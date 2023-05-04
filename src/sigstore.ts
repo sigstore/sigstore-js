@@ -44,10 +44,12 @@ export async function attest(
 ): Promise<sigstore.SerializedBundle> {
   const ca = config.createCAClient(options);
   const tlog = config.createTLogClient(options);
+  const tsa = config.createTSAClient(options);
   const idps = config.identityProviders(options);
   const signer = new Signer({
     ca,
     tlog,
+    tsa,
     identityProviders: idps,
     tlogUpload: options.tlogUpload,
   });
