@@ -47,7 +47,7 @@ export async function readTarget(
 async function getTargetPath(tuf: Updater, target: string): Promise<string> {
   let targetInfo: TargetFile | undefined;
   try {
-    targetInfo = await tuf.refresh().then(() => tuf.getTargetInfo(target));
+    targetInfo = await tuf.getTargetInfo(target);
   } catch (err) {
     throw new InternalError({
       code: 'TUF_REFRESH_METADATA_ERROR',
