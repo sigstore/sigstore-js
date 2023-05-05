@@ -24,23 +24,10 @@ describe('CertificateChainVerifier', () => {
   const invalidLeafCert = x509Certificate.parse(certificates.invalidleaf);
 
   describe('#verify', () => {
-    describe('when no certificates are provided', () => {
-      const opts = {
-        trustedCerts: [],
-        certs: [],
-      };
-
-      it('throws an error', () => {
-        expect(() => verifyCertificateChain(opts)).toThrowError(
-          'No certificates provided'
-        );
-      });
-    });
-
     describe('when no path contains a trusted cert', () => {
       const opts = {
         trustedCerts: [],
-        certs: [rootCert],
+        untrustedCert: rootCert,
       };
 
       it('throws an error', () => {
@@ -53,7 +40,7 @@ describe('CertificateChainVerifier', () => {
     describe('when the certificate issuer cannot be located', () => {
       const opts = {
         trustedCerts: [],
-        certs: [leafCert],
+        untrustedCert: leafCert,
       };
 
       it('throws an error', () => {
@@ -66,7 +53,7 @@ describe('CertificateChainVerifier', () => {
     describe('when the validAt is outside the validity period of the cert chain', () => {
       const opts = {
         trustedCerts: [rootCert, intCert],
-        certs: [leafCert],
+        untrustedCert: leafCert,
         validAt: new Date('1980-12-21T16:22:00.000Z'),
       };
 
@@ -80,8 +67,8 @@ describe('CertificateChainVerifier', () => {
     describe('when a non-CA cert is used to sign the leaf', () => {
       it('throws an error', () => {
         const opts = {
-          trustedCerts: [intCert, rootCert],
-          certs: [rootCert, intCert, leafCert, invalidLeafCert],
+          trustedCerts: [leafCert, intCert, rootCert],
+          untrustedCert: invalidLeafCert,
         };
 
         expect(() => verifyCertificateChain(opts)).toThrowError(
@@ -93,7 +80,7 @@ describe('CertificateChainVerifier', () => {
     describe('when the cert chain is valid', () => {
       const opts = {
         trustedCerts: [intCert, rootCert],
-        certs: [rootCert, intCert, leafCert],
+        untrustedCert: leafCert,
         validAt: new Date('2022-12-21T16:22:00.000Z'),
       };
 
@@ -107,14 +94,14 @@ describe('CertificateChainVerifier', () => {
         expect(trustedChain).toHaveLength(4);
 
         // The first cert in the chain is the leaf cert
-        expect(trustedChain[0]).toEqual(opts.certs[2]);
+        expect(trustedChain[0]).toEqual(opts.untrustedCert);
       });
     });
 
     describe('when the certificate chain contains a single valid cert', () => {
       const opts = {
         trustedCerts: [rootCert],
-        certs: [rootCert],
+        untrustedCert: rootCert,
       };
 
       it('does not throw an error', () => {
@@ -125,7 +112,7 @@ describe('CertificateChainVerifier', () => {
         const trustedChain = verifyCertificateChain(opts);
         expect(trustedChain).toBeDefined();
         expect(trustedChain).toHaveLength(2);
-        expect(trustedChain[0]).toEqual(opts.certs[0]);
+        expect(trustedChain[0]).toEqual(opts.untrustedCert);
       });
     });
   });
