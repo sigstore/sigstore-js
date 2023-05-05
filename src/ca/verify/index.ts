@@ -24,9 +24,10 @@ export function verifySigningCertificate(
   options: sigstore.CAArtifactVerificationOptions
 ) {
   // Check that a trusted certificate chain can be found for the signing
-  // certificate in the bundle
+  // certificate in the bundle. Only the first certificate in the bundle's
+  // chain is used -- everything else must come from the trusted root.
   const trustedChain = verifyChain(
-    bundle.verificationMaterial.content.x509CertificateChain.certificates,
+    bundle.verificationMaterial.content.x509CertificateChain.certificates[0],
     trustedRoot.certificateAuthorities
   );
 

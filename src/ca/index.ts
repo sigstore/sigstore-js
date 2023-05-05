@@ -45,9 +45,12 @@ export class CAClient implements CA {
     const request = toCertificateRequest(identityToken, publicKey, challenge);
 
     try {
-      const certificate = await this.fulcio.createSigningCertificate(request);
+      const resp = await this.fulcio.createSigningCertificate(request);
 
-      return certificate.signedCertificateEmbeddedSct.chain.certificates;
+      // Return the first certificate in the chain, which is the signing
+      // certificate. Specifically not returning the rest of the chain to
+      // mitigate the risk of errors when verifying the certificate chain.
+      return resp.signedCertificateEmbeddedSct.chain.certificates.slice(0, 1);
     } catch (err) {
       throw new InternalError({
         code: 'CA_CREATE_SIGNING_CERTIFICATE_ERROR',

@@ -1,168 +1,224 @@
-
+KEYDIR = store/keys
+CERTDIR = store/certs
 clean:
 	rm -rf store
 	rm *.crt
 
-root.crt:
-	mkdir -p store/root/ca.db.certs
-	touch store/root/ca.db.index
-	openssl ecparam -out store/root/ca.key -name secp384r1 -genkey
+$(KEYDIR):
+	mkdir -p $(KEYDIR)
+
+$(KEYDIR)/root.key: $(KEYDIR)
+	openssl ecparam -out $(KEYDIR)/root.key -name secp384r1 -genkey
+
+$(KEYDIR)/int.key: $(KEYDIR)
+	openssl ecparam -out $(KEYDIR)/int.key -name secp384r1 -genkey
+
+$(KEYDIR)/leaf.key: $(KEYDIR)
+	openssl ecparam -out $(KEYDIR)/leaf.key -name prime256v1 -genkey
+
+$(KEYDIR)/other.key: $(KEYDIR)
+	openssl ecparam -out $(KEYDIR)/other.key -name prime256v1 -genkey
+
+# Root certificate
+root.crt: $(KEYDIR)/root.key
+	mkdir -p $(CERTDIR)/root/ca.db.certs
+	touch $(CERTDIR)/root/ca.db.index
 	openssl req \
-	  -new \
-	  -key store/root/ca.key \
+		-new \
+		-key $(KEYDIR)/root.key \
 		-sha384 \
 		-subj /organizationName=foobar.dev/commonName=foobar \
 		-addext "basicConstraints = critical, CA:true" \
 		-addext "keyUsage = critical, keyCertSign, cRLSign" \
-		-out store/root/ca.csr
+		-out $(CERTDIR)/root/ca.csr
 	openssl ca \
 		-notext \
 		-batch \
 		-selfsign \
 		-config ca.conf \
-		-in store/root/ca.csr \
-		-out store/root/ca.crt
-	cp store/root/ca.crt root.crt
+		-in $(CERTDIR)/root/ca.csr \
+		-out root.crt
 
-int.crt: root.crt
-	mkdir -p store/int/ca.db.certs
-	touch store/int/ca.db.index
-	openssl ecparam -out store/int/ca.key -name secp384r1 -genkey
+# Intermedia certificate - signed by root
+int.crt: root.crt $(KEYDIR)/int.key
+	mkdir -p $(CERTDIR)/int/ca.db.certs
+	touch $(CERTDIR)/int/ca.db.index
 	openssl req \
 		-new \
-	  -key store/int/ca.key \
+		-key $(KEYDIR)/int.key \
 		-sha384 \
 		-subj /organizationName=foobar.dev/commonName=foobar-intermediate \
 		-addext "keyUsage = critical, keyCertSign, cRLSign" \
 		-addext "basicConstraints = critical, CA:true, pathlen:0" \
 		-addext "extendedKeyUsage = codeSigning" \
-		-out store/int/ca.csr
+		-out $(CERTDIR)/int/ca.csr
 	openssl ca \
 		-notext \
 		-batch \
 		-config ca.conf \
-		-in store/int/ca.csr \
-		-out store/int/ca.crt
-	cp store/int/ca.crt int.crt
+		-in $(CERTDIR)/int/ca.csr \
+		-out int.crt
 
-leaf.crt: int.crt
-	mkdir -p store/leaf/ca.db.certs
-	touch store/leaf/ca.db.index
-	openssl ecparam -out store/leaf/ca.key -name prime256v1 -genkey
+# Valid leaf certificate - signed by intermediate
+leaf.crt: int.crt $(KEYDIR)/leaf.key
+	mkdir -p $(CERTDIR)/leaf/ca.db.certs
+	touch $(CERTDIR)/leaf/ca.db.index
 	openssl req \
 		-new \
-	  -key store/leaf/ca.key \
+		-key $(KEYDIR)/leaf.key \
 		-sha384 \
 		-subj / \
 		-addext "keyUsage = critical, digitalSignature" \
 		-addext "extendedKeyUsage = codeSigning" \
 		-addext "subjectAltName = URI:http://foobar.dev,otherName:1.3.6.1.4.1.57264.1.7;UTF8:FOO" \
-		-out store/leaf/leaf.csr
+		-out $(CERTDIR)/leaf/leaf.csr
 	openssl ca \
 		-notext \
 		-batch \
 		-config ca.conf \
 		-name ca_int \
-		-in store/leaf/leaf.csr \
-		-out store/leaf/ca.crt
-	cp store/leaf/ca.crt leaf.crt
+		-in $(CERTDIR)/leaf/leaf.csr \
+		-out leaf.crt
 
-poison.crt: int.crt
-	mkdir -p store/poison
-	openssl ecparam -out store/poison/cert.key -name prime256v1 -genkey
+# Poison leaf - contain critical poison extension
+poison.crt: int.crt $(KEYDIR)/leaf.key
+	mkdir -p $(CERTDIR)/poison
 	openssl req \
 		-new \
-	  -key store/poison/cert.key \
+		-key $(KEYDIR)/leaf.key \
 		-sha384 \
-		-subj / \
+		-subj /organizationName=foobar.dev/commonName=poison \
+		-addext "basicConstraints = critical, CA:true" \
 		-addext "keyUsage = critical, digitalSignature" \
 		-addext "extendedKeyUsage = codeSigning" \
 		-addext "1.3.6.1.4.1.11129.2.4.3 = critical, ASN1:NULL:" \
-		-out store/poison/poison.csr
+		-out $(CERTDIR)/poison/poison.csr
 	openssl ca \
 		-notext \
 		-batch \
 		-config ca.conf \
 		-name ca_int \
-		-in store/poison/poison.csr \
+		-in $(CERTDIR)/poison/poison.csr \
 		-out poison.crt
 
-nosan.crt: int.crt
-	mkdir -p store/nosan
-	openssl ecparam -out store/nosan/cert.key -name prime256v1 -genkey
+# No SAN - leaf certificate w/o subject alt name
+nosan.crt: int.crt $(KEYDIR)/leaf.key
+	mkdir -p $(CERTDIR)/nosan
 	openssl req \
 		-new \
-	  -key store/nosan/cert.key \
+		-key $(KEYDIR)/leaf.key \
 		-sha384 \
-		-subj / \
+		-subj /organizationName=foobar.dev/commonName=nosan \
 		-addext "keyUsage = critical, digitalSignature" \
 		-addext "extendedKeyUsage = codeSigning" \
 		-addext "1.3.6.1.4.1.57264.1.1 = DER:46:4F:4F" \
-		-out store/nosan/nosan.csr
+		-out $(CERTDIR)/nosan/nosan.csr
 	openssl ca \
 		-notext \
 		-batch \
 		-config ca.conf \
 		-name ca_int \
-		-in store/nosan/nosan.csr \
+		-in $(CERTDIR)/nosan/nosan.csr \
 		-out nosan.crt
 
-badsan.crt: int.crt
-	mkdir -p store/badsan
-	openssl ecparam -out store/badsan/cert.key -name prime256v1 -genkey
+# Bad SAN - leaf certificate w/ unsupported SAN type
+badsan.crt: int.crt $(KEYDIR)/leaf.key
+	mkdir -p $(CERTDIR)/badsan
 	openssl req \
 		-new \
-	  -key store/badsan/cert.key \
+		-key $(KEYDIR)/leaf.key \
 		-sha384 \
-		-subj / \
+		-subj /organizationName=foobar.dev/commonName=badsan \
 		-addext "keyUsage = critical, digitalSignature" \
 		-addext "extendedKeyUsage = codeSigning" \
 		-addext "subjectAltName = IP:192.168.1.1" \
-		-out store/badsan/badsan.csr
+		-out $(CERTDIR)/badsan/badsan.csr
 	openssl ca \
 		-notext \
 		-batch \
 		-config ca.conf \
 		-name ca_int \
-		-in store/badsan/badsan.csr \
+		-in $(CERTDIR)/badsan/badsan.csr \
 		-out badsan.crt
 
-nokeyusage.crt: int.crt
-	mkdir -p store/nokeyusage
-	openssl ecparam -out store/nokeyusage/cert.key -name prime256v1 -genkey
+# No key usage - leaf certificate with no keyUsage extension
+nokeyusage.crt: int.crt $(KEYDIR)/leaf.key
+	mkdir -p $(CERTDIR)/nokeyusage
 	openssl req \
 		-new \
-	  -key store/nokeyusage/cert.key \
+		-key $(KEYDIR)/leaf.key \
 		-sha384 \
 		-subj / \
 		-addext "extendedKeyUsage = codeSigning" \
 		-addext "subjectAltName = IP:192.168.1.1" \
-		-out store/nokeyusage/nokeyusage.csr
+		-out $(CERTDIR)/nokeyusage/nokeyusage.csr
 	openssl ca \
 		-notext \
 		-batch \
 		-config ca.conf \
 		-name ca_int \
-		-in store/nokeyusage/nokeyusage.csr \
+		-in $(CERTDIR)/nokeyusage/nokeyusage.csr \
 		-out nokeyusage.crt
 
-invalidleaf.crt: leaf.crt
-	mkdir -p store/invalidleaf
-	openssl ecparam -out store/invalidleaf/cert.key -name prime256v1 -genkey
+# Invalid leaf - leaf signed by another leaf
+invalidleaf.crt: leaf.crt $(KEYDIR)/other.key
+	mkdir -p $(CERTDIR)/invalidleaf
 	openssl req \
 		-new \
-	  -key store/invalidleaf/cert.key \
+		-key $(KEYDIR)/other.key \
 		-sha384 \
 		-subj / \
 		-addext "keyUsage = critical, digitalSignature" \
 		-addext "extendedKeyUsage = codeSigning" \
 		-addext "subjectAltName = URI:http://foobar.dev" \
-		-out store/invalidleaf/invalidleaf.csr
+		-out $(CERTDIR)/invalidleaf/invalidleaf.csr
 	openssl ca \
 		-notext \
 		-batch \
 		-config ca.conf \
 		-name ca_leaf \
-		-in store/invalidleaf/invalidleaf.csr \
+		-in $(CERTDIR)/invalidleaf/invalidleaf.csr \
 		-out invalidleaf.crt
 
+# Invalid intermeidate certificate - signed by the valid intermediate
+# certificate, but the pathlen:0 on the parent makes this cert unusable
+invalidint.crt: int.crt $(KEYDIR)/other.key
+	mkdir -p $(CERTDIR)/invalidint/ca.db.certs
+	touch $(CERTDIR)/invalidint/ca.db.index
+	openssl req \
+		-new \
+		-key $(KEYDIR)/other.key \
+		-sha384 \
+		-subj /organizationName=foobar.dev/commonName=foobar-invalid-intermediate \
+		-addext "keyUsage = critical, keyCertSign, cRLSign" \
+		-addext "basicConstraints = critical, CA:true, pathlen:0" \
+		-addext "extendedKeyUsage = codeSigning" \
+		-out $(CERTDIR)/invalidint/ca.csr
+	openssl ca \
+		-notext \
+		-batch \
+		-config ca.conf \
+		-name ca_int \
+		-in $(CERTDIR)/invalidint/ca.csr \
+		-out invalidint.crt
+
+# Invalid leaf certificiate - signed by the invalid intermeidate certificate
+deepleaf.crt: invalidint.crt $(KEYDIR)/leaf.key
+	mkdir -p $(CERTDIR)/deepleaf/ca.db.certs
+	touch $(CERTDIR)/deepleaf/ca.db.index
+	openssl req \
+		-new \
+		-key $(KEYDIR)/leaf.key \
+		-sha384 \
+		-subj / \
+		-addext "keyUsage = critical, digitalSignature" \
+		-addext "extendedKeyUsage = codeSigning" \
+		-addext "subjectAltName = URI:http://foobar.dev,otherName:1.3.6.1.4.1.57264.1.7;UTF8:FOO" \
+		-out $(CERTDIR)/deepleaf/deepleaf.csr
+	openssl ca \
+		-notext \
+		-batch \
+		-config ca.conf \
+		-name ca_int2 \
+		-in $(CERTDIR)/deepleaf/deepleaf.csr \
+		-out deepleaf.crt

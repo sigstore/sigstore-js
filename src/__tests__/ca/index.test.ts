@@ -81,7 +81,7 @@ tbn02XdfIl+ZhQqUZv88dgDB86bfKyoOokA7fagAEOulkquhKKoOxdOySQ==
           challenge
         );
 
-        expect(result).toEqual([leafCertificate, rootCertificate]);
+        expect(result).toEqual([leafCertificate]);
       });
     });
 
