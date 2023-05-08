@@ -13,6 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+const base = require('../../jest.config.base')
+
 module.exports = {
-  projects: ['<rootDir>/packages/*/jest.config.js'],
+  ...base,
+  setupFilesAfterEnv: ['./jest.setup.js'],
+  testPathIgnorePatterns: [
+    '<rootDir>/dist/',
+    '<rootDir>/src/__tests__/__fixtures__',
+  ],
+  coveragePathIgnorePatterns: ['__generated__', '__fixtures__'],
 };
