@@ -22,6 +22,8 @@ describe('CertificateChainVerifier', () => {
   const intCert = x509Certificate.parse(certificates.intermediate);
   const leafCert = x509Certificate.parse(certificates.leaf);
   const invalidLeafCert = x509Certificate.parse(certificates.invalidleaf);
+  const invalidIntCert = x509Certificate.parse(certificates.invalidint);
+  const deepLeafCert = x509Certificate.parse(certificates.deepleaf);
 
   describe('#verify', () => {
     describe('when no path contains a trusted cert', () => {
@@ -77,6 +79,19 @@ describe('CertificateChainVerifier', () => {
       });
     });
 
+    describe('when the pathlen constraint is violated', () => {
+      it('throws an error', () => {
+        const opts = {
+          trustedCerts: [invalidIntCert, intCert, rootCert],
+          untrustedCert: deepLeafCert,
+        };
+
+        expect(() => verifyCertificateChain(opts)).toThrowError(
+          'Path length constraint exceeded'
+        );
+      });
+    });
+
     describe('when the cert chain is valid', () => {
       const opts = {
         trustedCerts: [intCert, rootCert],
@@ -91,7 +106,7 @@ describe('CertificateChainVerifier', () => {
       it('returns the trusted chain', () => {
         const trustedChain = verifyCertificateChain(opts);
         expect(trustedChain).toBeDefined();
-        expect(trustedChain).toHaveLength(4);
+        expect(trustedChain).toHaveLength(3);
 
         // The first cert in the chain is the leaf cert
         expect(trustedChain[0]).toEqual(opts.untrustedCert);
@@ -111,7 +126,7 @@ describe('CertificateChainVerifier', () => {
       it('returns the trusted chain', () => {
         const trustedChain = verifyCertificateChain(opts);
         expect(trustedChain).toBeDefined();
-        expect(trustedChain).toHaveLength(2);
+        expect(trustedChain).toHaveLength(1);
         expect(trustedChain[0]).toEqual(opts.untrustedCert);
       });
     });
