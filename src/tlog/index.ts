@@ -20,6 +20,8 @@ import * as sigstore from '../types/sigstore';
 import { toProposedHashedRekordEntry, toProposedIntotoEntry } from './format';
 import { Entry, EntryKind } from './types';
 
+import type { FetchOptions } from '../types/fetch';
+
 interface CreateEntryOptions {
   fetchOnConflict?: boolean;
 }
@@ -39,15 +41,19 @@ export interface TLog {
   ) => Promise<Entry>;
 }
 
-export interface TLogClientOptions {
+export type TLogClientOptions = {
   rekorBaseURL: string;
-}
+} & FetchOptions;
 
 export class TLogClient implements TLog {
   private rekor: Rekor;
 
   constructor(options: TLogClientOptions) {
-    this.rekor = new Rekor({ baseURL: options.rekorBaseURL });
+    this.rekor = new Rekor({
+      baseURL: options.rekorBaseURL,
+      retry: options.retry,
+      timeout: options.timeout,
+    });
   }
 
   async createMessageSignatureEntry(

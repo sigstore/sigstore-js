@@ -17,9 +17,11 @@ import fetch, { FetchInterface } from 'make-fetch-happen';
 import { ua } from '../util';
 import { checkStatus } from './error';
 
-export interface FulcioOptions {
+import type { FetchOptions } from '../types/fetch';
+
+export type FulcioOptions = {
   baseURL: string;
-}
+} & FetchOptions;
 
 export interface SigningCertificateRequest {
   credentials: {
@@ -51,8 +53,8 @@ export class Fulcio {
 
   constructor(options: FulcioOptions) {
     this.fetch = fetch.defaults({
-      retry: { retries: 2 },
-      timeout: 5000,
+      retry: options.retry,
+      timeout: options.timeout,
       headers: {
         'Content-Type': 'application/json',
         'User-Agent': ua.getUserAgent(),
