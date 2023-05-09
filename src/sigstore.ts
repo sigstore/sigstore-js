@@ -83,6 +83,9 @@ const tufUtils = {
     return t.refresh().then(() => t);
   },
 
+  /*
+   * @deprecated Use tufUtils.client instead.
+   */
   getTarget: (
     path: string,
     options: config.TUFOptions = {}
