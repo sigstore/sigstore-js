@@ -78,9 +78,24 @@ Verifies the signature in the supplied bundle.
 
 The `tuf` object contains utility function for working with the Sigstore TUF repository.
 
+#### client([options])
+
+Returns a TUF client which can be used to retrieve targets from the Sigstore TUF repository.
+
+* `options` `<Object>`
+  * `tufMirrorURL` `<string>`: Base URL for the Sigstore TUF repository. Defaults to `'https://tuf-repo-cdn.sigstore.dev'`
+  * `tufRootPath` `<string>`: Path to the initial trusted root for the TUF repository. Defaults to the embedded root.
+  * `tufCachePath` `<string>`: Absolute path to the directory to be used for caching downloaded TUF metadata and targets. Defaults to a directory named "sigstore-js" within the platform-specific application data directory.
+
+The returned object exposes a `getTarget(path)` function which returns the
+contents of the target at the specified path in the Sigstore TUF repository.
+
 #### getTarget(path[, options])
 
 Returns the contents of the target at the specified path in the Sigstore TUF repository.
+If you are going to retrieve more than one target, you should use the `client` function
+to retrieve a stateful TUF client and then call `getTarget` against that object. This will
+avoid re-initializing the internal TUF state between requests.
 
 * `path` `<string>`: The [path-relative-url string](https://url.spec.whatwg.org/#path-relative-url-string) that uniquely identifies the target within the Sigstore TUF repository.
 * `options` `<Object>`

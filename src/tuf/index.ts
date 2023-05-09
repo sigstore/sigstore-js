@@ -32,6 +32,10 @@ export interface TUFOptions {
   rootPath?: string;
 }
 
+export interface TUF {
+  getTarget(targetName: string): Promise<string>;
+}
+
 interface RemoteConfig {
   mirror: string;
 }
@@ -39,24 +43,32 @@ interface RemoteConfig {
 export async function getTrustedRoot(
   options: TUFOptions = {}
 ): Promise<sigstore.TrustedRoot> {
-  const trustedRoot = await getTarget(TRUSTED_ROOT_TARGET, options);
+  const client = new TUFClient(options);
+  const trustedRoot = await client.getTarget(TRUSTED_ROOT_TARGET);
   return sigstore.TrustedRoot.fromJSON(JSON.parse(trustedRoot));
 }
 
-export async function getTarget(
-  targetName: string,
-  options: TUFOptions = {}
-): Promise<string> {
-  const cachePath = options.cachePath || DEFAULT_CACHE_DIR;
-  const tufRootPath =
-    options.rootPath || require.resolve(DEFAULT_TUF_ROOT_PATH);
-  const mirrorURL = options.mirrorURL || DEFAULT_MIRROR_URL;
+export class TUFClient implements TUF {
+  private updater: Updater;
 
-  initTufCache(cachePath, tufRootPath);
-  const remote = initRemoteConfig(cachePath, mirrorURL);
-  const repoClient = initClient(cachePath, remote);
+  constructor(options: TUFOptions) {
+    const cachePath = options.cachePath || DEFAULT_CACHE_DIR;
+    const tufRootPath =
+      options.rootPath || require.resolve(DEFAULT_TUF_ROOT_PATH);
+    const mirrorURL = options.mirrorURL || DEFAULT_MIRROR_URL;
 
-  return readTarget(repoClient, targetName);
+    initTufCache(cachePath, tufRootPath);
+    const remote = initRemoteConfig(cachePath, mirrorURL);
+    this.updater = initClient(cachePath, remote);
+  }
+
+  public async refresh(): Promise<void> {
+    return this.updater.refresh();
+  }
+
+  public getTarget(targetName: string): Promise<string> {
+    return readTarget(this.updater, targetName);
+  }
 }
 
 // Initializes the TUF cache directory structure including the initial
