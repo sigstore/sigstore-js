@@ -77,7 +77,9 @@ class CertificateChainVerifier {
     );
 
     // Construct chain from shortest path
-    return [leafCert, ...path];
+    // Removes the last certificate in the path, which will be a second copy
+    // of the root certificate given that the root is self-signed.
+    return [leafCert, ...path].slice(0, -1);
   }
 
   // Recursively build all possible paths from the leaf to the root
@@ -165,9 +167,9 @@ class CertificateChainVerifier {
   }
 
   private checkPath(path: x509Certificate[]): void {
-    if (path.length < 2) {
+    if (path.length < 1) {
       throw new VerificationError(
-        'Certificate chain must contain at least two certificates'
+        'Certificate chain must contain at least one certificate'
       );
     }
 
@@ -190,6 +192,25 @@ class CertificateChainVerifier {
     for (let i = path.length - 2; i >= 0; i--) {
       if (!path[i].issuer.equals(path[i + 1].subject)) {
         throw new VerificationError('Incorrect certificate name chaining');
+      }
+    }
+
+    // Check pathlength constraints
+    for (let i = 0; i < path.length; i++) {
+      const cert = path[i];
+
+      // If the certificate is a CA, check the path length
+      if (cert.extBasicConstraints?.isCA) {
+        const pathLength = cert.extBasicConstraints.pathLenConstraint;
+
+        // The path length, if set, indicates how many intermediate
+        // certificates (NOT including the leaf) are allowed to follow. The
+        // pathLength constraint of any intermediate CA certificate MUST be
+        // greater than or equal to it's own depth in the chain (with an
+        // adjustment for the leaf certificate)
+        if (pathLength !== undefined && pathLength < i - 1) {
+          throw new VerificationError('Path length constraint exceeded');
+        }
       }
     }
   }
