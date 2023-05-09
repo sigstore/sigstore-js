@@ -74,15 +74,23 @@ export async function verify(
 }
 
 const tufUtils = {
-  getTarget: (
-    path: string,
-    options: config.TUFOptions = {}
-  ): Promise<string> => {
-    return tuf.getTarget(path, {
+  client: (options: config.TUFOptions = {}): Promise<tuf.TUF> => {
+    const t = new tuf.TUFClient({
       mirrorURL: options.tufMirrorURL,
       rootPath: options.tufRootPath,
       cachePath: options.tufCachePath,
     });
+    return t.refresh().then(() => t);
+  },
+
+  /*
+   * @deprecated Use tufUtils.client instead.
+   */
+  getTarget: (
+    path: string,
+    options: config.TUFOptions = {}
+  ): Promise<string> => {
+    return tufUtils.client(options).then((t) => t.getTarget(path));
   },
 };
 
@@ -94,6 +102,7 @@ export {
   VerificationError,
 } from './error';
 export * as utils from './sigstore-utils';
+export type { TUF } from './tuf';
 export type {
   SerializedBundle as Bundle,
   SerializedEnvelope as Envelope,
