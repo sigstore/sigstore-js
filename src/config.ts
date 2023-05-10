@@ -30,7 +30,7 @@ interface TLogOptions {
 }
 
 interface TSAOptions {
-  tsaURL?: string;
+  tsaServerURL?: string;
 }
 
 export interface IdentityProviderOptions {
@@ -81,8 +81,8 @@ export function createTLogClient(options: { rekorURL?: string }): TLog {
 }
 
 export function createTSAClient(options: TSAOptions): TSA | undefined {
-  return options.tsaURL
-    ? new TSAClient({ tsaBaseURL: options.tsaURL })
+  return options.tsaServerURL
+    ? new TSAClient({ tsaBaseURL: options.tsaServerURL })
     : undefined;
 }
 
