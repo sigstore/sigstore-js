@@ -16,6 +16,7 @@ limitations under the License.
 import { CA, CAClient } from './ca';
 import identity, { Provider } from './identity';
 import { TLog, TLogClient } from './tlog';
+import { TSA, TSAClient } from './tsa';
 import * as sigstore from './types/sigstore';
 
 import type { FetchOptions, Retry } from './types/fetch';
@@ -27,6 +28,10 @@ interface CAOptions {
 
 interface TLogOptions {
   rekorURL?: string;
+}
+
+interface TSAOptions {
+  tsaServerURL?: string;
 }
 
 export interface IdentityProviderOptions {
@@ -47,8 +52,9 @@ export type SignOptions = {
   tlogUpload?: boolean;
 } & CAOptions &
   TLogOptions &
-  IdentityProviderOptions &
-  FetchOptions;
+  TSAOptions &
+  FetchOptions &
+  IdentityProviderOptions;
 
 export type VerifyOptions = {
   ctLogThreshold?: number;
@@ -81,6 +87,12 @@ export function createTLogClient(options: TLogOptions & FetchOptions): TLog {
     retry: options.retry ?? DEFAULT_RETRY,
     timeout: options.timeout ?? DEFAULT_TIMEOUT,
   });
+}
+
+export function createTSAClient(options: TSAOptions): TSA | undefined {
+  return options.tsaServerURL
+    ? new TSAClient({ tsaBaseURL: options.tsaServerURL })
+    : undefined;
 }
 
 // Assembles the AtifactVerificationOptions from the supplied VerifyOptions.

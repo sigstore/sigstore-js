@@ -18,6 +18,7 @@ import { CAClient } from '../ca';
 import { InternalError } from '../error';
 import { Signer } from '../sign';
 import { TLogClient } from '../tlog';
+import { TSAClient } from '../tsa';
 import { SignatureMaterial, SignerFunc } from '../types/signature';
 import { HashAlgorithm } from '../types/sigstore';
 import { pem } from '../util';
@@ -25,6 +26,7 @@ import { pem } from '../util';
 describe('Signer', () => {
   const fulcioBaseURL = 'http://localhost:8001';
   const rekorBaseURL = 'http://localhost:8002';
+  const tsaBaseURL = 'http://localhost:8003';
   const jwtPayload = {
     iss: 'https://example.com',
     sub: 'foo@bar.com',
@@ -33,6 +35,7 @@ describe('Signer', () => {
 
   const ca = new CAClient({ fulcioBaseURL });
   const tlog = new TLogClient({ rekorBaseURL });
+  const tsa = new TSAClient({ tsaBaseURL });
   const idp = { getToken: () => Promise.resolve(jwt) };
 
   const subject = new Signer({
@@ -280,6 +283,42 @@ describe('Signer', () => {
             expect(bundle.verificationMaterial?.tlogEntries).toHaveLength(0);
           });
         });
+
+        describe('when timestamping is enabled', () => {
+          const timestamp = Buffer.from('timestamp');
+
+          const subject = new Signer({
+            ca,
+            tlog,
+            tsa,
+            identityProviders: [idp],
+            tlogUpload: false,
+          });
+
+          beforeEach(() => {
+            nock(tsaBaseURL)
+              .matchHeader('Content-Type', 'application/json')
+              .post('/api/v1/timestamp')
+              .reply(200, timestamp);
+          });
+
+          it('returns a signature bundle', async () => {
+            const bundle = await subject.signBlob(payload);
+            expect(bundle).toBeTruthy();
+
+            expect(
+              bundle.verificationMaterial?.timestampVerificationData
+            ).toBeTruthy();
+            expect(
+              bundle.verificationMaterial?.timestampVerificationData
+                ?.rfc3161Timestamps
+            ).toHaveLength(1);
+            expect(
+              bundle.verificationMaterial?.timestampVerificationData
+                ?.rfc3161Timestamps[0].signedTimestamp
+            ).toEqual(timestamp);
+          });
+        });
       });
     });
 
@@ -507,6 +546,45 @@ describe('Signer', () => {
             bundle.verificationMaterial?.timestampVerificationData
           ).toBeUndefined();
           expect(bundle.verificationMaterial?.tlogEntries).toHaveLength(0);
+        });
+      });
+
+      describe('when timestamping is enabled', () => {
+        const timestamp = Buffer.from('timestamp');
+        const subject = new Signer({
+          ca,
+          tlog,
+          tsa,
+          identityProviders: [idp],
+          tlogUpload: false,
+        });
+
+        beforeEach(() => {
+          // Mock TSA request
+          nock(tsaBaseURL)
+            .matchHeader('Content-Type', 'application/json')
+            .post('/api/v1/timestamp')
+            .reply(200, timestamp);
+        });
+
+        it('returns a signature bundle', async () => {
+          const bundle = await subject.signAttestation(payload, payloadType);
+          expect(bundle).toBeTruthy();
+          expect(bundle.mediaType).toEqual(
+            'application/vnd.dev.sigstore.bundle+json;version=0.1'
+          );
+
+          expect(
+            bundle.verificationMaterial?.timestampVerificationData
+          ).toBeTruthy();
+          expect(
+            bundle.verificationMaterial?.timestampVerificationData
+              ?.rfc3161Timestamps
+          ).toHaveLength(1);
+          expect(
+            bundle.verificationMaterial?.timestampVerificationData
+              ?.rfc3161Timestamps[0].signedTimestamp
+          ).toEqual(timestamp);
         });
       });
     });
