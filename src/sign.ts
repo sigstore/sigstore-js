@@ -13,16 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { CA } from './ca';
-import { Provider } from './identity';
-import { TLog } from './tlog';
 import { SignatureMaterial, SignerFunc } from './types/signature';
 import * as sigstore from './types/sigstore';
 import { crypto, dsse, oidc } from './util';
 
+import type { CA } from './ca';
+import type { Provider } from './identity';
+import type { TLog } from './tlog';
+import type { TSA } from './tsa';
+
 export interface SignOptions {
   ca: CA;
   tlog: TLog;
+  tsa?: TSA;
   identityProviders: Provider[];
   tlogUpload?: boolean;
   signer?: SignerFunc;
@@ -31,6 +34,7 @@ export interface SignOptions {
 export class Signer {
   private ca: CA;
   private tlog: TLog;
+  private tsa?: TSA;
   private tlogUpload: boolean;
   private signer: SignerFunc;
 
@@ -39,6 +43,7 @@ export class Signer {
   constructor(options: SignOptions) {
     this.ca = options.ca;
     this.tlog = options.tlog;
+    this.tsa = options.tsa;
     this.identityProviders = options.identityProviders;
     this.tlogUpload = options.tlogUpload ?? true;
     this.signer = options.signer || this.signWithEphemeralKey.bind(this);
@@ -60,6 +65,9 @@ export class Signer {
       digest,
       signature: sigMaterial,
       tlogEntry: entry,
+      timestamp: this.tsa
+        ? await this.tsa.createTimestamp(sigMaterial.signature)
+        : undefined,
     });
   }
 
@@ -93,6 +101,9 @@ export class Signer {
       envelope,
       signature: sigMaterial,
       tlogEntry: entry,
+      timestamp: this.tsa
+        ? await this.tsa.createTimestamp(sigMaterial.signature)
+        : undefined,
     });
   }
 
