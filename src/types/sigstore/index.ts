@@ -18,6 +18,7 @@ import {
   Bundle,
   Envelope,
   HashAlgorithm,
+  TimestampVerificationData,
   TransparencyLogEntry,
   VerificationMaterial,
 } from '@sigstore/protobuf-specs';
@@ -125,15 +126,21 @@ export function toDSSEBundle({
   envelope,
   signature,
   tlogEntry,
+  timestamp,
 }: {
   envelope: Envelope;
   signature: SignatureMaterial;
   tlogEntry?: Entry;
+  timestamp?: Buffer;
 }): Bundle {
   return {
     mediaType: BUNDLE_MEDIA_TYPE,
     content: { $case: 'dsseEnvelope', dsseEnvelope: envelope },
-    verificationMaterial: toVerificationMaterial({ signature, tlogEntry }),
+    verificationMaterial: toVerificationMaterial({
+      signature,
+      tlogEntry,
+      timestamp,
+    }),
   };
 }
 
@@ -141,10 +148,12 @@ export function toMessageSignatureBundle({
   digest,
   signature,
   tlogEntry,
+  timestamp,
 }: {
   digest: Buffer;
   signature: SignatureMaterial;
   tlogEntry?: Entry;
+  timestamp?: Buffer;
 }): Bundle {
   return {
     mediaType: BUNDLE_MEDIA_TYPE,
@@ -158,7 +167,11 @@ export function toMessageSignatureBundle({
         signature: signature.signature,
       },
     },
-    verificationMaterial: toVerificationMaterial({ signature, tlogEntry }),
+    verificationMaterial: toVerificationMaterial({
+      signature,
+      tlogEntry,
+      timestamp,
+    }),
   };
 }
 
@@ -191,16 +204,20 @@ function toTransparencyLogEntry(entry: Entry): TransparencyLogEntry {
 function toVerificationMaterial({
   signature,
   tlogEntry,
+  timestamp,
 }: {
   signature: SignatureMaterial;
   tlogEntry?: Entry;
+  timestamp?: Buffer;
 }): VerificationMaterial {
   return {
     content: signature.certificates
       ? toVerificationMaterialx509CertificateChain(signature.certificates)
       : toVerificationMaterialPublicKey(signature.key.id || ''),
     tlogEntries: tlogEntry ? [toTransparencyLogEntry(tlogEntry)] : [],
-    timestampVerificationData: undefined,
+    timestampVerificationData: timestamp
+      ? toTimestampVerificationData(timestamp)
+      : undefined,
   };
 }
 
@@ -221,6 +238,14 @@ function toVerificationMaterialPublicKey(
   hint: string
 ): VerificationMaterial['content'] {
   return { $case: 'publicKey', publicKey: { hint } };
+}
+
+function toTimestampVerificationData(
+  timestamp: Buffer
+): TimestampVerificationData {
+  return {
+    rfc3161Timestamps: [{ signedTimestamp: timestamp }],
+  };
 }
 
 export function signingCertificate(

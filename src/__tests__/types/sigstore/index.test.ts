@@ -185,11 +185,14 @@ describe('bundle', () => {
       },
     };
 
+    const timestamp = Buffer.from('timestamp');
+
     it('returns a valid DSSE bundle', () => {
       const b = sigstore.toDSSEBundle({
         envelope,
         signature: sigMaterial,
         tlogEntry: rekorEntry,
+        timestamp: timestamp,
       });
 
       expect(b).toBeTruthy();
@@ -212,8 +215,7 @@ describe('bundle', () => {
         fail('Expected x509CertificateChain');
       }
 
-      // Timestamp verification data
-      expect(b.verificationMaterial?.timestampVerificationData).toBeUndefined();
+      // TLog entry
       expect(b.verificationMaterial?.tlogEntries).toHaveLength(1);
 
       const tlog = b.verificationMaterial?.tlogEntries[0];
@@ -231,6 +233,14 @@ describe('bundle', () => {
       expect(tlog?.inclusionProof).toBeFalsy();
       expect(tlog?.kindVersion?.kind).toEqual(entryKind.kind);
       expect(tlog?.kindVersion?.version).toEqual(entryKind.apiVersion);
+
+      // Timestamp verification data
+      expect(
+        b.verificationMaterial?.timestampVerificationData?.rfc3161Timestamps
+      ).toHaveLength(1);
+      const ts =
+        b.verificationMaterial?.timestampVerificationData?.rfc3161Timestamps[0];
+      expect(ts?.signedTimestamp).toEqual(timestamp);
     });
   });
 
