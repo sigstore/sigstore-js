@@ -1,0 +1,59 @@
+{
+  "name": "@sigstore/cli",
+  "version": "0.0.1",
+  "description": "Sigstore CLI",
+  "author": "Brian DeHamer @bdehamer",
+  "license": "Apache-2.0",
+  "keywords": [
+    "cli",
+    "sigstore"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "sigstore": "./bin/run"
+  },
+  "files": [
+    "/bin",
+    "/dist",
+    "/oclif.manifest.json"
+  ],
+  "scripts": {
+    "build": "shx rm -rf dist && tsc -b",
+    "lint": "eslint . --ext .ts --config .eslintrc",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "posttest": "npm run lint",
+    "prepack": "npm run build && oclif manifest && oclif readme",
+    "test": "echo \"no tests yet\"",
+    "version": "oclif readme && git add README.md"
+  },
+  "dependencies": {
+    "@oclif/core": "^2",
+    "@oclif/plugin-help": "^5",
+    "sigstore": "^1.4.0"
+  },
+  "devDependencies": {
+    "oclif": "^3",
+    "shx": "^0.3.3",
+    "tslib": "^2.5.0",
+    "typescript": "^5.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sigstore/sigstore-js.git"
+  },
+  "homepage": "https://github.com/sigstore/sigstore-js/tree/main/packages/cli#readme",
+  "bugs": "https://github.com/sigstore/sigstore-js/issues",
+  "oclif": {
+    "bin": "sigstore",
+    "dirname": "sigstore",
+    "commands": "./dist/commands",
+    "plugins": [
+      "@oclif/plugin-help"
+    ],
+    "topicSeparator": " "
+  },
+  "engines": {
+    "node": "^14.17.0 || ^16.13.0 || >=18.0.0"
+  }
+}
