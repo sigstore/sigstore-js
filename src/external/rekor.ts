@@ -18,10 +18,12 @@ import { Entry, EntryKind } from '../tlog';
 import { ua } from '../util';
 import { checkStatus } from './error';
 
+import type { FetchOptions } from '../types/fetch';
+
 // Client options
-export interface RekorOptions {
+export type RekorOptions = {
   baseURL: string;
-}
+} & FetchOptions;
 
 export interface SearchIndex {
   email?: string;
@@ -43,8 +45,8 @@ export class Rekor {
   private baseUrl: string;
   constructor(options: RekorOptions) {
     this.fetch = fetch.defaults({
-      retry: { retries: 2 },
-      timeout: 5000,
+      retry: options.retry,
+      timeout: options.timeout,
       headers: {
         Accept: 'application/json',
         'User-Agent': ua.getUserAgent(),
