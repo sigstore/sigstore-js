@@ -1,5 +1,21 @@
 # sigstore
 
+## 1.5.0
+
+### Minor Changes
+
+- f4c677e: Generated bundle excludes Fulcio root and intermediate certificates
+- 5ca42a0: New `tsaServerURL` option for requesting a timestamp from a Timestamp Authority API
+- 4e715c9: Exposes a new `tuf.client` function which returns a client for retrieving targets from the Sigstore TUF repository.
+- 4b97516: New `tlogUpload` option for `sign` and `attest` to control signature uploads to the transparency log
+- f927296: New `retry` and `timeout` options to control fetch behavior when errors occur
+
+### Patch Changes
+
+- 2e5e733: Certificate chain verification enforces pathlen constraint for CA certs
+- 3205ce9: Updates certificate verification to ignore all but the first certificate present in the bundle
+- bb2006b: Updating embedded Sigstore TUF root to v7
+
 ## 1.4.0
 
 ### Minor Changes
