@@ -67,6 +67,8 @@ export async function verify(
     mirrorURL: options.tufMirrorURL,
     rootPath: options.tufRootPath,
     cachePath: options.tufCachePath,
+    retry: options.retry ?? config.DEFAULT_RETRY,
+    timeout: options.timeout ?? config.DEFAULT_TIMEOUT,
   });
   const verifier = new Verifier(trustedRoot, options.keySelector);
 
@@ -81,6 +83,8 @@ const tufUtils = {
       mirrorURL: options.tufMirrorURL,
       rootPath: options.tufRootPath,
       cachePath: options.tufCachePath,
+      retry: options.retry ?? config.DEFAULT_RETRY,
+      timeout: options.timeout ?? config.DEFAULT_TIMEOUT,
     });
     return t.refresh().then(() => t);
   },

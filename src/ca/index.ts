@@ -18,6 +18,8 @@ import { InternalError } from '../error';
 import { Fulcio } from '../external';
 import { toCertificateRequest } from './format';
 
+import type { FetchOptions } from '../types/fetch';
+
 export interface CA {
   createSigningCertificate: (
     identityToken: string,
@@ -26,15 +28,19 @@ export interface CA {
   ) => Promise<string[]>;
 }
 
-export interface CAClientOptions {
+export type CAClientOptions = {
   fulcioBaseURL: string;
-}
+} & FetchOptions;
 
 export class CAClient implements CA {
   private fulcio: Fulcio;
 
   constructor(options: CAClientOptions) {
-    this.fulcio = new Fulcio({ baseURL: options.fulcioBaseURL });
+    this.fulcio = new Fulcio({
+      baseURL: options.fulcioBaseURL,
+      retry: options.retry,
+      timeout: options.timeout,
+    });
   }
 
   public async createSigningCertificate(

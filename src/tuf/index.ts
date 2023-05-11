@@ -20,17 +20,19 @@ import * as sigstore from '../types/sigstore';
 import { appdata } from '../util';
 import { readTarget } from './target';
 
+import type { FetchOptions } from '../types/fetch';
+
 const TRUSTED_ROOT_TARGET = 'trusted_root.json';
 
 const DEFAULT_CACHE_DIR = appdata.appDataPath('sigstore-js');
 const DEFAULT_MIRROR_URL = 'https://tuf-repo-cdn.sigstore.dev';
 const DEFAULT_TUF_ROOT_PATH = '../../store/public-good-instance-root.json';
 
-export interface TUFOptions {
+export type TUFOptions = {
   cachePath?: string;
   mirrorURL?: string;
   rootPath?: string;
-}
+} & FetchOptions;
 
 export interface TUF {
   getTarget(targetName: string): Promise<string>;
@@ -59,7 +61,7 @@ export class TUFClient implements TUF {
 
     initTufCache(cachePath, tufRootPath);
     const remote = initRemoteConfig(cachePath, mirrorURL);
-    this.updater = initClient(cachePath, remote);
+    this.updater = initClient(cachePath, remote, options);
   }
 
   public async refresh(): Promise<void> {
@@ -115,13 +117,33 @@ function initRemoteConfig(rootDir: string, mirrorURL: string): RemoteConfig {
   return remoteConfig;
 }
 
-function initClient(cachePath: string, remote: RemoteConfig): Updater {
+function initClient(
+  cachePath: string,
+  remote: RemoteConfig,
+  options: FetchOptions
+): Updater {
   const baseURL = remote.mirror;
+  const config: ConstructorParameters<typeof Updater>[0]['config'] = {
+    fetchTimeout: options.timeout,
+  };
+
+  // tuf-js only supports a number for fetchRetries so we have to
+  // convert the boolean and object options to a number.
+  if (typeof options.retry !== 'undefined') {
+    if (typeof options.retry === 'number') {
+      config.fetchRetries = options.retry;
+    } else if (typeof options.retry === 'object') {
+      config.fetchRetries = options.retry.retries;
+    } else if (options.retry === true) {
+      config.fetchRetries = 1;
+    }
+  }
 
   return new Updater({
     metadataBaseUrl: baseURL,
     targetBaseUrl: `${baseURL}/targets`,
     metadataDir: cachePath,
     targetDir: path.join(cachePath, 'targets'),
+    config,
   });
 }

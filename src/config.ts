@@ -19,6 +19,7 @@ import { TLog, TLogClient } from './tlog';
 import { TSA, TSAClient } from './tsa';
 import * as sigstore from './types/sigstore';
 
+import type { FetchOptions, Retry } from './types/fetch';
 import type { KeySelector } from './verify';
 
 interface CAOptions {
@@ -41,17 +42,18 @@ export interface IdentityProviderOptions {
   oidcRedirectURL?: string;
 }
 
-export interface TUFOptions {
+export type TUFOptions = {
   tufMirrorURL?: string;
   tufRootPath?: string;
   tufCachePath?: string;
-}
+} & FetchOptions;
 
 export type SignOptions = {
   tlogUpload?: boolean;
 } & CAOptions &
   TLogOptions &
   TSAOptions &
+  FetchOptions &
   IdentityProviderOptions;
 
 export type VerifyOptions = {
@@ -68,15 +70,22 @@ export type VerifyOptions = {
 export const DEFAULT_FULCIO_URL = 'https://fulcio.sigstore.dev';
 export const DEFAULT_REKOR_URL = 'https://rekor.sigstore.dev';
 
-export function createCAClient(options: { fulcioURL?: string }): CA {
+export const DEFAULT_RETRY: Retry = { retries: 2 };
+export const DEFAULT_TIMEOUT = 5000;
+
+export function createCAClient(options: CAOptions & FetchOptions): CA {
   return new CAClient({
     fulcioBaseURL: options.fulcioURL || DEFAULT_FULCIO_URL,
+    retry: options.retry ?? DEFAULT_RETRY,
+    timeout: options.timeout ?? DEFAULT_TIMEOUT,
   });
 }
 
-export function createTLogClient(options: { rekorURL?: string }): TLog {
+export function createTLogClient(options: TLogOptions & FetchOptions): TLog {
   return new TLogClient({
     rekorBaseURL: options.rekorURL || DEFAULT_REKOR_URL,
+    retry: options.retry ?? DEFAULT_RETRY,
+    timeout: options.timeout ?? DEFAULT_TIMEOUT,
   });
 }
 
