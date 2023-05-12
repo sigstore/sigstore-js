@@ -11,6 +11,15 @@ pushd ${REKOR_DIR}
 git checkout ${REF}
 popd
 
+# Run codegen against openapi spec to get top-level types
+npx openapi --input "${REKOR_DIR}/openapi.yaml" \
+  --output "src/__generated__" \
+  --useOptions \
+  --useUnionTypes \
+  --exportCore=false \
+  --exportServices=false \
+  --exportSchemas=false
+
 # Run json2ts on schemas
 KINDS=( intoto hashedrekord )
 for KIND in "${KINDS[@]}"
@@ -18,7 +27,7 @@ do
   TYPE_PATH=${REKOR_DIR}/pkg/types/${KIND}
   npx json2ts --input ${TYPE_PATH}/${KIND}_schema.json \
     --cwd ${TYPE_PATH} \
-    --output packages/client/src/tlog/types/__generated__/${KIND}.ts \
+    --output src/__generated__/${KIND}.ts \
     --no-additionalProperties
 done
 

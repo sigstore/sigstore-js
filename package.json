@@ -9,8 +9,7 @@
     "test:ci": "jest --maxWorkers=2 --coverage",
     "lint": "eslint --fix --ext .ts packages/**",
     "lint:check": "eslint --max-warnings 0 --ext .ts packages/**",
-    "release": "npm run build && changeset publish",
-    "codegen:rekor": "./hack/generate-rekor-types"
+    "release": "npm run build && changeset publish"
   },
   "license": "Apache-2.0",
   "devDependencies": {
