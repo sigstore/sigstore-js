@@ -17,19 +17,25 @@ import { InternalError } from '../error';
 import { TimestampAuthority } from '../external';
 import { crypto } from '../util';
 
+import type { FetchOptions } from '../types/fetch';
+
 export interface TSA {
   createTimestamp: (signature: Buffer) => Promise<Buffer>;
 }
 
-export interface TSAClientOptions {
+export type TSAClientOptions = {
   tsaBaseURL: string;
-}
+} & FetchOptions;
 
 export class TSAClient implements TSA {
   private tsa: TimestampAuthority;
 
   constructor(options: TSAClientOptions) {
-    this.tsa = new TimestampAuthority({ baseURL: options.tsaBaseURL });
+    this.tsa = new TimestampAuthority({
+      baseURL: options.tsaBaseURL,
+      retry: options.retry,
+      timeout: options.timeout,
+    });
   }
 
   public async createTimestamp(signature: Buffer): Promise<Buffer> {
