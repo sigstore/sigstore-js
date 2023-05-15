@@ -17,7 +17,7 @@
     "@changesets/cli": "^2.26.0",
     "@tsconfig/node14": "^1.0.3",
     "@types/jest": "^29.4.0",
-    "@types/node": "^20.0.0",
+    "@types/node": "^20.1.4",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
     "@typescript-eslint/parser": "^5.26.0",
     "eslint": "^8.16.0",
