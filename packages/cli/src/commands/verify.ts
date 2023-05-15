@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import { sigstore } from 'sigstore';
 
 export default class Verify extends Command {
-  static override description = 'describe the command here';
+  static override description = 'verify the supplied .sigstore bundle file';
   static override examples = [
     '<%= config.bin %> <%= command.id %> ./bundle.sigstore',
   ];
