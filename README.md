@@ -17,16 +17,6 @@ npx changeset add
 
 Follow the prompts to specify whether the change is a major, minor or patch change. This will create a file in the `.changesets` directory of the repo. This change should be committed and included with your PR.
 
-### Updating Rekor Types
-
-Update the git `REF` in `hack/generate-rekor-types` from the [sigstore/rekor][1] repository.
-
-Generate TypeScript types (should update files in scr/types/rekor/\_\_generated\_\_):
-
-```
-npm run codegen:rekor
-```
-
 ### Release Steps
 
 Whenever a new changeset is merged to the "main" branch, the `release` workflow will open a PR (or append to the existing PR if one is already open) with the all of the pending changesets.
