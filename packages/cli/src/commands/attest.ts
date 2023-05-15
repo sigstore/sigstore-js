@@ -45,11 +45,12 @@ export default class Attest extends Command {
       required: false,
       env: 'OIDC_REDIRECT_URL',
     }),
-    type: Flags.string({
+    'payload-type': Flags.string({
       char: 't',
-      description: 'type to apply to the DSSE envelope',
+      description: 'MIME or content type to apply to the DSSE envelope',
       default: 'application/vnd.in-toto+json',
       required: false,
+      aliases: ['type'],
     }),
     'output-file': Flags.string({
       char: 'o',
@@ -81,7 +82,7 @@ export default class Attest extends Command {
 
     const bundle = await fs
       .readFile(args.file)
-      .then((data) => sigstore.attest(data, flags.type, options));
+      .then((data) => sigstore.attest(data, flags['payload-type'], options));
 
     if (uploadedToTLog(bundle)) {
       this.printRekorEntry(flags['rekor-url'], bundle);
