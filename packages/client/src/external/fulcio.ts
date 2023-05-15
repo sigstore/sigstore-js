@@ -37,10 +37,14 @@ export interface SigningCertificateRequest {
 }
 
 export interface SigningCertificateResponse {
-  signedCertificateEmbeddedSct: {
+  signedCertificateEmbeddedSct?: {
+    chain: { certificates: string[] };
+  };
+  signedCertificateDetachedSct?: {
     chain: {
       certificates: string[];
     };
+    signedCertificateTimestamp: string;
   };
 }
 
