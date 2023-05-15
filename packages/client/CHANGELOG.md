@@ -1,5 +1,11 @@
 # sigstore
 
+## 1.5.1
+
+### Patch Changes
+
+- cab068e: Propagate `retry`/`timeout` options to the Timestamp Authority client
+
 ## 1.5.0
 
 ### Minor Changes
