@@ -1,0 +1,37 @@
+{
+  "name": "@sigstore/rekor-types",
+  "version": "0.0.1",
+  "description": "Sigstore Rekor types",
+  "main": "",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "test": "echo 'no test'",
+    "codegen": "./hack/generate-rekor-types"
+  },
+  "files": [
+    "dist"
+  ],
+  "author": "bdehamer@github.com",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sigstore/sigstore-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sigstore/sigstore-js/issues"
+  },
+  "homepage": "https://github.com/sigstore/sigstore-js/tree/main/packages/rekor-types#readme",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "^13.0.0",
+    "openapi-typescript-codegen": "^0.24.0",
+    "typescript": "^5.0.2"
+  },
+  "engines": {
+    "node": "^14.17.0 || ^16.13.0 || >=18.0.0"
+  }
+}

@@ -2,6 +2,7 @@
   "files": [],
   "references": [
     { "path": "packages/cli" },
-    { "path": "packages/client" }
+    { "path": "packages/client" },
+    { "path": "packages/rekor-types" }
   ]
 }
