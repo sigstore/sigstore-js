@@ -29,6 +29,7 @@ export default class Attest extends Command {
       description: 'whether or not to upload entry to the transparency log',
       default: true,
       required: false,
+      allowNo: true,
     }),
     'oidc-client-id': Flags.string({
       description: 'OIDC client ID for application',
