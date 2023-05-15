@@ -1,5 +1,11 @@
 # @sigstore/cli
 
+## 0.0.3
+
+### Patch Changes
+
+- e8d440e: Add missing `@oclif/color` dependency
+
 ## 0.0.2
 
 ### Patch Changes
