@@ -89,9 +89,15 @@ export function createTLogClient(options: TLogOptions & FetchOptions): TLog {
   });
 }
 
-export function createTSAClient(options: TSAOptions): TSA | undefined {
+export function createTSAClient(
+  options: TSAOptions & FetchOptions
+): TSA | undefined {
   return options.tsaServerURL
-    ? new TSAClient({ tsaBaseURL: options.tsaServerURL })
+    ? new TSAClient({
+        tsaBaseURL: options.tsaServerURL,
+        retry: options.retry ?? DEFAULT_RETRY,
+        timeout: options.timeout ?? DEFAULT_TIMEOUT,
+      })
     : undefined;
 }
 

@@ -17,6 +17,8 @@ import fetch, { FetchInterface } from 'make-fetch-happen';
 import { ua } from '../util';
 import { checkStatus } from './error';
 
+import type { FetchOptions } from '../types/fetch';
+
 export interface TimestampRequest {
   artifactHash: string;
   hashAlgorithm: string;
@@ -25,9 +27,9 @@ export interface TimestampRequest {
   tsaPolicyOID?: string;
 }
 
-export interface TimestampAuthorityOptions {
+export type TimestampAuthorityOptions = {
   baseURL: string;
-}
+} & FetchOptions;
 
 export class TimestampAuthority {
   private fetch: FetchInterface;
@@ -35,8 +37,8 @@ export class TimestampAuthority {
 
   constructor(options: TimestampAuthorityOptions) {
     this.fetch = fetch.defaults({
-      retry: { retries: 2 },
-      timeout: 5000,
+      retry: options.retry,
+      timeout: options.timeout,
       headers: {
         'Content-Type': 'application/json',
         'User-Agent': ua.getUserAgent(),
