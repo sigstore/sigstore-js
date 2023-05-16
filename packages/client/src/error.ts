@@ -38,7 +38,8 @@ type InternalErrorCode =
   | 'TUF_FIND_TARGET_ERROR'
   | 'TUF_REFRESH_METADATA_ERROR'
   | 'TUF_DOWNLOAD_TARGET_ERROR'
-  | 'TUF_READ_TARGET_ERROR';
+  | 'TUF_READ_TARGET_ERROR'
+  | 'IDENTITY_TOKEN_READ_ERROR';
 
 export class InternalError extends BaseError {
   code: InternalErrorCode;
@@ -49,6 +50,28 @@ export class InternalError extends BaseError {
     cause,
   }: {
     code: InternalErrorCode;
+    message: string;
+    cause?: any;
+  }) {
+    super(message, cause);
+    this.code = code;
+  }
+}
+
+type SignatureErrorCode =
+  | 'NO_SIGNATORY_ERROR'
+  | 'MISSING_SIGNATURE_ERROR'
+  | 'MISSING_PUBLIC_KEY_ERROR';
+
+export class SignatureError extends BaseError {
+  code: SignatureErrorCode;
+
+  constructor({
+    code,
+    message,
+    cause,
+  }: {
+    code: SignatureErrorCode;
     message: string;
     cause?: any;
   }) {
