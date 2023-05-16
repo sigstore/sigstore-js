@@ -85,6 +85,32 @@ tbn02XdfIl+ZhQqUZv88dgDB86bfKyoOokA7fagAEOulkquhKKoOxdOySQ==
       });
     });
 
+    describe('when Fulcio returns a valid response (with detached SCT)', () => {
+      beforeEach(() => {
+        // Mock Fulcio request
+        nock(baseURL)
+          .matchHeader('Content-Type', 'application/json')
+          .matchHeader('User-Agent', new RegExp('sigstore-js\\/\\d+.\\d+.\\d+'))
+          .post('/api/v2/signingCert', certRequest)
+          .reply(201, {
+            signedCertificateDetachedSct: {
+              chain: { certificates: certChain },
+              signedCertificateTimestamp: 'sct',
+            },
+          });
+      });
+
+      it('returns the certificate chain', async () => {
+        const result = await subject.createSigningCertificate(
+          identityToken,
+          publicKey,
+          challenge
+        );
+
+        expect(result).toEqual([leafCertificate]);
+      });
+    });
+
     describe('when Fulcio returns an error response', () => {
       beforeEach(() => {
         // Mock Fulcio request
