@@ -1,5 +1,11 @@
 # @sigstore/cli
 
+## 0.0.5
+
+### Patch Changes
+
+- 45980a3: Fix support for `--tlog-upload`/`--no-tlog-upload` flag
+
 ## 0.0.4
 
 ### Patch Changes
