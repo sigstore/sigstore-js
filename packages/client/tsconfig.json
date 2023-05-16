@@ -8,5 +8,8 @@
   "exclude": [
     "./dist",
     "**/__tests__"
+  ],
+  "references": [
+    { "path": "../rekor-types" }
   ]
 }
