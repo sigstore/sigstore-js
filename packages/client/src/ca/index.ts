@@ -53,10 +53,17 @@ export class CAClient implements CA {
     try {
       const resp = await this.fulcio.createSigningCertificate(request);
 
+      // Account for the fact that the response may contain either a
+      // signedCertificateEmbeddedSct or a signedCertificateDetachedSct.
+      const cert = resp.signedCertificateEmbeddedSct
+        ? resp.signedCertificateEmbeddedSct
+        : resp.signedCertificateDetachedSct;
+
       // Return the first certificate in the chain, which is the signing
       // certificate. Specifically not returning the rest of the chain to
       // mitigate the risk of errors when verifying the certificate chain.
-      return resp.signedCertificateEmbeddedSct.chain.certificates.slice(0, 1);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return cert!.chain.certificates.slice(0, 1);
     } catch (err) {
       throw new InternalError({
         code: 'CA_CREATE_SIGNING_CERTIFICATE_ERROR',
