@@ -79,6 +79,7 @@ export default class Attest extends Command {
       rekorURL: flags['rekor-url'],
       fulcioURL: flags['fulcio-url'],
       tsaServerURL: flags['tsa-server-url'],
+      tlogUpload: flags['tlog-upload'],
     };
 
     const bundle = await fs
