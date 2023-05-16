@@ -1,5 +1,11 @@
 # sigstore
 
+## 1.5.2
+
+### Patch Changes
+
+- 2f89e43: Update Fulcio client to handle responses with detached SCTs
+
 ## 1.5.1
 
 ### Patch Changes
