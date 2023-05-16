@@ -27,6 +27,12 @@ export type ProposedIntotoEntry =
 
 export type ProposedEntry = ProposedHashedRekordEntry | ProposedIntotoEntry;
 
+export type SearchLogQuery = {
+  entryUUIDs?: Array<string>;
+  logIndexes?: Array<number>;
+  entries?: Array<ProposedEntry>;
+};
+
 export type { InclusionProof, LogEntry, SearchIndex } from './__generated__/';
 export type { HashedRekorV001Schema } from './__generated__/hashedrekord';
 export type {
