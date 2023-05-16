@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- 929d5d2: Fix to allow `--tlog-upload` flag to be negated
+- 929d5d2: Fix to allow `--tlog-upload` flag to be negated with `--no-tlog-upload`
 - Updated dependencies [2f89e43]
   - sigstore@1.5.2
 
