@@ -17,6 +17,7 @@ import crypto from 'crypto';
 import nock from 'nock';
 import { CAClient } from '../../ca';
 import { InternalError } from '../../error';
+import '../@types/jest';
 
 describe('CAClient', () => {
   const baseURL = 'http://localhost:8080';
@@ -126,7 +127,10 @@ tbn02XdfIl+ZhQqUZv88dgDB86bfKyoOokA7fagAEOulkquhKKoOxdOySQ==
       it('throws an error', async () => {
         await expect(
           subject.createSigningCertificate(identityToken, publicKey, challenge)
-        ).rejects.toThrow(InternalError);
+        ).rejects.toThrowWithCode(
+          InternalError,
+          'CA_CREATE_SIGNING_CERTIFICATE_ERROR'
+        );
       });
     });
   });

@@ -22,6 +22,7 @@ import {
 import { TLogClient } from '../../tlog/index';
 import { SignatureMaterial } from '../../types/signature';
 import { Envelope } from '../../types/sigstore';
+import '../@types/jest';
 
 describe('TLogClient', () => {
   const baseURL = 'http://localhost:8080';
@@ -64,7 +65,7 @@ describe('TLogClient', () => {
       it('returns an error', async () => {
         await expect(
           subject.createMessageSignatureEntry(digest, sigMaterial)
-        ).rejects.toThrow(InternalError);
+        ).rejects.toThrowWithCode(InternalError, 'TLOG_CREATE_ENTRY_ERROR');
       });
     });
 
@@ -165,7 +166,7 @@ describe('TLogClient', () => {
       it('returns an error', async () => {
         await expect(
           subject.createDSSEEntry(dsse, sigMaterial)
-        ).rejects.toThrow(InternalError);
+        ).rejects.toThrowWithCode(InternalError, 'TLOG_CREATE_ENTRY_ERROR');
       });
     });
 
@@ -187,7 +188,7 @@ describe('TLogClient', () => {
             subject.createDSSEEntry(dsse, sigMaterial, {
               fetchOnConflict: false,
             })
-          ).rejects.toThrow(InternalError);
+          ).rejects.toThrowWithCode(InternalError, 'TLOG_CREATE_ENTRY_ERROR');
         });
       });
 
@@ -244,7 +245,7 @@ describe('TLogClient', () => {
               subject.createDSSEEntry(dsse, sigMaterial, {
                 fetchOnConflict: true,
               })
-            ).rejects.toThrow(InternalError);
+            ).rejects.toThrowWithCode(InternalError, 'TLOG_FETCH_ENTRY_ERROR');
           });
         });
       });
