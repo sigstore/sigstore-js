@@ -27,7 +27,7 @@ import { x509Certificate } from '../../x509/cert';
 import { WithRequired } from '../utility';
 import { ValidBundle, assertValidBundle } from './validate';
 
-import type { Entry, EntryKind } from '../../tlog';
+import type { Entry, ProposedEntry } from '../../external/rekor';
 import type { SignatureMaterial } from '../signature';
 
 export * from '@sigstore/protobuf-specs';
@@ -176,12 +176,13 @@ export function toMessageSignatureBundle({
 }
 
 function toTransparencyLogEntry(entry: Entry): TransparencyLogEntry {
-  const set = Buffer.from(entry.verification.signedEntryTimestamp, 'base64');
+  const b64SET = entry.verification?.signedEntryTimestamp || '';
+  const set = Buffer.from(b64SET, 'base64');
   const logID = Buffer.from(entry.logID, 'hex');
 
   // Parse entry body so we can extract the kind and version.
   const bodyJSON = enc.base64Decode(entry.body);
-  const entryBody: EntryKind = JSON.parse(bodyJSON);
+  const entryBody: ProposedEntry = JSON.parse(bodyJSON);
 
   return {
     inclusionPromise: {
