@@ -22,6 +22,7 @@ import { TSAClient } from '../tsa';
 import { SignatureMaterial, SignerFunc } from '../types/signature';
 import { HashAlgorithm } from '../types/sigstore';
 import { pem } from '../util';
+import './@types/jest';
 
 describe('Signer', () => {
   const fulcioBaseURL = 'http://localhost:8001';
@@ -74,8 +75,9 @@ describe('Signer', () => {
         });
 
         it('returns an error', async () => {
-          await expect(subject.signBlob(payload)).rejects.toThrow(
-            InternalError
+          await expect(subject.signBlob(payload)).rejects.toThrowWithCode(
+            InternalError,
+            'CA_CREATE_SIGNING_CERTIFICATE_ERROR'
           );
         });
       });
@@ -226,8 +228,9 @@ describe('Signer', () => {
             });
 
             it('returns an error', async () => {
-              await expect(subject.signBlob(payload)).rejects.toThrow(
-                InternalError
+              await expect(subject.signBlob(payload)).rejects.toThrowWithCode(
+                InternalError,
+                'TLOG_CREATE_ENTRY_ERROR'
               );
             });
           });
@@ -350,8 +353,10 @@ describe('Signer', () => {
           signer,
         });
 
-        // await expect(s.signBlob(payload)).rejects.toThrow();
-        await expect(s.signBlob(payload)).rejects.toThrow();
+        await expect(s.signBlob(payload)).rejects.toThrowWithCode(
+          InternalError,
+          'TLOG_CREATE_ENTRY_ERROR'
+        );
         expect(signer).toHaveBeenCalledWith(payload);
       });
     });

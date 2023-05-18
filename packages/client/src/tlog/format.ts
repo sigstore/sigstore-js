@@ -16,12 +16,11 @@ limitations under the License.
 import { SignatureMaterial } from '../types/signature';
 import { Envelope } from '../types/sigstore';
 import { crypto, encoding as enc, json } from '../util';
-import {
-  HashedRekordKind,
-  HASHEDREKORD_KIND,
-  IntotoKind,
-  INTOTO_KIND,
-} from './types';
+
+import type {
+  ProposedHashedRekordEntry,
+  ProposedIntotoEntry,
+} from '../external/rekor';
 
 const DEFAULT_HASHEDREKORD_API_VERSION = '0.0.1';
 const DEFAULT_INTOTO_API_VERSION = '0.0.2';
@@ -31,14 +30,14 @@ const DEFAULT_INTOTO_API_VERSION = '0.0.2';
 export function toProposedHashedRekordEntry(
   digest: Buffer,
   signature: SignatureMaterial
-): HashedRekordKind {
+): ProposedHashedRekordEntry {
   const hexDigest = digest.toString('hex');
   const b64Signature = signature.signature.toString('base64');
   const b64Key = enc.base64Encode(toPublicKey(signature));
 
   return {
     apiVersion: DEFAULT_HASHEDREKORD_API_VERSION,
-    kind: HASHEDREKORD_KIND,
+    kind: 'hashedrekord',
     spec: {
       data: {
         hash: {
@@ -62,7 +61,7 @@ export function toProposedIntotoEntry(
   envelope: Envelope,
   signature: SignatureMaterial,
   apiVersion = DEFAULT_INTOTO_API_VERSION
-): IntotoKind {
+): ProposedIntotoEntry {
   switch (apiVersion) {
     case '0.0.2':
       return toProposedIntotoV002Entry(envelope, signature);
@@ -74,7 +73,7 @@ export function toProposedIntotoEntry(
 function toProposedIntotoV002Entry(
   envelope: Envelope,
   signature: SignatureMaterial
-): IntotoKind {
+): ProposedIntotoEntry {
   // Calculate the value for the payloadHash field in the Rekor entry
   const payloadHash = crypto.hash(envelope.payload).toString('hex');
 
@@ -91,7 +90,7 @@ function toProposedIntotoV002Entry(
   // Create the envelope portion of the entry. Note the inclusion of the
   // publicKey in the signature struct is not a standard part of a DSSE
   // envelope, but is required by Rekor.
-  const dsse: IntotoKind['spec']['content']['envelope'] = {
+  const dsse: ProposedIntotoEntry['spec']['content']['envelope'] = {
     payloadType: envelope.payloadType,
     payload: payload,
     signatures: [{ sig, publicKey }],
@@ -106,7 +105,7 @@ function toProposedIntotoV002Entry(
 
   return {
     apiVersion: '0.0.2',
-    kind: INTOTO_KIND,
+    kind: 'intoto',
     spec: {
       content: {
         envelope: dsse,
@@ -125,7 +124,7 @@ function toProposedIntotoV002Entry(
 //  * keyid is included ONLY if it is NOT an empty string
 //  * The resulting JSON is canonicalized and hashed to a hex string
 function calculateDSSEHash(envelope: Envelope): string {
-  const dsse: IntotoKind['spec']['content']['envelope'] = {
+  const dsse: ProposedIntotoEntry['spec']['content']['envelope'] = {
     payloadType: envelope.payloadType,
     payload: envelope.payload.toString('base64'),
     signatures: [{ sig: envelope.signatures[0].sig.toString('base64') }],
