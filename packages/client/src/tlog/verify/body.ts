@@ -16,7 +16,12 @@ limitations under the License.
 import { VerificationError } from '../../error';
 import * as sigstore from '../../types/sigstore';
 import { crypto, encoding as enc } from '../../util';
-import { EntryKind, HashedRekordKind, IntotoKind } from '../types';
+
+import type {
+  ProposedEntry,
+  ProposedHashedRekordEntry,
+  ProposedIntotoEntry,
+} from '../../external/rekor';
 
 const TLOG_MISMATCH_ERROR_MSG = 'bundle content and tlog entry do not match';
 
@@ -26,7 +31,9 @@ export function verifyTLogBody(
   bundleContent: sigstore.Bundle['content']
 ): boolean {
   const { kind, version } = entry.kindVersion;
-  const body: EntryKind = JSON.parse(entry.canonicalizedBody.toString('utf8'));
+  const body: ProposedEntry = JSON.parse(
+    entry.canonicalizedBody.toString('utf8')
+  );
 
   try {
     if (kind !== body.kind || version !== body.apiVersion) {
@@ -51,7 +58,7 @@ export function verifyTLogBody(
 
 // Compare the given intoto tlog entry to the given bundle
 function verifyIntotoTLogBody(
-  tlogEntry: IntotoKind,
+  tlogEntry: ProposedIntotoEntry,
   content: sigstore.Bundle['content']
 ): void {
   if (content?.$case !== 'dsseEnvelope') {
@@ -75,7 +82,7 @@ function verifyIntotoTLogBody(
 
 // Compare the given hashedrekord tlog entry to the given bundle
 function verifyHashedRekordTLogBody(
-  tlogEntry: HashedRekordKind,
+  tlogEntry: ProposedHashedRekordEntry,
   content: sigstore.Bundle['content']
 ): void {
   if (content?.$case !== 'messageSignature') {
@@ -99,7 +106,7 @@ function verifyHashedRekordTLogBody(
 
 // Compare the given intoto v0.0.2 tlog entry to the given DSSE envelope.
 function verifyIntoto002TLogBody(
-  tlogEntry: Extract<IntotoKind, { apiVersion: '0.0.2' }>,
+  tlogEntry: Extract<ProposedIntotoEntry, { apiVersion: '0.0.2' }>,
   dsse: sigstore.Envelope
 ): void {
   // Collect all of the signatures from the DSSE envelope
@@ -136,7 +143,7 @@ function verifyIntoto002TLogBody(
 // Compare the given hashedrekord v0.0.1 tlog entry to the given message
 // signature
 function verifyHashedrekor001TLogBody(
-  tlogEntry: Extract<HashedRekordKind, { apiVersion: '0.0.1' }>,
+  tlogEntry: Extract<ProposedHashedRekordEntry, { apiVersion: '0.0.1' }>,
   messageSignature: sigstore.MessageSignature
 ): void {
   // Ensure that the bundles message signature matches the tlog entry

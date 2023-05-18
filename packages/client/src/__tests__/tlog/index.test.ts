@@ -118,7 +118,7 @@ describe('TLogClient', () => {
         expect(entry.logID).toEqual(rekorEntry[uuid].logID);
         expect(entry.logIndex).toEqual(rekorEntry[uuid].logIndex);
         expect(entry.integratedTime).toEqual(rekorEntry[uuid].integratedTime);
-        expect(entry.verification.signedEntryTimestamp).toEqual(
+        expect(entry.verification?.signedEntryTimestamp).toEqual(
           rekorEntry[uuid].verification.signedEntryTimestamp
         );
         expect(entry.body).toEqual(rekorEntry[uuid].body);
@@ -295,7 +295,7 @@ describe('TLogClient', () => {
         expect(entry.logID).toEqual(rekorEntry[uuid].logID);
         expect(entry.logIndex).toEqual(rekorEntry[uuid].logIndex);
         expect(entry.integratedTime).toEqual(rekorEntry[uuid].integratedTime);
-        expect(entry.verification.signedEntryTimestamp).toEqual(
+        expect(entry.verification?.signedEntryTimestamp).toEqual(
           rekorEntry[uuid].verification.signedEntryTimestamp
         );
         expect(entry.body).toEqual(rekorEntry[uuid].body);

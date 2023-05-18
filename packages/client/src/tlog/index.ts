@@ -18,15 +18,13 @@ import { HTTPError, Rekor } from '../external';
 import { SignatureMaterial } from '../types/signature';
 import * as sigstore from '../types/sigstore';
 import { toProposedHashedRekordEntry, toProposedIntotoEntry } from './format';
-import { Entry, EntryKind } from './types';
 
+import type { Entry, ProposedEntry } from '../external/rekor';
 import type { FetchOptions } from '../types/fetch';
 
 interface CreateEntryOptions {
   fetchOnConflict?: boolean;
 }
-
-export { Entry, EntryKind, HashedRekordKind } from './types';
 
 export interface TLog {
   createMessageSignatureEntry: (
@@ -75,7 +73,7 @@ export class TLogClient implements TLog {
   }
 
   private async createEntry(
-    proposedEntry: EntryKind,
+    proposedEntry: ProposedEntry,
     fetchOnConflict = false
   ): Promise<Entry> {
     let entry: Entry;

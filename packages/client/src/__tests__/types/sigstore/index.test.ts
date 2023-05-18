@@ -13,11 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { Entry } from '../../../tlog';
 import { SignatureMaterial } from '../../../types/signature';
 import * as sigstore from '../../../types/sigstore';
 import { encoding as enc, pem } from '../../../util';
 import bundles from '../../__fixtures__/bundles/';
+
+import type { Entry } from '../../../external/rekor';
 
 describe('isBundleWithVerificationMaterial', () => {
   describe('when the bundle contains verification material', () => {
@@ -168,7 +169,7 @@ describe('bundle', () => {
       apiVersion: '0.0.2',
     };
 
-    const rekorEntry: Entry = {
+    const rekorEntry = {
       uuid: 'a12bc3',
       body: enc.base64Encode(JSON.stringify(entryKind)),
       integratedTime: 1654015743,
@@ -181,9 +182,10 @@ describe('bundle', () => {
           logIndex: 0,
           rootHash: '',
           treeSize: 0,
+          checkpoint: '',
         },
       },
-    };
+    } satisfies Entry;
 
     const timestamp = Buffer.from('timestamp');
 
