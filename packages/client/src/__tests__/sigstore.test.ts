@@ -15,198 +15,317 @@ limitations under the License.
 */
 import { TUFError } from '@sigstore/tuf';
 import mocktuf, { Target } from '@tufjs/repo-mock';
+import nock from 'nock';
 import { PolicyError, VerificationError } from '../error';
-import { Signer } from '../sign';
-import { attest, sign, tuf, verify } from '../sigstore';
-import {
-  Bundle,
-  HashAlgorithm,
-  TimestampVerificationData,
-  TransparencyLogEntry,
-  TrustedRoot,
-  X509CertificateChain,
-} from '../types/sigstore';
+import { SignOptions, attest, sign, tuf, verify } from '../sigstore';
+import { SignatureMaterial, SignerFunc } from '../types/signature';
+import { TrustedRoot } from '../types/sigstore';
+import { crypto, pem } from '../util';
 import bundles from './__fixtures__/bundles';
 import { trustedRoot } from './__fixtures__/trust';
 
 import type { VerifyOptions } from '../config';
 
-jest.mock('../sign');
+// Fulcio Data
+const fulcioURL = 'http://localhost:8282';
+const jwtPayload = {
+  iss: 'https://example.com',
+  sub: 'foo@bar.com',
+};
+const jwt = `.${Buffer.from(JSON.stringify(jwtPayload)).toString('base64')}.`;
 
-const tlogEntries: TransparencyLogEntry[] = [
-  {
-    logIndex: '0',
-    logId: {
-      keyId: Buffer.from('logId'),
-    },
-    kindVersion: {
-      kind: 'kind',
-      version: 'version',
-    },
-    canonicalizedBody: Buffer.from('body'),
-    integratedTime: '2021-01-01T00:00:00Z',
-    inclusionPromise: {
-      signedEntryTimestamp: Buffer.from('inclusionPromise'),
-    },
-    inclusionProof: {
-      logIndex: '0',
-      rootHash: Buffer.from('rootHash'),
-      treeSize: '0',
-      hashes: [Buffer.from('hash')],
-      checkpoint: {
-        envelope: 'checkpoint',
-      },
-    },
+const leafCertificate = `-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----`;
+const rootCertificate = `-----BEGIN CERTIFICATE-----\nxyz\n-----END CERTIFICATE-----`;
+
+const certResponse = {
+  signedCertificateEmbeddedSct: {
+    chain: { certificates: [leafCertificate, rootCertificate] },
   },
-];
-
-const timestampVerificationData: TimestampVerificationData = {
-  rfc3161Timestamps: [{ signedTimestamp: Buffer.from('signedTimestamp') }],
 };
 
-const x509CertificateChain: X509CertificateChain = {
-  certificates: [{ rawBytes: Buffer.from('certificate') }],
+// Callback Signer Data
+const sigMaterial: SignatureMaterial = {
+  signature: Buffer.from('signature'),
+  certificates: undefined,
+  key: { value: 'key', id: 'hint' },
+};
+
+// TSA Data
+const tsaServerURL = 'http://localhost:8080';
+const timestamp = Buffer.from('timestamp');
+
+// Rekor Data
+const rekorURL = 'http://localhost:8181';
+const uuid = '69e5a0c1663ee4452674a5c9d5050d866c2ee31e2faaf79913aea7cc27293cf6';
+
+const proposedEntry = {
+  apiVersion: '0.0.1',
+  kind: 'foo',
+};
+
+const rekorEntry = {
+  [uuid]: {
+    body: Buffer.from(JSON.stringify(proposedEntry)).toString('base64'),
+    integratedTime: 1654015743,
+    logID: 'c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d',
+    logIndex: 2513258,
+    verification: {
+      signedEntryTimestamp:
+        'MEUCIQD6CD7ZNLUipFoxzmSL/L8Ewic4SRkXN77UjfJZ7d/wAAIgatokSuX9Rg0iWxAgSfHMtcsagtDCQalU5IvXdQ+yLEA=',
+    },
+  },
 };
 
 describe('sign', () => {
-  const payload = Buffer.from('Hello, world!');
-
-  // Signer output
-  const bundle: Bundle = {
-    mediaType: 'test/output',
-    verificationMaterial: {
-      content: {
-        $case: 'x509CertificateChain',
-        x509CertificateChain: x509CertificateChain,
-      },
-      tlogEntries,
-      timestampVerificationData,
-    },
-    content: {
-      $case: 'messageSignature',
-      messageSignature: {
-        messageDigest: {
-          algorithm: HashAlgorithm.SHA2_256,
-          digest: Buffer.from('messageDigest'),
-        },
-        signature: Buffer.from('signature'),
-      },
-    },
-  };
-
-  const mockSigner = jest.mocked(Signer);
-  const mockSign = jest.fn();
+  const payload = Buffer.from('payload');
 
   beforeEach(() => {
-    mockSigner.mockClear();
+    nock(tsaServerURL)
+      .matchHeader('Content-Type', 'application/json')
+      .post('/api/v1/timestamp')
+      .reply(201, timestamp);
 
-    mockSign.mockClear();
-    mockSign.mockResolvedValueOnce(bundle);
-    jest.spyOn(Signer.prototype, 'signBlob').mockImplementation(mockSign);
+    nock(rekorURL)
+      .matchHeader('Accept', 'application/json')
+      .matchHeader('Content-Type', 'application/json')
+      .post('/api/v1/log/entries')
+      .reply(201, rekorEntry);
   });
 
-  it('constructs the Signer with the correct options', async () => {
-    await sign(payload);
+  describe('when using keyless signing', () => {
+    const opts: SignOptions = {
+      fulcioURL,
+      tsaServerURL,
+      rekorURL,
+      identityToken: jwt,
+    };
 
-    // Signer was constructed
-    expect(mockSigner).toHaveBeenCalledTimes(1);
-    const args = mockSigner.mock.calls[0];
+    beforeEach(() => {
+      nock(fulcioURL)
+        .matchHeader('Content-Type', 'application/json')
+        .post('/api/v2/signingCert')
+        .reply(200, certResponse);
+    });
 
-    // Signer was constructed with options
-    expect(args).toHaveLength(1);
-    const options = args[0];
+    it('returns a valid bundle', async () => {
+      const bundle = await sign(payload, opts);
 
-    // Signer was constructed with the correct options
-    expect(options).toHaveProperty('ca', expect.anything());
-    expect(options).toHaveProperty('tlog', expect.anything());
-    expect(options.identityProviders).toHaveLength(1);
+      expect(bundle).toBeTruthy();
+      expect(bundle.mediaType).toEqual(
+        'application/vnd.dev.sigstore.bundle+json;version=0.1'
+      );
+      expect(bundle.dsseEnvelope).toBeUndefined();
+
+      expect(bundle.messageSignature).toBeTruthy();
+      expect(bundle.messageSignature?.messageDigest?.algorithm).toEqual(
+        'SHA2_256'
+      );
+      expect(bundle.messageSignature?.messageDigest?.digest).toEqual(
+        crypto.hash(payload).toString('base64')
+      );
+      expect(bundle.messageSignature?.signature).toBeTruthy();
+
+      const vm = bundle.verificationMaterial;
+      expect(vm).toBeTruthy();
+      expect(vm.publicKey).toBeUndefined();
+      expect(vm.x509CertificateChain?.certificates).toHaveLength(1);
+      expect(vm.x509CertificateChain?.certificates[0].rawBytes).toEqual(
+        pem.toDER(leafCertificate).toString('base64')
+      );
+      expect(vm.timestampVerificationData?.rfc3161Timestamps).toHaveLength(1);
+      expect(
+        vm.timestampVerificationData?.rfc3161Timestamps[0].signedTimestamp
+      ).toEqual(timestamp.toString('base64'));
+      expect(vm.tlogEntries).toHaveLength(1);
+      expect(vm.tlogEntries[0].logIndex).toEqual(
+        rekorEntry[uuid].logIndex.toString()
+      );
+      expect(vm.tlogEntries[0].logId.keyId).toEqual(
+        Buffer.from(rekorEntry[uuid].logID, 'hex').toString('base64')
+      );
+      expect(vm.tlogEntries[0].integratedTime).toEqual(
+        rekorEntry[uuid].integratedTime.toString()
+      );
+      expect(vm.tlogEntries[0].kindVersion?.kind).toEqual(proposedEntry.kind);
+      expect(vm.tlogEntries[0].kindVersion?.version).toEqual(
+        proposedEntry.apiVersion
+      );
+      expect(vm.tlogEntries[0].inclusionProof).toBeUndefined();
+      expect(vm.tlogEntries[0].inclusionPromise.signedEntryTimestamp).toEqual(
+        rekorEntry[uuid].verification.signedEntryTimestamp
+      );
+      expect(vm.tlogEntries[0].canonicalizedBody).toEqual(
+        Buffer.from(JSON.stringify(proposedEntry)).toString('base64')
+      );
+    });
   });
 
-  it('invokes the Signer instance with the correct params', async () => {
-    await sign(payload);
+  describe('when using callback signing', () => {
+    const signer = jest
+      .fn()
+      .mockResolvedValue(sigMaterial) satisfies SignerFunc;
 
-    expect(mockSign).toHaveBeenCalledWith(payload);
-  });
+    const opts: SignOptions = {
+      tsaServerURL,
+      rekorURL,
+      signer,
+      identityToken: jwt, // TODO: Fix, we shouldn't need this here
+    };
 
-  it('returns the correct envelope', async () => {
-    const sig = await sign(payload);
+    it('returns a valid bundle', async () => {
+      const bundle = await sign(payload, opts);
 
-    expect(sig).toEqual(Bundle.toJSON(bundle));
+      expect(bundle).toBeTruthy();
+      expect(bundle.mediaType).toEqual(
+        'application/vnd.dev.sigstore.bundle+json;version=0.1'
+      );
+      expect(bundle.dsseEnvelope).toBeUndefined();
+
+      expect(bundle.messageSignature).toBeTruthy();
+      expect(bundle.messageSignature?.messageDigest?.algorithm).toEqual(
+        'SHA2_256'
+      );
+      expect(bundle.messageSignature?.messageDigest?.digest).toEqual(
+        crypto.hash(payload).toString('base64')
+      );
+      expect(bundle.messageSignature?.signature).toBeTruthy();
+
+      const vm = bundle.verificationMaterial;
+      expect(vm).toBeTruthy();
+      expect(vm.x509CertificateChain).toBeUndefined();
+      expect(vm.publicKey?.hint).toEqual(sigMaterial.key.id);
+
+      expect(vm.timestampVerificationData?.rfc3161Timestamps).toHaveLength(1);
+      expect(
+        vm.timestampVerificationData?.rfc3161Timestamps[0].signedTimestamp
+      ).toEqual(timestamp.toString('base64'));
+      expect(vm.tlogEntries).toHaveLength(1);
+      expect(vm.tlogEntries[0].logIndex).toEqual(
+        rekorEntry[uuid].logIndex.toString()
+      );
+      expect(vm.tlogEntries[0].logId.keyId).toEqual(
+        Buffer.from(rekorEntry[uuid].logID, 'hex').toString('base64')
+      );
+      expect(vm.tlogEntries[0].integratedTime).toEqual(
+        rekorEntry[uuid].integratedTime.toString()
+      );
+      expect(vm.tlogEntries[0].kindVersion?.kind).toEqual(proposedEntry.kind);
+      expect(vm.tlogEntries[0].kindVersion?.version).toEqual(
+        proposedEntry.apiVersion
+      );
+      expect(vm.tlogEntries[0].inclusionProof).toBeUndefined();
+      expect(vm.tlogEntries[0].inclusionPromise.signedEntryTimestamp).toEqual(
+        rekorEntry[uuid].verification.signedEntryTimestamp
+      );
+      expect(vm.tlogEntries[0].canonicalizedBody).toEqual(
+        Buffer.from(JSON.stringify(proposedEntry)).toString('base64')
+      );
+    });
   });
 });
 
-describe('signAttestation', () => {
-  const payload = Buffer.from('Hello, world!');
+describe('attest', () => {
+  const payload = Buffer.from('attestation');
   const payloadType = 'text/plain';
 
-  // Signer output
-  const bundle: Bundle = {
-    mediaType: 'test/output',
-    verificationMaterial: {
-      content: {
-        $case: 'x509CertificateChain',
-        x509CertificateChain: x509CertificateChain,
-      },
-      tlogEntries,
-      timestampVerificationData,
-    },
-    content: {
-      $case: 'dsseEnvelope',
-      dsseEnvelope: {
-        payload: payload,
-        payloadType: payloadType,
-        signatures: [
-          {
-            keyid: 'keyid',
-            sig: Buffer.from('signature'),
-          },
-        ],
-      },
-    },
-  };
-
-  const mockSigner = jest.mocked(Signer);
-  const mockSign = jest.fn();
-
   beforeEach(() => {
-    mockSigner.mockClear();
+    nock(tsaServerURL)
+      .matchHeader('Content-Type', 'application/json')
+      .post('/api/v1/timestamp')
+      .reply(201, timestamp);
 
-    mockSign.mockClear();
-    mockSign.mockResolvedValueOnce(bundle);
-    jest
-      .spyOn(Signer.prototype, 'signAttestation')
-      .mockImplementation(mockSign);
+    nock(rekorURL)
+      .matchHeader('Accept', 'application/json')
+      .matchHeader('Content-Type', 'application/json')
+      .post('/api/v1/log/entries')
+      .reply(201, rekorEntry);
   });
 
-  it('constructs the Signer with the correct options', async () => {
-    const identityProvider = { getToken: () => Promise.resolve('token') };
-    await attest(payload, payloadType, { identityProvider });
+  describe('when using keyless signing', () => {
+    const opts: SignOptions = {
+      fulcioURL,
+      tsaServerURL,
+      identityToken: jwt,
+      tlogUpload: false,
+    };
 
-    // Signer was constructed
-    expect(mockSigner).toHaveBeenCalledTimes(1);
-    const args = mockSigner.mock.calls[0];
+    beforeEach(() => {
+      nock(fulcioURL)
+        .matchHeader('Content-Type', 'application/json')
+        .post('/api/v2/signingCert')
+        .reply(200, certResponse);
+    });
 
-    // Signer was constructed with options
-    expect(args).toHaveLength(1);
-    const options = args[0];
+    it('returns a valid bundle', async () => {
+      const bundle = await attest(payload, payloadType, opts);
 
-    // Signer was constructed with the correct options
-    expect(options).toHaveProperty('ca', expect.anything());
-    expect(options).toHaveProperty('tlog', expect.anything());
-    expect(options.identityProviders).toHaveLength(1);
-    expect(options.identityProviders[0]).toBe(identityProvider);
+      expect(bundle).toBeTruthy();
+      expect(bundle.mediaType).toEqual(
+        'application/vnd.dev.sigstore.bundle+json;version=0.1'
+      );
+      expect(bundle.messageSignature).toBeUndefined();
+
+      expect(bundle.dsseEnvelope?.payload).toEqual(payload.toString('base64'));
+      expect(bundle.dsseEnvelope?.payloadType).toEqual(payloadType);
+      expect(bundle.dsseEnvelope?.signatures).toHaveLength(1);
+      expect(bundle.dsseEnvelope?.signatures[0].sig).toBeTruthy();
+      expect(bundle.dsseEnvelope?.signatures[0].keyid).toEqual('');
+
+      const vm = bundle.verificationMaterial;
+      expect(vm).toBeTruthy();
+      expect(vm.publicKey).toBeUndefined();
+      expect(vm.x509CertificateChain?.certificates).toHaveLength(1);
+      expect(vm.x509CertificateChain?.certificates[0].rawBytes).toEqual(
+        pem.toDER(leafCertificate).toString('base64')
+      );
+      expect(vm.timestampVerificationData?.rfc3161Timestamps).toHaveLength(1);
+      expect(
+        vm.timestampVerificationData?.rfc3161Timestamps[0].signedTimestamp
+      ).toEqual(timestamp.toString('base64'));
+      expect(vm.tlogEntries).toHaveLength(0);
+    });
   });
 
-  it('invokes the Signer instance with the correct params', async () => {
-    await attest(payload, payloadType);
+  describe('when using callback signing', () => {
+    const signer = jest
+      .fn()
+      .mockResolvedValue(sigMaterial) satisfies SignerFunc;
 
-    expect(mockSign).toHaveBeenCalledWith(payload, payloadType);
-  });
+    const opts: SignOptions = {
+      tsaServerURL,
+      tlogUpload: false,
+      signer,
+      identityToken: jwt, // TODO: Fix, we shouldn't need this here
+    };
 
-  it('returns the correct envelope', async () => {
-    const sig = await attest(payload, payloadType);
+    it('returns a valid bundle', async () => {
+      const bundle = await attest(payload, payloadType, opts);
 
-    expect(sig).toEqual(Bundle.toJSON(bundle));
+      expect(bundle).toBeTruthy();
+      expect(bundle.mediaType).toEqual(
+        'application/vnd.dev.sigstore.bundle+json;version=0.1'
+      );
+      expect(bundle.messageSignature).toBeUndefined();
+
+      expect(bundle.dsseEnvelope?.payload).toEqual(payload.toString('base64'));
+      expect(bundle.dsseEnvelope?.payloadType).toEqual(payloadType);
+      expect(bundle.dsseEnvelope?.signatures).toHaveLength(1);
+      expect(bundle.dsseEnvelope?.signatures[0].sig).toBeTruthy();
+      expect(bundle.dsseEnvelope?.signatures[0].keyid).toEqual(
+        sigMaterial.key.id
+      );
+
+      const vm = bundle.verificationMaterial;
+      expect(vm).toBeTruthy();
+      expect(vm.x509CertificateChain).toBeUndefined();
+      expect(vm.publicKey?.hint).toEqual(sigMaterial.key.id);
+
+      expect(vm.timestampVerificationData?.rfc3161Timestamps).toHaveLength(1);
+      expect(
+        vm.timestampVerificationData?.rfc3161Timestamps[0].signedTimestamp
+      ).toEqual(timestamp.toString('base64'));
+      expect(vm.tlogEntries).toHaveLength(0);
+    });
   });
 });
 

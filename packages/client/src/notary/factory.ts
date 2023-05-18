@@ -31,17 +31,28 @@ import {
 import { DSSENotary } from './dsse';
 import { MessageNotary } from './message';
 
+import type { FetchOptions } from '../types/fetch';
 import type { Notary, NotaryOptions } from './notary';
 
 export type BundleType = 'messageSignature' | 'dsseEnvelope';
 
+// Mutate the options for the various signers and witnesses
+// to extract the REQUIRED options for each.
+type RekorWitnessConfig = Pick<RekorWitnessOptions, 'rekorBaseURL'>;
+type TSAWitnessConfig = Pick<TSAWitnessOptions, 'tsaBaseURL'>;
+type KeylessSignerConfig = Pick<
+  KeylessSignerOptions,
+  'fulcioBaseURL' | 'identityProviders'
+>;
+type CallbackSignerConfig = Pick<CallbackSignerOptions, 'signer'>;
+
 export type NotaryFactoryOptions = {
   bundleType: BundleType;
-  tlogUpload?: boolean;
-} & Partial<RekorWitnessOptions> &
-  Partial<TSAWitnessOptions> &
-  Partial<KeylessSignerOptions> &
-  Partial<CallbackSignerOptions>;
+} & FetchOptions &
+  Partial<RekorWitnessConfig> &
+  Partial<TSAWitnessConfig> &
+  Partial<KeylessSignerConfig> &
+  Partial<CallbackSignerConfig>;
 
 export function createNotary(options: NotaryFactoryOptions): Notary {
   const notaryOpts: NotaryOptions = {
@@ -73,7 +84,7 @@ function initSignatory(options: NotaryFactoryOptions): Signatory {
 function initWitnesses(options: NotaryFactoryOptions): Witness[] {
   const witnesses: Witness[] = [];
   if (isRekorEnabled(options)) {
-    witnesses.push(new RekorWitness(options));
+    witnesses.push(new RekorWitness({ ...options, fetchOnConflict: false }));
   }
 
   if (isTSAEnabled(options)) {
@@ -86,14 +97,14 @@ function initWitnesses(options: NotaryFactoryOptions): Witness[] {
 // Type assertion to ensure that the signer is enabled
 function isCallbackSignerEnabled(
   options: NotaryFactoryOptions
-): options is NotaryFactoryOptions & Required<CallbackSignerOptions> {
+): options is NotaryFactoryOptions & CallbackSignerConfig {
   return options.signer !== undefined;
 }
 
 // Type assertion to ensure that Fulcio is enabled
 function isFulcioEnabled(
   options: NotaryFactoryOptions
-): options is NotaryFactoryOptions & Required<KeylessSignerOptions> {
+): options is NotaryFactoryOptions & KeylessSignerConfig {
   return (
     options.fulcioBaseURL !== undefined &&
     options.identityProviders !== undefined
@@ -103,13 +114,13 @@ function isFulcioEnabled(
 // Type assertion to ensure that Rekor is enabled
 function isRekorEnabled(
   options: NotaryFactoryOptions
-): options is NotaryFactoryOptions & Required<RekorWitnessOptions> {
-  return options.rekorBaseURL !== undefined && (options.tlogUpload ?? true);
+): options is NotaryFactoryOptions & RekorWitnessConfig {
+  return options.rekorBaseURL !== undefined;
 }
 
 // Type assertion to ensure that TSA is enabled
 function isTSAEnabled(
   options: NotaryFactoryOptions
-): options is NotaryFactoryOptions & Required<TSAWitnessOptions> {
+): options is NotaryFactoryOptions & TSAWitnessConfig {
   return options.tsaBaseURL !== undefined;
 }

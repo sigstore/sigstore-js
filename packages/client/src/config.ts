@@ -13,12 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { CA, CAClient } from './ca';
 import identity, { Provider } from './identity';
-import { TLog, TLogClient } from './tlog';
-import { TSA, TSAClient } from './tsa';
+import {
+  BundleType,
+  Notary,
+  NotaryFactoryOptions,
+  createNotary,
+} from './notary';
 import * as sigstore from './types/sigstore';
 
+import { SignerFunc } from './signatory';
 import type { FetchOptions, Retry } from './types/fetch';
 import type { KeySelector } from './verify';
 
@@ -51,6 +55,7 @@ export type TUFOptions = {
 export type SignOptions = {
   identityProvider?: Provider;
   tlogUpload?: boolean;
+  signer?: SignerFunc;
 } & CAOptions &
   TLogOptions &
   TSAOptions &
@@ -74,32 +79,32 @@ export const DEFAULT_REKOR_URL = 'https://rekor.sigstore.dev';
 export const DEFAULT_RETRY: Retry = { retries: 2 };
 export const DEFAULT_TIMEOUT = 5000;
 
-export function createCAClient(options: CAOptions & FetchOptions): CA {
-  return new CAClient({
+export function notary(
+  options: SignOptions & { bundleType: BundleType }
+): Notary {
+  const idps = identityProviders(options);
+  return createNotary({
+    bundleType: options.bundleType,
+    identityProviders: idps,
+    ...notaryOptions(options),
+  });
+}
+
+function notaryOptions(
+  options: SignOptions
+): Omit<NotaryFactoryOptions, 'bundleType'> {
+  const tlogUpload = options.tlogUpload ?? true;
+  return {
     fulcioBaseURL: options.fulcioURL || DEFAULT_FULCIO_URL,
+    signer: options.signer,
+    rekorBaseURL: tlogUpload
+      ? /* istanbul ignore next - not covering default case */
+        options.rekorURL || DEFAULT_REKOR_URL
+      : undefined,
+    tsaBaseURL: options.tsaServerURL,
     retry: options.retry ?? DEFAULT_RETRY,
     timeout: options.timeout ?? DEFAULT_TIMEOUT,
-  });
-}
-
-export function createTLogClient(options: TLogOptions & FetchOptions): TLog {
-  return new TLogClient({
-    rekorBaseURL: options.rekorURL || DEFAULT_REKOR_URL,
-    retry: options.retry ?? DEFAULT_RETRY,
-    timeout: options.timeout ?? DEFAULT_TIMEOUT,
-  });
-}
-
-export function createTSAClient(
-  options: TSAOptions & FetchOptions
-): TSA | undefined {
-  return options.tsaServerURL
-    ? new TSAClient({
-        tsaBaseURL: options.tsaServerURL,
-        retry: options.retry ?? DEFAULT_RETRY,
-        timeout: options.timeout ?? DEFAULT_TIMEOUT,
-      })
-    : undefined;
+  };
 }
 
 // Assembles the AtifactVerificationOptions from the supplied VerifyOptions.
