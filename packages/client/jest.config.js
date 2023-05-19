@@ -17,6 +17,7 @@ const base = require('../../jest.config.base')
 
 module.exports = {
   ...base,
+  displayName: 'client',
   setupFilesAfterEnv: ['./jest.setup.js'],
   testPathIgnorePatterns: [
     '<rootDir>/dist/',
