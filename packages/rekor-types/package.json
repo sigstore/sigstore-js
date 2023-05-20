@@ -5,6 +5,7 @@
   "main": "",
   "types": "dist/index.d.ts",
   "scripts": {
+    "clean": "shx rm -rf dist *.tsbuildinfo",
     "build": "tsc --build",
     "test": "echo 'no test'",
     "codegen": "./hack/generate-rekor-types"
@@ -29,6 +30,7 @@
   "devDependencies": {
     "json-schema-to-typescript": "^13.0.0",
     "openapi-typescript-codegen": "^0.24.0",
+    "shx": "^0.3.3",
     "typescript": "^5.0.2"
   },
   "engines": {
