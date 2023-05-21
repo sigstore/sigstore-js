@@ -16,19 +16,12 @@ limitations under the License.
 import {
   ArtifactVerificationOptions,
   Bundle,
-  Envelope,
-  HashAlgorithm,
-  TimestampVerificationData,
   TransparencyLogEntry,
   VerificationMaterial,
 } from '@sigstore/protobuf-specs';
-import { encoding as enc, pem } from '../../util';
 import { x509Certificate } from '../../x509/cert';
 import { WithRequired } from '../utility';
 import { ValidBundle, assertValidBundle } from './validate';
-
-import type { Entry, ProposedEntry } from '../../external/rekor';
-import type { SignatureMaterial } from '../signature';
 
 export * from '@sigstore/protobuf-specs';
 export * from './serialized';
@@ -40,9 +33,6 @@ export const bundleFromJSON = (obj: any): ValidBundle => {
   assertValidBundle(bundle);
   return bundle;
 };
-
-const BUNDLE_MEDIA_TYPE =
-  'application/vnd.dev.sigstore.bundle+json;version=0.1';
 
 // Subset of sigstore.Bundle that has verification material as part
 // of the bundle
@@ -120,133 +110,6 @@ export function isVerifiableTransparencyLogEntry(
     entry.inclusionPromise !== undefined &&
     entry.kindVersion !== undefined
   );
-}
-
-export function toDSSEBundle({
-  envelope,
-  signature,
-  tlogEntry,
-  timestamp,
-}: {
-  envelope: Envelope;
-  signature: SignatureMaterial;
-  tlogEntry?: Entry;
-  timestamp?: Buffer;
-}): Bundle {
-  return {
-    mediaType: BUNDLE_MEDIA_TYPE,
-    content: { $case: 'dsseEnvelope', dsseEnvelope: envelope },
-    verificationMaterial: toVerificationMaterial({
-      signature,
-      tlogEntry,
-      timestamp,
-    }),
-  };
-}
-
-export function toMessageSignatureBundle({
-  digest,
-  signature,
-  tlogEntry,
-  timestamp,
-}: {
-  digest: Buffer;
-  signature: SignatureMaterial;
-  tlogEntry?: Entry;
-  timestamp?: Buffer;
-}): Bundle {
-  return {
-    mediaType: BUNDLE_MEDIA_TYPE,
-    content: {
-      $case: 'messageSignature',
-      messageSignature: {
-        messageDigest: {
-          algorithm: HashAlgorithm.SHA2_256,
-          digest: digest,
-        },
-        signature: signature.signature,
-      },
-    },
-    verificationMaterial: toVerificationMaterial({
-      signature,
-      tlogEntry,
-      timestamp,
-    }),
-  };
-}
-
-function toTransparencyLogEntry(entry: Entry): TransparencyLogEntry {
-  const b64SET = entry.verification?.signedEntryTimestamp || '';
-  const set = Buffer.from(b64SET, 'base64');
-  const logID = Buffer.from(entry.logID, 'hex');
-
-  // Parse entry body so we can extract the kind and version.
-  const bodyJSON = enc.base64Decode(entry.body);
-  const entryBody: ProposedEntry = JSON.parse(bodyJSON);
-
-  return {
-    inclusionPromise: {
-      signedEntryTimestamp: set,
-    },
-    logIndex: entry.logIndex.toString(),
-    logId: {
-      keyId: logID,
-    },
-    integratedTime: entry.integratedTime.toString(),
-    kindVersion: {
-      kind: entryBody.kind,
-      version: entryBody.apiVersion,
-    },
-    inclusionProof: undefined,
-    canonicalizedBody: Buffer.from(entry.body, 'base64'),
-  };
-}
-
-function toVerificationMaterial({
-  signature,
-  tlogEntry,
-  timestamp,
-}: {
-  signature: SignatureMaterial;
-  tlogEntry?: Entry;
-  timestamp?: Buffer;
-}): VerificationMaterial {
-  return {
-    content: signature.certificates
-      ? toVerificationMaterialx509CertificateChain(signature.certificates)
-      : toVerificationMaterialPublicKey(signature.key.id || ''),
-    tlogEntries: tlogEntry ? [toTransparencyLogEntry(tlogEntry)] : [],
-    timestampVerificationData: timestamp
-      ? toTimestampVerificationData(timestamp)
-      : undefined,
-  };
-}
-
-function toVerificationMaterialx509CertificateChain(
-  certificates: string[]
-): VerificationMaterial['content'] {
-  return {
-    $case: 'x509CertificateChain',
-    x509CertificateChain: {
-      certificates: certificates.map((c) => ({
-        rawBytes: pem.toDER(c),
-      })),
-    },
-  };
-}
-
-function toVerificationMaterialPublicKey(
-  hint: string
-): VerificationMaterial['content'] {
-  return { $case: 'publicKey', publicKey: { hint } };
-}
-
-function toTimestampVerificationData(
-  timestamp: Buffer
-): TimestampVerificationData {
-  return {
-    rfc3161Timestamps: [{ signedTimestamp: timestamp }],
-  };
 }
 
 export function signingCertificate(
