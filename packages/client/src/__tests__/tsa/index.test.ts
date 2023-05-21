@@ -17,6 +17,7 @@ import nock from 'nock';
 import { InternalError } from '../../error';
 import { TSAClient } from '../../tsa/';
 import { crypto } from '../../util';
+import '../@types/jest';
 
 describe('TSAClient', () => {
   const baseURL = 'http://localhost:8080';
@@ -63,20 +64,9 @@ describe('TSAClient', () => {
       });
 
       it('returns an error', async () => {
-        await expect(subject.createTimestamp(signature)).rejects.toThrow(
-          InternalError
-        );
-      });
-
-      it('has the expected error code', async () => {
-        await subject
-          .createTimestamp(signature)
-          .then(() => {
-            throw Error('expected error');
-          })
-          .catch((err) => {
-            expect(err.code).toEqual('TSA_CREATE_TIMESTAMP_ERROR');
-          });
+        await expect(
+          subject.createTimestamp(signature)
+        ).rejects.toThrowWithCode(InternalError, 'TSA_CREATE_TIMESTAMP_ERROR');
       });
     });
   });

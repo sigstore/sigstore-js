@@ -15,7 +15,8 @@ limitations under the License.
 */
 import nock from 'nock';
 import { Rekor } from '../../external';
-import { HashedRekordKind } from '../../tlog';
+
+import type { ProposedHashedRekordEntry } from '../../external/rekor';
 
 describe('Rekor', () => {
   const baseURL = 'http://localhost:8080';
@@ -26,7 +27,7 @@ describe('Rekor', () => {
   });
 
   describe('#createEntry', () => {
-    const proposedEntry: HashedRekordKind = {
+    const proposedEntry: ProposedHashedRekordEntry = {
       apiVersion: '0.0.1',
       kind: 'hashedrekord',
       spec: {
@@ -315,7 +316,7 @@ describe('Rekor', () => {
 
       it('returns matching entries', async () => {
         const response = await subject.searchLog({
-          entries: entries as HashedRekordKind[],
+          entries: entries as ProposedHashedRekordEntry[],
         });
 
         expect(response).toHaveLength(1);

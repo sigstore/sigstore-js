@@ -20,6 +20,7 @@ import path from 'path';
 import { TargetFile, Updater } from 'tuf-js';
 import { InternalError } from '../../error';
 import { readTarget } from '../../tuf/target';
+import '../@types/jest';
 
 describe('TrustedRootFetcher', () => {
   const targetContent = 'sample trusted root content';
@@ -78,8 +79,9 @@ describe('TrustedRootFetcher', () => {
         });
 
         it('throw an error', async () => {
-          await expect(() => readTarget(tuf, targetPath)).rejects.toThrow(
-            InternalError
+          await expect(readTarget(tuf, targetPath)).rejects.toThrowWithCode(
+            InternalError,
+            'TUF_DOWNLOAD_TARGET_ERROR'
           );
         });
       });
@@ -91,8 +93,9 @@ describe('TrustedRootFetcher', () => {
       });
 
       it('throws an error', async () => {
-        await expect(() => readTarget(tuf, targetPath)).rejects.toThrow(
-          InternalError
+        await expect(readTarget(tuf, targetPath)).rejects.toThrowWithCode(
+          InternalError,
+          'TUF_REFRESH_METADATA_ERROR'
         );
       });
     });
@@ -104,8 +107,9 @@ describe('TrustedRootFetcher', () => {
       });
 
       it('throws an error', async () => {
-        await expect(() => readTarget(tuf, targetPath)).rejects.toThrow(
-          InternalError
+        await expect(readTarget(tuf, targetPath)).rejects.toThrowWithCode(
+          InternalError,
+          'TUF_FIND_TARGET_ERROR'
         );
       });
     });
@@ -119,8 +123,9 @@ describe('TrustedRootFetcher', () => {
     });
 
     it('throws an error', async () => {
-      await expect(() => readTarget(tuf, targetPath)).rejects.toThrow(
-        InternalError
+      await expect(readTarget(tuf, targetPath)).rejects.toThrowWithCode(
+        InternalError,
+        'TUF_READ_TARGET_ERROR'
       );
     });
   });

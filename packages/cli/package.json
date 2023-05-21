@@ -40,7 +40,7 @@
   "devDependencies": {
     "oclif": "^3",
     "shx": "^0.3.3",
-    "tslib": "^2.5.0",
+    "tslib": "^2.5.2",
     "typescript": "^5.0.2"
   },
   "repository": {
