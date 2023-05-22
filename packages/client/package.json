@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "clean": "shx rm -rf dist *.tsbuildinfo",
     "build": "tsc --build",
     "test": "jest"
   },
@@ -33,9 +34,10 @@
     "@total-typescript/shoehorn": "^0.1.0",
     "@tufjs/repo-mock": "^1.1.0",
     "@types/make-fetch-happen": "^10.0.0",
-    "@types/node": "^20.2.1",
+    "@types/node": "^20.2.3",
     "json-schema-to-typescript": "^13.0.0",
     "nock": "^13.2.4",
+    "shx": "^0.3.3",
     "typescript": "^5.0.2"
   },
   "dependencies": {
