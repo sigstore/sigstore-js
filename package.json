@@ -6,8 +6,9 @@
   "scripts": {
     "clean": "npm run clean --workspaces --if-present",
     "build": "tsc --build tsconfig.build.json",
+    "pretest": "npm run build",
     "test": "jest",
-    "test:ci": "jest --maxWorkers=2 --coverage",
+    "test:ci": "npm run test -- --maxWorkers=2 --coverage",
     "lint": "eslint --fix --ext .ts packages/**",
     "lint:check": "eslint --max-warnings 0 --ext .ts packages/**",
     "release": "npm run build && changeset publish"

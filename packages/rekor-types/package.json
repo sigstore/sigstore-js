@@ -7,7 +7,7 @@
   "scripts": {
     "clean": "shx rm -rf dist *.tsbuildinfo",
     "build": "tsc --build",
-    "test": "echo 'no test'",
+    "test": "jest",
     "codegen": "./hack/generate-rekor-types"
   },
   "files": [
