@@ -34,7 +34,7 @@
     "version": "oclif readme && git add README.md"
   },
   "dependencies": {
-    "@oclif/color": "^1.0.4",
+    "@oclif/color": "^1.0.5",
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
     "sigstore": "^1.5.2"
