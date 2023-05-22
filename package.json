@@ -4,6 +4,7 @@
   "private": true,
   "description": "JavaScript client for Sigstore",
   "scripts": {
+    "clean": "npm run clean --workspaces --if-present",
     "build": "tsc --build tsconfig.build.json",
     "pretest": "npm run build",
     "test": "jest",

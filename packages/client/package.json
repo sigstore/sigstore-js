@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "clean": "shx rm -rf dist *.tsbuildinfo",
     "build": "tsc --build",
     "test": "jest"
   },
@@ -36,6 +37,7 @@
     "@types/node": "^20.2.1",
     "json-schema-to-typescript": "^13.0.0",
     "nock": "^13.2.4",
+    "shx": "^0.3.3",
     "typescript": "^5.0.2"
   },
   "dependencies": {
