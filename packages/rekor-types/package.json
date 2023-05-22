@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --build",
-    "test": "echo 'no test'",
+    "test": "jest",
     "codegen": "./hack/generate-rekor-types"
   },
   "files": [
