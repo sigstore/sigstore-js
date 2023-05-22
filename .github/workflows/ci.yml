@@ -43,10 +43,13 @@ jobs:
         platform:
           - os: ubuntu-latest
             shell: bash
+            jest-cache: /tmp/jest
           - os: macos-latest
             shell: bash
+            jest-cache: /tmp/jest
           - os: windows-latest
             shell: cmd
+            jest-cache: C:\\Users\\runneradmin\\AppData\\Local\\Temp\\jest
     runs-on: ${{ matrix.platform.os }}
     defaults:
       run:
@@ -59,11 +62,14 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: npm
+    - name: Manage Jest cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ matrix.platform.jest-cache }}
+        key: ${{ hashFiles('**/package-lock.json') }}
     - name: Update npm
       run: npm install -g npm@8
     - name: Install dependencies
       run: npm ci
-    - name: Build
-      run: npm run build
     - name: Run tests
-      run: npm run test:ci
+      run: npm run test:ci -- --cacheDirectory ${{ matrix.platform.jest-cache }}
