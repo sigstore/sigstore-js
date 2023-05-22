@@ -13,20 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import identity, { Provider } from './identity';
-import {
-  BundleType,
-  Notary,
-  NotaryFactoryOptions,
-  createNotary,
-} from './notary';
+import { ciContextIdentityProvider } from './identity';
+import { createNotary } from './notary';
 import * as sigstore from './types/sigstore';
 
-import { SignerFunc } from './signatory';
+import type { Provider } from './identity';
+import type { BundleType, Notary, NotaryFactoryOptions } from './notary';
+import type { SignerFunc } from './signatory';
 import type { FetchOptions, Retry } from './types/fetch';
 import type { KeySelector } from './verify';
 
 interface CAOptions {
+  identityProvider?: Provider;
   fulcioURL?: string;
 }
 
@@ -38,7 +36,8 @@ interface TSAOptions {
   tsaServerURL?: string;
 }
 
-export interface IdentityProviderOptions {
+// TODO: Remove this interface once we have a better way to pass identity
+interface IdentityOptions {
   identityToken?: string;
   oidcIssuer?: string;
   oidcClientID?: string;
@@ -60,7 +59,7 @@ export type SignOptions = {
   TLogOptions &
   TSAOptions &
   FetchOptions &
-  IdentityProviderOptions;
+  IdentityOptions;
 
 export type VerifyOptions = {
   ctLogThreshold?: number;
@@ -82,28 +81,45 @@ export const DEFAULT_TIMEOUT = 5000;
 export function notary(
   options: SignOptions & { bundleType: BundleType }
 ): Notary {
-  const idps = identityProviders(options);
   return createNotary({
     bundleType: options.bundleType,
-    identityProviders: idps,
     ...notaryOptions(options),
   });
 }
 
+// Assembles the NotaryFactoryOptions from the supplied SignOptions, providing
+// defaults where necessary.
 function notaryOptions(
   options: SignOptions
 ): Omit<NotaryFactoryOptions, 'bundleType'> {
   const tlogUpload = options.tlogUpload ?? true;
+
+  const fulcioBaseURL = options.fulcioURL || DEFAULT_FULCIO_URL;
+
+  // An explicit identity provider takes, precedence, but if we're running in a
+  // CI context, we'll fallback to use the CI context provider.
+  const identityProvider =
+    options.identityProvider ||
+    ('CI' in process.env && ciContextIdentityProvider()) ||
+    undefined;
+
+  const rekorBaseURL = tlogUpload
+    ? options.rekorURL || DEFAULT_REKOR_URL
+    : undefined;
+  const tsaBaseURL = options.tsaServerURL;
+  const retry = options.retry ?? DEFAULT_RETRY;
+  const timeout = options.timeout ?? DEFAULT_TIMEOUT;
+
+  const signer = options.signer;
+
   return {
-    fulcioBaseURL: options.fulcioURL || DEFAULT_FULCIO_URL,
-    signer: options.signer,
-    rekorBaseURL: tlogUpload
-      ? /* istanbul ignore next - not covering default case */
-        options.rekorURL || DEFAULT_REKOR_URL
-      : undefined,
-    tsaBaseURL: options.tsaServerURL,
-    retry: options.retry ?? DEFAULT_RETRY,
-    timeout: options.timeout ?? DEFAULT_TIMEOUT,
+    fulcioBaseURL,
+    identityProvider,
+    signer,
+    rekorBaseURL,
+    tsaBaseURL,
+    retry,
+    timeout,
   };
 }
 
@@ -169,34 +185,4 @@ export function artifactVerificationOptions(
     },
     signers,
   };
-}
-
-// Translates the IdenityProviderOptions into a list of Providers which
-// should be queried to retrieve an identity token.
-export function identityProviders(
-  options: IdentityProviderOptions
-): Provider[] {
-  const idps: Provider[] = [];
-  const token = options.identityToken;
-
-  // If an explicit identity token is provided, use that. Setup a dummy
-  // provider that just returns the token. Otherwise, setup the CI context
-  // provider and (optionally) the OAuth provider.
-  if (token) {
-    idps.push({ getToken: () => Promise.resolve(token) });
-  } else {
-    idps.push(identity.ciContextProvider());
-    if (options.oidcIssuer && options.oidcClientID) {
-      idps.push(
-        identity.oauthProvider({
-          issuer: options.oidcIssuer,
-          clientID: options.oidcClientID,
-          clientSecret: options.oidcClientSecret,
-          redirectURL: options.oidcRedirectURL,
-        })
-      );
-    }
-  }
-
-  return idps;
 }

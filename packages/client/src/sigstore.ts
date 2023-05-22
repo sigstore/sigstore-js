@@ -98,6 +98,7 @@ export {
   ValidationError,
   VerificationError,
 } from './error';
+export type { Provider as IdentityProvider } from './identity';
 export * as utils from './sigstore-utils';
 export type {
   SerializedBundle as Bundle,

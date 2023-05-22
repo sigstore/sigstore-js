@@ -108,7 +108,7 @@ describe('createNotary', () => {
       const notary = createNotary({
         bundleType: 'messageSignature',
         fulcioBaseURL,
-        identityProviders: [idp],
+        identityProvider: idp,
       });
 
       expect(notary).toBeInstanceOf(MessageNotary);

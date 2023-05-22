@@ -34,6 +34,10 @@ const jwtPayload = {
 };
 const jwt = `.${Buffer.from(JSON.stringify(jwtPayload)).toString('base64')}.`;
 
+const identityProvider = {
+  getToken: () => Promise.resolve(jwt),
+};
+
 const leafCertificate = `-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----`;
 const rootCertificate = `-----BEGIN CERTIFICATE-----\nxyz\n-----END CERTIFICATE-----`;
 
@@ -97,7 +101,7 @@ describe('sign', () => {
       fulcioURL,
       tsaServerURL,
       rekorURL,
-      identityToken: jwt,
+      identityProvider,
     };
 
     beforeEach(() => {
@@ -169,7 +173,6 @@ describe('sign', () => {
       tsaServerURL,
       rekorURL,
       signer,
-      identityToken: jwt, // TODO: Fix, we shouldn't need this here
     };
 
     it('returns a valid bundle', async () => {
@@ -245,7 +248,7 @@ describe('attest', () => {
     const opts: SignOptions = {
       fulcioURL,
       tsaServerURL,
-      identityToken: jwt,
+      identityProvider,
       tlogUpload: false,
     };
 
@@ -295,7 +298,6 @@ describe('attest', () => {
       tsaServerURL,
       tlogUpload: false,
       signer,
-      identityToken: jwt, // TODO: Fix, we shouldn't need this here
     };
 
     it('returns a valid bundle', async () => {

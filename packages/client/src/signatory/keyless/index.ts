@@ -23,7 +23,7 @@ import type { Endorsement, Signatory } from '../signatory';
 
 export type KeylessSignerOptions = {
   fulcioBaseURL: string;
-  identityProviders: Provider[];
+  identityProvider: Provider;
 } & FetchOptions;
 
 // Signatory implementation which uses an ephemeral keypair to sign artifacts.
@@ -31,11 +31,11 @@ export type KeylessSignerOptions = {
 // along with an OIDC token to create a signing certificate.
 export class KeylessSigner implements Signatory {
   private ca: CA;
-  private identityProviders: Provider[];
+  private identityProvider: Provider;
 
   constructor(options: KeylessSignerOptions) {
     this.ca = new CAClient(options);
-    this.identityProviders = options.identityProviders;
+    this.identityProvider = options.identityProvider;
   }
 
   public async sign(data: Buffer): Promise<Endorsement> {
@@ -71,23 +71,14 @@ export class KeylessSigner implements Signatory {
   }
 
   private async getIdentityToken(): Promise<string> {
-    const aggErrs = [];
-
-    for (const provider of this.identityProviders) {
-      try {
-        const token = await provider.getToken();
-        if (token) {
-          return token;
-        }
-      } catch (err) {
-        aggErrs.push(err);
-      }
+    try {
+      return await this.identityProvider.getToken();
+    } catch (err) {
+      throw new InternalError({
+        code: 'IDENTITY_TOKEN_READ_ERROR',
+        message: 'error retrieving identity token',
+        cause: err,
+      });
     }
-
-    throw new InternalError({
-      code: 'IDENTITY_TOKEN_READ_ERROR',
-      message: 'error retrieving identity token',
-      cause: aggErrs,
-    });
   }
 }

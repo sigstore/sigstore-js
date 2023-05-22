@@ -16,45 +16,30 @@ limitations under the License.
 import { CIContextProvider } from './ci';
 import { Issuer } from './issuer';
 import { OAuthProvider } from './oauth';
-import { Provider } from './provider';
+import type { Provider } from './provider';
 
-/**
- * oauthProvider returns a new Provider instance which attempts to retrieve
- * an identity token from the configured OAuth2 issuer.
- *
- * @param issuer Base URL of the issuer
- * @param clientID Client ID for the issuer
- * @param clientSecret Client secret for the issuer (optional)
- * @returns {Provider}
- */
-function oauthProvider(options: {
+export const staticIdentityProvider = (token: string): Provider => {
+  return {
+    getToken: async () => token,
+  };
+};
+
+export const ciContextIdentityProvider = (): Provider => {
+  return new CIContextProvider('sigstore');
+};
+
+export const oauthIdentityProvider = (options: {
   issuer: string;
   clientID: string;
   clientSecret?: string;
   redirectURL?: string;
-}): Provider {
+}): Provider => {
   return new OAuthProvider({
     issuer: new Issuer(options.issuer),
     clientID: options.clientID,
     clientSecret: options.clientSecret,
     redirectURL: options.redirectURL,
   });
-}
-
-/**
- * ciContextProvider returns a new Provider instance which attempts to retrieve
- * an identity token from the CI context.
- *
- * @param audience audience claim for the generated token
- * @returns {Provider}
- */
-function ciContextProvider(audience = 'sigstore'): Provider {
-  return new CIContextProvider(audience);
-}
-
-export default {
-  ciContextProvider,
-  oauthProvider,
 };
 
 export { Provider } from './provider';

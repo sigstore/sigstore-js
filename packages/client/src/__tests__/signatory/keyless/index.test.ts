@@ -28,7 +28,7 @@ describe('KeylessSigner', () => {
 
   const options: KeylessSignerOptions = {
     fulcioBaseURL,
-    identityProviders: [],
+    identityProvider: { getToken: jest.fn() },
   };
 
   describe('constructor', () => {
@@ -58,21 +58,7 @@ describe('KeylessSigner', () => {
 
     const subject = new KeylessSigner({
       ...options,
-      identityProviders: [tokenProvider],
-    });
-
-    describe('when no identity providers are configured', () => {
-      const subject = new KeylessSigner(options);
-
-      it('throws an error', async () => {
-        try {
-          await subject.sign(payload);
-          throw new Error('Expected an error to be thrown');
-        } catch (e) {
-          assert(e instanceof InternalError);
-          expect(e.code).toEqual('IDENTITY_TOKEN_READ_ERROR');
-        }
-      });
+      identityProvider: tokenProvider,
     });
 
     describe('when the identity provider returns an error', () => {
@@ -82,7 +68,7 @@ describe('KeylessSigner', () => {
 
       const subject = new KeylessSigner({
         ...options,
-        identityProviders: [errorProvider],
+        identityProvider: errorProvider,
       });
 
       it('throws an error', async () => {

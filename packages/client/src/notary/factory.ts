@@ -42,7 +42,7 @@ type RekorWitnessConfig = Pick<RekorWitnessOptions, 'rekorBaseURL'>;
 type TSAWitnessConfig = Pick<TSAWitnessOptions, 'tsaBaseURL'>;
 type KeylessSignerConfig = Pick<
   KeylessSignerOptions,
-  'fulcioBaseURL' | 'identityProviders'
+  'fulcioBaseURL' | 'identityProvider'
 >;
 type CallbackSignerConfig = Pick<CallbackSignerOptions, 'signer'>;
 
@@ -107,7 +107,7 @@ function isFulcioEnabled(
 ): options is NotaryFactoryOptions & KeylessSignerConfig {
   return (
     options.fulcioBaseURL !== undefined &&
-    options.identityProviders !== undefined
+    options.identityProvider !== undefined
   );
 }
 
