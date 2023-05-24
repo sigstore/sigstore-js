@@ -49,6 +49,7 @@ export type TUFOptions = {
 } & FetchOptions;
 
 export type SignOptions = {
+  identityProvider?: Provider;
   tlogUpload?: boolean;
 } & CAOptions &
   TLogOptions &
