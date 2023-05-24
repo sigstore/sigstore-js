@@ -1,4 +1,4 @@
-import { sigstore } from '..';
+import { IdentityProvider, sigstore } from '..';
 
 describe('sigstore', () => {
   // This test is a bit of a hack to ensure that the types are exported
@@ -18,6 +18,10 @@ describe('sigstore', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const verifyOptions: sigstore.VerifyOptions = {} as any;
     expect(verifyOptions).toBeDefined();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const identityProvider: IdentityProvider = {} as any;
+    expect(identityProvider).toBeDefined();
   });
 
   it('exports sigstore core functions', async () => {
