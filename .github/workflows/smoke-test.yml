@@ -1,7 +1,10 @@
 name: Smoke test
 
 on:
+  workflow_dispatch:
   push:
+    branches: ['main']
+  pull_request:
     branches: ['main']
 
 permissions:
@@ -32,10 +35,10 @@ jobs:
         echo -n "hello world" > artifact
     - name: Sign artifact
       run: |
-        ./packages/client/bin/sigstore.js attest artifact "text/plain" > bundle.sigstore
+        ./packages/cli/bin/run attest --type "text/plain" --out bundle.sigstore artifact
     - name: Verify bundle
       run: |
-        ./packages/client/bin/sigstore.js verify bundle.sigstore
+        ./packages/cli/bin/run verify bundle.sigstore
     - name: Archive bundle
       uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3
       with:
