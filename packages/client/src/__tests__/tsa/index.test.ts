@@ -13,11 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 import nock from 'nock';
 import { InternalError } from '../../error';
 import { TSAClient } from '../../tsa/';
 import { crypto } from '../../util';
-import '../@types/jest';
+import '../__helpers__';
 
 describe('TSAClient', () => {
   const baseURL = 'http://localhost:8080';

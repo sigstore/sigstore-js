@@ -17,7 +17,7 @@ import crypto from 'crypto';
 import nock from 'nock';
 import { CAClient } from '../../ca';
 import { InternalError } from '../../error';
-import '../@types/jest';
+import '../__helpers__';
 
 describe('CAClient', () => {
   const baseURL = 'http://localhost:8080';
