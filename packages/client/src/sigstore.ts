@@ -29,7 +29,9 @@ export async function sign(
   const signer = new Signer({
     ca,
     tlog,
-    identityProviders: idps,
+    identityProviders: options.identityProvider
+      ? [options.identityProvider]
+      : idps,
     tlogUpload: options.tlogUpload,
   });
 
@@ -50,7 +52,9 @@ export async function attest(
     ca,
     tlog,
     tsa,
-    identityProviders: idps,
+    identityProviders: options.identityProvider
+      ? [options.identityProvider]
+      : idps,
     tlogUpload: options.tlogUpload,
   });
 
