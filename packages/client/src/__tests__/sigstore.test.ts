@@ -179,7 +179,8 @@ describe('signAttestation', () => {
   });
 
   it('constructs the Signer with the correct options', async () => {
-    await attest(payload, payloadType);
+    const identityProvider = { getToken: () => Promise.resolve('token') };
+    await attest(payload, payloadType, { identityProvider });
 
     // Signer was constructed
     expect(mockSigner).toHaveBeenCalledTimes(1);
@@ -193,6 +194,7 @@ describe('signAttestation', () => {
     expect(options).toHaveProperty('ca', expect.anything());
     expect(options).toHaveProperty('tlog', expect.anything());
     expect(options.identityProviders).toHaveLength(1);
+    expect(options.identityProviders[0]).toBe(identityProvider);
   });
 
   it('invokes the Signer instance with the correct params', async () => {
