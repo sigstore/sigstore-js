@@ -43,7 +43,7 @@ necessary to verify the signature.
   * `tsaServerURL` `<string>`: The base URL of the Timestamp Authority instance to use when requesting a signed timestamp. If omitted, no timestamp will be requested.
   * `tlogUpload` `<boolean>`: Flag indicating whether or not the signature should be recorded on the Rekor transparency log. Defaults to `true`.
   * `identityToken` `<string>`: The OIDC token identifying the signer. If no explicit token is supplied, an attempt will be made to retrieve one from the environment. This config cannot be used with `identityProvider`.
-  * `identityProvider` `<IdentityProvider>`: Object which implments `getToken: () => Promise<string>`. The supplied provider will be used to retrieve an OIDC token. If no provider is supplied, an attempt will be made to retrieve an OIDC token from the environment. This config cannot be used with `identityToken`.
+  * `identityProvider` `<IdentityProvider>`: Object which implements `getToken: () => Promise<string>`. The supplied provider will be used to retrieve an OIDC token. If no provider is supplied, an attempt will be made to retrieve an OIDC token from the environment. This config cannot be used with `identityToken`.
 
 ### attest(payload, payloadType[, options])
 
