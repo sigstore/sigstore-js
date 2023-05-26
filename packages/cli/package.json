@@ -35,7 +35,7 @@
     "@oclif/color": "^1.0.5",
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
-    "open": "^8.4.2",
+    "open": "^9.1.0",
     "openid-client": "^5.4.2",
     "sigstore": "^1.5.2"
   },
