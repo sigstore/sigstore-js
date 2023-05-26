@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { ValidationError } from '../../../error';
-import {
-  assertValidBundle,
+import { assertValidBundle } from '../../../types/sigstore/validate';
+
+import type {
   Bundle,
   Signature,
   X509Certificate,
-} from '../../../types/sigstore';
+} from '@sigstore/protobuf-specs';
 
 describe('assertValidBundle', () => {
   describe('when the bundle is completely empty', () => {
