@@ -37,7 +37,7 @@ export class DSSENotary extends BaseNotary {
   protected override async package(
     artifact: Artifact,
     endorsement: Endorsement
-  ): Promise<sigstore.ValidBundle> {
+  ): Promise<sigstore.Bundle> {
     return toDSSEBundle(artifactDefaults(artifact), endorsement);
   }
 }

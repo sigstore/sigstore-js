@@ -280,19 +280,22 @@ describe('x509Certificate', () => {
     const ctfe =
       'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbfwR+RJudXscgRBRpKX1XFDy3PyudDxz/SfnRi1fT8ekpfBd2O1uoz7jr3Z8nKzxA69EUQ+eFCFI3zeubPWU7w==';
 
-    const ctl = {
+    const ctl: sigstore.TransparencyLogInstance = {
       baseUrl: '',
-      hashAlgorithm: 'SHA2_256',
+      hashAlgorithm: sigstore.HashAlgorithm.SHA2_256,
       publicKey: {
-        rawBytes: ctfe,
-        keyDetails: 'PKIX_ECDSA_P256_SHA_256',
+        rawBytes: Buffer.from(ctfe, 'base64'),
+        keyDetails: sigstore.PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
       },
-      logId: { keyId: 'CGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3I=' },
+      logId: {
+        keyId: Buffer.from(
+          'CGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3I=',
+          'base64'
+        ),
+      },
     };
 
-    const logs: sigstore.TransparencyLogInstance[] = [
-      sigstore.TransparencyLogInstance.fromJSON(ctl),
-    ];
+    const logs: sigstore.TransparencyLogInstance[] = [ctl];
 
     describe('when the certificate does NOT have an SCT extension', () => {
       const subject = x509Certificate.parse(certificates.leaf);

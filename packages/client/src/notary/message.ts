@@ -17,7 +17,7 @@ import { toMessageSignatureBundle } from './bundle';
 import { Artifact, BaseNotary, NotaryOptions } from './notary';
 
 import type { Endorsement } from '../signatory';
-import type { ValidBundle } from '../types/sigstore';
+import type { Bundle } from '../types/sigstore';
 
 // Notary implementation for raw message signatures
 export class MessageNotary extends BaseNotary {
@@ -28,7 +28,7 @@ export class MessageNotary extends BaseNotary {
   override async package(
     artifact: Artifact,
     endorsement: Endorsement
-  ): Promise<ValidBundle> {
+  ): Promise<Bundle> {
     return toMessageSignatureBundle(artifact, endorsement);
   }
 }

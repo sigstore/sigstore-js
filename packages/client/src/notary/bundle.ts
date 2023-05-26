@@ -29,7 +29,7 @@ const BUNDLE_MEDIA_TYPE =
 export function toMessageSignatureBundle(
   artifact: Artifact,
   endorsement: Endorsement
-): sigstore.ValidBundle {
+): sigstore.Bundle {
   const digest = crypto.hash(artifact.data);
 
   return {
@@ -52,7 +52,7 @@ export function toMessageSignatureBundle(
 export function toDSSEBundle(
   artifact: Required<Artifact>,
   endorsement: Endorsement
-): sigstore.ValidBundle {
+): sigstore.Bundle {
   return {
     mediaType: BUNDLE_MEDIA_TYPE,
     content: {
@@ -94,7 +94,7 @@ function toKeyID(endorsement: Endorsement): string {
 
 function toVerificationMaterial(
   key: KeyMaterial
-): sigstore.ValidBundle['verificationMaterial'] {
+): sigstore.Bundle['verificationMaterial'] {
   return {
     content: toKeyContent(key),
     tlogEntries: [],
@@ -104,7 +104,7 @@ function toVerificationMaterial(
 
 function toKeyContent(
   key: KeyMaterial
-): sigstore.ValidBundle['verificationMaterial']['content'] {
+): sigstore.Bundle['verificationMaterial']['content'] {
   switch (key.$case) {
     case 'publicKey':
       return {

@@ -50,7 +50,7 @@ export function verifyBlob(
   // an error in some scenarios if the signature is invalid.
   try {
     return crypto.verify(algorithm, data, key, signature);
-  } catch (e) {
+  } catch (e) /* istanbul ignore next */ {
     return false;
   }
 }

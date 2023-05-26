@@ -21,7 +21,7 @@ import { trustedRoot } from '../../__fixtures__/trust';
 describe('verifySigningCertificate', () => {
   // Temporary until we reconsole bundle formats
   const bundleJSON = bundles.dsse.valid.withSigningCert;
-  const bundle = sigstore.Bundle.fromJSON(
+  const bundle = sigstore.bundleFromJSON(
     bundleJSON
   ) as sigstore.BundleWithCertificateChain;
 

@@ -22,7 +22,10 @@ import type {
   VerificationMaterial,
 } from '@sigstore/protobuf-specs';
 
-// Sigstore bundle with all required fields populated
+// Sigstore bundle with all required fields populated.
+// This is the version of Bundle which should be used for all internal
+// functions. Any Bundle which is passed to an internal function should be
+// validated with assertValidBundle and cast to ValidBundle.
 export type ValidBundle = Bundle & {
   verificationMaterial: VerificationMaterial & {
     content: NonNullable<VerificationMaterial['content']>;

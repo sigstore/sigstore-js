@@ -13,12 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { Envelope } from '@sigstore/protobuf-specs';
 import assert from 'assert';
-import { SignOptions } from './config';
 import { createNotary } from './notary';
 import { SignerFunc } from './types/signature';
 import * as sigstore from './types/sigstore';
 import { RekorWitness } from './witness';
+
+import type { SignOptions } from './config';
 
 export async function createDSSEEnvelope(
   payload: Buffer,
@@ -36,7 +38,7 @@ export async function createDSSEEnvelope(
   assert(bundle.content.$case === 'dsseEnvelope');
   const envelope = bundle.content.dsseEnvelope;
 
-  return sigstore.Envelope.toJSON(envelope) as sigstore.SerializedEnvelope;
+  return Envelope.toJSON(envelope) as sigstore.SerializedEnvelope;
 }
 
 // Accepts a signed DSSE envelope and a PEM-encoded public key to be added to the
@@ -46,7 +48,7 @@ export async function createRekorEntry(
   publicKey: string,
   options: SignOptions = {}
 ): Promise<sigstore.SerializedBundle> {
-  const envelope = sigstore.Envelope.fromJSON(dsseEnvelope);
+  const envelope = Envelope.fromJSON(dsseEnvelope);
   const tlog = new RekorWitness({
     fetchOnConflict: true,
     rekorBaseURL: options.rekorURL || '',
@@ -62,8 +64,17 @@ export async function createRekorEntry(
       $case: 'dsseEnvelope',
       dsseEnvelope: envelope,
     },
-    verificationMaterial: vm,
+    verificationMaterial: {
+      content: {
+        $case: 'publicKey',
+        publicKey: {
+          hint: dsseEnvelope.signatures[0].keyid,
+        },
+      },
+      timestampVerificationData: vm.timestampVerificationData,
+      tlogEntries: vm.tlogEntries,
+    },
   };
 
-  return sigstore.Bundle.toJSON(bundle) as sigstore.SerializedBundle;
+  return sigstore.bundleToJSON(bundle);
 }

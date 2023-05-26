@@ -13,19 +13,47 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import {
+import { Bundle } from '@sigstore/protobuf-specs';
+import { ValidBundle, assertValidBundle } from './validate';
+
+import type {
   ArtifactVerificationOptions,
-  Bundle,
   TransparencyLogEntry,
   VerificationMaterial,
 } from '@sigstore/protobuf-specs';
-import { x509Certificate } from '../../x509/cert';
-import { WithRequired } from '../utility';
-import { ValidBundle, assertValidBundle } from './validate';
+import type { WithRequired } from '../utility';
+import type { SerializedBundle } from './serialized';
 
-export * from '@sigstore/protobuf-specs';
-export * from './serialized';
-export * from './validate';
+export {
+  HashAlgorithm,
+  PublicKeyDetails,
+  SubjectAlternativeNameType,
+  VerificationMaterial,
+} from '@sigstore/protobuf-specs';
+export type {
+  ArtifactVerificationOptions,
+  ArtifactVerificationOptions_CtlogOptions,
+  ArtifactVerificationOptions_TlogOptions,
+  CertificateAuthority,
+  CertificateIdentities,
+  CertificateIdentity,
+  Envelope,
+  MessageSignature,
+  ObjectIdentifierValuePair,
+  PublicKey,
+  PublicKeyIdentifier,
+  RFC3161SignedTimestamp,
+  Signature,
+  SubjectAlternativeName,
+  TimestampVerificationData,
+  TransparencyLogEntry,
+  TransparencyLogInstance,
+  TrustedRoot,
+  X509Certificate,
+  X509CertificateChain,
+} from '@sigstore/protobuf-specs';
+export type { SerializedBundle, SerializedEnvelope } from './serialized';
+export type { ValidBundle as Bundle };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const bundleFromJSON = (obj: any): ValidBundle => {
@@ -34,23 +62,14 @@ export const bundleFromJSON = (obj: any): ValidBundle => {
   return bundle;
 };
 
-// Subset of sigstore.Bundle that has verification material as part
-// of the bundle
-export type BundleWithVerificationMaterial = WithRequired<
-  Bundle,
-  'verificationMaterial'
->;
-
-// Type guard for narrowing a Bundle to a BundleWithVerificationMaterial
-export function isBundleWithVerificationMaterial(
-  bundle: Bundle
-): bundle is BundleWithVerificationMaterial {
-  return bundle.verificationMaterial !== undefined;
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const bundleToJSON = (bundle: ValidBundle): SerializedBundle => {
+  return Bundle.toJSON(bundle) as SerializedBundle;
+};
 
 // Subset of sigstore.Bundle that has a certificate chain as part
 // of the verification material (as opposed to a public key)
-export type BundleWithCertificateChain = Bundle & {
+export type BundleWithCertificateChain = ValidBundle & {
   verificationMaterial: VerificationMaterial & {
     content: Extract<
       VerificationMaterial['content'],
@@ -61,10 +80,9 @@ export type BundleWithCertificateChain = Bundle & {
 
 // Type guard for narrowing a Bundle to a BundleWithCertificateChain
 export function isBundleWithCertificateChain(
-  bundle: Bundle
+  bundle: ValidBundle
 ): bundle is BundleWithCertificateChain {
   return (
-    isBundleWithVerificationMaterial(bundle) &&
     bundle.verificationMaterial.content !== undefined &&
     bundle.verificationMaterial.content.$case === 'x509CertificateChain'
   );
@@ -110,16 +128,4 @@ export function isVerifiableTransparencyLogEntry(
     entry.inclusionPromise !== undefined &&
     entry.kindVersion !== undefined
   );
-}
-
-export function signingCertificate(
-  bundle: Bundle
-): x509Certificate | undefined {
-  if (!isBundleWithCertificateChain(bundle)) {
-    return undefined;
-  }
-
-  const signingCert =
-    bundle.verificationMaterial.content.x509CertificateChain.certificates[0];
-  return x509Certificate.parse(signingCert.rawBytes);
 }

@@ -120,19 +120,17 @@ describe('SignedCertificateTimestamp', () => {
       const ctfe =
         'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbfwR+RJudXscgRBRpKX1XFDy3PyudDxz/SfnRi1fT8ekpfBd2O1uoz7jr3Z8nKzxA69EUQ+eFCFI3zeubPWU7w==';
 
-      const ctl = {
+      const ctl: sigstore.TransparencyLogInstance = {
         baseUrl: '',
-        hashAlgorithm: 'HASH_ALGORITHM_UNSPECIFIED',
+        hashAlgorithm: sigstore.HashAlgorithm.HASH_ALGORITHM_UNSPECIFIED,
         publicKey: {
-          rawBytes: ctfe,
-          keyDetails: 'PKIX_ECDSA_P256_SHA_256',
+          rawBytes: Buffer.from(ctfe, 'base64'),
+          keyDetails: sigstore.PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
         },
         logId: { keyId: Buffer.from(logID, 'hex') },
       };
 
-      const logs: sigstore.TransparencyLogInstance[] = [
-        sigstore.TransparencyLogInstance.fromJSON(ctl),
-      ];
+      const logs: sigstore.TransparencyLogInstance[] = [ctl];
 
       describe('when the signature is valid', () => {
         it('returns true', () => {

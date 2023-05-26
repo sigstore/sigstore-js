@@ -25,7 +25,7 @@ export async function sign(
 ): Promise<sigstore.SerializedBundle> {
   const notary = config.notary({ bundleType: 'messageSignature', ...options });
   const bundle = await notary.notarize({ data: payload });
-  return sigstore.Bundle.toJSON(bundle) as sigstore.SerializedBundle;
+  return sigstore.bundleToJSON(bundle);
 }
 
 export async function attest(
@@ -36,7 +36,7 @@ export async function attest(
 ): Promise<sigstore.SerializedBundle> {
   const notary = config.notary({ bundleType: 'dsseEnvelope', ...options });
   const bundle = await notary.notarize({ data: payload, type: payloadType });
-  return sigstore.Bundle.toJSON(bundle) as sigstore.SerializedBundle;
+  return sigstore.bundleToJSON(bundle);
 }
 
 export async function verify(

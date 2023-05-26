@@ -13,19 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import type {
-  Bundle,
-  MessageSignature,
-  VerificationMaterial,
-} from '../types/sigstore';
-import type { WithRequired } from '../types/utility';
+import type { Bundle, VerificationMaterial } from '../types/sigstore';
 
 // Sigstore bundle with required content fields populated
-export type SignatureBundle =
-  | (Extract<Bundle['content'], { $case: 'messageSignature' }> & {
-      messageSignature: WithRequired<MessageSignature, 'messageDigest'>;
-    })
-  | Extract<Bundle['content'], { $case: 'dsseEnvelope' }>;
+export type SignatureBundle = Bundle['content'];
 
 export interface Witness {
   testify: (

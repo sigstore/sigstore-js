@@ -15,9 +15,9 @@ limitations under the License.
 */
 import type { Endorsement, KeyMaterial, Signatory } from '../signatory';
 import type {
+  Bundle,
   RFC3161SignedTimestamp,
   TransparencyLogEntry,
-  ValidBundle,
 } from '../types/sigstore';
 import type { Witness } from '../witness';
 
@@ -36,7 +36,7 @@ export interface Artifact {
 // Interface for notary implementations. A notary is responsible for signing
 // and witnessing an artifact.
 export interface Notary {
-  notarize: (artifact: Artifact) => Promise<ValidBundle>;
+  notarize: (artifact: Artifact) => Promise<Bundle>;
 }
 
 // BaseNotary is a base class for Notary implementations. It provides a
@@ -53,7 +53,7 @@ export abstract class BaseNotary implements Notary {
   }
 
   // Executes the signing/witnessing process for the given artifact.
-  public async notarize(artifact: Artifact): Promise<ValidBundle> {
+  public async notarize(artifact: Artifact): Promise<Bundle> {
     const endorsement = await this.prepare(artifact).then((blob) =>
       this.signatory.sign(blob)
     );
@@ -99,7 +99,7 @@ export abstract class BaseNotary implements Notary {
   protected abstract package(
     artifact: Artifact,
     endorsement: Endorsement
-  ): Promise<ValidBundle>;
+  ): Promise<Bundle>;
 }
 
 // Extracts the public key from a KeyMaterial. Returns either the public key
