@@ -9,7 +9,7 @@ $ npm install -g @sigstore/cli
 $ sigstore COMMAND
 running command...
 $ sigstore (--version)
-@sigstore/cli/0.0.1 darwin-arm64 node-v18.12.1
+@sigstore/cli/0.0.5 darwin-arm64 node-v18.12.1
 $ sigstore --help [COMMAND]
 USAGE
   $ sigstore COMMAND
@@ -37,13 +37,14 @@ ARGUMENTS
 
 FLAGS
   -o, --output-file=<value>    write output to file
-  -t, --type=<value>           [default: application/vnd.in-toto+json] type to apply to the DSSE envelope
+  -t, --payload-type=<value>   [default: application/vnd.in-toto+json] MIME or content type to apply to the DSSE
+                               envelope
   --fulcio-url=<value>         [default: https://fulcio.sigstore.dev] URL to the Sigstore PKI server
   --oidc-client-id=<value>     [default: sigstore] OIDC client ID for application
   --oidc-issuer=<value>        [default: https://oauth2.sigstore.dev/auth] OIDC provider to be used to issue ID token
   --oidc-redirect-url=<value>  OIDC redirect URL
   --rekor-url=<value>          [default: https://rekor.sigstore.dev] URL to the Rekor transparency log
-  --tlog-upload                whether or not to upload entry to the transparency log
+  --[no-]tlog-upload           whether or not to upload entry to the transparency log
   --tsa-server-url=<value>     URL to the Timestamping Authority
 
 GLOBAL FLAGS
@@ -53,10 +54,10 @@ DESCRIPTION
   attest the supplied file
 
 EXAMPLES
-  $ sigstore attest
+  $ sigstore attest ./statement.json
 ```
 
-_See code: [dist/commands/attest.ts](https://github.com/sigstore/sigstore-js/blob/v0.0.1/dist/commands/attest.ts)_
+_See code: [dist/commands/attest.ts](https://github.com/sigstore/sigstore-js/blob/v0.0.5/dist/commands/attest.ts)_
 
 ## `sigstore help [COMMANDS]`
 
@@ -80,7 +81,7 @@ _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.9
 
 ## `sigstore verify BUNDLE`
 
-describe the command here
+verify the supplied .sigstore bundle file
 
 ```
 USAGE
@@ -97,11 +98,11 @@ GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  describe the command here
+  verify the supplied .sigstore bundle file
 
 EXAMPLES
-  $ sigstore verify
+  $ sigstore verify ./bundle.sigstore
 ```
 
-_See code: [dist/commands/verify.ts](https://github.com/sigstore/sigstore-js/blob/v0.0.1/dist/commands/verify.ts)_
+_See code: [dist/commands/verify.ts](https://github.com/sigstore/sigstore-js/blob/v0.0.5/dist/commands/verify.ts)_
 <!-- commandsstop -->
