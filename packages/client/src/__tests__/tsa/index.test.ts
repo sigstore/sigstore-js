@@ -18,7 +18,6 @@ import nock from 'nock';
 import { InternalError } from '../../error';
 import { TSAClient } from '../../tsa/';
 import { crypto } from '../../util';
-import '../__helpers__';
 
 describe('TSAClient', () => {
   const baseURL = 'http://localhost:8080';

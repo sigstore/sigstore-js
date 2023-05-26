@@ -1,0 +1,24 @@
+{
+  "name": "@types/sigstore-jest-extended",
+  "private": "true",
+  "version": "0.0.0",
+  "description": "Types for custom Jest extensions",
+  "main": "",
+  "types": "dist/index.d.ts",
+  "scripts": {},
+  "exports": {
+    ".": {
+        "types": "./index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.d.ts"
+  ],
+  "author": "bdehamer@github.com",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sigstore/sigstore-js.git"
+  }
+}

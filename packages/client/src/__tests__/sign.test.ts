@@ -22,7 +22,6 @@ import { TSAClient } from '../tsa';
 import { SignatureMaterial, SignerFunc } from '../types/signature';
 import { HashAlgorithm } from '../types/sigstore';
 import { pem } from '../util';
-import './__helpers__';
 
 describe('Signer', () => {
   const fulcioBaseURL = 'http://localhost:8001';

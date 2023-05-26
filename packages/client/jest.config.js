@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-const base = require('../../jest.config.base')
+const base = require('../../jest.config.base');
 
 module.exports = {
   ...base,
@@ -22,8 +22,6 @@ module.exports = {
   testPathIgnorePatterns: [
     '<rootDir>/dist/',
     '<rootDir>/src/__tests__/__fixtures__',
-    '<rootDir>/src/__tests__/__helpers',
-    '<rootDir>/src/__tests__/@types',
   ],
   coveragePathIgnorePatterns: ['__generated__', '__fixtures__'],
 };

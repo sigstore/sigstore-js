@@ -20,7 +20,6 @@ import path from 'path';
 import { TargetFile, Updater } from 'tuf-js';
 import { InternalError } from '../../error';
 import { readTarget } from '../../tuf/target';
-import '../__helpers__';
 
 describe('TrustedRootFetcher', () => {
   const targetContent = 'sample trusted root content';
