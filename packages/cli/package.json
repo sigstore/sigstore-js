@@ -27,9 +27,9 @@
     "prebuild": "npm run clean",
     "build": "tsc -b",
     "postpack": "shx rm -f oclif.manifest.json",
-    "prepack": "npm run build && oclif manifest && oclif readme",
+    "prepack": "npm run build && oclif manifest && npm run readme",
     "test": "jest",
-    "version": "oclif readme && git add README.md"
+    "readme": "oclif readme && shx sed -i \"s/^_See code:.*$//g\" README.md"
   },
   "dependencies": {
     "@oclif/color": "^1.0.5",
