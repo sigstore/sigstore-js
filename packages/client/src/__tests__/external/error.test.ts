@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import assert from 'assert';
 import fetch from 'make-fetch-happen';
 import { checkStatus, HTTPError } from '../../external/error';
 
@@ -39,11 +40,11 @@ describe('checkStatus', () => {
     } as Response;
 
     it('throws an error', () => {
+      expect.assertions(2);
       try {
         checkStatus(response);
-        fail('Expected an error to be thrown');
       } catch (e) {
-        if (!(e instanceof HTTPError)) fail('Expected an HTTPError');
+        assert(e instanceof HTTPError);
         expect(e.message).toEqual('HTTP Error: 404 Not Found');
         expect(e.statusCode).toEqual(404);
       }

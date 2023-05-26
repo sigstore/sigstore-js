@@ -1,10 +1,5 @@
 import { SubjectAlternativeNameType } from '@sigstore/protobuf-specs';
-import {
-  artifactVerificationOptions,
-  IdentityProviderOptions,
-  identityProviders,
-  VerifyOptions,
-} from '../config';
+import { artifactVerificationOptions, VerifyOptions } from '../config';
 
 describe('artifactVerificationOptions', () => {
   describe('when no certificate issuer is provided', () => {
@@ -176,49 +171,6 @@ describe('artifactVerificationOptions', () => {
       expect(
         result.signers.certificateIdentities.identities[0].oids?.[1].value
       ).toEqual(Buffer.from('value2'));
-    });
-  });
-});
-
-describe('identityProvider', () => {
-  describe('when no options are supplied', () => {
-    const options: IdentityProviderOptions = {};
-
-    it('returns the static IdentityProvider', async () => {
-      const result = identityProviders(options);
-      expect(result).toBeDefined();
-      expect(result).toHaveLength(1);
-
-      const { getToken } = result[0];
-      await expect(getToken()).rejects.toThrowError();
-    });
-  });
-
-  describe('when a static token is provided', () => {
-    const options: IdentityProviderOptions = {
-      identityToken: 'token',
-    };
-
-    it('returns the CI IdentityProvider', async () => {
-      const result = identityProviders(options);
-      expect(result).toBeDefined();
-      expect(result).toHaveLength(1);
-
-      const { getToken } = result[0];
-      await expect(getToken()).resolves.toEqual(options.identityToken);
-    });
-  });
-
-  describe('when OAuth config options are provided', () => {
-    const options: IdentityProviderOptions = {
-      oidcIssuer: 'https://example.com',
-      oidcClientID: 'client-id',
-    };
-
-    it('returns both the CI and OAuth IdentityProviders', async () => {
-      const result = identityProviders(options);
-      expect(result).toBeDefined();
-      expect(result).toHaveLength(2);
     });
   });
 });

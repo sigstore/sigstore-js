@@ -15,56 +15,34 @@ limitations under the License.
 */
 import * as tuf from '@sigstore/tuf';
 import * as config from './config';
-import { Signer } from './sign';
 import * as sigstore from './types/sigstore';
 import { Verifier } from './verify';
 
 export async function sign(
   payload: Buffer,
+  /* istanbul ignore next */
   options: config.SignOptions = {}
 ): Promise<sigstore.SerializedBundle> {
-  const ca = config.createCAClient(options);
-  const tlog = config.createTLogClient(options);
-  const idps = config.identityProviders(options);
-  const signer = new Signer({
-    ca,
-    tlog,
-    identityProviders: options.identityProvider
-      ? [options.identityProvider]
-      : idps,
-    tlogUpload: options.tlogUpload,
-  });
-
-  const bundle = await signer.signBlob(payload);
-  return sigstore.Bundle.toJSON(bundle) as sigstore.SerializedBundle;
+  const notary = config.notary({ bundleType: 'messageSignature', ...options });
+  const bundle = await notary.notarize({ data: payload });
+  return sigstore.bundleToJSON(bundle);
 }
 
 export async function attest(
   payload: Buffer,
   payloadType: string,
+  /* istanbul ignore next */
   options: config.SignOptions = {}
 ): Promise<sigstore.SerializedBundle> {
-  const ca = config.createCAClient(options);
-  const tlog = config.createTLogClient(options);
-  const tsa = config.createTSAClient(options);
-  const idps = config.identityProviders(options);
-  const signer = new Signer({
-    ca,
-    tlog,
-    tsa,
-    identityProviders: options.identityProvider
-      ? [options.identityProvider]
-      : idps,
-    tlogUpload: options.tlogUpload,
-  });
-
-  const bundle = await signer.signAttestation(payload, payloadType);
-  return sigstore.Bundle.toJSON(bundle) as sigstore.SerializedBundle;
+  const notary = config.notary({ bundleType: 'dsseEnvelope', ...options });
+  const bundle = await notary.notarize({ data: payload, type: payloadType });
+  return sigstore.bundleToJSON(bundle);
 }
 
 export async function verify(
   bundle: sigstore.SerializedBundle,
   payload?: Buffer,
+  /* istanbul ignore next */
   options: config.VerifyOptions = {}
 ): Promise<void> {
   const trustedRoot = await tuf.getTrustedRoot({
@@ -97,6 +75,7 @@ const tufUtils = {
    */
   getTarget: (
     path: string,
+    /* istanbul ignore next - not covering options default */
     options: config.TUFOptions = {}
   ): Promise<string> => {
     return tuf
@@ -119,6 +98,7 @@ export {
   ValidationError,
   VerificationError,
 } from './error';
+export type { Provider as IdentityProvider } from './identity';
 export * as utils from './sigstore-utils';
 export type {
   SerializedBundle as Bundle,

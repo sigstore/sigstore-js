@@ -13,10 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { SignOptions, createTLogClient } from './config';
-import { SignerFunc, extractSignatureMaterial } from './types/signature';
+import { Envelope } from '@sigstore/protobuf-specs';
+import assert from 'assert';
+import { createNotary } from './notary';
+import { SignerFunc } from './types/signature';
 import * as sigstore from './types/sigstore';
-import { dsse } from './util';
+import { RekorWitness } from './witness';
+
+import type { SignOptions } from './config';
 
 export async function createDSSEEnvelope(
   payload: Buffer,
@@ -25,24 +29,16 @@ export async function createDSSEEnvelope(
     signer: SignerFunc;
   }
 ): Promise<sigstore.SerializedEnvelope> {
-  // Pre-authentication encoding to be signed
-  const paeBuffer = dsse.preAuthEncoding(payloadType, payload);
+  const notary = createNotary({
+    bundleType: 'dsseEnvelope',
+    signer: options.signer,
+  });
 
-  // Get signature and verification material for pae
-  const sigMaterial = await options.signer(paeBuffer);
+  const bundle = await notary.notarize({ data: payload, type: payloadType });
+  assert(bundle.content.$case === 'dsseEnvelope');
+  const envelope = bundle.content.dsseEnvelope;
 
-  const envelope: sigstore.Envelope = {
-    payloadType,
-    payload,
-    signatures: [
-      {
-        keyid: sigMaterial.key?.id || '',
-        sig: sigMaterial.signature,
-      },
-    ],
-  };
-
-  return sigstore.Envelope.toJSON(envelope) as sigstore.SerializedEnvelope;
+  return Envelope.toJSON(envelope) as sigstore.SerializedEnvelope;
 }
 
 // Accepts a signed DSSE envelope and a PEM-encoded public key to be added to the
@@ -52,18 +48,37 @@ export async function createRekorEntry(
   publicKey: string,
   options: SignOptions = {}
 ): Promise<sigstore.SerializedBundle> {
-  const envelope = sigstore.Envelope.fromJSON(dsseEnvelope);
-  const tlog = createTLogClient(options);
-
-  const sigMaterial = extractSignatureMaterial(envelope, publicKey);
-  const entry = await tlog.createDSSEEntry(envelope, sigMaterial, {
+  const envelope = Envelope.fromJSON(dsseEnvelope);
+  const tlog = new RekorWitness({
     fetchOnConflict: true,
+    rekorBaseURL: options.rekorURL || '',
   });
+  const vm = await tlog.testify(
+    { $case: 'dsseEnvelope', dsseEnvelope: envelope },
+    publicKey
+  );
 
-  const bundle = sigstore.toDSSEBundle({
-    envelope,
-    signature: sigMaterial,
-    tlogEntry: entry,
-  });
-  return sigstore.Bundle.toJSON(bundle) as sigstore.SerializedBundle;
+  if (vm.tlogEntries === undefined) {
+    throw new Error('No transparency log entries found');
+  }
+
+  const bundle: sigstore.Bundle = {
+    mediaType: 'application/vnd.redhat.sls.bundle.v1+json',
+    content: {
+      $case: 'dsseEnvelope',
+      dsseEnvelope: envelope,
+    },
+    verificationMaterial: {
+      content: {
+        $case: 'publicKey',
+        publicKey: {
+          hint: dsseEnvelope.signatures[0].keyid,
+        },
+      },
+      timestampVerificationData: undefined,
+      tlogEntries: [...vm.tlogEntries],
+    },
+  };
+
+  return sigstore.bundleToJSON(bundle);
 }

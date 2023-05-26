@@ -13,16 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { CA, CAClient } from './ca';
-import identity, { Provider } from './identity';
-import { TLog, TLogClient } from './tlog';
-import { TSA, TSAClient } from './tsa';
+import { ciContextIdentityProvider } from './identity';
+import { createNotary } from './notary';
 import * as sigstore from './types/sigstore';
 
+import type { Provider } from './identity';
+import type { BundleType, Notary, NotaryFactoryOptions } from './notary';
+import type { SignerFunc } from './signatory';
 import type { FetchOptions, Retry } from './types/fetch';
 import type { KeySelector } from './verify';
 
 interface CAOptions {
+  identityProvider?: Provider;
   fulcioURL?: string;
 }
 
@@ -34,7 +36,8 @@ interface TSAOptions {
   tsaServerURL?: string;
 }
 
-export interface IdentityProviderOptions {
+// TODO: Remove this interface once we have a better way to pass identity
+interface IdentityOptions {
   identityToken?: string;
   oidcIssuer?: string;
   oidcClientID?: string;
@@ -51,11 +54,12 @@ export type TUFOptions = {
 export type SignOptions = {
   identityProvider?: Provider;
   tlogUpload?: boolean;
+  signer?: SignerFunc;
 } & CAOptions &
   TLogOptions &
   TSAOptions &
   FetchOptions &
-  IdentityProviderOptions;
+  IdentityOptions;
 
 export type VerifyOptions = {
   ctLogThreshold?: number;
@@ -74,32 +78,49 @@ export const DEFAULT_REKOR_URL = 'https://rekor.sigstore.dev';
 export const DEFAULT_RETRY: Retry = { retries: 2 };
 export const DEFAULT_TIMEOUT = 5000;
 
-export function createCAClient(options: CAOptions & FetchOptions): CA {
-  return new CAClient({
-    fulcioBaseURL: options.fulcioURL || DEFAULT_FULCIO_URL,
-    retry: options.retry ?? DEFAULT_RETRY,
-    timeout: options.timeout ?? DEFAULT_TIMEOUT,
+export function notary(
+  options: SignOptions & { bundleType: BundleType }
+): Notary {
+  return createNotary({
+    bundleType: options.bundleType,
+    ...notaryOptions(options),
   });
 }
 
-export function createTLogClient(options: TLogOptions & FetchOptions): TLog {
-  return new TLogClient({
-    rekorBaseURL: options.rekorURL || DEFAULT_REKOR_URL,
-    retry: options.retry ?? DEFAULT_RETRY,
-    timeout: options.timeout ?? DEFAULT_TIMEOUT,
-  });
-}
+// Assembles the NotaryFactoryOptions from the supplied SignOptions, providing
+// defaults where necessary.
+function notaryOptions(
+  options: SignOptions
+): Omit<NotaryFactoryOptions, 'bundleType'> {
+  const tlogUpload = options.tlogUpload ?? true;
 
-export function createTSAClient(
-  options: TSAOptions & FetchOptions
-): TSA | undefined {
-  return options.tsaServerURL
-    ? new TSAClient({
-        tsaBaseURL: options.tsaServerURL,
-        retry: options.retry ?? DEFAULT_RETRY,
-        timeout: options.timeout ?? DEFAULT_TIMEOUT,
-      })
+  const fulcioBaseURL = options.fulcioURL || DEFAULT_FULCIO_URL;
+
+  // An explicit identity provider takes, precedence, but if we're running in a
+  // CI context, we'll fallback to use the CI context provider.
+  const identityProvider =
+    options.identityProvider ||
+    ('CI' in process.env && ciContextIdentityProvider()) ||
+    undefined;
+
+  const rekorBaseURL = tlogUpload
+    ? options.rekorURL || DEFAULT_REKOR_URL
     : undefined;
+  const tsaBaseURL = options.tsaServerURL;
+  const retry = options.retry ?? DEFAULT_RETRY;
+  const timeout = options.timeout ?? DEFAULT_TIMEOUT;
+
+  const signer = options.signer;
+
+  return {
+    fulcioBaseURL,
+    identityProvider,
+    signer,
+    rekorBaseURL,
+    tsaBaseURL,
+    retry,
+    timeout,
+  };
 }
 
 // Assembles the AtifactVerificationOptions from the supplied VerifyOptions.
@@ -164,34 +185,4 @@ export function artifactVerificationOptions(
     },
     signers,
   };
-}
-
-// Translates the IdenityProviderOptions into a list of Providers which
-// should be queried to retrieve an identity token.
-export function identityProviders(
-  options: IdentityProviderOptions
-): Provider[] {
-  const idps: Provider[] = [];
-  const token = options.identityToken;
-
-  // If an explicit identity token is provided, use that. Setup a dummy
-  // provider that just returns the token. Otherwise, setup the CI context
-  // provider and (optionally) the OAuth provider.
-  if (token) {
-    idps.push({ getToken: () => Promise.resolve(token) });
-  } else {
-    idps.push(identity.ciContextProvider());
-    if (options.oidcIssuer && options.oidcClientID) {
-      idps.push(
-        identity.oauthProvider({
-          issuer: options.oidcIssuer,
-          clientID: options.oidcClientID,
-          clientSecret: options.oidcClientSecret,
-          redirectURL: options.oidcRedirectURL,
-        })
-      );
-    }
-  }
-
-  return idps;
 }

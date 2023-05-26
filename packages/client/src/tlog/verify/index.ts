@@ -22,7 +22,7 @@ import { verifyTLogSET } from './set';
 // Verifies that the number of tlog entries that pass offline verification
 // is greater than or equal to the threshold specified in the options.
 export function verifyTLogEntries(
-  bundle: sigstore.BundleWithVerificationMaterial,
+  bundle: sigstore.Bundle,
   trustedRoot: sigstore.TrustedRoot,
   options: sigstore.ArtifactVerificationOptions_TlogOptions
 ): void {
@@ -31,7 +31,7 @@ export function verifyTLogEntries(
   }
 
   // Extract the signing cert, if available
-  const signingCert = sigstore.signingCertificate(bundle);
+  const signingCert = signingCertificate(bundle);
 
   // Iterate over the tlog entries and verify each one
   const verifiedEntries = bundle.verificationMaterial.tlogEntries.filter(
@@ -73,4 +73,16 @@ function verifyTLogEntryOffline(
     verifyTLogSET(entry, tlogs) &&
     verifyTLogIntegrationTime()
   );
+}
+
+function signingCertificate(
+  bundle: sigstore.Bundle
+): x509Certificate | undefined {
+  if (!sigstore.isBundleWithCertificateChain(bundle)) {
+    return undefined;
+  }
+
+  const signingCert =
+    bundle.verificationMaterial.content.x509CertificateChain.certificates[0];
+  return x509Certificate.parse(signingCert.rawBytes);
 }
