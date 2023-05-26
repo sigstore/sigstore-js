@@ -13,14 +13,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import type { Bundle, VerificationMaterial } from '../types/sigstore';
+import type {
+  Bundle,
+  RFC3161SignedTimestamp,
+  TransparencyLogEntry,
+} from '../types/sigstore';
 
 // Sigstore bundle with required content fields populated
 export type SignatureBundle = Bundle['content'];
+
+export type Affidavit = {
+  tlogEntries?: TransparencyLogEntry[];
+  rfc3161Timestamps?: RFC3161SignedTimestamp[];
+};
 
 export interface Witness {
   testify: (
     signature: SignatureBundle,
     publicKey: string
-  ) => Promise<VerificationMaterial>;
+  ) => Promise<Affidavit>;
 }

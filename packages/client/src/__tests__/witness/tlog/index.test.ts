@@ -18,6 +18,7 @@ import { InternalError } from '../../../error';
 import * as sigstore from '../../../types/sigstore';
 import { RekorWitness } from '../../../witness/tlog';
 
+import assert from 'assert';
 import type { SignatureBundle } from '../../../witness';
 
 describe('RekorWitness', () => {
@@ -79,15 +80,15 @@ describe('RekorWitness', () => {
         };
 
         it('returns the tlog entry', async () => {
-          const vm = await subject.testify(sigBundle, publicKey);
+          const affidavit = await subject.testify(sigBundle, publicKey);
 
-          expect(vm).toBeDefined();
-          expect(vm.content).toBeUndefined();
-          expect(vm.timestampVerificationData).toBeUndefined();
+          expect(affidavit).toBeDefined();
+          expect(affidavit.rfc3161Timestamps).toBeUndefined();
 
-          expect(vm.tlogEntries).toHaveLength(1);
+          assert(affidavit.tlogEntries);
+          expect(affidavit.tlogEntries).toHaveLength(1);
 
-          const tlogEntry = vm.tlogEntries[0];
+          const tlogEntry = affidavit.tlogEntries[0];
           expect(tlogEntry).toBeDefined();
           expect(tlogEntry.logIndex).toEqual(
             rekorEntry[uuid].logIndex.toString()
@@ -126,15 +127,15 @@ describe('RekorWitness', () => {
         };
 
         it('returns the tlog entry', async () => {
-          const vm = await subject.testify(sigBundle, publicKey);
+          const affidavit = await subject.testify(sigBundle, publicKey);
 
-          expect(vm).toBeDefined();
-          expect(vm.content).toBeUndefined();
-          expect(vm.timestampVerificationData).toBeUndefined();
+          expect(affidavit).toBeDefined();
+          expect(affidavit.rfc3161Timestamps).toBeUndefined();
 
-          expect(vm.tlogEntries).toHaveLength(1);
+          assert(affidavit.tlogEntries);
+          expect(affidavit.tlogEntries).toHaveLength(1);
 
-          const tlogEntry = vm.tlogEntries[0];
+          const tlogEntry = affidavit.tlogEntries[0];
           expect(tlogEntry).toBeDefined();
           expect(tlogEntry.logIndex).toEqual(
             rekorEntry[uuid].logIndex.toString()
@@ -202,11 +203,13 @@ describe('RekorWitness', () => {
       });
 
       it('returns the tlog entry with an empty SET', async () => {
-        const vm = await subject.testify(sigBundle, publicKey);
+        const affidavit = await subject.testify(sigBundle, publicKey);
 
-        expect(vm).toBeDefined();
-        expect(vm.tlogEntries).toHaveLength(1);
-        const tlogEntry = vm.tlogEntries[0];
+        expect(affidavit).toBeDefined();
+        assert(affidavit.tlogEntries);
+
+        expect(affidavit.tlogEntries).toHaveLength(1);
+        const tlogEntry = affidavit.tlogEntries[0];
         expect(tlogEntry.inclusionPromise?.signedEntryTimestamp).toEqual(
           Buffer.from('')
         );

@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import * as sigstore from '../../types/sigstore';
 import { encoding as enc } from '../../util';
 import {
   Entry,
@@ -24,7 +23,7 @@ import {
 } from './client';
 import { toProposedEntry } from './entry';
 
-import type { SignatureBundle, Witness } from '../witness';
+import type { Affidavit, SignatureBundle, Witness } from '../witness';
 
 export type RekorWitnessOptions = TLogClientOptions;
 
@@ -38,14 +37,14 @@ export class RekorWitness implements Witness {
   public async testify(
     content: SignatureBundle,
     publicKey: string
-  ): Promise<sigstore.VerificationMaterial> {
+  ): Promise<Affidavit> {
     const proposedEntry = toProposedEntry(content, publicKey);
     const entry = await this.tlog.createEntry(proposedEntry);
-    return verificationMaterial(entry);
+    return affidavit(entry);
   }
 }
 
-function verificationMaterial(entry: Entry): sigstore.VerificationMaterial {
+function affidavit(entry: Entry): Affidavit {
   const set = Buffer.from(
     entry?.verification?.signedEntryTimestamp || '',
     'base64'
@@ -56,9 +55,7 @@ function verificationMaterial(entry: Entry): sigstore.VerificationMaterial {
   const bodyJSON = enc.base64Decode(entry.body);
   const entryBody: ProposedEntry = JSON.parse(bodyJSON);
 
-  const vm = sigstore.VerificationMaterial.fromJSON({});
-
-  vm.tlogEntries.push({
+  const tlogEntry = {
     inclusionPromise: {
       signedEntryTimestamp: set,
     },
@@ -73,7 +70,9 @@ function verificationMaterial(entry: Entry): sigstore.VerificationMaterial {
     },
     inclusionProof: undefined,
     canonicalizedBody: Buffer.from(entry.body, 'base64'),
-  });
+  };
 
-  return vm;
+  return {
+    tlogEntries: [tlogEntry],
+  };
 }

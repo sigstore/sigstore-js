@@ -58,6 +58,10 @@ export async function createRekorEntry(
     publicKey
   );
 
+  if (vm.tlogEntries === undefined) {
+    throw new Error('No transparency log entries found');
+  }
+
   const bundle: sigstore.Bundle = {
     mediaType: 'application/vnd.redhat.sls.bundle.v1+json',
     content: {
@@ -71,8 +75,8 @@ export async function createRekorEntry(
           hint: dsseEnvelope.signatures[0].keyid,
         },
       },
-      timestampVerificationData: vm.timestampVerificationData,
-      tlogEntries: vm.tlogEntries,
+      timestampVerificationData: undefined,
+      tlogEntries: [...vm.tlogEntries],
     },
   };
 

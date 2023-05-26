@@ -60,27 +60,25 @@ export abstract class BaseNotary implements Notary {
     const bundle = await this.package(artifact, endorsement);
 
     // Invoke all of the witnesses in parallel
-    const witnessResults = await Promise.all(
+    const affidavits = await Promise.all(
       this.witnesses.map((witness) =>
         witness.testify(bundle.content, publicKey(endorsement.key))
       )
     );
 
     // Collect the verification material from all of the witnesses
-    const tlogEntries: TransparencyLogEntry[] = [];
-    const timestamps: RFC3161SignedTimestamp[] = [];
+    const tlogEntryList: TransparencyLogEntry[] = [];
+    const timestampList: RFC3161SignedTimestamp[] = [];
 
-    witnessResults.forEach((vm) => {
-      tlogEntries.push(...vm.tlogEntries);
-      timestamps.push(
-        ...(vm.timestampVerificationData?.rfc3161Timestamps ?? [])
-      );
+    affidavits.forEach(({ tlogEntries, rfc3161Timestamps }) => {
+      tlogEntryList.push(...(tlogEntries ?? []));
+      timestampList.push(...(rfc3161Timestamps ?? []));
     });
 
     // Merge the collected verification material into the bundle
-    bundle.verificationMaterial.tlogEntries = tlogEntries;
+    bundle.verificationMaterial.tlogEntries = tlogEntryList;
     bundle.verificationMaterial.timestampVerificationData = {
-      rfc3161Timestamps: timestamps,
+      rfc3161Timestamps: timestampList,
     };
 
     return bundle;

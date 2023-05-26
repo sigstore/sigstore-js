@@ -13,10 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import * as sigstore from '../../types/sigstore';
 import { TSA, TSAClient, TSAClientOptions } from './client';
 
-import type { SignatureBundle, Witness } from '../witness';
+import type { Affidavit, SignatureBundle, Witness } from '../witness';
 
 export type TSAWitnessOptions = TSAClientOptions;
 
@@ -31,12 +30,10 @@ export class TSAWitness implements Witness {
     });
   }
 
-  public async testify(
-    content: SignatureBundle
-  ): Promise<sigstore.VerificationMaterial> {
+  public async testify(content: SignatureBundle): Promise<Affidavit> {
     const signature = extractSignature(content);
     const timestamp = await this.tsa.createTimestamp(signature);
-    return verificationMaterial(timestamp);
+    return affidavit(timestamp);
   }
 }
 
@@ -49,14 +46,8 @@ function extractSignature(content: SignatureBundle) {
   }
 }
 
-function verificationMaterial(
-  timestamp: Buffer
-): sigstore.VerificationMaterial {
+function affidavit(timestamp: Buffer): Affidavit {
   return {
-    timestampVerificationData: {
-      rfc3161Timestamps: [{ signedTimestamp: timestamp }],
-    },
-    tlogEntries: [],
-    content: undefined,
+    rfc3161Timestamps: [{ signedTimestamp: timestamp }],
   };
 }

@@ -19,7 +19,7 @@ import { Artifact, BaseNotary } from '../../notary/notary';
 import { Endorsement, Signatory } from '../../signatory';
 import * as sigstore from '../../types/sigstore';
 import { crypto, pem } from '../../util';
-import { Witness } from '../../witness';
+import { Affidavit, Witness } from '../../witness';
 
 describe('BaseNotary', () => {
   const artifact: Artifact = {
@@ -57,21 +57,15 @@ describe('BaseNotary', () => {
 
   // VerificationMaterial fixture to return from fake Witness
   const timestamp = Buffer.from('timestamp');
-  const timestampVM: sigstore.VerificationMaterial = {
-    tlogEntries: [],
-    timestampVerificationData: {
-      rfc3161Timestamps: [{ signedTimestamp: timestamp }],
-    },
-    content: undefined,
+  const timestampAffidavit: Affidavit = {
+    rfc3161Timestamps: [{ signedTimestamp: timestamp }],
   };
 
   const fakeTSAWitness: Witness = {
-    testify: jest.fn().mockResolvedValue(timestampVM),
+    testify: jest.fn().mockResolvedValue(timestampAffidavit),
   };
 
-  const tlogVM: sigstore.VerificationMaterial = {
-    timestampVerificationData: undefined,
-    content: undefined,
+  const tlogAffidavit: Affidavit = {
     tlogEntries: [
       {
         logIndex: '1234',
@@ -93,7 +87,7 @@ describe('BaseNotary', () => {
   };
 
   const fakeRekorWitness: Witness = {
-    testify: jest.fn().mockResolvedValue(tlogVM),
+    testify: jest.fn().mockResolvedValue(tlogAffidavit),
   };
 
   class FakeNotary extends BaseNotary {
@@ -197,7 +191,7 @@ describe('BaseNotary', () => {
         expect(bundle.verificationMaterial.tlogEntries).toBeTruthy();
         expect(bundle.verificationMaterial.tlogEntries).toHaveLength(1);
         expect(bundle.verificationMaterial.tlogEntries).toEqual(
-          tlogVM.tlogEntries
+          tlogAffidavit.tlogEntries
         );
       });
     });
@@ -298,7 +292,7 @@ describe('BaseNotary', () => {
         expect(bundle.verificationMaterial.tlogEntries).toBeTruthy();
         expect(bundle.verificationMaterial.tlogEntries).toHaveLength(1);
         expect(bundle.verificationMaterial.tlogEntries).toEqual(
-          tlogVM.tlogEntries
+          tlogAffidavit.tlogEntries
         );
       });
     });

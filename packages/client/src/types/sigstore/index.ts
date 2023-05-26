@@ -24,12 +24,13 @@ import type {
 import type { WithRequired } from '../utility';
 import type { SerializedBundle } from './serialized';
 
+// Enums from protobuf-specs
 export {
   HashAlgorithm,
   PublicKeyDetails,
   SubjectAlternativeNameType,
-  VerificationMaterial,
 } from '@sigstore/protobuf-specs';
+// Types from protobuf-specs
 export type {
   ArtifactVerificationOptions,
   ArtifactVerificationOptions_CtlogOptions,

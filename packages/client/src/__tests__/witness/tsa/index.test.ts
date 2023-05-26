@@ -59,11 +59,7 @@ describe('TSAWitness', () => {
 
         it('returns the timestamp', async () => {
           await expect(subject.testify(sigBundle)).resolves.toEqual({
-            timestampVerificationData: {
-              rfc3161Timestamps: [{ signedTimestamp: timestamp }],
-            },
-            tlogEntries: [],
-            content: undefined,
+            rfc3161Timestamps: [{ signedTimestamp: timestamp }],
           });
         });
       });
@@ -80,11 +76,7 @@ describe('TSAWitness', () => {
 
         it('returns the timestamp', async () => {
           await expect(subject.testify(sigBundle)).resolves.toEqual({
-            timestampVerificationData: {
-              rfc3161Timestamps: [{ signedTimestamp: timestamp }],
-            },
-            tlogEntries: [],
-            content: undefined,
+            rfc3161Timestamps: [{ signedTimestamp: timestamp }],
           });
         });
       });
