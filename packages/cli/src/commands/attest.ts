@@ -2,6 +2,9 @@ import color from '@oclif/color';
 import { Args, Command, Flags } from '@oclif/core';
 import fs from 'fs/promises';
 import { sigstore } from 'sigstore';
+import { OAuthIdentityProvider } from '../oauth';
+
+import type { IdentityProvider } from 'sigstore';
 
 export default class Attest extends Command {
   static override description = 'attest the supplied file';
@@ -34,6 +37,10 @@ export default class Attest extends Command {
     'oidc-client-id': Flags.string({
       description: 'OIDC client ID for application',
       default: 'sigstore',
+      required: false,
+    }),
+    'oidc-client-secret': Flags.string({
+      description: 'OIDC client secret for application',
       required: false,
     }),
     'oidc-issuer': Flags.string({
@@ -71,15 +78,28 @@ export default class Attest extends Command {
 
   public async run(): Promise<sigstore.Bundle> {
     const { args, flags } = await this.parse(Attest);
+    let identityProvider: IdentityProvider | undefined;
+
+    // If we're running in CI, we don't want to try to authenticate with an
+    // OAuth provider because we won't be able to interactively authenticate.
+    // Leaving the identity provider undefined will cause the attest function
+    // to use the default identity provider, which will retrieve an OIDC
+    // token from the environment.
+    if (!('CI' in process.env) || process.env.CI === 'false') {
+      identityProvider = new OAuthIdentityProvider({
+        issuer: flags['oidc-issuer'],
+        clientID: flags['oidc-client-id'],
+        clientSecret: flags['oidc-client-secret'],
+        redirectURL: flags['oidc-redirect-url'],
+      });
+    }
 
     const options: Parameters<typeof sigstore.attest>[2] = {
-      oidcClientID: flags['oidc-client-id'],
-      oidcIssuer: flags['oidc-issuer'],
-      oidcRedirectURL: flags['oidc-redirect-url'],
       rekorURL: flags['rekor-url'],
       fulcioURL: flags['fulcio-url'],
       tsaServerURL: flags['tsa-server-url'],
       tlogUpload: flags['tlog-upload'],
+      identityProvider,
     };
 
     const bundle = await fs
