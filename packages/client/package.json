@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@sigstore/protobuf-specs": "^0.1.0",
+    "@sigstore/tuf": "^0.0.0",
     "make-fetch-happen": "^11.0.1",
     "tuf-js": "^1.1.3"
   },
