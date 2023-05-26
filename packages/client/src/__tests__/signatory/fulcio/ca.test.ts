@@ -13,10 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import crypto from 'crypto';
 import nock from 'nock';
 import { InternalError } from '../../../error';
-import { CAClient } from '../../../signatory/keyless/ca';
+import { CAClient } from '../../../signatory/fulcio/ca';
 
 describe('CAClient', () => {
   const fulcioBaseURL = 'http://localhost:8080';
@@ -38,11 +37,10 @@ describe('CAClient', () => {
     // Request data
     const identityToken = 'a.b.c';
 
-    const pem = `-----BEGIN PUBLIC KEY-----
+    const publicKey = `-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEtZO/hiYFB3WveI+iYoN4I6w17rSA
 tbn02XdfIl+ZhQqUZv88dgDB86bfKyoOokA7fagAEOulkquhKKoOxdOySQ==
 -----END PUBLIC KEY-----`;
-    const publicKey = crypto.createPublicKey(pem);
     const challenge = Buffer.from('challenge');
 
     const certRequest = {
@@ -52,9 +50,7 @@ tbn02XdfIl+ZhQqUZv88dgDB86bfKyoOokA7fagAEOulkquhKKoOxdOySQ==
       publicKeyRequest: {
         publicKey: {
           algorithm: 'ECDSA',
-          content: publicKey
-            .export({ type: 'spki', format: 'pem' })
-            .toString('ascii'),
+          content: publicKey,
         },
         proofOfPossession: challenge.toString('base64'),
       },
@@ -80,7 +76,7 @@ tbn02XdfIl+ZhQqUZv88dgDB86bfKyoOokA7fagAEOulkquhKKoOxdOySQ==
           challenge
         );
 
-        expect(result).toEqual([leafCertificate]);
+        expect(result).toEqual([leafCertificate, rootCertificate]);
       });
     });
 
@@ -105,7 +101,7 @@ tbn02XdfIl+ZhQqUZv88dgDB86bfKyoOokA7fagAEOulkquhKKoOxdOySQ==
           challenge
         );
 
-        expect(result).toEqual([leafCertificate]);
+        expect(result).toEqual([leafCertificate, rootCertificate]);
       });
     });
 

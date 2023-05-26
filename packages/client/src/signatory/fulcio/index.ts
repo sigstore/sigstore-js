@@ -14,55 +14,64 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { InternalError } from '../../error';
-import { crypto, oidc } from '../../util';
+import { oidc } from '../../util';
 import { CA, CAClient } from './ca';
 
 import type { Provider } from '../../identity';
-import type { FetchOptions } from '../../types/fetch';
 import type { Endorsement, Signatory } from '../signatory';
 
-export type KeylessSignerOptions = {
+export interface FulcioSignerOptions {
   fulcioBaseURL: string;
   identityProvider: Provider;
-} & FetchOptions;
+  signer: Signatory;
+}
 
-// Signatory implementation which uses an ephemeral keypair to sign artifacts.
-// The private key is never persisted, and the public key is sent to Fulcio
-// along with an OIDC token to create a signing certificate.
-export class KeylessSigner implements Signatory {
+// Signatory implementation which can be used to decorate another signatory
+// with a Fulcio-issued signing certificate for the signatory's public key.
+// Must be instantiated with an identity provider which can provide a JWT
+// which represents the identity to be bound to the signing certificate.
+export class FulcioSigner implements Signatory {
   private ca: CA;
   private identityProvider: Provider;
+  private childSigner: Signatory;
 
-  constructor(options: KeylessSignerOptions) {
+  constructor(options: FulcioSignerOptions) {
     this.ca = new CAClient(options);
     this.identityProvider = options.identityProvider;
+    this.childSigner = options.signer;
   }
 
   public async sign(data: Buffer): Promise<Endorsement> {
-    // Create emphemeral key pair
-    const keypair = crypto.generateKeyPair();
-
-    // Retrieve identity token from one of the supplied identity providers
+    // Retrieve identity token from the supplied identity provider
     const identityToken = await this.getIdentityToken();
 
     // Extract challenge claim from OIDC token
     const subject = oidc.extractJWTSubject(identityToken);
 
-    // Construct challenge value by encrypting subject with private key
-    const challenge = crypto.signBlob(Buffer.from(subject), keypair.privateKey);
+    // Construct challenge value by signing the subject claim
+    const challenge = await this.childSigner.sign(Buffer.from(subject));
+
+    if (challenge.key.$case !== 'publicKey') {
+      throw new InternalError({
+        code: 'CA_CREATE_SIGNING_CERTIFICATE_ERROR',
+        message: 'unexpected format for signing key',
+      });
+    }
 
     // Create signing certificate
     const certificates = await this.ca.createSigningCertificate(
       identityToken,
-      keypair.publicKey,
-      challenge
+      challenge.key.publicKey,
+      challenge.signature
     );
 
     // Generate artifact signature
-    const signature = crypto.signBlob(data, keypair.privateKey);
+    const signature = await this.childSigner.sign(data);
 
+    // Specifically returning only the first certificate in the chain
+    // as the key.
     return {
-      signature: signature,
+      signature: signature.signature,
       key: {
         $case: 'x509Certificate',
         certificate: certificates[0],

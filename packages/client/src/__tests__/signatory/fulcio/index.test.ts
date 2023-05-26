@@ -16,24 +16,33 @@ limitations under the License.
 import assert from 'assert';
 import nock from 'nock';
 import { InternalError } from '../../../error';
-import {
-  KeylessSigner,
-  KeylessSignerOptions,
-} from '../../../signatory/keyless';
+import { FulcioSigner, FulcioSignerOptions } from '../../../signatory/fulcio';
 
 import type { Provider } from '../../../identity';
+import type { Signatory } from '../../../signatory';
 
 describe('KeylessSigner', () => {
   const fulcioBaseURL = 'http://localhost:8080';
+  const signature = 'signature';
+  const publicKey = 'publickey';
 
-  const options: KeylessSignerOptions = {
+  const childSigner: Signatory = {
+    sign: () =>
+      Promise.resolve({
+        signature: Buffer.from('signature'),
+        key: { $case: 'publicKey', publicKey },
+      }),
+  };
+
+  const options: FulcioSignerOptions = {
     fulcioBaseURL,
     identityProvider: { getToken: jest.fn() },
+    signer: childSigner,
   };
 
   describe('constructor', () => {
     it('should create a new instance', () => {
-      const client = new KeylessSigner(options);
+      const client = new FulcioSigner(options);
       expect(client).toBeDefined();
     });
   });
@@ -56,7 +65,7 @@ describe('KeylessSigner', () => {
       getToken: jest.fn().mockResolvedValue(jwt),
     };
 
-    const subject = new KeylessSigner({
+    const subject = new FulcioSigner({
       ...options,
       identityProvider: tokenProvider,
     });
@@ -66,19 +75,39 @@ describe('KeylessSigner', () => {
         getToken: jest.fn().mockRejectedValue(new Error('oops')),
       };
 
-      const subject = new KeylessSigner({
+      const subject = new FulcioSigner({
         ...options,
         identityProvider: errorProvider,
       });
 
       it('throws an error', async () => {
-        try {
-          await subject.sign(payload);
-          throw new Error('Expected an error to be thrown');
-        } catch (e) {
-          assert(e instanceof InternalError);
-          expect(e.code).toEqual('IDENTITY_TOKEN_READ_ERROR');
-        }
+        await expect(subject.sign(payload)).rejects.toThrowWithCode(
+          InternalError,
+          'IDENTITY_TOKEN_READ_ERROR'
+        );
+      });
+    });
+
+    describe('when the child signer returns an invalid key', () => {
+      const childSigner: Signatory = {
+        sign: () =>
+          Promise.resolve({
+            signature: Buffer.from('signature'),
+            key: { $case: 'x509Certificate', certificate: 'cert' },
+          }),
+      };
+
+      const subject = new FulcioSigner({
+        ...options,
+        identityProvider: tokenProvider,
+        signer: childSigner,
+      });
+
+      it('throws an error', async () => {
+        await expect(subject.sign(payload)).rejects.toThrowWithCode(
+          InternalError,
+          'CA_CREATE_SIGNING_CERTIFICATE_ERROR'
+        );
       });
     });
 
@@ -95,9 +124,9 @@ describe('KeylessSigner', () => {
         publicKeyRequest: {
           publicKey: {
             algorithm: 'ECDSA',
-            content: /.+/i,
+            content: publicKey,
           },
-          proofOfPossession: /.+/i,
+          proofOfPossession: Buffer.from(signature).toString('base64'),
         },
       };
 

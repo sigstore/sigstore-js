@@ -14,5 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 export { CallbackSigner, CallbackSignerOptions, SignerFunc } from './callback';
-export { KeylessSigner, KeylessSignerOptions } from './keyless';
+export { EphemeralSigner } from './ephemeral';
+export { FulcioSigner, FulcioSignerOptions } from './fulcio';
 export type { Endorsement, KeyMaterial, Signatory } from './signatory';

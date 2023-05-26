@@ -17,8 +17,9 @@ import { SignatureError } from '../error';
 import {
   CallbackSigner,
   CallbackSignerOptions,
-  KeylessSigner,
-  KeylessSignerOptions,
+  EphemeralSigner,
+  FulcioSigner,
+  FulcioSignerOptions,
   Signatory,
 } from '../signatory';
 import {
@@ -41,7 +42,7 @@ export type BundleType = 'messageSignature' | 'dsseEnvelope';
 type RekorWitnessConfig = Pick<RekorWitnessOptions, 'rekorBaseURL'>;
 type TSAWitnessConfig = Pick<TSAWitnessOptions, 'tsaBaseURL'>;
 type KeylessSignerConfig = Pick<
-  KeylessSignerOptions,
+  FulcioSignerOptions,
   'fulcioBaseURL' | 'identityProvider'
 >;
 type CallbackSignerConfig = Pick<CallbackSignerOptions, 'signer'>;
@@ -72,7 +73,10 @@ function initSignatory(options: NotaryFactoryOptions): Signatory {
   if (isCallbackSignerEnabled(options)) {
     return new CallbackSigner(options);
   } else if (isFulcioEnabled(options)) {
-    return new KeylessSigner(options);
+    return new FulcioSigner({
+      ...options,
+      signer: new EphemeralSigner(),
+    });
   } else {
     throw new SignatureError({
       code: 'NO_SIGNATORY_ERROR',
