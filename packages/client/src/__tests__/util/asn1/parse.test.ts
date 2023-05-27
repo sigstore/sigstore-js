@@ -20,7 +20,7 @@ import {
   parseOID,
   parseStringASCII,
   parseTime,
-} from '../../../x509/asn1/parse';
+} from '../../../util/asn1/parse';
 
 describe('parseInteger', () => {
   it('parses positive integers', () => {
