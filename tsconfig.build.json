@@ -3,6 +3,7 @@
   "references": [
     { "path": "packages/cli" },
     { "path": "packages/client" },
+    { "path": "packages/mock" },
     { "path": "packages/rekor-types" },
     { "path": "packages/jest" },
     { "path": "packages/jest-types" },

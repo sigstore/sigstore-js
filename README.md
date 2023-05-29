@@ -8,6 +8,7 @@ JavaScript libraries for interacting with [Sigstore][6] services.
 * [`@sigstore/cli`](./packages/cli) - Command line interface for signing/verifying artifacts with Sigstore.
 * [`@sigstore/tuf`](./packages/tuf) - Library for interacting with the Sigstore TUF repository.
 * [`@sigstore/rekor-types`](./packages/tuf) - TypeScript types for the Sigstore Rekor REST API.
+* [`@sigstore/mock`](./packages/mock) - Mocking library for Sigstore services.
 
 ## Development
 
