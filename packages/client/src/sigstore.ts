@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import * as tuf from '@sigstore/tuf';
 import * as config from './config';
 import { Signer } from './sign';
-import * as tuf from './tuf';
 import * as sigstore from './types/sigstore';
 import { Verifier } from './verify';
 
@@ -29,7 +29,9 @@ export async function sign(
   const signer = new Signer({
     ca,
     tlog,
-    identityProviders: idps,
+    identityProviders: options.identityProvider
+      ? [options.identityProvider]
+      : idps,
     tlogUpload: options.tlogUpload,
   });
 
@@ -50,7 +52,9 @@ export async function attest(
     ca,
     tlog,
     tsa,
-    identityProviders: idps,
+    identityProviders: options.identityProvider
+      ? [options.identityProvider]
+      : idps,
     tlogUpload: options.tlogUpload,
   });
 
@@ -79,14 +83,13 @@ export async function verify(
 
 const tufUtils = {
   client: (options: config.TUFOptions = {}): Promise<tuf.TUF> => {
-    const t = new tuf.TUFClient({
+    return tuf.initTUF({
       mirrorURL: options.tufMirrorURL,
       rootPath: options.tufRootPath,
       cachePath: options.tufCachePath,
-      retry: options.retry ?? config.DEFAULT_RETRY,
-      timeout: options.timeout ?? config.DEFAULT_TIMEOUT,
+      retry: options.retry,
+      timeout: options.timeout,
     });
-    return t.refresh().then(() => t);
   },
 
   /*
@@ -96,10 +99,19 @@ const tufUtils = {
     path: string,
     options: config.TUFOptions = {}
   ): Promise<string> => {
-    return tufUtils.client(options).then((t) => t.getTarget(path));
+    return tuf
+      .initTUF({
+        mirrorURL: options.tufMirrorURL,
+        rootPath: options.tufRootPath,
+        cachePath: options.tufCachePath,
+        retry: options.retry,
+        timeout: options.timeout,
+      })
+      .then((t) => t.getTarget(path));
   },
 };
 
+export type { TUF } from '@sigstore/tuf';
 export type { SignOptions, VerifyOptions } from './config';
 export {
   InternalError,
@@ -108,7 +120,6 @@ export {
   VerificationError,
 } from './error';
 export * as utils from './sigstore-utils';
-export type { TUF } from './tuf';
 export type {
   SerializedBundle as Bundle,
   SerializedEnvelope as Envelope,

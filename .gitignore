@@ -6,3 +6,4 @@ hack/ca/store
 hack/ca/*.crt
 tsconfig.tsbuildinfo
 .vscode
+*.code-workspace

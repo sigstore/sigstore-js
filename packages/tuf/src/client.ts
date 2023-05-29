@@ -16,22 +16,21 @@ limitations under the License.
 import fs from 'fs';
 import path from 'path';
 import { Updater } from 'tuf-js';
-import * as sigstore from '../types/sigstore';
-import { appdata } from '../util';
 import { readTarget } from './target';
 
-import type { FetchOptions } from '../types/fetch';
+import type { MakeFetchHappenOptions } from 'make-fetch-happen';
 
-const TRUSTED_ROOT_TARGET = 'trusted_root.json';
+export type Retry = MakeFetchHappenOptions['retry'];
 
-const DEFAULT_CACHE_DIR = appdata.appDataPath('sigstore-js');
-const DEFAULT_MIRROR_URL = 'https://tuf-repo-cdn.sigstore.dev';
-const DEFAULT_TUF_ROOT_PATH = '../../store/public-good-instance-root.json';
+type FetchOptions = {
+  retry?: Retry;
+  timeout?: number;
+};
 
 export type TUFOptions = {
-  cachePath?: string;
-  mirrorURL?: string;
-  rootPath?: string;
+  cachePath: string;
+  mirrorURL: string;
+  rootPath: string;
 } & FetchOptions;
 
 export interface TUF {
@@ -42,26 +41,13 @@ interface RemoteConfig {
   mirror: string;
 }
 
-export async function getTrustedRoot(
-  options: TUFOptions = {}
-): Promise<sigstore.TrustedRoot> {
-  const client = new TUFClient(options);
-  const trustedRoot = await client.getTarget(TRUSTED_ROOT_TARGET);
-  return sigstore.TrustedRoot.fromJSON(JSON.parse(trustedRoot));
-}
-
 export class TUFClient implements TUF {
   private updater: Updater;
 
   constructor(options: TUFOptions) {
-    const cachePath = options.cachePath || DEFAULT_CACHE_DIR;
-    const tufRootPath =
-      options.rootPath || require.resolve(DEFAULT_TUF_ROOT_PATH);
-    const mirrorURL = options.mirrorURL || DEFAULT_MIRROR_URL;
-
-    initTufCache(cachePath, tufRootPath);
-    const remote = initRemoteConfig(cachePath, mirrorURL);
-    this.updater = initClient(cachePath, remote, options);
+    initTufCache(options.cachePath, options.rootPath);
+    const remote = initRemoteConfig(options.cachePath, options.mirrorURL);
+    this.updater = initClient(options.cachePath, remote, options);
   }
 
   public async refresh(): Promise<void> {
@@ -129,6 +115,7 @@ function initClient(
 
   // tuf-js only supports a number for fetchRetries so we have to
   // convert the boolean and object options to a number.
+  /* istanbul ignore if */
   if (typeof options.retry !== 'undefined') {
     if (typeof options.retry === 'number') {
       config.fetchRetries = options.retry;

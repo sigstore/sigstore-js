@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { TUFError } from '@sigstore/tuf';
 import mocktuf, { Target } from '@tufjs/repo-mock';
-import assert from 'assert';
-import { InternalError, PolicyError, VerificationError } from '../error';
+import { PolicyError, VerificationError } from '../error';
 import { Signer } from '../sign';
 import { attest, sign, tuf, verify } from '../sigstore';
 import {
@@ -179,7 +179,8 @@ describe('signAttestation', () => {
   });
 
   it('constructs the Signer with the correct options', async () => {
-    await attest(payload, payloadType);
+    const identityProvider = { getToken: () => Promise.resolve('token') };
+    await attest(payload, payloadType, { identityProvider });
 
     // Signer was constructed
     expect(mockSigner).toHaveBeenCalledTimes(1);
@@ -193,6 +194,7 @@ describe('signAttestation', () => {
     expect(options).toHaveProperty('ca', expect.anything());
     expect(options).toHaveProperty('tlog', expect.anything());
     expect(options.identityProviders).toHaveLength(1);
+    expect(options.identityProviders[0]).toBe(identityProvider);
   });
 
   it('invokes the Signer instance with the correct params', async () => {
@@ -344,14 +346,10 @@ describe('tuf', () => {
 
     describe('when the target does NOT exist', () => {
       it('throws an error', async () => {
-        expect.assertions(2);
-        try {
-          await tuf.getTarget('baz', options);
-        } catch (e) {
-          expect(e).toBeInstanceOf(InternalError);
-          assert(e instanceof InternalError);
-          expect(e.code).toEqual('TUF_FIND_TARGET_ERROR');
-        }
+        await expect(tuf.getTarget('baz', options)).rejects.toThrowWithCode(
+          TUFError,
+          'TUF_FIND_TARGET_ERROR'
+        );
       });
     });
   });

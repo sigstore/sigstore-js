@@ -26,20 +26,21 @@
     "clean": "shx rm -rf dist",
     "prebuild": "npm run clean",
     "build": "tsc -b",
-    "lint": "eslint . --ext .ts --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
-    "posttest": "npm run lint",
-    "prepack": "npm run build && oclif manifest && oclif readme",
-    "test": "echo \"no tests yet\"",
-    "version": "oclif readme && git add README.md"
+    "prepack": "npm run build && oclif manifest && npm run readme",
+    "test": "jest",
+    "readme": "oclif readme && shx sed -i \"s/^_See code:.*$//g\" README.md"
   },
   "dependencies": {
     "@oclif/color": "^1.0.5",
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
+    "open": "^8.4.2",
+    "openid-client": "^5.4.2",
     "sigstore": "^1.5.2"
   },
   "devDependencies": {
+    "make-fetch-happen": "^11.1.1",
     "oclif": "^3",
     "shx": "^0.3.3",
     "tslib": "^2.5.2",

@@ -22,7 +22,6 @@ import {
 import { TLogClient } from '../../tlog/index';
 import { SignatureMaterial } from '../../types/signature';
 import { Envelope } from '../../types/sigstore';
-import '../__helpers__';
 
 describe('TLogClient', () => {
   const baseURL = 'http://localhost:8080';

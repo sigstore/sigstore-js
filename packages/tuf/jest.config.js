@@ -13,11 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-export * as crypto from './crypto';
-export * as dsse from './dsse';
-export * as encoding from './encoding';
-export * as json from './json';
-export * as oidc from './oidc';
-export * as pem from './pem';
-export * as promise from './promise';
-export * as ua from './ua';
+const base = require('../../jest.config.base')
+
+module.exports = {
+  ...base,
+  displayName: 'tuf',
+  testPathIgnorePatterns: ['<rootDir>/dist/'],
+};

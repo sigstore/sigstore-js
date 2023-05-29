@@ -15,7 +15,7 @@ limitations under the License.
 */
 import fs from 'fs';
 import { TargetFile, Updater } from 'tuf-js';
-import { InternalError } from '../error';
+import { TUFError } from './error';
 
 // Downloads and returns the specified target from the provided TUF Updater.
 export async function readTarget(
@@ -28,7 +28,7 @@ export async function readTarget(
     fs.readFile(path, 'utf-8', (err, data) => {
       if (err) {
         reject(
-          new InternalError({
+          new TUFError({
             code: 'TUF_READ_TARGET_ERROR',
             message: `error reading target ${path}`,
             cause: err,
@@ -49,7 +49,7 @@ async function getTargetPath(tuf: Updater, target: string): Promise<string> {
   try {
     targetInfo = await tuf.getTargetInfo(target);
   } catch (err) {
-    throw new InternalError({
+    throw new TUFError({
       code: 'TUF_REFRESH_METADATA_ERROR',
       message: 'error refreshing TUF metadata',
       cause: err,
@@ -57,7 +57,7 @@ async function getTargetPath(tuf: Updater, target: string): Promise<string> {
   }
 
   if (!targetInfo) {
-    throw new InternalError({
+    throw new TUFError({
       code: 'TUF_FIND_TARGET_ERROR',
       message: `target ${target} not found`,
     });
@@ -71,7 +71,7 @@ async function getTargetPath(tuf: Updater, target: string): Promise<string> {
     try {
       path = await tuf.downloadTarget(targetInfo);
     } catch (err) {
-      throw new InternalError({
+      throw new TUFError({
         code: 'TUF_DOWNLOAD_TARGET_ERROR',
         message: `error downloading target ${path}`,
         cause: err,

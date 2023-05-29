@@ -9,10 +9,5 @@
     "./dist",
     "**/__tests__",
     "jest.setup.ts"
-  ],
-  "references": [
-    { "path": "../tuf" },
-    { "path": "../rekor-types" },
-    { "path": "../jest-types" }
   ]
 }
