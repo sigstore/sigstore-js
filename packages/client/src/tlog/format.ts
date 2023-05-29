@@ -18,12 +18,29 @@ import { Envelope } from '../types/sigstore';
 import { crypto, encoding as enc, json } from '../util';
 
 import type {
+  ProposedDSSEEntry,
   ProposedHashedRekordEntry,
   ProposedIntotoEntry,
 } from '../external/rekor';
 
+const DEFAULT_DSSE_API_VERSION = '0.0.1';
 const DEFAULT_HASHEDREKORD_API_VERSION = '0.0.1';
 const DEFAULT_INTOTO_API_VERSION = '0.0.2';
+
+// Returns a properly formatted Rekor "dsse" entry for the given DSSE
+// envelope and signature
+export function toProposedDSSEEntry(
+  envelope: Envelope,
+  signature: SignatureMaterial,
+  apiVersion = DEFAULT_DSSE_API_VERSION
+): ProposedDSSEEntry {
+  switch (apiVersion) {
+    case '0.0.1':
+      return toProposedDSSEV001Entry(envelope, signature);
+    default:
+      throw new Error(`Unsupported dsse kind API version: ${apiVersion}`);
+  }
+}
 
 // Returns a properly formatted Rekor "hashedrekord" entry for the given digest
 // and signature
@@ -69,6 +86,21 @@ export function toProposedIntotoEntry(
       throw new Error(`Unsupported intoto kind API version: ${apiVersion}`);
   }
 }
+function toProposedDSSEV001Entry(
+  envelope: Envelope,
+  signature: SignatureMaterial
+): ProposedDSSEEntry {
+  return {
+    apiVersion: '0.0.1',
+    kind: 'dsse',
+    spec: {
+      proposedContent: {
+        envelope: JSON.stringify(Envelope.toJSON(envelope)),
+        verifiers: [enc.base64Encode(toPublicKey(signature))],
+      },
+    },
+  };
+}
 
 function toProposedIntotoV002Entry(
   envelope: Envelope,
@@ -78,7 +110,7 @@ function toProposedIntotoV002Entry(
   const payloadHash = crypto.hash(envelope.payload).toString('hex');
 
   // Calculate the value for the hash field in the Rekor entry
-  const envelopeHash = calculateDSSEHash(envelope);
+  const envelopeHash = calculateDSSEHash(envelope, signature);
 
   // Collect values for re-creating the DSSE envelope.
   // Double-encode payload and signature cause that's what Rekor expects
@@ -90,7 +122,7 @@ function toProposedIntotoV002Entry(
   // Create the envelope portion of the entry. Note the inclusion of the
   // publicKey in the signature struct is not a standard part of a DSSE
   // envelope, but is required by Rekor.
-  const dsse: ProposedIntotoEntry['spec']['content']['envelope'] = {
+  const dsseEnv: ProposedIntotoEntry['spec']['content']['envelope'] = {
     payloadType: envelope.payloadType,
     payload: payload,
     signatures: [{ sig, publicKey }],
@@ -100,7 +132,7 @@ function toProposedIntotoV002Entry(
   // need to do the same here so that we can properly recreate the entry for
   // verification.
   if (keyid.length > 0) {
-    dsse.signatures[0].keyid = keyid;
+    dsseEnv.signatures[0].keyid = keyid;
   }
 
   return {
@@ -108,7 +140,7 @@ function toProposedIntotoV002Entry(
     kind: 'intoto',
     spec: {
       content: {
-        envelope: dsse,
+        envelope: dsseEnv,
         hash: { algorithm: 'sha256', value: envelopeHash },
         payloadHash: { algorithm: 'sha256', value: payloadHash },
       },
@@ -123,19 +155,27 @@ function toProposedIntotoV002Entry(
 //  * signature is base64 encoded (only the first signature is used)
 //  * keyid is included ONLY if it is NOT an empty string
 //  * The resulting JSON is canonicalized and hashed to a hex string
-function calculateDSSEHash(envelope: Envelope): string {
-  const dsse: ProposedIntotoEntry['spec']['content']['envelope'] = {
+function calculateDSSEHash(
+  envelope: Envelope,
+  signature: SignatureMaterial
+): string {
+  const dsseEnv: ProposedIntotoEntry['spec']['content']['envelope'] = {
     payloadType: envelope.payloadType,
     payload: envelope.payload.toString('base64'),
-    signatures: [{ sig: envelope.signatures[0].sig.toString('base64') }],
+    signatures: [
+      {
+        sig: envelope.signatures[0].sig.toString('base64'),
+        publicKey: toPublicKey(signature),
+      },
+    ],
   };
 
   // If the keyid is an empty string, Rekor seems to remove it altogether.
   if (envelope.signatures[0].keyid.length > 0) {
-    dsse.signatures[0].keyid = envelope.signatures[0].keyid;
+    dsseEnv.signatures[0].keyid = envelope.signatures[0].keyid;
   }
 
-  return crypto.hash(json.canonicalize(dsse)).toString('hex');
+  return crypto.hash(json.canonicalize(dsseEnv)).toString('hex');
 }
 
 function toPublicKey(signature: SignatureMaterial): string {

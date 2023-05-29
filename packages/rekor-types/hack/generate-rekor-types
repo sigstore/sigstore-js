@@ -2,7 +2,7 @@
 set -ex
 
 # Check-out Rekor repo
-REF=4bb6f441c1b27ccc7e625c721c7d3203acc7b313
+REF=576458cb53269ed54dccf8a43271ee02a785c191
 REKOR_DIR=/tmp/rekor
 
 rm -rf ${REKOR_DIR}
@@ -21,7 +21,7 @@ npx openapi --input "${REKOR_DIR}/openapi.yaml" \
   --exportSchemas=false
 
 # Run json2ts on schemas
-KINDS=( intoto hashedrekord )
+KINDS=( dsse intoto hashedrekord )
 for KIND in "${KINDS[@]}"
 do
   TYPE_PATH=${REKOR_DIR}/pkg/types/${KIND}

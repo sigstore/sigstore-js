@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import {
+  toProposedDSSEEntry,
   toProposedHashedRekordEntry,
   toProposedIntotoEntry,
 } from '../../tlog/format';
@@ -52,6 +53,81 @@ describe('format', () => {
       expect(entry.spec.signature?.publicKey?.content).toBe(
         enc.base64Encode(cert)
       );
+    });
+  });
+
+  describe('toProposedDSSEEntry', () => {
+    describe('when there is a single signature in the envelope', () => {
+      const envelope: Envelope = {
+        payloadType: 'application/vnd.in-toto+json',
+        payload: Buffer.from('payload'),
+        signatures: [{ keyid: '123', sig: signature }],
+      };
+
+      it('returns a valid dsse entry', () => {
+        const entry = toProposedDSSEEntry(envelope, sigMaterial);
+
+        expect(entry.apiVersion).toEqual('0.0.1');
+        expect(entry.kind).toEqual('dsse');
+        expect(entry.spec).toBeTruthy();
+        expect(entry.spec.proposedContent).toBeTruthy();
+        expect(typeof entry.spec.proposedContent?.envelope).toBe('string');
+        expect(entry.spec.proposedContent?.verifiers).toHaveLength(1);
+        expect(entry.spec.proposedContent?.verifiers[0]).toEqual(
+          enc.base64Encode(cert)
+        );
+
+        // ensure we have the expected JSON object stored in the string
+        if (typeof entry.spec.proposedContent?.envelope === 'string') {
+          const envObj = JSON.parse(entry.spec.proposedContent?.envelope);
+          expect(envObj).toEqual(Envelope.toJSON(envelope));
+          // ensure we only have 1 signature specified in the object
+          expect(envObj.signatures).toHaveLength(1);
+        } else {
+          fail('dsse envelope should be set as JSON string');
+        }
+
+        // we don't want the persisted properties to show up in a proposed entry
+        expect(entry.spec.signatures).toBeUndefined();
+      });
+    });
+
+    describe('when there are multiple signatures in the envelope', () => {
+      const envelope: Envelope = {
+        payloadType: 'application/vnd.in-toto+json',
+        payload: Buffer.from('payload'),
+        signatures: [
+          { keyid: '123', sig: signature },
+          { keyid: '456', sig: signature },
+        ],
+      };
+
+      it('returns a valid dsse entry', () => {
+        const entry = toProposedDSSEEntry(envelope, sigMaterial);
+
+        expect(entry.apiVersion).toEqual('0.0.1');
+        expect(entry.kind).toEqual('dsse');
+        expect(entry.spec).toBeTruthy();
+        expect(entry.spec.proposedContent).toBeTruthy();
+        expect(typeof entry.spec.proposedContent?.envelope).toBe('string');
+        expect(entry.spec.proposedContent?.verifiers).toHaveLength(1);
+        expect(entry.spec.proposedContent?.verifiers[0]).toEqual(
+          enc.base64Encode(cert)
+        );
+
+        // ensure we have the expected JSON object stored in the string
+        if (typeof entry.spec.proposedContent?.envelope === 'string') {
+          const envObj = JSON.parse(entry.spec.proposedContent?.envelope);
+          expect(envObj).toEqual(Envelope.toJSON(envelope));
+          // ensure we have 2 signatures specified in the object
+          expect(envObj.signatures).toHaveLength(2);
+        } else {
+          fail('dsse envelope should be set as JSON string');
+        }
+
+        // we don't want the persisted properties to show up in a proposed entry
+        expect(entry.spec.signatures).toBeUndefined();
+      });
     });
   });
 
@@ -99,7 +175,7 @@ describe('format', () => {
         // This hard-coded hash value helps us detect if we've unintentionally
         // changed the hashing algorithm.
         expect(entry.spec.content.hash?.value).toBe(
-          '91a5eb7452452720d704da5442acb9703252b3ab7be51ec155a244f5c9aa5ec8'
+          '37d47ab456ca63a84f6457be655dd49799542f2e1db5d05160b214fb0b9a7f55'
         );
       });
     });
@@ -129,7 +205,7 @@ describe('format', () => {
         // This hard-coded hash value helps us detect if we've unintentionally
         // changed the hashing algorithm.
         expect(entry.spec.content.hash?.value).toBe(
-          '295fd391f3b3f349cdaa686befaa765d90c0b411a0811e45f8bc481338a51622'
+          'f39ab279af9d9be421342ce4c8e5c422b5bc3dd20602703b1893283a934fbe72'
         );
       });
     });
@@ -163,7 +239,7 @@ describe('format', () => {
         // This hard-coded hash value helps us detect if we've unintentionally
         // changed the hashing algorithm.
         expect(entry.spec.content.hash?.value).toBe(
-          '91a5eb7452452720d704da5442acb9703252b3ab7be51ec155a244f5c9aa5ec8'
+          '37d47ab456ca63a84f6457be655dd49799542f2e1db5d05160b214fb0b9a7f55'
         );
       });
     });

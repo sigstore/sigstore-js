@@ -19,6 +19,7 @@ import { crypto, encoding as enc } from '../../util';
 
 import type {
   ProposedEntry,
+  ProposedDSSEEntry,
   ProposedHashedRekordEntry,
   ProposedIntotoEntry,
 } from '../../external/rekor';
@@ -41,6 +42,9 @@ export function verifyTLogBody(
     }
 
     switch (body.kind) {
+      case 'dsse':
+        verifyDSSETLogBody(body, bundleContent);
+        break;
       case 'intoto':
         verifyIntotoTLogBody(body, bundleContent);
         break;
@@ -53,6 +57,30 @@ export function verifyTLogBody(
     return true;
   } catch (e) {
     return false;
+  }
+}
+
+// Compare the given intoto tlog entry to the given bundle
+function verifyDSSETLogBody(
+  tlogEntry: ProposedDSSEEntry,
+  content: sigstore.Bundle['content']
+): void {
+  if (content?.$case !== 'dsseEnvelope') {
+    throw new VerificationError(
+      `unsupported bundle content: ${content?.$case || 'unknown'}`
+    );
+  }
+
+  const dsse = content.dsseEnvelope;
+
+  switch (tlogEntry.apiVersion) {
+    case '0.0.1':
+      verifyDSSE001TLogBody(tlogEntry, dsse);
+      break;
+    default:
+      throw new VerificationError(
+        `unsupported dsse version: ${tlogEntry.apiVersion}`
+      );
   }
 }
 
@@ -101,6 +129,42 @@ function verifyHashedRekordTLogBody(
       throw new VerificationError(
         `unsupported hashedrekord version: ${tlogEntry.apiVersion}`
       );
+  }
+}
+
+// Compare the given dsse v0.0.1 tlog entry to the given DSSE envelope.
+function verifyDSSE001TLogBody(
+  tlogEntry: Extract<ProposedDSSEEntry, { apiVersion: '0.0.1' }>,
+  dsse: sigstore.Envelope
+): void {
+  // Collect all of the signatures from the DSSE envelope
+  // Turns them into base64-encoded strings for comparison
+  const dsseSigs = dsse.signatures.map((signature) =>
+    signature.sig.toString('base64')
+  );
+
+  // Collect all of the signatures from the tlog entry
+  // Remember that tlog signatures are double base64-encoded
+  const tlogSigs = tlogEntry.spec.signatures?.map((signature) =>
+    signature.signature ? enc.base64Decode(signature.signature) : ''
+  );
+
+  // Ensure the bundle's DSSE and the tlog entry contain the same number of signatures
+  if (dsseSigs.length !== tlogSigs?.length) {
+    throw new VerificationError(TLOG_MISMATCH_ERROR_MSG);
+  }
+
+  // Ensure that every signature in the bundle's DSSE is present in the tlog entry
+  if (!dsseSigs.every((dsseSig) => tlogSigs.includes(dsseSig))) {
+    throw new VerificationError(TLOG_MISMATCH_ERROR_MSG);
+  }
+
+  // Ensure the digest of the bundle's DSSE payload matches the digest in the
+  // tlog entry
+  const dssePayloadHash = crypto.hash(dsse.payload).toString('hex');
+
+  if (dssePayloadHash !== tlogEntry.spec.payloadHash?.value) {
+    throw new VerificationError(TLOG_MISMATCH_ERROR_MSG);
   }
 }
 

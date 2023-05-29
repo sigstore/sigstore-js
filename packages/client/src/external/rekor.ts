@@ -20,6 +20,7 @@ import { checkStatus } from './error';
 import type {
   LogEntry,
   ProposedEntry,
+  ProposedDSSEEntry,
   ProposedHashedRekordEntry,
   ProposedIntotoEntry,
   SearchIndex,
@@ -31,6 +32,7 @@ export type {
   ProposedEntry,
   SearchIndex,
   SearchLogQuery,
+  ProposedDSSEEntry,
   ProposedHashedRekordEntry,
   ProposedIntotoEntry,
 };

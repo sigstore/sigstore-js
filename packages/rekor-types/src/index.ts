@@ -1,11 +1,19 @@
+import type { DSSEV001Schema } from './__generated__/dsse';
 import type { HashedRekorV001Schema } from './__generated__/hashedrekord';
 import type {
   IntotoV001Schema,
   IntotoV002Schema,
 } from './__generated__/intoto';
 
+const DSSE_KIND = 'dsse';
 const INTOTO_KIND = 'intoto';
 const HASHEDREKORD_KIND = 'hashedrekord';
+
+export type ProposedDSSEEntry = {
+  apiVersion: '0.0.1';
+  kind: typeof DSSE_KIND;
+  spec: DSSEV001Schema;
+};
 
 export type ProposedHashedRekordEntry = {
   apiVersion: '0.0.1';
@@ -25,7 +33,10 @@ export type ProposedIntotoEntry =
       spec: IntotoV002Schema;
     };
 
-export type ProposedEntry = ProposedHashedRekordEntry | ProposedIntotoEntry;
+export type ProposedEntry =
+  | ProposedDSSEEntry
+  | ProposedHashedRekordEntry
+  | ProposedIntotoEntry;
 
 export type SearchLogQuery = {
   entryUUIDs?: Array<string>;
@@ -34,6 +45,7 @@ export type SearchLogQuery = {
 };
 
 export type { InclusionProof, LogEntry, SearchIndex } from './__generated__/';
+export type { DSSEV001Schema } from './__generated__/dsse';
 export type { HashedRekorV001Schema } from './__generated__/hashedrekord';
 export type {
   IntotoV001Schema,
