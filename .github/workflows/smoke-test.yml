@@ -18,30 +18,30 @@ jobs:
       contents: read
       id-token: write
     steps:
-    - name: Checkout source
-      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3
-    - name: Setup node
-      uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3
-      with:
-        node-version: 16
-        cache: npm
-    - name: Install dependencies
-      run: npm ci
-    - name: Build sigstore-js
-      run: |
-        npm run build
-    - name: Create artifact to sign
-      run: |
-        echo -n "hello world" > artifact
-    - name: Sign artifact
-      run: |
-        ./packages/cli/bin/run attest --type "text/plain" --out bundle.sigstore artifact
-    - name: Verify bundle
-      run: |
-        ./packages/cli/bin/run verify bundle.sigstore
-    - name: Archive bundle
-      uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3
-      with:
-        name: bundle
-        path: bundle.sigstore
+      - name: Checkout source
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3
+      - name: Setup node
+        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3
+        with:
+          node-version: 16
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build sigstore-js
+        run: |
+          npm run build
+      - name: Create artifact to sign
+        run: |
+          echo -n "hello world" > artifact
+      - name: Sign artifact
+        run: |
+          ./packages/cli/bin/run attest --type "text/plain" --out bundle.sigstore artifact
+      - name: Verify bundle
+        run: |
+          ./packages/cli/bin/run verify bundle.sigstore
+      - name: Archive bundle
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3
+        with:
+          name: bundle
+          path: bundle.sigstore
 

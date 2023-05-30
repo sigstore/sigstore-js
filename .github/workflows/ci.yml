@@ -14,19 +14,19 @@ jobs:
     name: Lint/build code
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout source
-      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3
-    - name: Setup node
-      uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3
-      with:
-        node-version: 16
-        cache: npm
-    - name: Install dependencies
-      run: npm ci
-    - name: Run linter
-      run: npm run lint:check
-    - name: Run build
-      run: npm run build
+      - name: Checkout source
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3
+      - name: Setup node
+        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3
+        with:
+          node-version: 16
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run linter
+        run: npm run lint:check
+      - name: Run build
+        run: npm run build
 
   run-tests:
     name: Run tests
@@ -55,21 +55,21 @@ jobs:
       run:
         shell: ${{ matrix.platform.shell }}
     steps:
-    - name: Checkout source
-      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3
-    - name: Setup node
-      uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: npm
-    - name: Manage Jest cache
-      uses: actions/cache@v3
-      with:
-        path: ${{ matrix.platform.jest-cache }}
-        key: ${{ hashFiles('**/package-lock.json') }}
-    - name: Update npm
-      run: npm install -g npm@8
-    - name: Install dependencies
-      run: npm ci
-    - name: Run tests
-      run: npm run test:ci -- --cacheDirectory ${{ matrix.platform.jest-cache }}
+      - name: Checkout source
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3
+      - name: Setup node
+        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - name: Manage Jest cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ matrix.platform.jest-cache }}
+          key: ${{ hashFiles('**/package-lock.json') }}
+      - name: Update npm
+        run: npm install -g npm@8
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm run test:ci -- --cacheDirectory ${{ matrix.platform.jest-cache }}
