@@ -53,6 +53,7 @@ async function getGHAToken(audience: string): Promise<string> {
     !process.env.ACTIONS_ID_TOKEN_REQUEST_URL ||
     !process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN
   ) {
+    console.log('no token environment variables found: %v, %v', process.env.ACTIONS_ID_TOKEN_REQUEST_URL, process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN);
     return Promise.reject('no token available');
   }
 
