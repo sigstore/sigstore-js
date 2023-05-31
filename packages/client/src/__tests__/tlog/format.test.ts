@@ -99,7 +99,7 @@ describe('format', () => {
         // This hard-coded hash value helps us detect if we've unintentionally
         // changed the hashing algorithm.
         expect(entry.spec.content.hash?.value).toBe(
-          '91a5eb7452452720d704da5442acb9703252b3ab7be51ec155a244f5c9aa5ec8'
+          '37d47ab456ca63a84f6457be655dd49799542f2e1db5d05160b214fb0b9a7f55'
         );
       });
     });
@@ -129,7 +129,7 @@ describe('format', () => {
         // This hard-coded hash value helps us detect if we've unintentionally
         // changed the hashing algorithm.
         expect(entry.spec.content.hash?.value).toBe(
-          '295fd391f3b3f349cdaa686befaa765d90c0b411a0811e45f8bc481338a51622'
+          'f39ab279af9d9be421342ce4c8e5c422b5bc3dd20602703b1893283a934fbe72'
         );
       });
     });
@@ -163,7 +163,7 @@ describe('format', () => {
         // This hard-coded hash value helps us detect if we've unintentionally
         // changed the hashing algorithm.
         expect(entry.spec.content.hash?.value).toBe(
-          '91a5eb7452452720d704da5442acb9703252b3ab7be51ec155a244f5c9aa5ec8'
+          '37d47ab456ca63a84f6457be655dd49799542f2e1db5d05160b214fb0b9a7f55'
         );
       });
     });

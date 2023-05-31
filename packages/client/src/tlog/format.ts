@@ -78,7 +78,7 @@ function toProposedIntotoV002Entry(
   const payloadHash = crypto.hash(envelope.payload).toString('hex');
 
   // Calculate the value for the hash field in the Rekor entry
-  const envelopeHash = calculateDSSEHash(envelope);
+  const envelopeHash = calculateDSSEHash(envelope, signature);
 
   // Collect values for re-creating the DSSE envelope.
   // Double-encode payload and signature cause that's what Rekor expects
@@ -123,11 +123,19 @@ function toProposedIntotoV002Entry(
 //  * signature is base64 encoded (only the first signature is used)
 //  * keyid is included ONLY if it is NOT an empty string
 //  * The resulting JSON is canonicalized and hashed to a hex string
-function calculateDSSEHash(envelope: Envelope): string {
+function calculateDSSEHash(
+  envelope: Envelope,
+  signature: SignatureMaterial
+): string {
   const dsse: ProposedIntotoEntry['spec']['content']['envelope'] = {
     payloadType: envelope.payloadType,
     payload: envelope.payload.toString('base64'),
-    signatures: [{ sig: envelope.signatures[0].sig.toString('base64') }],
+    signatures: [
+      {
+        sig: envelope.signatures[0].sig.toString('base64'),
+        publicKey: toPublicKey(signature),
+      },
+    ],
   };
 
   // If the keyid is an empty string, Rekor seems to remove it altogether.
