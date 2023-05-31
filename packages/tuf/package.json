@@ -29,7 +29,7 @@
   "devDependencies": {
     "@total-typescript/shoehorn": "^0.1.0",
     "@tufjs/repo-mock": "^1.1.0",
-    "@types/node": "^20.2.3",
+    "@types/node": "^20.2.5",
     "nock": "^13.2.4",
     "shx": "^0.3.3",
     "typescript": "^5.0.2"
