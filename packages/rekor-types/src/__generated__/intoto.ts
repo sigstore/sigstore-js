@@ -20,7 +20,7 @@ export interface IntotoV001Schema {
      */
     envelope?: string;
     /**
-     * Specifies the hash algorithm and value encompassing the entire signed envelope
+     * Specifies the hash algorithm and value encompassing the entire signed envelope; this is computed by the rekor server, client-provided values are ignored
      */
     hash?: {
       /**
@@ -33,7 +33,7 @@ export interface IntotoV001Schema {
       value: string;
     };
     /**
-     * Specifies the hash algorithm and value covering the payload within the DSSE envelope
+     * Specifies the hash algorithm and value covering the payload within the DSSE envelope; this is computed by the rekor server, client-provided values are ignored
      */
     payloadHash?: {
       /**
@@ -59,7 +59,7 @@ export interface IntotoV002Schema {
     /**
      * dsse envelope
      */
-    envelope?: {
+    envelope: {
       /**
        * payload of the envelope
        */
@@ -82,11 +82,11 @@ export interface IntotoV002Schema {
           /**
            * signature of the payload
            */
-          sig?: string;
+          sig: string;
           /**
            * public key that corresponds to this signature
            */
-          publicKey?: string;
+          publicKey: string;
         },
         ...{
           /**
@@ -96,11 +96,11 @@ export interface IntotoV002Schema {
           /**
            * signature of the payload
            */
-          sig?: string;
+          sig: string;
           /**
            * public key that corresponds to this signature
            */
-          publicKey?: string;
+          publicKey: string;
         }[]
       ];
     };
