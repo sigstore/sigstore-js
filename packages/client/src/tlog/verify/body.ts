@@ -144,8 +144,8 @@ function verifyDSSE001TLogBody(
   );
 
   // Collect all of the signatures from the tlog entry
-  const tlogSigs = tlogEntry.spec.signatures?.map((signature) =>
-    signature.signature 
+  const tlogSigs = tlogEntry.spec.signatures?.map(
+    (signature) => signature.signature
   );
 
   // Ensure the bundle's DSSE and the tlog entry contain the same number of signatures
