@@ -39,7 +39,7 @@
     "json-schema-to-typescript": "^13.0.0",
     "nock": "^13.2.4",
     "shx": "^0.3.3",
-    "typescript": "^5.0.2"
+    "typescript": "^5.1.3"
   },
   "dependencies": {
     "@sigstore/protobuf-specs": "^0.1.0",
