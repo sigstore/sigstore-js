@@ -15,8 +15,8 @@ limitations under the License.
 */
 import * as sigstore from '../types/sigstore';
 import { crypto, pem } from '../util';
+import { ASN1Obj } from '../util/asn1';
 import { ByteStream } from '../util/stream';
-import { ASN1Obj } from './asn1/obj';
 import {
   x509AuthorityKeyIDExtension,
   x509BasicConstraintsExtension,
