@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { ASN1ParseError } from '../../../x509/asn1/error';
-import { ASN1Tag } from '../../../x509/asn1/tag';
+import { ASN1ParseError } from '../../../util/asn1/error';
+import { ASN1Tag } from '../../../util/asn1/tag';
 
 describe('ASN1Tag', () => {
   describe('when the tag is in the universal tag class', () => {

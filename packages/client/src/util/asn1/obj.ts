@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { ByteStream } from '../../util/stream';
+import { ByteStream } from '../stream';
 import { ASN1ParseError, ASN1TypeError } from './error';
 import { decodeLength, encodeLength } from './length';
 import {
@@ -160,7 +160,10 @@ function collectSubs(stream: ByteStream, len: number): ASN1Obj[] {
   // Calculate end of object content
   const end = stream.position + len;
 
-  // Make sure there are enough bytes left in the stream
+  // Make sure there are enough bytes left in the stream. This should never
+  // happen, cause it'll get caught when the stream is sliced in parseStream.
+  // Leaving as an extra check just in case.
+  /* istanbul ignore if */
   if (end > stream.length) {
     throw new ASN1ParseError('invalid length');
   }
