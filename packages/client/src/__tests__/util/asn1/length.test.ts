@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { decodeLength, encodeLength } from '../../../util/asn1/length';
 import { ByteStream } from '../../../util/stream';
-import { decodeLength, encodeLength } from '../../../x509/asn1/length';
 
 describe('decodeLength', () => {
   describe('when the encoded length is less than 128', () => {

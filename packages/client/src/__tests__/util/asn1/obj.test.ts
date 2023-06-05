@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { ASN1TypeError } from '../../../x509/asn1/error';
-import { ASN1Obj } from '../../../x509/asn1/obj';
+import { ASN1TypeError } from '../../../util/asn1/error';
+import { ASN1Obj } from '../../../util/asn1/obj';
 
 describe('ASN1Obj', () => {
   describe('parseBuffer', () => {
