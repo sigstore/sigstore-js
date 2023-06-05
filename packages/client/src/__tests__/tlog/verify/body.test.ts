@@ -140,4 +140,18 @@ describe('verifyTLogBody', () => {
       });
     });
   });
+
+  describe('when a DSSE Bundle w/ dsse tlog entry is provided', () => {
+    describe('when everything is valid', () => {
+      const bundle = sigstore.bundleFromJSON(
+        bundles.dsse.valid.withDSSETLogEntry
+      );
+      const tlogEntry = bundle.verificationMaterial
+        ?.tlogEntries[0] as sigstore.VerifiableTransparencyLogEntry;
+
+      it('returns true', () => {
+        expect(verifyTLogBody(tlogEntry, bundle.content)).toBe(true);
+      });
+    });
+  });
 });

@@ -21,7 +21,7 @@ npx openapi --input "${REKOR_DIR}/openapi.yaml" \
   --exportSchemas=false
 
 # Run json2ts on schemas
-KINDS=( intoto hashedrekord )
+KINDS=( dsse intoto hashedrekord )
 for KIND in "${KINDS[@]}"
 do
   TYPE_PATH=${REKOR_DIR}/pkg/types/${KIND}
