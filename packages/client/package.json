@@ -1,6 +1,6 @@
 {
   "name": "sigstore",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "description": "code-signing for npm packages",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -30,7 +30,7 @@
     "provenance": true
   },
   "devDependencies": {
-    "@sigstore/rekor-types": "^0.0.3",
+    "@sigstore/rekor-types": "^1.0.0",
     "@total-typescript/shoehorn": "^0.1.0",
     "@tufjs/repo-mock": "^1.1.0",
     "@types/make-fetch-happen": "^10.0.0",
@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@sigstore/protobuf-specs": "^0.1.0",
-    "@sigstore/tuf": "^0.0.0",
+    "@sigstore/tuf": "^1.0.0",
     "make-fetch-happen": "^11.0.1",
     "tuf-js": "^1.1.3"
   },
