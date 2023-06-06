@@ -77,16 +77,10 @@ describe('readTarget', () => {
       });
 
       it('throw an error', async () => {
-        await expect(readTarget(tuf, targetPath)).rejects.toThrowError(
-          TUFError
+        await expect(readTarget(tuf, targetPath)).rejects.toThrowWithCode(
+          TUFError,
+          'TUF_DOWNLOAD_TARGET_ERROR'
         );
-      });
-
-      it('throws an error with code TUF_DOWNLOAD_TARGET_ERROR', async () => {
-        expect.assertions(1);
-        await readTarget(tuf, targetPath).catch((err) => {
-          expect(err.code).toEqual('TUF_DOWNLOAD_TARGET_ERROR');
-        });
       });
     });
   });
@@ -97,14 +91,10 @@ describe('readTarget', () => {
     });
 
     it('throws an error', async () => {
-      await expect(readTarget(tuf, targetPath)).rejects.toThrow(TUFError);
-    });
-
-    it('throws an error with code TUF_REFRESH_METADATA_ERROR', async () => {
-      expect.assertions(1);
-      await readTarget(tuf, targetPath).catch((err) => {
-        expect(err.code).toEqual('TUF_REFRESH_METADATA_ERROR');
-      });
+      await expect(readTarget(tuf, targetPath)).rejects.toThrowWithCode(
+        TUFError,
+        'TUF_REFRESH_METADATA_ERROR'
+      );
     });
   });
 
@@ -115,14 +105,10 @@ describe('readTarget', () => {
     });
 
     it('throws an error', async () => {
-      await expect(readTarget(tuf, targetPath)).rejects.toThrow(TUFError);
-    });
-
-    it('throws an error with code TUF_FIND_TARGET_ERROR', async () => {
-      expect.assertions(1);
-      await readTarget(tuf, targetPath).catch((err) => {
-        expect(err.code).toEqual('TUF_FIND_TARGET_ERROR');
-      });
+      await expect(readTarget(tuf, targetPath)).rejects.toThrowWithCode(
+        TUFError,
+        'TUF_FIND_TARGET_ERROR'
+      );
     });
   });
 
@@ -134,14 +120,10 @@ describe('readTarget', () => {
     });
 
     it('throws an error', async () => {
-      await expect(readTarget(tuf, targetPath)).rejects.toThrow(TUFError);
-    });
-
-    it('throws an error with code TUF_READ_TARGET_ERROR', async () => {
-      expect.assertions(1);
-      await readTarget(tuf, targetPath).catch((err) => {
-        expect(err.code).toEqual('TUF_READ_TARGET_ERROR');
-      });
+      await expect(readTarget(tuf, targetPath)).rejects.toThrowWithCode(
+        TUFError,
+        'TUF_READ_TARGET_ERROR'
+      );
     });
   });
 });
