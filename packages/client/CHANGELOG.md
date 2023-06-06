@@ -1,5 +1,20 @@
 # sigstore
 
+## 1.6.0
+
+### Minor Changes
+
+- 5ea8b63: Adds a new `identityProvider` config option for the `sign`/`attest` functions
+
+### Patch Changes
+
+- 4fdf826: Consume TUF client from `@sigstore/tuf` package
+- f72e2b2: Consume Rekor API types from `@sigstore/rekor-types` package
+- 84fd931: Export `IdentityProvider` interface
+- Updated dependencies [29b88a3]
+- Updated dependencies [3e770f0]
+  - @sigstore/tuf@1.0.0
+
 ## 1.5.2
 
 ### Patch Changes

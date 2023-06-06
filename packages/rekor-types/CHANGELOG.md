@@ -1,5 +1,15 @@
 # @sigstore/rekor-types
 
+## 1.0.0
+
+### Major Changes
+
+- 90cadd3: Promoting to 1.0.0
+
+### Minor Changes
+
+- 16de8c7: add DSSE type
+
 ## 0.0.3
 
 ### Patch Changes
