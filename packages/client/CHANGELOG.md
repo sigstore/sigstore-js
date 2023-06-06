@@ -5,6 +5,7 @@
 ### Minor Changes
 
 - 5ea8b63: Adds a new `identityProvider` config option for the `sign`/`attest` functions
+- 16de8c7: Support for verifying Rekor entries w/ the new `dsse` entry type
 
 ### Patch Changes
 
