@@ -18,7 +18,7 @@ const base = require('../../jest.config.base');
 module.exports = {
   ...base,
   displayName: 'client',
-  setupFilesAfterEnv: ['./jest.setup.ts'],
+  setupFilesAfterEnv: ['./jest.setup.ts', '@sigstore/jest/all'],
   testPathIgnorePatterns: [
     '<rootDir>/dist/',
     '<rootDir>/src/__tests__/__fixtures__',

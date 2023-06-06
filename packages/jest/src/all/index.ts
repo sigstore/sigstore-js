@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The Sigstore Authors.
+Copyright 2023 The Sigstore Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,7 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-console.error = jest.fn();
+import * as matchers from '../matchers';
 
-// Export something so we look like a an importable module
-export {};
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const jestExpect = (global as any).expect;
+
+if (jestExpect !== undefined) {
+  jestExpect.extend(matchers);
+} else {
+  throw new Error(
+    "Unable to find Jest's global expect. " +
+      'Please check you have added @sigstore/jest correctly to your jest configuration.'
+  );
+}
