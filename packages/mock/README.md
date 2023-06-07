@@ -1,4 +1,4 @@
-# @sigstore/mock &middot; [![npm version](https://img.shields.io/npm/v/@sigstore/tuf.svg?style=flat)](https://www.npmjs.com/package/sigstore) [![CI Status](https://github.com/sigstore/sigstore-js/workflows/CI/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/ci.yml) [![Smoke Test Status](https://github.com/sigstore/sigstore-js/workflows/smoke-test/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/smoke-test.yml)
+# @sigstore/mock &middot; [![npm version](https://img.shields.io/npm/v/@sigstore/mock.svg?style=flat)](https://www.npmjs.com/package/@sigstore/mock) [![CI Status](https://github.com/sigstore/sigstore-js/workflows/CI/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/ci.yml) [![Smoke Test Status](https://github.com/sigstore/sigstore-js/workflows/smoke-test/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/smoke-test.yml)
 
 Builds on top of the [`nock`][1] library to set-up mock endpoints for Sigstore
 services.

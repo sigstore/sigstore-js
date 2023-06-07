@@ -1,4 +1,4 @@
-# @sigstore/tuf &middot; [![npm version](https://img.shields.io/npm/v/@sigstore/tuf.svg?style=flat)](https://www.npmjs.com/package/sigstore) [![CI Status](https://github.com/sigstore/sigstore-js/workflows/CI/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/ci.yml) [![Smoke Test Status](https://github.com/sigstore/sigstore-js/workflows/smoke-test/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/smoke-test.yml)
+# @sigstore/tuf &middot; [![npm version](https://img.shields.io/npm/v/@sigstore/tuf.svg?style=flat)](https://www.npmjs.com/package/@sigstore/tuf) [![CI Status](https://github.com/sigstore/sigstore-js/workflows/CI/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/ci.yml) [![Smoke Test Status](https://github.com/sigstore/sigstore-js/workflows/smoke-test/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/smoke-test.yml)
 
 A JavaScript library for securely retrieving targets from the Sigstore [TUF][1]
 repository.
