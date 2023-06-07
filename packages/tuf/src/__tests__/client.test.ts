@@ -91,15 +91,10 @@ describe('TUFClient', () => {
       it('throws an error', async () => {
         const subject = new TUFClient(options!);
         await subject.refresh();
-        await expect(subject.getTarget('baz')).rejects.toThrowError(TUFError);
-      });
-
-      it('throws an error with code TUF_FIND_TARGET_ERROR', async () => {
-        const subject = new TUFClient(options!);
-        expect.assertions(1);
-        await subject.getTarget('baz').catch((err) => {
-          expect(err.code).toEqual('TUF_FIND_TARGET_ERROR');
-        });
+        await expect(subject.getTarget('baz')).rejects.toThrowWithCode(
+          TUFError,
+          'TUF_FIND_TARGET_ERROR'
+        );
       });
     });
   });
