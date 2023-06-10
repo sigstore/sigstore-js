@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import * as sigstore from '../../types/sigstore';
+import { TransparencyLogInstance } from '@sigstore/protobuf-specs';
 import { pem } from '../../util';
 import { x509Certificate } from '../../x509/cert';
 import { certificates } from '../__fixtures__/certs';
@@ -290,8 +290,8 @@ describe('x509Certificate', () => {
       logId: { keyId: 'CGCS8ChS/2hF0dFrJ4ScRWcYrBY9wzjSbea8IgY2b3I=' },
     };
 
-    const logs: sigstore.TransparencyLogInstance[] = [
-      sigstore.TransparencyLogInstance.fromJSON(ctl),
+    const logs: TransparencyLogInstance[] = [
+      TransparencyLogInstance.fromJSON(ctl),
     ];
 
     describe('when the certificate does NOT have an SCT extension', () => {

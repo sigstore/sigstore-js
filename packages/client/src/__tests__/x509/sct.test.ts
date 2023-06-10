@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import * as sigstore from '../../types/sigstore';
+import { TransparencyLogInstance } from '@sigstore/protobuf-specs';
 import { SignedCertificateTimestamp } from '../../x509/sct';
 
 describe('SignedCertificateTimestamp', () => {
@@ -130,8 +130,8 @@ describe('SignedCertificateTimestamp', () => {
         logId: { keyId: Buffer.from(logID, 'hex') },
       };
 
-      const logs: sigstore.TransparencyLogInstance[] = [
-        sigstore.TransparencyLogInstance.fromJSON(ctl),
+      const logs: TransparencyLogInstance[] = [
+        TransparencyLogInstance.fromJSON(ctl),
       ];
 
       describe('when the signature is valid', () => {

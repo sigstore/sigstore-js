@@ -67,6 +67,9 @@ type SerializedDSSEEnvelope = {
   }[];
 };
 
+// Serialized form of the DSSE Envelope
+export type { SerializedDSSEEnvelope as SerializedEnvelope };
+
 // Serialized form of the Sigstore Bundle union type with all possible options
 // represented
 export type SerializedBundle = {
@@ -85,15 +88,3 @@ export type SerializedBundle = {
   dsseEnvelope: SerializedDSSEEnvelope;
   messageSignature: SerializedMessageSignature;
 }>;
-
-interface SerializedSignature {
-  sig: string;
-  keyid: string;
-}
-
-// Serialized form of the DSSE Envelope
-export type SerializedEnvelope = {
-  payload: string;
-  payloadType: string;
-  signatures: SerializedSignature[];
-};

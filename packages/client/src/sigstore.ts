@@ -36,7 +36,7 @@ export async function sign(
   });
 
   const bundle = await signer.signBlob(payload);
-  return sigstore.Bundle.toJSON(bundle) as sigstore.SerializedBundle;
+  return sigstore.bundleToJSON(bundle) as sigstore.SerializedBundle;
 }
 
 export async function attest(
@@ -59,7 +59,7 @@ export async function attest(
   });
 
   const bundle = await signer.signAttestation(payload, payloadType);
-  return sigstore.Bundle.toJSON(bundle) as sigstore.SerializedBundle;
+  return sigstore.bundleToJSON(bundle) as sigstore.SerializedBundle;
 }
 
 export async function verify(

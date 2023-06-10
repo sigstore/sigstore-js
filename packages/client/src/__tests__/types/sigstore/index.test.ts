@@ -13,49 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import type { Entry } from '../../../external/rekor';
 import { SignatureMaterial } from '../../../types/signature';
 import * as sigstore from '../../../types/sigstore';
 import { encoding as enc, pem } from '../../../util';
 import bundles from '../../__fixtures__/bundles/';
 
-import type { Entry } from '../../../external/rekor';
-
-describe('isBundleWithVerificationMaterial', () => {
-  describe('when the bundle contains verification material', () => {
-    const json = bundles.dsse.valid.withSigningCert;
-    const bundle = sigstore.Bundle.fromJSON(json);
-
-    it('returns true', () => {
-      expect(sigstore.isBundleWithVerificationMaterial(bundle)).toBe(true);
-    });
-  });
-
-  describe('when the bundle does NOT contain verification material', () => {
-    const bundle: sigstore.Bundle = {
-      mediaType: 'application/vnd.dev.cosign.simplesigning.v1+json',
-      verificationMaterial: undefined,
-      content: {
-        $case: 'messageSignature',
-        messageSignature: {
-          messageDigest: {
-            algorithm: sigstore.HashAlgorithm.SHA2_256,
-            digest: Buffer.from(''),
-          },
-          signature: Buffer.from(''),
-        },
-      },
-    };
-
-    it('returns false', () => {
-      expect(sigstore.isBundleWithVerificationMaterial(bundle)).toBe(false);
-    });
-  });
-});
-
 describe('isBundleWithCertificateChain', () => {
   describe('when the bundle contains a certificate chain', () => {
     const json = bundles.dsse.valid.withSigningCert;
-    const bundle = sigstore.Bundle.fromJSON(json);
+    const bundle = sigstore.bundleFromJSON(json);
 
     it('returns true', () => {
       expect(sigstore.isBundleWithCertificateChain(bundle)).toBe(true);
@@ -64,7 +31,7 @@ describe('isBundleWithCertificateChain', () => {
 
   describe('when the bundle does NOT contain a certificate chain', () => {
     const json = bundles.dsse.valid.withPublicKey;
-    const bundle = sigstore.Bundle.fromJSON(json);
+    const bundle = sigstore.bundleFromJSON(json);
 
     it('returns false', () => {
       expect(sigstore.isBundleWithCertificateChain(bundle)).toBe(false);
