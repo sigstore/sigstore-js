@@ -65,5 +65,5 @@ export async function createRekorEntry(
     signature: sigMaterial,
     tlogEntry: entry,
   });
-  return sigstore.Bundle.toJSON(bundle) as sigstore.SerializedBundle;
+  return sigstore.bundleToJSON(bundle) as sigstore.SerializedBundle;
 }

@@ -13,26 +13,54 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import {
+import { Bundle, HashAlgorithm } from '@sigstore/protobuf-specs';
+import { encoding as enc, pem } from '../../util';
+import { SignatureMaterial } from '../signature';
+import { ValidBundle, assertValidBundle } from './validate';
+
+import type {
   ArtifactVerificationOptions,
-  Bundle,
   Envelope,
-  HashAlgorithm,
   TimestampVerificationData,
   TransparencyLogEntry,
   VerificationMaterial,
 } from '@sigstore/protobuf-specs';
-import { encoding as enc, pem } from '../../util';
-import { x509Certificate } from '../../x509/cert';
-import { WithRequired } from '../utility';
-import { ValidBundle, assertValidBundle } from './validate';
-
 import type { Entry, ProposedEntry } from '../../external/rekor';
-import type { SignatureMaterial } from '../signature';
+import type { WithRequired } from '../utility';
+import type { SerializedBundle } from './serialized';
 
-export * from '@sigstore/protobuf-specs';
-export * from './serialized';
-export * from './validate';
+// Enums from protobuf-specs
+// TODO: Move Envelope to "type" export once @sigstore/sign is a thing
+export {
+  Envelope,
+  HashAlgorithm,
+  PublicKeyDetails,
+  SubjectAlternativeNameType,
+} from '@sigstore/protobuf-specs';
+// Types from protobuf-specs
+export type {
+  ArtifactVerificationOptions,
+  ArtifactVerificationOptions_CtlogOptions,
+  ArtifactVerificationOptions_TlogOptions,
+  CertificateAuthority,
+  CertificateIdentities,
+  CertificateIdentity,
+  MessageSignature,
+  ObjectIdentifierValuePair,
+  PublicKey,
+  PublicKeyIdentifier,
+  RFC3161SignedTimestamp,
+  Signature,
+  SubjectAlternativeName,
+  TimestampVerificationData,
+  TransparencyLogEntry,
+  TransparencyLogInstance,
+  TrustedRoot,
+  X509Certificate,
+  X509CertificateChain,
+} from '@sigstore/protobuf-specs';
+export type { SerializedBundle, SerializedEnvelope } from './serialized';
+export type { ValidBundle as Bundle };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const bundleFromJSON = (obj: any): ValidBundle => {
@@ -41,26 +69,17 @@ export const bundleFromJSON = (obj: any): ValidBundle => {
   return bundle;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const bundleToJSON = (bundle: ValidBundle): SerializedBundle => {
+  return Bundle.toJSON(bundle) as SerializedBundle;
+};
+
 const BUNDLE_MEDIA_TYPE =
   'application/vnd.dev.sigstore.bundle+json;version=0.1';
 
-// Subset of sigstore.Bundle that has verification material as part
-// of the bundle
-export type BundleWithVerificationMaterial = WithRequired<
-  Bundle,
-  'verificationMaterial'
->;
-
-// Type guard for narrowing a Bundle to a BundleWithVerificationMaterial
-export function isBundleWithVerificationMaterial(
-  bundle: Bundle
-): bundle is BundleWithVerificationMaterial {
-  return bundle.verificationMaterial !== undefined;
-}
-
 // Subset of sigstore.Bundle that has a certificate chain as part
 // of the verification material (as opposed to a public key)
-export type BundleWithCertificateChain = Bundle & {
+export type BundleWithCertificateChain = ValidBundle & {
   verificationMaterial: VerificationMaterial & {
     content: Extract<
       VerificationMaterial['content'],
@@ -71,10 +90,9 @@ export type BundleWithCertificateChain = Bundle & {
 
 // Type guard for narrowing a Bundle to a BundleWithCertificateChain
 export function isBundleWithCertificateChain(
-  bundle: Bundle
+  bundle: ValidBundle
 ): bundle is BundleWithCertificateChain {
   return (
-    isBundleWithVerificationMaterial(bundle) &&
     bundle.verificationMaterial.content !== undefined &&
     bundle.verificationMaterial.content.$case === 'x509CertificateChain'
   );
@@ -122,6 +140,9 @@ export function isVerifiableTransparencyLogEntry(
   );
 }
 
+// All of the following functions are used to construct a ValidBundle
+// from various types of input. When this code moves into the
+// @sigstore/sign package, these functions will be exported from there.
 export function toDSSEBundle({
   envelope,
   signature,
@@ -132,7 +153,7 @@ export function toDSSEBundle({
   signature: SignatureMaterial;
   tlogEntry?: Entry;
   timestamp?: Buffer;
-}): Bundle {
+}): ValidBundle {
   return {
     mediaType: BUNDLE_MEDIA_TYPE,
     content: { $case: 'dsseEnvelope', dsseEnvelope: envelope },
@@ -154,7 +175,7 @@ export function toMessageSignatureBundle({
   signature: SignatureMaterial;
   tlogEntry?: Entry;
   timestamp?: Buffer;
-}): Bundle {
+}): ValidBundle {
   return {
     mediaType: BUNDLE_MEDIA_TYPE,
     content: {
@@ -210,7 +231,7 @@ function toVerificationMaterial({
   signature: SignatureMaterial;
   tlogEntry?: Entry;
   timestamp?: Buffer;
-}): VerificationMaterial {
+}): ValidBundle['verificationMaterial'] {
   return {
     content: signature.certificates
       ? toVerificationMaterialx509CertificateChain(signature.certificates)
@@ -224,7 +245,7 @@ function toVerificationMaterial({
 
 function toVerificationMaterialx509CertificateChain(
   certificates: string[]
-): VerificationMaterial['content'] {
+): ValidBundle['verificationMaterial']['content'] {
   return {
     $case: 'x509CertificateChain',
     x509CertificateChain: {
@@ -237,7 +258,7 @@ function toVerificationMaterialx509CertificateChain(
 
 function toVerificationMaterialPublicKey(
   hint: string
-): VerificationMaterial['content'] {
+): ValidBundle['verificationMaterial']['content'] {
   return { $case: 'publicKey', publicKey: { hint } };
 }
 
@@ -247,16 +268,4 @@ function toTimestampVerificationData(
   return {
     rfc3161Timestamps: [{ signedTimestamp: timestamp }],
   };
-}
-
-export function signingCertificate(
-  bundle: Bundle
-): x509Certificate | undefined {
-  if (!isBundleWithCertificateChain(bundle)) {
-    return undefined;
-  }
-
-  const signingCert =
-    bundle.verificationMaterial.content.x509CertificateChain.certificates[0];
-  return x509Certificate.parse(signingCert.rawBytes);
 }

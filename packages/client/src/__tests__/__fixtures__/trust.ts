@@ -13,7 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import * as sigstore from '../../types/sigstore';
+import { TrustedRoot } from '@sigstore/protobuf-specs';
+
 const trustedRootJSON = {
   mediaType: 'application/vnd.dev.sigstore.trustedroot+json;version=0.1',
   tlogs: [
@@ -103,4 +104,4 @@ const trustedRootJSON = {
   timestampAuthorities: [],
 };
 
-export const trustedRoot = sigstore.TrustedRoot.fromJSON(trustedRootJSON);
+export const trustedRoot = TrustedRoot.fromJSON(trustedRootJSON);

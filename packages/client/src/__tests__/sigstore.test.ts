@@ -13,11 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { TUFError } from '@sigstore/tuf';
-import mocktuf, { Target } from '@tufjs/repo-mock';
-import { PolicyError, VerificationError } from '../error';
-import { Signer } from '../sign';
-import { attest, sign, tuf, verify } from '../sigstore';
 import {
   Bundle,
   HashAlgorithm,
@@ -25,7 +20,12 @@ import {
   TransparencyLogEntry,
   TrustedRoot,
   X509CertificateChain,
-} from '../types/sigstore';
+} from '@sigstore/protobuf-specs';
+import { TUFError } from '@sigstore/tuf';
+import mocktuf, { Target } from '@tufjs/repo-mock';
+import { PolicyError, VerificationError } from '../error';
+import { Signer } from '../sign';
+import { attest, sign, tuf, verify } from '../sigstore';
 import bundles from './__fixtures__/bundles';
 import { trustedRoot } from './__fixtures__/trust';
 

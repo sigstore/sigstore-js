@@ -35,7 +35,7 @@ export class Verifier {
   // Verifies the bundle signature, the bundle's certificate chain (if present)
   // and the bundle's transparency log entries.
   public verify(
-    bundle: sigstore.ValidBundle,
+    bundle: sigstore.Bundle,
     options: sigstore.RequiredArtifactVerificationOptions,
     data?: Buffer
   ): void {
@@ -53,7 +53,7 @@ export class Verifier {
   // Performs bundle signature verification. Determines the type of the bundle
   // content and delegates to the appropriate signature verification function.
   private verifyArtifactSignature(
-    bundle: sigstore.ValidBundle,
+    bundle: sigstore.Bundle,
     data?: Buffer
   ): void {
     const publicKey = this.getPublicKey(bundle);
@@ -99,7 +99,7 @@ export class Verifier {
   // Performs verification of the bundle's transparency log entries. The bundle
   // must contain a list of transparency log entries.
   private verifyTLogEntries(
-    bundle: sigstore.ValidBundle,
+    bundle: sigstore.Bundle,
     options: sigstore.RequiredArtifactVerificationOptions
   ): void {
     tlog.verifyTLogEntries(bundle, this.trustedRoot, options.tlogOptions);
@@ -108,7 +108,7 @@ export class Verifier {
   // Returns the public key which will be used to verify the bundle signature.
   // The public key is selected based on the verification material in the bundle
   // and the options provided.
-  private getPublicKey(bundle: sigstore.ValidBundle): KeyLike {
+  private getPublicKey(bundle: sigstore.Bundle): KeyLike {
     // Select the key which will be used to verify the signature
     switch (bundle.verificationMaterial?.content?.$case) {
       // If the bundle contains a certificate chain, the public key is the
