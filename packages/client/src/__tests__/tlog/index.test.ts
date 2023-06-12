@@ -17,7 +17,7 @@ import nock from 'nock';
 import { InternalError } from '../../error';
 import {
   toProposedHashedRekordEntry,
-  toProposedIntotoEntry,
+  toProposedDSSEEntry,
 } from '../../tlog/format';
 import { TLogClient } from '../../tlog/index';
 import { SignatureMaterial } from '../../types/signature';
@@ -150,7 +150,7 @@ describe('TLogClient', () => {
 
     // Rekor input
     const proposedEntry = JSON.stringify(
-      toProposedIntotoEntry(dsse, sigMaterial)
+      toProposedDSSEEntry(dsse, sigMaterial)
     );
 
     describe('when Rekor returns a 500 error', () => {
@@ -194,13 +194,15 @@ describe('TLogClient', () => {
       describe('when fetchOnConflict is true', () => {
         describe('when the fetch is successful', () => {
           const signatureBundle = {
-            kind: 'intoto',
-            apiVersion: '0.0.2',
+            kind: 'dsse',
+            apiVersion: '0.0.1',
             spec: {
-              signature: {
-                content: signature,
-                publicKey: { content: leafCertificate },
-              },
+              signatures: [
+                {
+                  signature: signature,
+                  verifier: leafCertificate,
+                },
+              ],
             },
           };
 
@@ -255,13 +257,15 @@ describe('TLogClient', () => {
         '69e5a0c1663ee4452674a5c9d5050d866c2ee31e2faaf79913aea7cc27293cf6';
 
       const signatureBundle = {
-        kind: 'intoto',
-        apiVersion: '0.0.2',
+        kind: 'dsse',
+        apiVersion: '0.0.1',
         spec: {
-          signature: {
-            content: signature,
-            publicKey: { content: leafCertificate },
-          },
+          signatures: [
+            {
+              signature: signature,
+              verifier: leafCertificate,
+            },
+          ],
         },
       };
 

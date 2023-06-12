@@ -27,21 +27,6 @@ const DEFAULT_DSSE_API_VERSION = '0.0.1';
 const DEFAULT_HASHEDREKORD_API_VERSION = '0.0.1';
 const DEFAULT_INTOTO_API_VERSION = '0.0.2';
 
-// Returns a properly formatted Rekor "dsse" entry for the given DSSE
-// envelope and signature
-export function toProposedDSSEEntry(
-  envelope: Envelope,
-  signature: SignatureMaterial,
-  apiVersion = DEFAULT_DSSE_API_VERSION
-): ProposedDSSEEntry {
-  switch (apiVersion) {
-    case '0.0.1':
-      return toProposedDSSEV001Entry(envelope, signature);
-    default:
-      throw new Error(`Unsupported dsse kind API version: ${apiVersion}`);
-  }
-}
-
 // Returns a properly formatted Rekor "hashedrekord" entry for the given digest
 // and signature
 export function toProposedHashedRekordEntry(
@@ -86,22 +71,6 @@ export function toProposedIntotoEntry(
       throw new Error(`Unsupported intoto kind API version: ${apiVersion}`);
   }
 }
-function toProposedDSSEV001Entry(
-  envelope: Envelope,
-  signature: SignatureMaterial
-): ProposedDSSEEntry {
-  return {
-    apiVersion: '0.0.1',
-    kind: 'dsse',
-    spec: {
-      proposedContent: {
-        envelope: JSON.stringify(Envelope.toJSON(envelope)),
-        verifiers: [enc.base64Encode(toPublicKey(signature))],
-      },
-    },
-  };
-}
-
 function toProposedIntotoV002Entry(
   envelope: Envelope,
   signature: SignatureMaterial
@@ -143,6 +112,37 @@ function toProposedIntotoV002Entry(
         envelope: dsseEnv,
         hash: { algorithm: 'sha256', value: envelopeHash },
         payloadHash: { algorithm: 'sha256', value: payloadHash },
+      },
+    },
+  };
+}
+
+// Returns a properly formatted Rekor "dsse" entry for the given DSSE
+// envelope and signature
+export function toProposedDSSEEntry(
+  envelope: Envelope,
+  signature: SignatureMaterial,
+  apiVersion = DEFAULT_DSSE_API_VERSION
+): ProposedDSSEEntry {
+  switch (apiVersion) {
+    case '0.0.1':
+      return toProposedDSSEV001Entry(envelope, signature);
+    default:
+      throw new Error(`Unsupported dsse kind API version: ${apiVersion}`);
+  }
+}
+
+function toProposedDSSEV001Entry(
+  envelope: Envelope,
+  signature: SignatureMaterial
+): ProposedDSSEEntry {
+  return {
+    apiVersion: '0.0.1',
+    kind: 'dsse',
+    spec: {
+      proposedContent: {
+        envelope: JSON.stringify(Envelope.toJSON(envelope)),
+        verifiers: [enc.base64Encode(toPublicKey(signature))],
       },
     },
   };

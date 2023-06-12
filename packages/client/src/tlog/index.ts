@@ -17,7 +17,7 @@ import { InternalError } from '../error';
 import { HTTPError, Rekor } from '../external';
 import { SignatureMaterial } from '../types/signature';
 import * as sigstore from '../types/sigstore';
-import { toProposedHashedRekordEntry, toProposedIntotoEntry } from './format';
+import { toProposedHashedRekordEntry, toProposedDSSEEntry } from './format';
 
 import type { Entry, ProposedEntry } from '../external/rekor';
 import type { FetchOptions } from '../types/fetch';
@@ -68,7 +68,7 @@ export class TLogClient implements TLog {
     sigMaterial: SignatureMaterial,
     options: CreateEntryOptions = {}
   ): Promise<Entry> {
-    const proposedEntry = toProposedIntotoEntry(envelope, sigMaterial);
+    const proposedEntry = toProposedDSSEEntry(envelope, sigMaterial);
     return this.createEntry(proposedEntry, options.fetchOnConflict);
   }
 
