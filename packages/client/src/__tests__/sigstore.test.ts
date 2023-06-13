@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
   Bundle,
   HashAlgorithm,
@@ -22,14 +23,16 @@ import {
   X509CertificateChain,
 } from '@sigstore/protobuf-specs';
 import { TUFError } from '@sigstore/tuf';
+import { fromPartial } from '@total-typescript/shoehorn';
 import mocktuf, { Target } from '@tufjs/repo-mock';
 import { PolicyError, VerificationError } from '../error';
 import { Signer } from '../sign';
-import { attest, sign, tuf, verify } from '../sigstore';
+import { attest, basicVerifier, sign, tuf, verify } from '../sigstore';
+import { SerializedBundle } from '../types/sigstore';
 import bundles from './__fixtures__/bundles';
 import { trustedRoot } from './__fixtures__/trust';
 
-import type { VerifyOptions } from '../config';
+import type { TUFOptions, VerifyOptions } from '../config';
 
 jest.mock('../sign');
 
@@ -317,9 +320,64 @@ describe('#verify', () => {
   });
 });
 
+describe('#basicVerifier', () => {
+  let tufRepo: ReturnType<typeof mocktuf> | undefined;
+  let tufOptions: VerifyOptions | undefined;
+
+  const trustedRootJSON = JSON.stringify(TrustedRoot.toJSON(trustedRoot));
+  const target: Target = {
+    name: 'trusted_root.json',
+    content: Buffer.from(trustedRootJSON),
+  };
+
+  beforeEach(() => {
+    tufRepo = mocktuf(target, { metadataPathPrefix: '' });
+    tufOptions = {
+      tufMirrorURL: tufRepo.baseURL,
+      tufCachePath: tufRepo.cachePath,
+    };
+  });
+
+  afterEach(() => tufRepo?.teardown());
+
+  it('returns a function', async () => {
+    const verifier = await basicVerifier(tufOptions!);
+    expect(verifier).toBeInstanceOf(Function);
+  });
+
+  describe('when the bundle is valid', () => {
+    const bundle: SerializedBundle = fromPartial(
+      bundles.dsse.valid.withSigningCert
+    );
+
+    it('does not throw an error when invoked', async () => {
+      const verifier = await basicVerifier(tufOptions!);
+      expect(verifier(bundle)).toBeUndefined();
+    });
+  });
+
+  describe('when the bundle is invalid', () => {
+    const bundle: SerializedBundle = fromPartial(
+      bundles.dsse.invalid.badSignature
+    );
+
+    it('throws an error when invoked', async () => {
+      const verifier = await basicVerifier(tufOptions!);
+      expect(() => {
+        verifier(bundle);
+      }).toThrowError(VerificationError);
+    });
+  });
+});
+
 describe('tuf', () => {
   let tufRepo: ReturnType<typeof mocktuf> | undefined;
-  let options: VerifyOptions | undefined;
+  let options: TUFOptions | undefined;
+
+  const target: Target = {
+    name: 'foo',
+    content: 'bar',
+  };
 
   beforeEach(() => {
     tufRepo = mocktuf(target, { metadataPathPrefix: '' });
@@ -330,11 +388,6 @@ describe('tuf', () => {
   });
 
   afterEach(() => tufRepo?.teardown());
-
-  const target: Target = {
-    name: 'foo',
-    content: 'bar',
-  };
 
   describe('getTarget', () => {
     describe('when the target exists', () => {

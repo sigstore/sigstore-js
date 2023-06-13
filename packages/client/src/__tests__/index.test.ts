@@ -28,6 +28,7 @@ describe('sigstore', () => {
     expect(sigstore.attest).toBeInstanceOf(Function);
     expect(sigstore.sign).toBeInstanceOf(Function);
     expect(sigstore.verify).toBeInstanceOf(Function);
+    expect(sigstore.basicVerifier).toBeInstanceOf(Function);
   });
 
   it('exports sigstore utils', () => {

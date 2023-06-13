@@ -68,6 +68,10 @@ export type VerifyOptions = {
 } & TLogOptions &
   TUFOptions;
 
+export type BasicVerifierOptions = {
+  keySelector?: KeySelector;
+} & TUFOptions;
+
 export const DEFAULT_FULCIO_URL = 'https://fulcio.sigstore.dev';
 export const DEFAULT_REKOR_URL = 'https://rekor.sigstore.dev';
 

@@ -81,6 +81,23 @@ export async function verify(
   return verifier.verify(deserializedBundle, opts, payload);
 }
 
+export async function basicVerifier(options: config.BasicVerifierOptions) {
+  const trustedRoot = await tuf.getTrustedRoot({
+    mirrorURL: options.tufMirrorURL,
+    rootPath: options.tufRootPath,
+    cachePath: options.tufCachePath,
+    retry: options.retry ?? config.DEFAULT_RETRY,
+    timeout: options.timeout ?? config.DEFAULT_TIMEOUT,
+  });
+  const verifier = new Verifier(trustedRoot, options.keySelector);
+  const verifyOpts = config.artifactVerificationOptions(options);
+
+  return (bundle: sigstore.SerializedBundle): void => {
+    const deserializedBundle = sigstore.bundleFromJSON(bundle);
+    return verifier.verify(deserializedBundle, verifyOpts);
+  };
+}
+
 const tufUtils = {
   client: (options: config.TUFOptions = {}): Promise<tuf.TUF> => {
     return tuf.initTUF({
