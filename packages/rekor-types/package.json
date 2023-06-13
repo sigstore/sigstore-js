@@ -28,7 +28,7 @@
     "provenance": true
   },
   "devDependencies": {
-    "json-schema-to-typescript": "^13.0.0",
+    "json-schema-to-typescript": "^13.0.2",
     "openapi-typescript-codegen": "^0.24.0",
     "shx": "^0.3.3",
     "typescript": "^5.1.3"
