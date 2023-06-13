@@ -28,7 +28,7 @@
   "devDependencies": {
     "@sigstore/rekor-types": "^0.0.3",
     "@total-typescript/shoehorn": "^0.1.0",
-    "@types/node": "^20.2.5",
+    "@types/node": "^20.3.1",
     "make-fetch-happen": "^11.0.1",
     "shx": "^0.3.3",
     "typescript": "^5.0.2"
