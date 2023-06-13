@@ -9,5 +9,8 @@
     "./dist",
     "**/__tests__",
     "jest.setup.ts"
+  ],
+  "references": [
+    { "path": "../rekor-types" }
   ]
 }

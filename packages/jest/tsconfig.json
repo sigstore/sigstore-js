@@ -7,5 +7,8 @@
   },
   "exclude": [
     "./dist"
+  ],
+  "references": [
+    { "path": "../jest-types" }
   ]
 }
