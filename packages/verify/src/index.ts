@@ -13,11 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-export { ASN1Obj } from './asn1';
-export * as crypto from './crypto';
-export * as dsse from './dsse';
-export * as encoding from './encoding';
-export * as json from './json';
-export * as pem from './pem';
-export { ByteStream } from './stream';
-export { EXTENSION_OID_SCT, X509Certificate, X509SCTExtension } from './x509';
+export { toSignedEntity } from './bundle';
+export { TrustMaterial, toTrustMaterial } from './trust';
+export { Verifier, VerifierOptions } from './verifier';
+
+export type { SignedEntity, Signer } from './shared.types';

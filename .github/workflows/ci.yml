@@ -44,7 +44,7 @@ jobs:
           - os: ubuntu-latest
             shell: bash
             jest-cache: /tmp/jest
-          - os: macos-latest
+          - os: macos-latest-large
             shell: bash
             jest-cache: /tmp/jest
           - os: windows-latest

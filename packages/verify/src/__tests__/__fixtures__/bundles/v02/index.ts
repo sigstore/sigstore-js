@@ -13,11 +13,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-export { ASN1Obj } from './asn1';
-export * as crypto from './crypto';
-export * as dsse from './dsse';
-export * as encoding from './encoding';
-export * as json from './json';
-export * as pem from './pem';
-export { ByteStream } from './stream';
-export { EXTENSION_OID_SCT, X509Certificate, X509SCTExtension } from './x509';
+import crypto from 'crypto';
+import signature from './signature';
+
+export default { signature };
+
+const tlogKey = crypto.createPublicKey(`-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2G2Y+2tabdTV5BcGiBIx0a9fAFwr
+kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
+-----END PUBLIC KEY-----`);
+
+const tlogKeyID = crypto
+  .createHash('sha256')
+  .update(tlogKey.export({ format: 'der', type: 'spki' }))
+  .digest()
+  .toString('hex');
+
+export const tlogKeys = { [tlogKeyID]: tlogKey };
