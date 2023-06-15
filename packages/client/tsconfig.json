@@ -13,6 +13,6 @@
   "references": [
     { "path": "../tuf" },
     { "path": "../rekor-types" },
-    { "path": "../jest-types" }
+    { "path": "../jest" }
   ]
 }
