@@ -27,7 +27,7 @@ import { fromPartial } from '@total-typescript/shoehorn';
 import mocktuf, { Target } from '@tufjs/repo-mock';
 import { PolicyError, VerificationError } from '../error';
 import { Signer } from '../sign';
-import { attest, basicVerifier, sign, tuf, verify } from '../sigstore';
+import { attest, createVerifier, sign, tuf, verify } from '../sigstore';
 import { SerializedBundle } from '../types/sigstore';
 import bundles from './__fixtures__/bundles';
 import { trustedRoot } from './__fixtures__/trust';
@@ -320,7 +320,7 @@ describe('#verify', () => {
   });
 });
 
-describe('#basicVerifier', () => {
+describe('#createVerifier', () => {
   let tufRepo: ReturnType<typeof mocktuf> | undefined;
   let tufOptions: VerifyOptions | undefined;
 
@@ -340,9 +340,9 @@ describe('#basicVerifier', () => {
 
   afterEach(() => tufRepo?.teardown());
 
-  it('returns a function', async () => {
-    const verifier = await basicVerifier(tufOptions!);
-    expect(verifier).toBeInstanceOf(Function);
+  it('returns a object', async () => {
+    const verifier = await createVerifier(tufOptions!);
+    expect(verifier).toBeInstanceOf(Object);
   });
 
   describe('when the bundle is valid', () => {
@@ -351,8 +351,8 @@ describe('#basicVerifier', () => {
     );
 
     it('does not throw an error when invoked', async () => {
-      const verifier = await basicVerifier(tufOptions!);
-      expect(verifier(bundle)).toBeUndefined();
+      const verifier = await createVerifier(tufOptions!);
+      expect(verifier.verify(bundle)).toBeUndefined();
     });
   });
 
@@ -362,9 +362,9 @@ describe('#basicVerifier', () => {
     );
 
     it('throws an error when invoked', async () => {
-      const verifier = await basicVerifier(tufOptions!);
+      const verifier = await createVerifier(tufOptions!);
       expect(() => {
-        verifier(bundle);
+        verifier.verify(bundle);
       }).toThrowError(VerificationError);
     });
   });

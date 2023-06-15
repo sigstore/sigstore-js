@@ -22,13 +22,17 @@ describe('sigstore', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const identityProvider: IdentityProvider = {} as any;
     expect(identityProvider).toBeDefined();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const bundleVerifier: sigstore.BundleVerifier = {} as any;
+    expect(bundleVerifier).toBeDefined();
   });
 
   it('exports sigstore core functions', async () => {
     expect(sigstore.attest).toBeInstanceOf(Function);
     expect(sigstore.sign).toBeInstanceOf(Function);
     expect(sigstore.verify).toBeInstanceOf(Function);
-    expect(sigstore.basicVerifier).toBeInstanceOf(Function);
+    expect(sigstore.createVerifier).toBeInstanceOf(Function);
   });
 
   it('exports sigstore utils', () => {

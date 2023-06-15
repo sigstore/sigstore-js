@@ -81,7 +81,13 @@ export async function verify(
   return verifier.verify(deserializedBundle, opts, payload);
 }
 
-export async function basicVerifier(options: config.BasicVerifierOptions) {
+export interface BundleVerifier {
+  verify(bundle: sigstore.SerializedBundle): void;
+}
+
+export async function createVerifier(
+  options: config.CreateVerifierOptions
+): Promise<BundleVerifier> {
   const trustedRoot = await tuf.getTrustedRoot({
     mirrorURL: options.tufMirrorURL,
     rootPath: options.tufRootPath,
@@ -92,9 +98,11 @@ export async function basicVerifier(options: config.BasicVerifierOptions) {
   const verifier = new Verifier(trustedRoot, options.keySelector);
   const verifyOpts = config.artifactVerificationOptions(options);
 
-  return (bundle: sigstore.SerializedBundle): void => {
-    const deserializedBundle = sigstore.bundleFromJSON(bundle);
-    return verifier.verify(deserializedBundle, verifyOpts);
+  return {
+    verify: (bundle: sigstore.SerializedBundle): void => {
+      const deserializedBundle = sigstore.bundleFromJSON(bundle);
+      return verifier.verify(deserializedBundle, verifyOpts);
+    },
   };
 }
 

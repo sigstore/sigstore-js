@@ -2,4 +2,4 @@
 'sigstore': minor
 ---
 
-Exports new `basicVerifier` function
+Exports new `createVerifier` function

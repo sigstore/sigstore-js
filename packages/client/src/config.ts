@@ -68,7 +68,7 @@ export type VerifyOptions = {
 } & TLogOptions &
   TUFOptions;
 
-export type BasicVerifierOptions = {
+export type CreateVerifierOptions = {
   keySelector?: KeySelector;
 } & TUFOptions;
 
