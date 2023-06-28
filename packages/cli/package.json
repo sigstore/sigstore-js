@@ -42,7 +42,7 @@
   "devDependencies": {
     "make-fetch-happen": "^11.1.1",
     "oclif": "^3",
-    "tslib": "^2.5.3"
+    "tslib": "^2.6.0"
   },
   "repository": {
     "type": "git",
