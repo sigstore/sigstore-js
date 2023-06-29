@@ -145,11 +145,11 @@ describe('bundle', () => {
       verification: {
         signedEntryTimestamp: Buffer.from('set').toString('base64'),
         inclusionProof: {
-          hashes: [],
-          logIndex: 0,
-          rootHash: '',
-          treeSize: 0,
-          checkpoint: '',
+          hashes: ['deadbeef', 'feedface'],
+          logIndex: 12345,
+          rootHash: 'fee1dead',
+          treeSize: 12346,
+          checkpoint: 'checkpoint',
         },
       },
     } satisfies Entry;
@@ -199,9 +199,27 @@ describe('bundle', () => {
       expect(tlog?.logId?.keyId).toBeTruthy();
       expect(tlog?.logId?.keyId.toString('hex')).toEqual(rekorEntry.logID);
       expect(tlog?.logIndex).toEqual(rekorEntry.logIndex.toString());
-      expect(tlog?.inclusionProof).toBeFalsy();
       expect(tlog?.kindVersion?.kind).toEqual(entryKind.kind);
       expect(tlog?.kindVersion?.version).toEqual(entryKind.apiVersion);
+      expect(tlog?.inclusionProof?.checkpoint?.envelope).toEqual(
+        rekorEntry.verification.inclusionProof.checkpoint
+      );
+      expect(tlog?.inclusionProof?.hashes).toHaveLength(2);
+      expect(tlog?.inclusionProof?.hashes[0]).toEqual(
+        Buffer.from(rekorEntry.verification.inclusionProof.hashes[0], 'hex')
+      );
+      expect(tlog?.inclusionProof?.hashes[1]).toEqual(
+        Buffer.from(rekorEntry.verification.inclusionProof.hashes[1], 'hex')
+      );
+      expect(tlog?.inclusionProof?.logIndex).toEqual(
+        rekorEntry.verification.inclusionProof.logIndex.toString()
+      );
+      expect(tlog?.inclusionProof?.rootHash).toEqual(
+        Buffer.from(rekorEntry.verification.inclusionProof.rootHash, 'hex')
+      );
+      expect(tlog?.inclusionProof?.treeSize).toEqual(
+        rekorEntry.verification.inclusionProof.treeSize.toString()
+      );
 
       // Timestamp verification data
       expect(

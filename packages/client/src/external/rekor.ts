@@ -19,22 +19,24 @@ import { checkStatus } from './error';
 
 import type {
   LogEntry,
-  ProposedEntry,
   ProposedDSSEEntry,
+  ProposedEntry,
   ProposedHashedRekordEntry,
   ProposedIntotoEntry,
+  InclusionProof as RekorInclusionProof,
   SearchIndex,
   SearchLogQuery,
 } from '@sigstore/rekor-types';
 import type { FetchOptions } from '../types/fetch';
 
 export type {
-  ProposedEntry,
-  SearchIndex,
-  SearchLogQuery,
   ProposedDSSEEntry,
+  ProposedEntry,
   ProposedHashedRekordEntry,
   ProposedIntotoEntry,
+  RekorInclusionProof,
+  SearchIndex,
+  SearchLogQuery,
 };
 
 // The LogEntry type from @sigstore/rekor-types is a Record type
