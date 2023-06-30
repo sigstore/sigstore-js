@@ -28,11 +28,11 @@
   },
   "devDependencies": {
     "@sigstore/jest": "^0.0.0",
-    "@tufjs/repo-mock": "^1.1.0"
+    "@tufjs/repo-mock": "^1.1.0",
+    "@types/make-fetch-happen": "^10.0.0"
   },
   "dependencies": {
     "@sigstore/protobuf-specs": "^0.1.0",
-    "@types/make-fetch-happen": "^10.0.0",
     "tuf-js": "^1.1.7"
   },
   "engines": {
