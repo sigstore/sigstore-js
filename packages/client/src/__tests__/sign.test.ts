@@ -23,6 +23,8 @@ import { SignatureMaterial, SignerFunc } from '../types/signature';
 import { HashAlgorithm } from '../types/sigstore';
 import { pem } from '../util';
 
+import type { LogEntry } from '@sigstore/rekor-types';
+
 describe('Signer', () => {
   const fulcioBaseURL = 'http://localhost:8001';
   const rekorBaseURL = 'http://localhost:8002';
@@ -140,9 +142,16 @@ describe('Signer', () => {
                 verification: {
                   signedEntryTimestamp:
                     'MEUCIQD6CD7ZNLUipFoxzmSL/L8Ewic4SRkXN77UjfJZ7d/wAAIgatokSuX9Rg0iWxAgSfHMtcsagtDCQalU5IvXdQ+yLEA=',
+                  inclusionProof: {
+                    hashes: ['deadbeef', 'feedface'],
+                    logIndex: 12345,
+                    rootHash: 'fee1dead',
+                    treeSize: 12346,
+                    checkpoint: 'checkpoint',
+                  },
                 },
               },
-            };
+            } satisfies LogEntry;
 
             beforeEach(() => {
               // Mock Rekor request
@@ -211,7 +220,34 @@ describe('Signer', () => {
               expect(tlog?.logIndex).toEqual(
                 rekorEntry[uuid].logIndex.toString()
               );
-              expect(tlog?.inclusionProof).toBeFalsy();
+              expect(tlog?.inclusionProof?.checkpoint?.envelope).toEqual(
+                rekorEntry[uuid].verification.inclusionProof.checkpoint
+              );
+              expect(tlog?.inclusionProof?.hashes).toHaveLength(2);
+              expect(tlog?.inclusionProof?.hashes[0]).toEqual(
+                Buffer.from(
+                  rekorEntry[uuid].verification.inclusionProof.hashes[0],
+                  'hex'
+                )
+              );
+              expect(tlog?.inclusionProof?.hashes[1]).toEqual(
+                Buffer.from(
+                  rekorEntry[uuid].verification.inclusionProof.hashes[1],
+                  'hex'
+                )
+              );
+              expect(tlog?.inclusionProof?.logIndex).toEqual(
+                rekorEntry[uuid].verification.inclusionProof.logIndex.toString()
+              );
+              expect(tlog?.inclusionProof?.rootHash).toEqual(
+                Buffer.from(
+                  rekorEntry[uuid].verification.inclusionProof.rootHash,
+                  'hex'
+                )
+              );
+              expect(tlog?.inclusionProof?.treeSize).toEqual(
+                rekorEntry[uuid].verification.inclusionProof.treeSize.toString()
+              );
               expect(tlog?.kindVersion?.kind).toEqual('hashedrekord');
               expect(tlog?.kindVersion?.version).toEqual('0.0.1');
             });
