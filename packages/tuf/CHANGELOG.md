@@ -1,5 +1,11 @@
 # @sigstore/tuf
 
+## 1.0.2
+
+### Patch Changes
+
+- 68a21d0: Re-classify `@types/make-fetch-happen` as development dependency
+
 ## 1.0.1
 
 ### Patch Changes
