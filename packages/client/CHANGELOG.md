@@ -1,5 +1,18 @@
 # sigstore
 
+## 1.7.0
+
+### Minor Changes
+
+- f374dd3: Include transparency log inclusion proof in Sigstore bundle
+- fbfb315: Exports new `createVerifier` function
+
+### Patch Changes
+
+- bd1e1e1: Internal refactoring of Typescript types
+- Updated dependencies [b97be71]
+  - @sigstore/tuf@1.0.1
+
 ## 1.6.0
 
 ### Minor Changes
