@@ -29,7 +29,7 @@
     "nock": "^13.2.4",
     "prettier": "^2.6.2",
     "shx": "^0.3.3",
-    "ts-jest": "^29.0.5",
+    "ts-jest": "^29.1.1",
     "typescript": "^5.1.6"
   },
   "workspaces": [
