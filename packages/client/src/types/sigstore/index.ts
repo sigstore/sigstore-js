@@ -21,11 +21,16 @@ import { ValidBundle, assertValidBundle } from './validate';
 import type {
   ArtifactVerificationOptions,
   Envelope,
+  InclusionProof,
   TimestampVerificationData,
   TransparencyLogEntry,
   VerificationMaterial,
 } from '@sigstore/protobuf-specs';
-import type { Entry, ProposedEntry } from '../../external/rekor';
+import type {
+  Entry,
+  ProposedEntry,
+  RekorInclusionProof,
+} from '../../external/rekor';
 import type { WithRequired } from '../utility';
 import type { SerializedBundle } from './serialized';
 
@@ -200,6 +205,9 @@ function toTransparencyLogEntry(entry: Entry): TransparencyLogEntry {
   const b64SET = entry.verification?.signedEntryTimestamp || '';
   const set = Buffer.from(b64SET, 'base64');
   const logID = Buffer.from(entry.logID, 'hex');
+  const proof = entry.verification?.inclusionProof
+    ? toInclusionProof(entry.verification.inclusionProof)
+    : undefined;
 
   // Parse entry body so we can extract the kind and version.
   const bodyJSON = enc.base64Decode(entry.body);
@@ -218,8 +226,20 @@ function toTransparencyLogEntry(entry: Entry): TransparencyLogEntry {
       kind: entryBody.kind,
       version: entryBody.apiVersion,
     },
-    inclusionProof: undefined,
+    inclusionProof: proof,
     canonicalizedBody: Buffer.from(entry.body, 'base64'),
+  };
+}
+
+function toInclusionProof(proof: RekorInclusionProof): InclusionProof {
+  return {
+    logIndex: proof.logIndex.toString(),
+    rootHash: Buffer.from(proof.rootHash, 'hex'),
+    treeSize: proof.treeSize.toString(),
+    checkpoint: {
+      envelope: proof.checkpoint,
+    },
+    hashes: proof.hashes.map((h) => Buffer.from(h, 'hex')),
   };
 }
 
