@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "json-schema-to-typescript": "^13.0.2",
-    "openapi-typescript-codegen": "^0.24.0"
+    "openapi-typescript-codegen": "^0.25.0"
   },
   "engines": {
     "node": "^14.17.0 || ^16.13.0 || >=18.0.0"
