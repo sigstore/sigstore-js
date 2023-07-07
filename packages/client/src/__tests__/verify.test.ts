@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { bundleFromJSON } from '@sigstore/bundle';
 import { VerificationError } from '../error';
 import * as sigstore from '../types/sigstore';
 import { Verifier } from '../verify';
@@ -40,9 +41,7 @@ describe('Verifier', () => {
       const payload = bundles.signature.artifact;
 
       describe('when the key comes from the bundle', () => {
-        const bundle = sigstore.bundleFromJSON(
-          bundles.signature.valid.withSigningCert
-        );
+        const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
 
         describe('when the signature and the cert match', () => {
           it('does NOT throw an error', () => {
@@ -93,9 +92,7 @@ describe('Verifier', () => {
           trustedRoot,
           () => bundles.signature.publicKey
         );
-        const bundle = sigstore.bundleFromJSON(
-          bundles.signature.valid.withPublicKey
-        );
+        const bundle = bundleFromJSON(bundles.signature.valid.withPublicKey);
 
         describe('when the key is available', () => {
           describe('when the signature and the cert match', () => {
@@ -115,7 +112,7 @@ describe('Verifier', () => {
           });
 
           describe('when the bundle signature is incorrect', () => {
-            const bundle = sigstore.bundleFromJSON(
+            const bundle = bundleFromJSON(
               bundles.signature.invalid.badSignature
             );
 
@@ -142,9 +139,7 @@ describe('Verifier', () => {
     describe('when bundle type is dsseEnvelope', () => {
       describe('when the key comes from the bundle', () => {
         describe('when the signature and the cert match', () => {
-          const bundle = sigstore.bundleFromJSON(
-            bundles.dsse.valid.withSigningCert
-          );
+          const bundle = bundleFromJSON(bundles.dsse.valid.withSigningCert);
 
           it('does NOT throw an error', () => {
             expect(() => subject.verify(bundle, options)).not.toThrow();
@@ -152,9 +147,7 @@ describe('Verifier', () => {
         });
 
         describe('when the signature and the cert do NOT match', () => {
-          const bundle = sigstore.bundleFromJSON(
-            bundles.dsse.invalid.badSignature
-          );
+          const bundle = bundleFromJSON(bundles.dsse.invalid.badSignature);
           it('throws an error', () => {
             expect(() => subject.verify(bundle, options)).toThrow(
               VerificationError
@@ -163,9 +156,7 @@ describe('Verifier', () => {
         });
 
         describe('when there are no tlog entries in the bundle', () => {
-          const bundle = sigstore.bundleFromJSON(
-            bundles.dsse.valid.withNoTLogEntries
-          );
+          const bundle = bundleFromJSON(bundles.dsse.valid.withNoTLogEntries);
 
           describe('when tlog verification is disabled', () => {
             const opts: sigstore.RequiredArtifactVerificationOptions = {
@@ -222,9 +213,7 @@ describe('Verifier', () => {
         const subject = new Verifier(trustedRoot, () => bundles.dsse.publicKey);
 
         describe('when the signature and the cert match', () => {
-          const bundle = sigstore.bundleFromJSON(
-            bundles.dsse.valid.withPublicKey
-          );
+          const bundle = bundleFromJSON(bundles.dsse.valid.withPublicKey);
 
           it('does NOT throw an error', () => {
             expect(() => subject.verify(bundle, options)).not.toThrow();
@@ -232,9 +221,7 @@ describe('Verifier', () => {
         });
 
         describe('when the signature and the cert do NOT match', () => {
-          const bundle = sigstore.bundleFromJSON(
-            bundles.dsse.invalid.badSignature
-          );
+          const bundle = bundleFromJSON(bundles.dsse.invalid.badSignature);
 
           it('throws an error', () => {
             expect(() => subject.verify(bundle, options)).toThrow(
@@ -245,9 +232,7 @@ describe('Verifier', () => {
 
         describe('when the trusted key is malformed', () => {
           const subject = new Verifier(trustedRoot, () => Buffer.from(''));
-          const bundle = sigstore.bundleFromJSON(
-            bundles.dsse.valid.withPublicKey
-          );
+          const bundle = bundleFromJSON(bundles.dsse.valid.withPublicKey);
 
           it('throws an error', () => {
             expect(() => subject.verify(bundle, options)).toThrow(

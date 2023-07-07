@@ -13,12 +13,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import {
+  Bundle,
+  BundleWithCertificateChain,
+  Envelope,
+  MessageSignature,
+  PublicKeyIdentifier,
+  X509CertificateChain,
+  isBundleWithCertificateChain,
+} from '@sigstore/bundle';
 import { KeyLike } from 'crypto';
 import * as ca from './ca/verify';
 import { VerificationError } from './error';
 import * as tlog from './tlog/verify';
 import * as sigstore from './types/sigstore';
-import { WithRequired } from './types/utility';
 import { crypto, dsse, pem } from './util';
 
 export type KeySelector = (hint: string) => string | Buffer | undefined;
@@ -35,13 +43,13 @@ export class Verifier {
   // Verifies the bundle signature, the bundle's certificate chain (if present)
   // and the bundle's transparency log entries.
   public verify(
-    bundle: sigstore.Bundle,
+    bundle: Bundle,
     options: sigstore.RequiredArtifactVerificationOptions,
     data?: Buffer
   ): void {
     this.verifyArtifactSignature(bundle, data);
 
-    if (sigstore.isBundleWithCertificateChain(bundle)) {
+    if (isBundleWithCertificateChain(bundle)) {
       this.verifySigningCertificate(bundle, options);
     }
 
@@ -52,10 +60,7 @@ export class Verifier {
 
   // Performs bundle signature verification. Determines the type of the bundle
   // content and delegates to the appropriate signature verification function.
-  private verifyArtifactSignature(
-    bundle: sigstore.Bundle,
-    data?: Buffer
-  ): void {
+  private verifyArtifactSignature(bundle: Bundle, data?: Buffer): void {
     const publicKey = this.getPublicKey(bundle);
 
     switch (bundle.content?.$case) {
@@ -84,7 +89,7 @@ export class Verifier {
   // the list of trusted signer identities. This will be added back in a future
   // release.
   private verifySigningCertificate(
-    bundle: sigstore.BundleWithCertificateChain,
+    bundle: BundleWithCertificateChain,
     options: sigstore.RequiredArtifactVerificationOptions
   ): void {
     if (!sigstore.isCAVerificationOptions(options)) {
@@ -99,7 +104,7 @@ export class Verifier {
   // Performs verification of the bundle's transparency log entries. The bundle
   // must contain a list of transparency log entries.
   private verifyTLogEntries(
-    bundle: sigstore.Bundle,
+    bundle: Bundle,
     options: sigstore.RequiredArtifactVerificationOptions
   ): void {
     tlog.verifyTLogEntries(bundle, this.trustedRoot, options.tlogOptions);
@@ -108,7 +113,7 @@ export class Verifier {
   // Returns the public key which will be used to verify the bundle signature.
   // The public key is selected based on the verification material in the bundle
   // and the options provided.
-  private getPublicKey(bundle: sigstore.Bundle): KeyLike {
+  private getPublicKey(bundle: Bundle): KeyLike {
     // Select the key which will be used to verify the signature
     switch (bundle.verificationMaterial?.content?.$case) {
       // If the bundle contains a certificate chain, the public key is the
@@ -131,7 +136,7 @@ export class Verifier {
 
 // Retrieves the public key from the first certificate in the certificate chain
 function getPublicKeyFromCertificateChain(
-  certificateChain: sigstore.X509CertificateChain
+  certificateChain: X509CertificateChain
 ): KeyLike {
   const cert = pem.fromDER(certificateChain.certificates[0].rawBytes);
   return crypto.createPublicKey(cert);
@@ -140,7 +145,7 @@ function getPublicKeyFromCertificateChain(
 // Retrieves the public key through the key selector callback, passing the
 // public key hint from the bundle
 function getPublicKeyFromHint(
-  publicKeyID: sigstore.PublicKeyIdentifier,
+  publicKeyID: PublicKeyIdentifier,
   keySelector: KeySelector
 ): KeyLike {
   const key = keySelector(publicKeyID.hint);
@@ -163,7 +168,7 @@ function getPublicKeyFromHint(
 // provided data.
 function verifyMessageSignature(
   data: Buffer,
-  messageSignature: WithRequired<sigstore.MessageSignature, 'messageDigest'>,
+  messageSignature: MessageSignature,
   publicKey: KeyLike
 ): void {
   // Extract signature for message
@@ -182,10 +187,7 @@ function verifyMessageSignature(
 // Performs signature verification for bundle containing a DSSE envelope.
 // Calculates the PAE for the DSSE envelope and verifies it against the
 // signature in the envelope.
-function verifyDSSESignature(
-  envelope: sigstore.Envelope,
-  publicKey: KeyLike
-): void {
+function verifyDSSESignature(envelope: Envelope, publicKey: KeyLike): void {
   // Construct payload over which the signature was originally created
   const { payloadType, payload } = envelope;
   const data = dsse.preAuthEncoding(payloadType, payload);

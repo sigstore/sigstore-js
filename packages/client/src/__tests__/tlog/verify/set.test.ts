@@ -13,6 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import {
+  bundleFromJSON,
+  TLogEntryWithInclusionPromise,
+} from '@sigstore/bundle';
 import { verifyTLogSET } from '../../../tlog/verify/set';
 import * as sigstore from '../../../types/sigstore';
 import { crypto } from '../../../util';
@@ -47,11 +51,9 @@ describe('verifyTLogSET', () => {
     },
   };
 
-  const bundle = sigstore.bundleFromJSON(
-    bundles.signature.valid.withSigningCert
-  );
+  const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
   const entry = bundle.verificationMaterial
-    ?.tlogEntries[0] as sigstore.VerifiableTransparencyLogEntry;
+    ?.tlogEntries[0] as TLogEntryWithInclusionPromise;
 
   describe('when there is a matching TLogInstance', () => {
     const tlogs = [invalidTLog, validTLog];
@@ -63,11 +65,9 @@ describe('verifyTLogSET', () => {
     });
 
     describe('when the SET can NOT be verified', () => {
-      const bundle = sigstore.bundleFromJSON(
-        bundles.signature.invalid.setMismatch
-      );
+      const bundle = bundleFromJSON(bundles.signature.invalid.setMismatch);
       const entry = bundle.verificationMaterial
-        ?.tlogEntries[0] as sigstore.VerifiableTransparencyLogEntry;
+        ?.tlogEntries[0] as TLogEntryWithInclusionPromise;
 
       it('returns false', () => {
         expect(verifyTLogSET(entry, tlogs)).toBe(false);
@@ -101,6 +101,23 @@ describe('verifyTLogSET', () => {
     });
 
     describe('when the public key for the matching TLogInstance is not valid', () => {
+      describe('when public key has has no key', () => {
+        const tlogs: sigstore.TransparencyLogInstance[] = [
+          {
+            ...validTLog,
+            publicKey: {
+              rawBytes: undefined,
+              keyDetails: sigstore.PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
+              validFor: { start: undefined },
+            },
+          },
+        ];
+
+        it('returns false', () => {
+          expect(verifyTLogSET(entry, tlogs)).toBe(false);
+        });
+      });
+
       describe('when public key has no start', () => {
         const tlogs: sigstore.TransparencyLogInstance[] = [
           {

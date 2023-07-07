@@ -11,6 +11,7 @@
     "jest.setup.ts"
   ],
   "references": [
+    { "path": "../bundle" },
     { "path": "../tuf" },
     { "path": "../rekor-types" },
     { "path": "../jest" }

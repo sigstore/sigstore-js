@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { bundleFromJSON } from '@sigstore/bundle';
 import { VerificationError } from '../../../error';
 import { verifyTLogEntries } from '../../../tlog/verify/index';
 import * as sigstore from '../../../types/sigstore';
@@ -20,9 +21,7 @@ import bundles from '../../__fixtures__/bundles';
 import { trustedRoot } from '../../__fixtures__/trust';
 
 describe('verifyTLogEntries', () => {
-  const bundle = sigstore.bundleFromJSON(
-    bundles.signature.valid.withSigningCert
-  ) as sigstore.Bundle;
+  const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
 
   const options: sigstore.ArtifactVerificationOptions_TlogOptions = {
     disable: false,
@@ -40,9 +39,7 @@ describe('verifyTLogEntries', () => {
     });
 
     describe('when the bundle does NOT have a signing certificate', () => {
-      const bundle = sigstore.bundleFromJSON(
-        bundles.signature.valid.withPublicKey
-      ) as sigstore.Bundle;
+      const bundle = bundleFromJSON(bundles.signature.valid.withPublicKey);
 
       it('does NOT throw an error', () => {
         expect(() =>
@@ -72,18 +69,6 @@ describe('verifyTLogEntries', () => {
       performOnlineVerification: true,
       threshold: 1,
     };
-
-    it('throws an error', () => {
-      expect(() => verifyTLogEntries(bundle, trustedRoot, options)).toThrow(
-        VerificationError
-      );
-    });
-  });
-
-  describe('when tlog entries are missing data necessary for verification', () => {
-    const bundle = sigstore.bundleFromJSON(
-      bundles.dsse.invalid.tlogKindVersionMissing
-    ) as sigstore.Bundle;
 
     it('throws an error', () => {
       expect(() => verifyTLogEntries(bundle, trustedRoot, options)).toThrow(
