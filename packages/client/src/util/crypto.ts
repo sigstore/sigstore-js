@@ -63,3 +63,12 @@ export function hash(data: BinaryLike): Buffer {
 export function randomBytes(count: number): Buffer {
   return crypto.randomBytes(count);
 }
+
+export function bufferEqual(a: Buffer, b: Buffer): boolean {
+  try {
+    return crypto.timingSafeEqual(a, b);
+  } catch {
+    /* istanbul ignore next */
+    return false;
+  }
+}
