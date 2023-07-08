@@ -15,6 +15,7 @@ limitations under the License.
 */
 import { KeyObject } from 'crypto';
 import {
+  bufferEqual,
   createPublicKey,
   generateKeyPair,
   hash,
@@ -107,5 +108,19 @@ describe('randomBytes', () => {
   it('returns a buffer of the specified length', () => {
     const buffer = randomBytes(10);
     expect(buffer.length).toBe(10);
+  });
+});
+
+describe('bufferEqual', () => {
+  it('returns true when the buffers are equal', () => {
+    const buffer1 = Buffer.from('hello world');
+    const buffer2 = Buffer.from('hello world');
+    expect(bufferEqual(buffer1, buffer2)).toBe(true);
+  });
+
+  it('returns false when the buffers are not equal', () => {
+    const buffer1 = Buffer.from('hello world');
+    const buffer2 = Buffer.from('hello world!');
+    expect(bufferEqual(buffer1, buffer2)).toBe(false);
   });
 });
