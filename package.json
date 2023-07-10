@@ -19,7 +19,7 @@
     "@total-typescript/shoehorn": "^0.1.1",
     "@tsconfig/node14": "^14.1.0",
     "@types/jest": "^29.5.2",
-    "@types/node": "^20.3.3",
+    "@types/node": "^20.4.1",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.61.0",
     "eslint": "^8.44.0",
@@ -27,7 +27,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^29.6.1",
     "nock": "^13.2.4",
-    "prettier": "^2.6.2",
+    "prettier": "^3.0.0",
     "shx": "^0.3.3",
     "ts-jest": "^29.1.1",
     "typescript": "^5.1.6"
