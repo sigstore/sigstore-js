@@ -1,6 +1,7 @@
 {
   "files": [],
   "references": [
+    { "path": "packages/bundle" },
     { "path": "packages/cli" },
     { "path": "packages/client" },
     { "path": "packages/mock" },
