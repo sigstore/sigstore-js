@@ -16,18 +16,15 @@ limitations under the License.
 import crypto from 'crypto';
 import { VerificationError } from '../../error';
 
-import type { TransparencyLogEntry } from '@sigstore/bundle';
+import type { TLogEntryWithInclusionProof } from '@sigstore/bundle';
 
 const RFC6962_LEAF_HASH_PREFIX = Buffer.from([0x00]);
 const RFC6962_NODE_HASH_PREFIX = Buffer.from([0x01]);
 
-export function verifyMerkleInclusion(entry: TransparencyLogEntry): boolean {
+export function verifyMerkleInclusion(
+  entry: TLogEntryWithInclusionProof
+): boolean {
   const inclusionProof = entry.inclusionProof;
-
-  if (!inclusionProof) {
-    throw new VerificationError('tlog entry has no inclusion proof');
-  }
-
   const logIndex = BigInt(inclusionProof.logIndex);
   const treeSize = BigInt(inclusionProof.treeSize);
 

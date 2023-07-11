@@ -15,7 +15,7 @@ limitations under the License.
 */
 import { bundleFromJSON, TransparencyLogEntry } from '@sigstore/bundle';
 import { verifyTLogBody } from '../../../tlog/verify/body';
-import bundles from '../../__fixtures__/bundles';
+import bundles from '../../__fixtures__/bundles/v01';
 
 describe('verifyTLogBody', () => {
   describe('when a message signature bundle is provided', () => {

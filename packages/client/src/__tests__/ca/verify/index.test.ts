@@ -16,7 +16,7 @@ limitations under the License.
 import { bundleFromJSON, BundleWithCertificateChain } from '@sigstore/bundle';
 import { verifySigningCertificate } from '../../../ca/verify';
 import * as sigstore from '../../../types/sigstore';
-import bundles from '../../__fixtures__/bundles/';
+import bundles from '../../__fixtures__/bundles/v01';
 import { trustedRoot } from '../../__fixtures__/trust';
 
 describe('verifySigningCertificate', () => {

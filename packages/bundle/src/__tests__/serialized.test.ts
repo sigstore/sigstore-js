@@ -139,7 +139,7 @@ describe('bundleToJSON', () => {
         expectedTlogEntry.integratedTime
       );
       expect(tlogEntry?.inclusionPromise).toBeTruthy();
-      expect(tlogEntry?.inclusionPromise.signedEntryTimestamp).toEqual(
+      expect(tlogEntry?.inclusionPromise?.signedEntryTimestamp).toEqual(
         (
           expectedTlogEntry.inclusionPromise?.signedEntryTimestamp as Buffer
         ).toString('base64')
@@ -260,7 +260,7 @@ describe('bundleToJSON', () => {
         expectedTlogEntry.integratedTime
       );
       expect(tlogEntry?.inclusionPromise).toBeTruthy();
-      expect(tlogEntry?.inclusionPromise.signedEntryTimestamp).toEqual(
+      expect(tlogEntry?.inclusionPromise?.signedEntryTimestamp).toEqual(
         (
           expectedTlogEntry.inclusionPromise?.signedEntryTimestamp as Buffer
         ).toString('base64')
