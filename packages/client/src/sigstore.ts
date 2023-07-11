@@ -13,16 +13,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import {
+  SerializedBundle,
+  bundleFromJSON,
+  bundleToJSON,
+} from '@sigstore/bundle';
 import * as tuf from '@sigstore/tuf';
 import * as config from './config';
 import { Signer } from './sign';
-import * as sigstore from './types/sigstore';
 import { Verifier } from './verify';
 
 export async function sign(
   payload: Buffer,
   options: config.SignOptions = {}
-): Promise<sigstore.SerializedBundle> {
+): Promise<SerializedBundle> {
   const ca = config.createCAClient(options);
   const tlog = config.createTLogClient(options);
   const idps = config.identityProviders(options);
@@ -36,14 +40,14 @@ export async function sign(
   });
 
   const bundle = await signer.signBlob(payload);
-  return sigstore.bundleToJSON(bundle) as sigstore.SerializedBundle;
+  return bundleToJSON(bundle);
 }
 
 export async function attest(
   payload: Buffer,
   payloadType: string,
   options: config.SignOptions = {}
-): Promise<sigstore.SerializedBundle> {
+): Promise<SerializedBundle> {
   const ca = config.createCAClient(options);
   const tlog = config.createTLogClient(options);
   const tsa = config.createTSAClient(options);
@@ -59,11 +63,11 @@ export async function attest(
   });
 
   const bundle = await signer.signAttestation(payload, payloadType);
-  return sigstore.bundleToJSON(bundle) as sigstore.SerializedBundle;
+  return bundleToJSON(bundle);
 }
 
 export async function verify(
-  bundle: sigstore.SerializedBundle,
+  bundle: SerializedBundle,
   payload?: Buffer,
   options: config.VerifyOptions = {}
 ): Promise<void> {
@@ -76,13 +80,13 @@ export async function verify(
   });
   const verifier = new Verifier(trustedRoot, options.keySelector);
 
-  const deserializedBundle = sigstore.bundleFromJSON(bundle);
+  const deserializedBundle = bundleFromJSON(bundle);
   const opts = config.artifactVerificationOptions(options);
   return verifier.verify(deserializedBundle, opts, payload);
 }
 
 export interface BundleVerifier {
-  verify(bundle: sigstore.SerializedBundle): void;
+  verify(bundle: SerializedBundle): void;
 }
 
 export async function createVerifier(
@@ -99,8 +103,8 @@ export async function createVerifier(
   const verifyOpts = config.artifactVerificationOptions(options);
 
   return {
-    verify: (bundle: sigstore.SerializedBundle): void => {
-      const deserializedBundle = sigstore.bundleFromJSON(bundle);
+    verify: (bundle: SerializedBundle): void => {
+      const deserializedBundle = bundleFromJSON(bundle);
       return verifier.verify(deserializedBundle, verifyOpts);
     },
   };
@@ -136,19 +140,15 @@ const tufUtils = {
   },
 };
 
-export type { TUF } from '@sigstore/tuf';
-export type { SignOptions, VerifyOptions } from './config';
-export {
-  InternalError,
-  PolicyError,
-  ValidationError,
-  VerificationError,
-} from './error';
-export * as utils from './sigstore-utils';
+export { ValidationError } from '@sigstore/bundle';
 export type {
   SerializedBundle as Bundle,
   SerializedEnvelope as Envelope,
-} from './types/sigstore';
+} from '@sigstore/bundle';
+export type { TUF } from '@sigstore/tuf';
+export type { SignOptions, VerifyOptions } from './config';
+export { InternalError, PolicyError, VerificationError } from './error';
+export * as utils from './sigstore-utils';
 export { tufUtils as tuf };
 export const DEFAULT_FULCIO_URL = config.DEFAULT_FULCIO_URL;
 export const DEFAULT_REKOR_URL = config.DEFAULT_REKOR_URL;

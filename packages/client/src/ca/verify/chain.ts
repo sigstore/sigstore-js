@@ -18,8 +18,10 @@ import * as sigstore from '../../types/sigstore';
 import { x509Certificate } from '../../x509/cert';
 import { verifyCertificateChain } from '../../x509/verify';
 
+import type { X509Certificate } from '@sigstore/bundle';
+
 export function verifyChain(
-  certificate: sigstore.X509Certificate,
+  certificate: X509Certificate,
   certificateAuthorities: sigstore.CertificateAuthority[]
 ): x509Certificate[] {
   const untrustedCert = x509Certificate.parse(certificate.rawBytes);
@@ -75,6 +77,6 @@ function filterCertificateAuthorities(
 }
 
 // Parse the raw bytes of a certificate into an x509Certificate object.
-function parseCerts(certs: sigstore.X509Certificate[]): x509Certificate[] {
+function parseCerts(certs: X509Certificate[]): x509Certificate[] {
   return certs.map((cert) => x509Certificate.parse(cert.rawBytes));
 }

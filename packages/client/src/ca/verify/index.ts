@@ -18,8 +18,10 @@ import { verifyChain } from './chain';
 import { verifySCTs } from './sct';
 import { verifySignerIdentity } from './signer';
 
+import type { BundleWithCertificateChain } from '@sigstore/bundle';
+
 export function verifySigningCertificate(
-  bundle: sigstore.BundleWithCertificateChain,
+  bundle: BundleWithCertificateChain,
   trustedRoot: sigstore.TrustedRoot,
   options: sigstore.CAArtifactVerificationOptions
 ) {
