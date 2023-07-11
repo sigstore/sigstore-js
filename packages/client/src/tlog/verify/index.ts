@@ -13,6 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import {
+  Bundle,
+  TLogEntryWithInclusionPromise,
+  TransparencyLogEntry,
+  isBundleWithCertificateChain,
+} from '@sigstore/bundle';
 import { VerificationError } from '../../error';
 import * as sigstore from '../../types/sigstore';
 import { x509Certificate } from '../../x509/cert';
@@ -22,7 +28,7 @@ import { verifyTLogSET } from './set';
 // Verifies that the number of tlog entries that pass offline verification
 // is greater than or equal to the threshold specified in the options.
 export function verifyTLogEntries(
-  bundle: sigstore.Bundle,
+  bundle: Bundle,
   trustedRoot: sigstore.TrustedRoot,
   options: sigstore.ArtifactVerificationOptions_TlogOptions
 ): void {
@@ -35,7 +41,7 @@ export function verifyTLogEntries(
 
   // Iterate over the tlog entries and verify each one
   const verifiedEntries = bundle.verificationMaterial.tlogEntries.filter(
-    (entry) =>
+    (entry: TransparencyLogEntry) =>
       verifyTLogEntryOffline(
         entry,
         bundle.content,
@@ -50,16 +56,11 @@ export function verifyTLogEntries(
 }
 
 function verifyTLogEntryOffline(
-  entry: sigstore.TransparencyLogEntry,
-  bundleContent: sigstore.Bundle['content'],
+  entry: TransparencyLogEntry,
+  bundleContent: Bundle['content'],
   tlogs: sigstore.TransparencyLogInstance[],
   signingCert?: x509Certificate
 ): boolean {
-  // Check that the TLog entry has the fields necessary for verification
-  if (!sigstore.isVerifiableTransparencyLogEntry(entry)) {
-    return false;
-  }
-
   // If there is a signing certificate availble, check that the tlog integrated
   // time is within the certificate's validity period; otherwise, skip this
   // check.
@@ -68,21 +69,32 @@ function verifyTLogEntryOffline(
         signingCert.validForDate(new Date(Number(entry.integratedTime) * 1000))
     : () => true;
 
+  // For 0.1 Bundle, the SET is required. If it is missing, the entry is invalid.
+  // Will revisit this when we have a 0.2 Bundle.
+  const verifyTLogSignedEntryTimestamp =
+    isTransparencyLogEntryWithInclusionPromise(entry)
+      ? () => verifyTLogSET(entry, tlogs)
+      : () => false;
+
   return (
     verifyTLogBody(entry, bundleContent) &&
-    verifyTLogSET(entry, tlogs) &&
+    verifyTLogSignedEntryTimestamp() &&
     verifyTLogIntegrationTime()
   );
 }
 
-function signingCertificate(
-  bundle: sigstore.Bundle
-): x509Certificate | undefined {
-  if (!sigstore.isBundleWithCertificateChain(bundle)) {
+function signingCertificate(bundle: Bundle): x509Certificate | undefined {
+  if (!isBundleWithCertificateChain(bundle)) {
     return undefined;
   }
 
   const signingCert =
     bundle.verificationMaterial.content.x509CertificateChain.certificates[0];
   return x509Certificate.parse(signingCert.rawBytes);
+}
+
+function isTransparencyLogEntryWithInclusionPromise(
+  entry: TransparencyLogEntry
+): entry is TLogEntryWithInclusionPromise {
+  return entry.inclusionPromise !== undefined;
 }

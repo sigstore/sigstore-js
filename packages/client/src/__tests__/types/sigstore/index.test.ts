@@ -17,27 +17,6 @@ import type { Entry } from '../../../external/rekor';
 import { SignatureMaterial } from '../../../types/signature';
 import * as sigstore from '../../../types/sigstore';
 import { encoding as enc, pem } from '../../../util';
-import bundles from '../../__fixtures__/bundles/';
-
-describe('isBundleWithCertificateChain', () => {
-  describe('when the bundle contains a certificate chain', () => {
-    const json = bundles.dsse.valid.withSigningCert;
-    const bundle = sigstore.bundleFromJSON(json);
-
-    it('returns true', () => {
-      expect(sigstore.isBundleWithCertificateChain(bundle)).toBe(true);
-    });
-  });
-
-  describe('when the bundle does NOT contain a certificate chain', () => {
-    const json = bundles.dsse.valid.withPublicKey;
-    const bundle = sigstore.bundleFromJSON(json);
-
-    it('returns false', () => {
-      expect(sigstore.isBundleWithCertificateChain(bundle)).toBe(false);
-    });
-  });
-});
 
 describe('isCAVerificationOptions', () => {
   describe('when the verification options are for a CA', () => {

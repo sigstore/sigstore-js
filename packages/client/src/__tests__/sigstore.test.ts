@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import type { SerializedBundle } from '@sigstore/bundle';
 import {
   Bundle,
   HashAlgorithm,
@@ -28,7 +29,6 @@ import mocktuf, { Target } from '@tufjs/repo-mock';
 import { PolicyError, VerificationError } from '../error';
 import { Signer } from '../sign';
 import { attest, createVerifier, sign, tuf, verify } from '../sigstore';
-import { SerializedBundle } from '../types/sigstore';
 import bundles from './__fixtures__/bundles';
 import { trustedRoot } from './__fixtures__/trust';
 

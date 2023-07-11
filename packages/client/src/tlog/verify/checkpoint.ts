@@ -1,6 +1,6 @@
+import type { TransparencyLogEntry } from '@sigstore/bundle';
 import { VerificationError } from '../../error';
 import * as sigstore from '../../types/sigstore';
-import { WithRequired } from '../../types/utility';
 import { crypto } from '../../util';
 
 // Separator between the note and the signatures in a checkpoint
@@ -21,14 +21,6 @@ interface TLogSignature {
   signature: Buffer;
 }
 
-// Transparency log instance with the log ID and public key required.
-type ValidTransparencyLogInstance = WithRequired<
-  sigstore.TransparencyLogInstance,
-  'logId'
-> & {
-  publicKey: WithRequired<sigstore.PublicKey, 'rawBytes'>;
-};
-
 // Verifies the checkpoint value in the given tlog entry. There are two steps
 // to the verification:
 // 1. Verify that all signatures in the checkpoint can be verified against a
@@ -37,7 +29,7 @@ type ValidTransparencyLogInstance = WithRequired<
 //    inclusion proof
 // See: https://github.com/transparency-dev/formats/blob/main/log/README.md
 export function verifyCheckpoint(
-  entry: sigstore.VerifiableTransparencyLogEntry,
+  entry: TransparencyLogEntry,
   tlogs: sigstore.TransparencyLogInstance[]
 ) {
   const inclusionProof = entry.inclusionProof;
@@ -128,7 +120,7 @@ class SignedNote {
   // corresponding transparency log is looked up by the key hint and the
   // signature is verified against the public key in the transparency log.
   // Throws an error if any of the signatures are invalid.
-  public verify(tlogs: ValidTransparencyLogInstance[]): boolean {
+  public verify(tlogs: sigstore.ViableTransparencyLogInstance[]): boolean {
     const data = Buffer.from(this.note, 'utf-8');
 
     return this.signatures.every((signature) => {
@@ -196,36 +188,38 @@ class LogCheckpoint {
 function filterTLogInstances(
   tlogInstances: sigstore.TransparencyLogInstance[],
   integratedTime: string
-): ValidTransparencyLogInstance[] {
+): sigstore.ViableTransparencyLogInstance[] {
   const targetDate = new Date(Number(integratedTime) * 1000);
-  return tlogInstances.filter((tlog): tlog is ValidTransparencyLogInstance => {
-    // Must have a log ID
-    if (!tlog.logId) {
-      return false;
-    }
+  return tlogInstances.filter(
+    (tlog): tlog is sigstore.ViableTransparencyLogInstance => {
+      // Must have a log ID
+      if (!tlog.logId) {
+        return false;
+      }
 
-    // If the tlog doesn't have a public key, we can't use it
-    const publicKey = tlog.publicKey;
-    if (publicKey === undefined) {
-      return false;
-    }
+      // If the tlog doesn't have a public key, we can't use it
+      const publicKey = tlog.publicKey;
+      if (publicKey === undefined) {
+        return false;
+      }
 
-    // If the tlog doesn't have a rawBytes field, we can't use it
-    if (publicKey.rawBytes === undefined) {
-      return false;
-    }
+      // If the tlog doesn't have a rawBytes field, we can't use it
+      if (publicKey.rawBytes === undefined) {
+        return false;
+      }
 
-    // If the tlog doesn't have a validFor field, we don't need to check it
-    const validFor = publicKey.validFor;
-    if (validFor === undefined) {
-      return true;
-    }
+      // If the tlog doesn't have a validFor field, we don't need to check it
+      const validFor = publicKey.validFor;
+      if (validFor === undefined) {
+        return true;
+      }
 
-    // Check that the integrated time is within the validFor range
-    return (
-      validFor.start !== undefined &&
-      validFor.start <= targetDate &&
-      (validFor.end === undefined || targetDate <= validFor.end)
-    );
-  });
+      // Check that the integrated time is within the validFor range
+      return (
+        validFor.start !== undefined &&
+        validFor.start <= targetDate &&
+        (validFor.end === undefined || targetDate <= validFor.end)
+      );
+    }
+  );
 }

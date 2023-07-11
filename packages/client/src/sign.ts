@@ -17,6 +17,7 @@ import { SignatureMaterial, SignerFunc } from './types/signature';
 import * as sigstore from './types/sigstore';
 import { crypto, dsse, oidc } from './util';
 
+import type { Bundle } from '@sigstore/bundle';
 import type { CA } from './ca';
 import type { Provider } from './identity';
 import type { TLog } from './tlog';
@@ -49,7 +50,7 @@ export class Signer {
     this.signer = options.signer || this.signWithEphemeralKey.bind(this);
   }
 
-  public async signBlob(payload: Buffer): Promise<sigstore.Bundle> {
+  public async signBlob(payload: Buffer): Promise<Bundle> {
     // Get signature and verification material for payload
     const sigMaterial = await this.signer(payload);
 
@@ -74,7 +75,7 @@ export class Signer {
   public async signAttestation(
     payload: Buffer,
     payloadType: string
-  ): Promise<sigstore.Bundle> {
+  ): Promise<Bundle> {
     // Pre-authentication encoding to be signed
     const paeBuffer = dsse.preAuthEncoding(payloadType, payload);
 
