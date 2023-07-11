@@ -13,6 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import {
+  SerializedBundle,
+  SerializedEnvelope,
+  bundleToJSON,
+} from '@sigstore/bundle';
 import { SignOptions, createTLogClient } from './config';
 import { SignerFunc, extractSignatureMaterial } from './types/signature';
 import * as sigstore from './types/sigstore';
@@ -24,7 +29,7 @@ export async function createDSSEEnvelope(
   options: {
     signer: SignerFunc;
   }
-): Promise<sigstore.SerializedEnvelope> {
+): Promise<SerializedEnvelope> {
   // Pre-authentication encoding to be signed
   const paeBuffer = dsse.preAuthEncoding(payloadType, payload);
 
@@ -42,16 +47,16 @@ export async function createDSSEEnvelope(
     ],
   };
 
-  return sigstore.Envelope.toJSON(envelope) as sigstore.SerializedEnvelope;
+  return sigstore.Envelope.toJSON(envelope) as SerializedEnvelope;
 }
 
 // Accepts a signed DSSE envelope and a PEM-encoded public key to be added to the
 // transparency log. Returns a Sigstore bundle suitable for offline verification.
 export async function createRekorEntry(
-  dsseEnvelope: sigstore.SerializedEnvelope,
+  dsseEnvelope: SerializedEnvelope,
   publicKey: string,
   options: SignOptions = {}
-): Promise<sigstore.SerializedBundle> {
+): Promise<SerializedBundle> {
   const envelope = sigstore.Envelope.fromJSON(dsseEnvelope);
   const tlog = createTLogClient(options);
 
@@ -65,5 +70,5 @@ export async function createRekorEntry(
     signature: sigMaterial,
     tlogEntry: entry,
   });
-  return sigstore.bundleToJSON(bundle) as sigstore.SerializedBundle;
+  return bundleToJSON(bundle);
 }

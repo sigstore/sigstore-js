@@ -26,8 +26,6 @@ class BaseError extends Error {
 
 export class VerificationError extends BaseError {}
 
-export class ValidationError extends BaseError {}
-
 export class PolicyError extends BaseError {}
 
 type InternalErrorCode =

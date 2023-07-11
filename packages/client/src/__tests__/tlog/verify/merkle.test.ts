@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import type { TransparencyLogEntry } from '@sigstore/bundle';
 import { VerificationError } from '../../../error';
 import { verifyMerkleInclusion } from '../../../tlog/verify/merkle';
-import * as sigstore from '../../../types/sigstore';
 
 describe('verifyMerkleInclusion', () => {
   // Test data comes from https://rekor.sigstore.dev/api/v1/log/entries?logIndex=25591465
@@ -122,7 +122,7 @@ describe('verifyMerkleInclusion', () => {
     const entry = {
       canonicalizedBody,
       inclusionProof,
-    } as sigstore.TransparencyLogEntry;
+    } as TransparencyLogEntry;
 
     it('returns true', () => {
       expect(verifyMerkleInclusion(entry)).toBe(true);
@@ -133,7 +133,7 @@ describe('verifyMerkleInclusion', () => {
     const invalidEntry = {
       canonicalizedBody: Buffer.from('invalid'),
       inclusionProof,
-    } as sigstore.TransparencyLogEntry;
+    } as TransparencyLogEntry;
 
     it('returns false', () => {
       expect(verifyMerkleInclusion(invalidEntry)).toBe(false);
@@ -144,7 +144,7 @@ describe('verifyMerkleInclusion', () => {
     const invalidEntry = {
       canonicalizedBody,
       inclusionProof: { ...inclusionProof, logIndex: '-1' },
-    } as sigstore.TransparencyLogEntry;
+    } as TransparencyLogEntry;
 
     it('throws an error', () => {
       expect(() => verifyMerkleInclusion(invalidEntry)).toThrow(
@@ -157,7 +157,7 @@ describe('verifyMerkleInclusion', () => {
     const invalidEntry = {
       canonicalizedBody,
       inclusionProof: undefined,
-    } as sigstore.TransparencyLogEntry;
+    } as TransparencyLogEntry;
 
     it('throws an error', () => {
       expect(() => verifyMerkleInclusion(invalidEntry)).toThrow(
@@ -170,7 +170,7 @@ describe('verifyMerkleInclusion', () => {
     const invalidEntry = {
       canonicalizedBody,
       inclusionProof: { ...inclusionProof, treeSize: '99', logIndex: '100' },
-    } as sigstore.TransparencyLogEntry;
+    } as TransparencyLogEntry;
 
     it('throws an error true', () => {
       expect(() => verifyMerkleInclusion(invalidEntry)).toThrow(
@@ -186,7 +186,7 @@ describe('verifyMerkleInclusion', () => {
         ...inclusionProof,
         hashes: inclusionProof.hashes.slice(0, 1),
       },
-    } as sigstore.TransparencyLogEntry;
+    } as TransparencyLogEntry;
 
     it('throws an error true', () => {
       expect(() => verifyMerkleInclusion(invalidEntry)).toThrow(

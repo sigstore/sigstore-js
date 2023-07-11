@@ -15,14 +15,13 @@ limitations under the License.
 */
 import crypto from 'crypto';
 import { VerificationError } from '../../error';
-import * as sigstore from '../../types/sigstore';
+
+import type { TransparencyLogEntry } from '@sigstore/bundle';
 
 const RFC6962_LEAF_HASH_PREFIX = Buffer.from([0x00]);
 const RFC6962_NODE_HASH_PREFIX = Buffer.from([0x01]);
 
-export function verifyMerkleInclusion(
-  entry: sigstore.TransparencyLogEntry
-): boolean {
+export function verifyMerkleInclusion(entry: TransparencyLogEntry): boolean {
   const inclusionProof = entry.inclusionProof;
 
   if (!inclusionProof) {
