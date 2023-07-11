@@ -16,6 +16,8 @@ limitations under the License.
 import * as sigstore from '../../types/sigstore';
 import { crypto, json } from '../../util';
 
+import type { TLogEntryWithInclusionPromise } from '@sigstore/bundle';
+
 // Structure over which the tlog SET signature is generated
 interface VerificationPayload {
   body: string;
@@ -28,7 +30,7 @@ interface VerificationPayload {
 // transparency logs. Returns true if the SET can be verified against at least
 // one of the trusted logs; otherwise, returns false.
 export function verifyTLogSET(
-  entry: sigstore.VerifiableTransparencyLogEntry,
+  entry: TLogEntryWithInclusionPromise,
   tlogs: sigstore.TransparencyLogInstance[]
 ): boolean {
   // Filter the list of tlog instances to only those which might be able to
@@ -41,10 +43,6 @@ export function verifyTLogSET(
 
   // Check to see if we can verify the SET against any of the valid tlogs
   return validTLogs.some((tlog) => {
-    if (!tlog.publicKey?.rawBytes) {
-      return false;
-    }
-
     const publicKey = crypto.createPublicKey(tlog.publicKey.rawBytes);
 
     // Re-create the original Rekor verification payload
@@ -64,7 +62,7 @@ export function verifyTLogSET(
 // transaction log entires in the given bundle which can be used for SET
 // verification.
 function toVerificationPayload(
-  entry: sigstore.VerifiableTransparencyLogEntry
+  entry: TLogEntryWithInclusionPromise
 ): VerificationPayload {
   const { integratedTime, logIndex, logId, canonicalizedBody } = entry;
 
@@ -82,36 +80,38 @@ function filterTLogInstances(
   tlogInstances: sigstore.TransparencyLogInstance[],
   logID: Buffer,
   integratedTime: string
-): sigstore.TransparencyLogInstance[] {
+): sigstore.ViableTransparencyLogInstance[] {
   const targetDate = new Date(Number(integratedTime) * 1000);
 
-  return tlogInstances.filter((tlog) => {
-    // If the log IDs don't match, we can't use this tlog
-    if (!tlog.logId?.keyId.equals(logID)) {
-      return false;
-    }
+  return tlogInstances.filter(
+    (tlog): tlog is sigstore.ViableTransparencyLogInstance => {
+      // If the log IDs don't match, we can't use this tlog
+      if (!tlog.logId?.keyId.equals(logID)) {
+        return false;
+      }
 
-    // If the tlog doesn't have a public key, we can't use it
-    const publicKey = tlog.publicKey;
-    if (publicKey === undefined) {
-      return false;
-    }
+      // If the tlog doesn't have a public key, we can't use it
+      const publicKey = tlog.publicKey;
+      if (publicKey === undefined) {
+        return false;
+      }
 
-    // If the tlog doesn't have a rawBytes field, we can't use it
-    if (publicKey.rawBytes === undefined) {
-      return false;
-    }
+      // If the tlog doesn't have a rawBytes field, we can't use it
+      if (publicKey.rawBytes === undefined) {
+        return false;
+      }
 
-    // If the tlog doesn't have a validFor field, we don't need to check it
-    if (publicKey.validFor === undefined) {
-      return true;
-    }
+      // If the tlog doesn't have a validFor field, we don't need to check it
+      if (publicKey.validFor === undefined) {
+        return true;
+      }
 
-    // Check that the integrated time is within the validFor range
-    return (
-      publicKey.validFor.start &&
-      publicKey.validFor.start <= targetDate &&
-      (!publicKey.validFor.end || targetDate <= publicKey.validFor.end)
-    );
-  });
+      // Check that the integrated time is within the validFor range
+      return (
+        publicKey.validFor.start !== undefined &&
+        publicKey.validFor.start <= targetDate &&
+        (!publicKey.validFor.end || targetDate <= publicKey.validFor.end)
+      );
+    }
+  );
 }

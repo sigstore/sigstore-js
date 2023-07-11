@@ -14,12 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { VerificationError } from '../../error';
-import * as sigstore from '../../types/sigstore';
 import { crypto, encoding as enc } from '../../util';
 
 import type {
-  ProposedEntry,
+  Bundle,
+  Envelope,
+  MessageSignature,
+  TransparencyLogEntry,
+} from '@sigstore/bundle';
+import type {
   ProposedDSSEEntry,
+  ProposedEntry,
   ProposedHashedRekordEntry,
   ProposedIntotoEntry,
 } from '../../external/rekor';
@@ -28,8 +33,8 @@ const TLOG_MISMATCH_ERROR_MSG = 'bundle content and tlog entry do not match';
 
 // Compare the given tlog entry to the given bundle
 export function verifyTLogBody(
-  entry: sigstore.VerifiableTransparencyLogEntry,
-  bundleContent: sigstore.Bundle['content']
+  entry: TransparencyLogEntry,
+  bundleContent: Bundle['content']
 ): boolean {
   const { kind, version } = entry.kindVersion;
   const body: ProposedEntry = JSON.parse(
@@ -63,7 +68,7 @@ export function verifyTLogBody(
 // Compare the given intoto tlog entry to the given bundle
 function verifyDSSETLogBody(
   tlogEntry: ProposedDSSEEntry,
-  content: sigstore.Bundle['content']
+  content: Bundle['content']
 ): void {
   if (content?.$case !== 'dsseEnvelope') {
     throw new VerificationError(
@@ -87,7 +92,7 @@ function verifyDSSETLogBody(
 // Compare the given intoto tlog entry to the given bundle
 function verifyIntotoTLogBody(
   tlogEntry: ProposedIntotoEntry,
-  content: sigstore.Bundle['content']
+  content: Bundle['content']
 ): void {
   if (content?.$case !== 'dsseEnvelope') {
     throw new VerificationError(
@@ -111,7 +116,7 @@ function verifyIntotoTLogBody(
 // Compare the given hashedrekord tlog entry to the given bundle
 function verifyHashedRekordTLogBody(
   tlogEntry: ProposedHashedRekordEntry,
-  content: sigstore.Bundle['content']
+  content: Bundle['content']
 ): void {
   if (content?.$case !== 'messageSignature') {
     throw new VerificationError(
@@ -135,7 +140,7 @@ function verifyHashedRekordTLogBody(
 // Compare the given dsse v0.0.1 tlog entry to the given DSSE envelope.
 function verifyDSSE001TLogBody(
   tlogEntry: Extract<ProposedDSSEEntry, { apiVersion: '0.0.1' }>,
-  dsse: sigstore.Envelope
+  dsse: Envelope
 ): void {
   // Collect all of the signatures from the DSSE envelope
   // Turns them into base64-encoded strings for comparison
@@ -170,7 +175,7 @@ function verifyDSSE001TLogBody(
 // Compare the given intoto v0.0.2 tlog entry to the given DSSE envelope.
 function verifyIntoto002TLogBody(
   tlogEntry: Extract<ProposedIntotoEntry, { apiVersion: '0.0.2' }>,
-  dsse: sigstore.Envelope
+  dsse: Envelope
 ): void {
   // Collect all of the signatures from the DSSE envelope
   // Turns them into base64-encoded strings for comparison
@@ -207,7 +212,7 @@ function verifyIntoto002TLogBody(
 // signature
 function verifyHashedrekor001TLogBody(
   tlogEntry: Extract<ProposedHashedRekordEntry, { apiVersion: '0.0.1' }>,
-  messageSignature: sigstore.MessageSignature
+  messageSignature: MessageSignature
 ): void {
   // Ensure that the bundles message signature matches the tlog entry
   const msgSig = messageSignature.signature.toString('base64');

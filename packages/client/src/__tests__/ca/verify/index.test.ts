@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { bundleFromJSON, BundleWithCertificateChain } from '@sigstore/bundle';
 import { verifySigningCertificate } from '../../../ca/verify';
 import * as sigstore from '../../../types/sigstore';
 import bundles from '../../__fixtures__/bundles/';
@@ -21,9 +22,7 @@ import { trustedRoot } from '../../__fixtures__/trust';
 describe('verifySigningCertificate', () => {
   // Temporary until we reconsole bundle formats
   const bundleJSON = bundles.dsse.valid.withSigningCert;
-  const bundle = sigstore.bundleFromJSON(
-    bundleJSON
-  ) as sigstore.BundleWithCertificateChain;
+  const bundle = bundleFromJSON(bundleJSON) as BundleWithCertificateChain;
 
   const ctlogOptions: sigstore.ArtifactVerificationOptions_CtlogOptions = {
     disable: false,
