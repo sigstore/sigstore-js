@@ -1,0 +1,17 @@
+{
+  "_type": "https://in-toto.io/Statement/v0.1",
+  "subject": [
+    {
+      "name": "pkg:npm/sigstore@1.0.0",
+      "digest": {
+        "sha512": "7bea9f6e7ff37f5fab0b36bf061200fff03099fd2fd696b91d04bc5e4f225eb9fd6e0cadcad54ba980f43fb352a99e8810b4e0abeb5c0ef2cf9108cd1f258b36"
+      }
+    }
+  ],
+  "predicateType": "https://github.com/npm/attestation/tree/main/specs/publish/v0.1",
+  "predicate": {
+    "name": "sigstore",
+    "version": "1.0.0",
+    "registry": "https://registry.npmjs.org"
+  }
+}
