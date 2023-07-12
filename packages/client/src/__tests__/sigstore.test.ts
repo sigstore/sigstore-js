@@ -330,6 +330,20 @@ describe('#verify', () => {
       );
     });
   });
+
+  describe('when the bundle is newer then v0.2', () => {
+    // Check a theoretical v0.3 bundle that is the same shape as a v0.2 bundle
+    const bundle = { ...bundlesV02.signature.valid.withSigningCert };
+    bundle.mediaType = 'application/vnd.dev.sigstore.bundle+json;version=0.3';
+
+    const artifact = bundlesV02.signature.artifact;
+
+    it('does not throw an error', async () => {
+      await expect(verify(bundle, artifact, tufOptions)).resolves.toBe(
+        undefined
+      );
+    });
+  });
 });
 
 describe('#createVerifier', () => {

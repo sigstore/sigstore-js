@@ -34,6 +34,7 @@ describe('verifyTLogEntries', () => {
         const bundle = bundleFromJSON(
           bundlesV02.signature.valid.withSigningCert
         );
+
         it('does NOT throw an error', () => {
           expect(() =>
             verifyTLogEntries(bundle, trustedRoot, options)
