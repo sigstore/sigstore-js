@@ -16,17 +16,17 @@ limitations under the License.
 import assert from 'assert';
 import nock from 'nock';
 import { InternalError } from '../../../error';
-import { FulcioSigner, FulcioSignerOptions } from '../../../signatory/fulcio';
+import { FulcioSigner, FulcioSignerOptions } from '../../../signer/fulcio';
 
 import type { IdentityProvider } from '../../../identity';
-import type { Signatory } from '../../../signatory';
+import type { Signer } from '../../../signer';
 
 describe('KeylessSigner', () => {
   const fulcioBaseURL = 'http://localhost:8080';
   const signature = 'signature';
   const publicKey = 'publickey';
 
-  const keyHolder: Signatory = {
+  const keyHolder: Signer = {
     sign: () =>
       Promise.resolve({
         signature: Buffer.from('signature'),
@@ -89,7 +89,7 @@ describe('KeylessSigner', () => {
     });
 
     describe('when the child signer returns an invalid key', () => {
-      const keyHolder: Signatory = {
+      const keyHolder: Signer = {
         sign: () =>
           Promise.resolve({
             signature: Buffer.from('signature'),
@@ -141,7 +141,7 @@ describe('KeylessSigner', () => {
           });
       });
 
-      it('returns an endorsement', async () => {
+      it('returns a signature', async () => {
         const result = await subject.sign(payload);
 
         expect(result).toBeTruthy();

@@ -15,7 +15,11 @@ limitations under the License.
 */
 import { TSA, TSAClient, TSAClientOptions } from './client';
 
-import type { Affidavit, SignatureBundle, Witness } from '../witness';
+import type {
+  SignatureBundle,
+  VerificationMaterial,
+  Witness,
+} from '../witness';
 
 export type TSAWitnessOptions = TSAClientOptions;
 
@@ -30,10 +34,15 @@ export class TSAWitness implements Witness {
     });
   }
 
-  public async testify(content: SignatureBundle): Promise<Affidavit> {
+  public async testify(
+    content: SignatureBundle
+  ): Promise<VerificationMaterial> {
     const signature = extractSignature(content);
     const timestamp = await this.tsa.createTimestamp(signature);
-    return affidavit(timestamp);
+
+    return {
+      rfc3161Timestamps: [{ signedTimestamp: timestamp }],
+    };
   }
 }
 
@@ -44,10 +53,4 @@ function extractSignature(content: SignatureBundle) {
     case 'messageSignature':
       return content.messageSignature.signature;
   }
-}
-
-function affidavit(timestamp: Buffer): Affidavit {
-  return {
-    rfc3161Timestamps: [{ signedTimestamp: timestamp }],
-  };
 }

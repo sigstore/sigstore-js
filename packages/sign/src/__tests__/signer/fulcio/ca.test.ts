@@ -15,7 +15,7 @@ limitations under the License.
 */
 import nock from 'nock';
 import { InternalError } from '../../../error';
-import { CAClient } from '../../../signatory/fulcio/ca';
+import { CAClient } from '../../../signer/fulcio/ca';
 
 describe('CAClient', () => {
   const fulcioBaseURL = 'http://localhost:8080';

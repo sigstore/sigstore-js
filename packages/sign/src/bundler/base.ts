@@ -18,11 +18,11 @@ import type {
   RFC3161SignedTimestamp,
   TransparencyLogEntry,
 } from '@sigstore/bundle';
-import type { Endorsement, KeyMaterial, Signatory } from '../signatory';
+import type { KeyMaterial, Signature, Signer } from '../signer';
 import type { Witness } from '../witness';
 
-export interface NotaryOptions {
-  signatory: Signatory;
+export interface BundleBuilderOptions {
+  signer: Signer;
   witnesses: Witness[];
 }
 
@@ -33,36 +33,36 @@ export interface Artifact {
   type?: string;
 }
 
-// Interface for notary implementations. A notary is responsible for signing
+// Interface for bundler implementations. A bundler is responsible for signing
 // and witnessing an artifact.
-export interface Notary {
-  notarize: (artifact: Artifact) => Promise<Bundle>;
+export interface BundleBuilder {
+  create: (artifact: Artifact) => Promise<Bundle>;
 }
 
-// BaseNotary is a base class for Notary implementations. It provides a
-// the basic wokflow for signing and witnessing an artifact. Subclasses
-// must implement the `package` method to assemble a valid bundle with the
-// generated signature and verification material.
-export abstract class BaseNotary implements Notary {
-  protected signatory: Signatory;
+// BaseBundleBuilder is a base class for BundleBuilder implementations. It
+// provides a the basic wokflow for signing and witnessing an artifact.
+// Subclasses must implement the `package` method to assemble a valid bundle
+// with the generated signature and verification material.
+export abstract class BaseBundleBuilder implements BundleBuilder {
+  protected signer: Signer;
   private witnesses: Witness[];
 
-  constructor(options: NotaryOptions) {
-    this.signatory = options.signatory;
+  constructor(options: BundleBuilderOptions) {
+    this.signer = options.signer;
     this.witnesses = options.witnesses;
   }
 
   // Executes the signing/witnessing process for the given artifact.
-  public async notarize(artifact: Artifact): Promise<Bundle> {
-    const endorsement = await this.prepare(artifact).then((blob) =>
-      this.signatory.sign(blob)
+  public async create(artifact: Artifact): Promise<Bundle> {
+    const signature = await this.prepare(artifact).then((blob) =>
+      this.signer.sign(blob)
     );
-    const bundle = await this.package(artifact, endorsement);
+    const bundle = await this.package(artifact, signature);
 
     // Invoke all of the witnesses in parallel
-    const affidavits = await Promise.all(
+    const verificationMaterials = await Promise.all(
       this.witnesses.map((witness) =>
-        witness.testify(bundle.content, publicKey(endorsement.key))
+        witness.testify(bundle.content, publicKey(signature.key))
       )
     );
 
@@ -70,7 +70,7 @@ export abstract class BaseNotary implements Notary {
     const tlogEntryList: TransparencyLogEntry[] = [];
     const timestampList: RFC3161SignedTimestamp[] = [];
 
-    affidavits.forEach(({ tlogEntries, rfc3161Timestamps }) => {
+    verificationMaterials.forEach(({ tlogEntries, rfc3161Timestamps }) => {
       tlogEntryList.push(...(tlogEntries ?? []));
       timestampList.push(...(rfc3161Timestamps ?? []));
     });
@@ -85,18 +85,18 @@ export abstract class BaseNotary implements Notary {
   }
 
   // Override this function to apply any pre-signing transformations to the
-  // artifact. The returned buffer will be signed by the signatory.
-  // The default implementation simply returns the artifact data.
+  // artifact. The returned buffer will be signed by the signer. The default
+  // implementation simply returns the artifact data.
   protected async prepare(artifact: Artifact): Promise<Buffer> {
     return artifact.data;
   }
 
-  // Override this function to package the artifact and endorsement into a
+  // Override this function to package the artifact and signature into a
   // bundle. Any verification material from the configured witnesses will be
   // merged into the bundle.
   protected abstract package(
     artifact: Artifact,
-    endorsement: Endorsement
+    signature: Signature
   ): Promise<Bundle>;
 }
 

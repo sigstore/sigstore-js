@@ -14,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { dsse } from '../util';
+import { Artifact, BaseBundleBuilder, BundleBuilderOptions } from './base';
 import { toDSSEBundle } from './bundle';
-import { Artifact, BaseNotary, NotaryOptions } from './notary';
 
 import type * as sigstore from '@sigstore/bundle';
-import type { Endorsement } from '../signatory';
+import type { Signature } from '../signer';
 
-// Notary implementation for DSSE wrapped attestations
-export class DSSENotary extends BaseNotary {
-  constructor(options: NotaryOptions) {
+// BundleBuilder implementation for DSSE wrapped attestations
+export class DSSEBundleBuilder extends BaseBundleBuilder {
+  constructor(options: BundleBuilderOptions) {
     super(options);
   }
 
@@ -33,12 +33,12 @@ export class DSSENotary extends BaseNotary {
     return dsse.preAuthEncoding(a.type, a.data);
   }
 
-  // Packages the artifact and endorsement into a DSSE bundle
+  // Packages the artifact and signature into a DSSE bundle
   protected override async package(
     artifact: Artifact,
-    endorsement: Endorsement
+    signature: Signature
   ): Promise<sigstore.Bundle> {
-    return toDSSEBundle(artifactDefaults(artifact), endorsement);
+    return toDSSEBundle(artifactDefaults(artifact), signature);
   }
 }
 

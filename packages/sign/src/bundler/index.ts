@@ -13,5 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-export { FulcioSigner, FulcioSignerOptions } from './fulcio';
-export type { Endorsement, KeyMaterial, Signatory } from './signatory';
+export type { Artifact, BundleBuilder, BundleBuilderOptions } from './base';
+export { DSSEBundleBuilder } from './dsse';
+export { MessageBundleBuilder } from './message';

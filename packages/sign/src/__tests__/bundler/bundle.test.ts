@@ -15,13 +15,13 @@ limitations under the License.
 */
 import { HashAlgorithm } from '@sigstore/protobuf-specs';
 import assert from 'assert';
-import { toDSSEBundle, toMessageSignatureBundle } from '../../notary/bundle';
+import { toDSSEBundle, toMessageSignatureBundle } from '../../bundler/bundle';
 import { crypto, pem } from '../../util';
 
-import type { Artifact } from '../../notary/notary';
-import type { Endorsement } from '../../signatory';
+import type { Artifact } from '../../bundler/base';
+import type { Signature } from '../../signer';
 
-const signature = Buffer.from('signature');
+const sigBytes = Buffer.from('signature');
 const certificate = `-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----`;
 
 const artifact = {
@@ -30,16 +30,16 @@ const artifact = {
 } satisfies Artifact;
 
 describe('toMessageSignatureBundle', () => {
-  const endorsement = {
+  const signature = {
     key: {
       $case: 'x509Certificate',
       certificate: certificate,
     },
-    signature: signature,
-  } satisfies Endorsement;
+    signature: sigBytes,
+  } satisfies Signature;
 
   it('returns a valid message signature bundle', () => {
-    const b = toMessageSignatureBundle(artifact, endorsement);
+    const b = toMessageSignatureBundle(artifact, signature);
 
     expect(b).toBeTruthy();
     expect(b.mediaType).toEqual(
@@ -54,7 +54,7 @@ describe('toMessageSignatureBundle', () => {
     expect(b.content.messageSignature.messageDigest.digest).toEqual(
       crypto.hash(artifact.data)
     );
-    expect(b.content.messageSignature.signature).toEqual(signature);
+    expect(b.content.messageSignature.signature).toEqual(sigBytes);
 
     expect(b.verificationMaterial).toBeTruthy();
     assert(b.verificationMaterial.content?.$case === 'x509CertificateChain');
@@ -70,17 +70,17 @@ describe('toMessageSignatureBundle', () => {
 
 describe('toDSSEBundle', () => {
   describe('when a public key w/ hint is provided', () => {
-    const endorsement = {
+    const signature = {
       key: {
         $case: 'publicKey',
         publicKey: certificate,
         hint: 'hint',
       },
-      signature: signature,
-    } satisfies Endorsement;
+      signature: sigBytes,
+    } satisfies Signature;
 
     it('returns a valid DSSE bundle', () => {
-      const b = toDSSEBundle(artifact, endorsement);
+      const b = toDSSEBundle(artifact, signature);
 
       expect(b).toBeTruthy();
       expect(b.mediaType).toEqual(
@@ -92,31 +92,31 @@ describe('toDSSEBundle', () => {
       expect(b.content.dsseEnvelope.payloadType).toEqual(artifact.type);
       expect(b.content.dsseEnvelope.payload).toEqual(artifact.data);
       expect(b.content.dsseEnvelope.signatures).toHaveLength(1);
-      expect(b.content.dsseEnvelope.signatures[0].sig).toEqual(signature);
+      expect(b.content.dsseEnvelope.signatures[0].sig).toEqual(sigBytes);
       expect(b.content.dsseEnvelope.signatures[0].keyid).toEqual(
-        endorsement.key.hint
+        signature.key.hint
       );
 
       expect(b.verificationMaterial).toBeTruthy();
       assert(b.verificationMaterial.content?.$case === 'publicKey');
       expect(b.verificationMaterial.content?.publicKey).toBeTruthy();
       expect(b.verificationMaterial.content?.publicKey.hint).toEqual(
-        endorsement.key.hint
+        signature.key.hint
       );
     });
   });
 
   describe('when a public key w/o hint is provided', () => {
-    const endorsement = {
+    const signature = {
       key: {
         $case: 'publicKey',
         publicKey: certificate,
       },
-      signature: signature,
-    } satisfies Endorsement;
+      signature: sigBytes,
+    } satisfies Signature;
 
     it('returns a valid DSSE bundle', () => {
-      const b = toDSSEBundle(artifact, endorsement);
+      const b = toDSSEBundle(artifact, signature);
 
       expect(b).toBeTruthy();
       expect(b.mediaType).toEqual(
@@ -128,7 +128,7 @@ describe('toDSSEBundle', () => {
       expect(b.content.dsseEnvelope.payloadType).toEqual(artifact.type);
       expect(b.content.dsseEnvelope.payload).toEqual(artifact.data);
       expect(b.content.dsseEnvelope.signatures).toHaveLength(1);
-      expect(b.content.dsseEnvelope.signatures[0].sig).toEqual(signature);
+      expect(b.content.dsseEnvelope.signatures[0].sig).toEqual(sigBytes);
       expect(b.content.dsseEnvelope.signatures[0].keyid).toEqual('');
 
       expect(b.verificationMaterial).toBeTruthy();
@@ -139,16 +139,16 @@ describe('toDSSEBundle', () => {
   });
 
   describe('when a certificate chain provided', () => {
-    const endorsement = {
+    const signature = {
       key: {
         $case: 'x509Certificate',
         certificate: certificate,
       },
-      signature: signature,
-    } satisfies Endorsement;
+      signature: sigBytes,
+    } satisfies Signature;
 
     it('returns a valid DSSE bundle', () => {
-      const b = toDSSEBundle(artifact, endorsement);
+      const b = toDSSEBundle(artifact, signature);
 
       expect(b).toBeTruthy();
       expect(b.mediaType).toEqual(
@@ -160,7 +160,7 @@ describe('toDSSEBundle', () => {
       expect(b.content.dsseEnvelope.payloadType).toEqual(artifact.type);
       expect(b.content.dsseEnvelope.payload).toEqual(artifact.data);
       expect(b.content.dsseEnvelope.signatures).toHaveLength(1);
-      expect(b.content.dsseEnvelope.signatures[0].sig).toEqual(signature);
+      expect(b.content.dsseEnvelope.signatures[0].sig).toEqual(sigBytes);
       expect(b.content.dsseEnvelope.signatures[0].keyid).toEqual('');
 
       expect(b.verificationMaterial).toBeTruthy();

@@ -26,15 +26,16 @@ npm install @sigstore/sign
 This library provides the building blocks for composing custom Sigstore signing
 workflows.
 
-### Notary
+### BundleBuilder
 
-The top-level component is the `Notary` which has responsibility for taking some
-artifact and returning a [Sigstore bundle][5] containing the signature for that
-artifact and the various materials necessary to verify that signature.
+The top-level component is the `BundleBuilder` which has responsibility for
+taking some artifact and returning a [Sigstore bundle][5] containing the
+signature for that artifact and the various materials necessary to verify that
+signature.
 
 ```typescript
-interface Notary {
-  notarize: (artifact: Artifact) => Promise<Bundle>;
+interface BundleBuilder {
+  create: (artifact: Artifact) => Promise<Bundle>;
 }
 ```
 
@@ -48,31 +49,31 @@ type Artifact = {
 };
 ```
 
-There are two `Notary` implementations provided as part of this package:
+There are two `BundleBuilder` implementations provided as part of this package:
 
-- [`DSSENotary`](./src/notary/dsse.ts) - Combines the verification material and
+- [`DSSEBundleBuilder`](./src/bundler/dsse.ts) - Combines the verification material and
   artifact signature into a [`dsse_envelope`][7] -style Sigstore bundle
-- [`MessageNotary`](./src/notary/message.ts) - Combines the verification
+- [`MessageBundleBuilder`](./src/bundler/message.ts) - Combines the verification
   material and artifact signature into a [`message_signature`][8]-style Sigstore
   bundle.
 
-### Signatory
+### Signer
 
-Every `Notary` must be instantiated with a `Signatory` implementation. The
-`Signatory` is responsible for taking a `Buffer` and returning an `Endorsement`.
+Every `BundleBuilder` must be instantiated with a `Signer` implementation. The
+`Signer` is responsible for taking a `Buffer` and returning an `Signature`.
 
 ```typescript
-interface Signatory {
-  sign: (data: Buffer) => Promise<Endorsement>;
+interface Signer {
+  sign: (data: Buffer) => Promise<Signature>;
 }
 ```
 
-The returned `Endorsement` contains a signature and the public key which can be
+The returned `Signature` contains a signature and the public key which can be
 used to verify that signature -- the key may either take the form of a x509
 certificate or public key.
 
 ```typescript
-type Endorsement = {
+type Signature = {
   signature: Buffer;
   key: KeyMaterial;
 };
@@ -89,41 +90,41 @@ type KeyMaterial =
     };
 ```
 
-This package provides the [`FulcioSigner`](./src/signatory/fulcio/index.ts)
-which implements the `Signatory` interface and signs the artifact with an
+This package provides the [`FulcioSigner`](./src/signer/fulcio/index.ts)
+which implements the `Signer` interface and signs the artifact with an
 ephemeral keypair. It will also retrieve an OIDC token from the configured
 `IdentityProvider` and then request a signing certificate from Fulcio which binds
 the ephemeral key to the identity embedded in the token. This signing
-certificate is returned as part of the `Endorsement`.
+certificate is returned as part of the `Signature`.
 
 ### Witness
 
-The `Notary` may also be configured with zero-or-more `Witness` instances. Each
-`Witness` receives the artifact signature and the public key and returns an
-`Affidavit` which represents some sort of counter-signature for the artifact's
-signature.
+The `BundleBuilder` may also be configured with zero-or-more `Witness`
+instances. Each `Witness` receives the artifact signature and the public key
+and returns an `VerificationMaterial` which represents some sort of
+counter-signature for the artifact's signature.
 
 ```typescript
 interface Witness {
   testify: (
     signature: SignatureBundle,
     publicKey: string
-  ) => Promise<Affidavit>;
+  ) => Promise<VerificationMaterial>;
 }
 ```
 
-The returned `Affidavit` may contain either Rekor transparency log entries or
-RFC3161 timestamps.
+The returned `VerificationMaterial` may contain either Rekor transparency log
+entries or RFC3161 timestamps.
 
 ```typescript
-type Affidavit = {
+type VerificationMaterial = {
   tlogEntries?: TransparencyLogEntry[];
   rfc3161Timestamps?: RFC3161SignedTimestamp[];
 };
 ```
 
-The entries in the returned `Affidavit` are automatically added to the Sigstore
-`Bundle` by the `Notary`.
+The entries in the returned `VerificationMaterial` are automatically added to
+the Sigstore `Bundle` by the `BundleBuilder`.
 
 The package provides two different `Witness` implementations:
 
@@ -139,14 +140,14 @@ The package provides two different `Witness` implementations:
 ```typescript
 const {
   CIContextProvider,
-  DSSENotary,
+  DSSEBundleBuilder,
   FulcioSigner,
   RekorWitness,
   TSAWitness,
 } = require('@sigstore/sign');
 
-// Set-up the signatory
-const signatory = new FulcioSigner({
+// Set-up the signer
+const signer = new FulcioSigner({
   fulcioBaseURL: 'https://fulcio.sigstore.dev',
   identityProvider: new CIContextProvider('sigstore'),
 });
@@ -160,9 +161,9 @@ const tsaWitness = new TSAWitness({
   tsaBaseURL: 'https://tsa.github.com',
 });
 
-// Instantiate a notary
-const notary = new DSSENotary({
-  signatory,
+// Instantiate a bundle builder
+const bundler = new DSSEBundleBuilder({
+  signer,
   witnesses: [rekorWitness, tsaWitness],
 });
 
@@ -170,7 +171,7 @@ const notary = new DSSENotary({
 const artifact = {
   data: Buffer.from('something to be signed'),
 };
-const bundle = await notary.notarize(artifact);
+const bundle = await bundler.create(artifact);
 ```
 
 [1]: https://www.sigstore.dev

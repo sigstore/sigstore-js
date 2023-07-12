@@ -87,15 +87,15 @@ describe('RekorWitness', () => {
         };
 
         it('returns the tlog entry', async () => {
-          const affidavit = await subject.testify(sigBundle, publicKey);
+          const vm = await subject.testify(sigBundle, publicKey);
 
-          expect(affidavit).toBeDefined();
-          expect(affidavit.rfc3161Timestamps).toBeUndefined();
+          expect(vm).toBeDefined();
+          expect(vm.rfc3161Timestamps).toBeUndefined();
 
-          assert(affidavit.tlogEntries);
-          expect(affidavit.tlogEntries).toHaveLength(1);
+          assert(vm.tlogEntries);
+          expect(vm.tlogEntries).toHaveLength(1);
 
-          const tlogEntry = affidavit.tlogEntries[0];
+          const tlogEntry = vm.tlogEntries[0];
           expect(tlogEntry).toBeDefined();
           expect(tlogEntry.logIndex).toEqual(
             rekorEntry[uuid].logIndex.toString()
@@ -161,15 +161,15 @@ describe('RekorWitness', () => {
         };
 
         it('returns the tlog entry', async () => {
-          const affidavit = await subject.testify(sigBundle, publicKey);
+          const vm = await subject.testify(sigBundle, publicKey);
 
-          expect(affidavit).toBeDefined();
-          expect(affidavit.rfc3161Timestamps).toBeUndefined();
+          expect(vm).toBeDefined();
+          expect(vm.rfc3161Timestamps).toBeUndefined();
 
-          assert(affidavit.tlogEntries);
-          expect(affidavit.tlogEntries).toHaveLength(1);
+          assert(vm.tlogEntries);
+          expect(vm.tlogEntries).toHaveLength(1);
 
-          const tlogEntry = affidavit.tlogEntries[0];
+          const tlogEntry = vm.tlogEntries[0];
           expect(tlogEntry).toBeDefined();
           expect(tlogEntry.logIndex).toEqual(
             rekorEntry[uuid].logIndex.toString()
@@ -264,16 +264,16 @@ describe('RekorWitness', () => {
       });
 
       it('returns the tlog entry with an empty SET', async () => {
-        const affidavit = await subject.testify(sigBundle, publicKey);
+        const vm = await subject.testify(sigBundle, publicKey);
 
-        expect(affidavit).toBeDefined();
-        assert(affidavit.tlogEntries);
+        expect(vm).toBeDefined();
+        assert(vm.tlogEntries);
 
-        expect(affidavit.tlogEntries).toHaveLength(1);
-        const tlogEntry = affidavit.tlogEntries[0];
-        expect(tlogEntry.inclusionPromise?.signedEntryTimestamp).toEqual(
-          Buffer.from('')
-        );
+        expect(vm.tlogEntries).toHaveLength(1);
+        const tlogEntry = vm.tlogEntries[0];
+        expect(
+          tlogEntry.inclusionPromise?.signedEntryTimestamp
+        ).toBeUndefined();
       });
     });
 

@@ -13,22 +13,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { Artifact, BaseBundleBuilder, BundleBuilderOptions } from './base';
 import { toMessageSignatureBundle } from './bundle';
-import { Artifact, BaseNotary, NotaryOptions } from './notary';
 
 import type { Bundle } from '@sigstore/bundle';
-import type { Endorsement } from '../signatory';
+import type { Signature } from '../signer';
 
-// Notary implementation for raw message signatures
-export class MessageNotary extends BaseNotary {
-  constructor(options: NotaryOptions) {
+// BundleBuilder implementation for raw message signatures
+export class MessageBundleBuilder extends BaseBundleBuilder {
+  constructor(options: BundleBuilderOptions) {
     super(options);
   }
 
   override async package(
     artifact: Artifact,
-    endorsement: Endorsement
+    signature: Signature
   ): Promise<Bundle> {
-    return toMessageSignatureBundle(artifact, endorsement);
+    return toMessageSignatureBundle(artifact, signature);
   }
 }

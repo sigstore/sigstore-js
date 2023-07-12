@@ -16,34 +16,34 @@ limitations under the License.
 import { fromPartial } from '@total-typescript/shoehorn';
 import {
   CIContextProvider,
-  DSSENotary,
+  DSSEBundleBuilder,
   FulcioSigner,
   InternalError,
-  MessageNotary,
+  MessageBundleBuilder,
   RekorWitness,
   TSAWitness,
 } from '..';
 
 import type {
-  Affidavit,
   Artifact,
   Bundle,
-  Endorsement,
+  BundleBuilder,
+  BundleBuilderOptions,
   FulcioSignerOptions,
   IdentityProvider,
-  Notary,
-  NotaryOptions,
   RekorWitnessOptions,
-  Signatory,
+  Signature,
   SignatureBundle,
+  Signer,
   TSAWitnessOptions,
+  VerificationMaterial,
   Witness,
 } from '..';
 
 // This test is a bit of a hack to ensure that the types are exported
 it('exports types', async () => {
-  const affidavit: Affidavit = fromPartial({});
-  expect(affidavit).toBeDefined();
+  const verificationMaterial: VerificationMaterial = fromPartial({});
+  expect(verificationMaterial).toBeDefined();
 
   const artifact: Artifact = fromPartial({});
   expect(artifact).toBeDefined();
@@ -51,17 +51,17 @@ it('exports types', async () => {
   const bundle: Bundle = fromPartial({});
   expect(bundle).toBeDefined();
 
-  const endorsement: Endorsement = fromPartial({});
-  expect(endorsement).toBeDefined();
+  const signature: Signature = fromPartial({});
+  expect(signature).toBeDefined();
 
   const signatureBundle: SignatureBundle = fromPartial({});
   expect(signatureBundle).toBeDefined();
 
-  const notary: Notary = fromPartial({});
-  expect(notary).toBeDefined();
+  const bundler: BundleBuilder = fromPartial({});
+  expect(bundler).toBeDefined();
 
-  const notaryOptions: NotaryOptions = fromPartial({});
-  expect(notaryOptions).toBeDefined();
+  const bundlerOptions: BundleBuilderOptions = fromPartial({});
+  expect(bundlerOptions).toBeDefined();
 
   const witness: Witness = fromPartial({});
   expect(witness).toBeDefined();
@@ -72,8 +72,8 @@ it('exports types', async () => {
   const tsaWitnessOptions: TSAWitnessOptions = fromPartial({});
   expect(tsaWitnessOptions).toBeDefined();
 
-  const signatory: Signatory = fromPartial({});
-  expect(signatory).toBeDefined();
+  const signer: Signer = fromPartial({});
+  expect(signer).toBeDefined();
 
   const fulcioSignerOptions: FulcioSignerOptions = fromPartial({});
   expect(fulcioSignerOptions).toBeDefined();
@@ -84,8 +84,8 @@ it('exports types', async () => {
 
 it('exports classes', () => {
   expect(CIContextProvider).toBeInstanceOf(Function);
-  expect(DSSENotary).toBeInstanceOf(Function);
-  expect(MessageNotary).toBeInstanceOf(Function);
+  expect(DSSEBundleBuilder).toBeInstanceOf(Function);
+  expect(MessageBundleBuilder).toBeInstanceOf(Function);
   expect(FulcioSigner).toBeInstanceOf(Function);
   expect(RekorWitness).toBeInstanceOf(Function);
   expect(TSAWitness).toBeInstanceOf(Function);

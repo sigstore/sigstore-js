@@ -15,4 +15,4 @@ limitations under the License.
 */
 export { RekorWitness, RekorWitnessOptions } from './tlog';
 export { TSAWitness, TSAWitnessOptions } from './tsa';
-export type { Affidavit, SignatureBundle, Witness } from './witness';
+export type { SignatureBundle, VerificationMaterial, Witness } from './witness';

@@ -27,17 +27,17 @@ export type KeyMaterial =
       hint?: string;
     };
 
-// The Endorsement returned by a Signatory. Includes the signature and the
-// key material (either a public key or an X.509 certificate) which can be
-// used to verify the signature.
-export type Endorsement = {
+// The Signature returned by a Signer. Includes the signature and the key
+// material (either a public key or an X.509 certificate) which can be used to
+// verify the signature.
+export type Signature = {
   signature: Buffer;
   key: KeyMaterial;
 };
 
-// A Signatory is responsible for generating a signature for the given blob
-// of data. The signature is returned as an Endorsement, which also includes
+// A Signer is responsible for generating a signature for the given blob
+// of data. The signature is returned as an Signature, which also includes
 // the key material used for verification.
-export interface Signatory {
-  sign: (data: Buffer) => Promise<Endorsement>;
+export interface Signer {
+  sign: (data: Buffer) => Promise<Signature>;
 }

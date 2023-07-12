@@ -14,54 +14,54 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import assert from 'assert';
-import { DSSENotary } from '../../notary/dsse';
+import { DSSEBundleBuilder } from '../../bundler/dsse';
 import { dsse } from '../../util';
 
-import type { Artifact } from '../../notary';
-import type { Endorsement, Signatory } from '../../signatory';
+import type { Artifact } from '../../bundler';
+import type { Signature, Signer } from '../../signer';
 
 describe('DSSENotary', () => {
-  // Endorsement fixture to return from fake Signatory
-  const signature = Buffer.from('signature');
+  // Signature fixture to return from fake signer
+  const sigBytes = Buffer.from('signature');
   const key = 'publickey';
 
-  const endorsement = {
+  const signature = {
     key: {
       $case: 'publicKey',
       publicKey: key,
       hint: 'hint',
     },
-    signature: signature,
-  } satisfies Endorsement;
+    signature: sigBytes,
+  } satisfies Signature;
 
-  const signatory = {
-    sign: jest.fn().mockResolvedValue(endorsement),
-  } satisfies Signatory;
+  const signer = {
+    sign: jest.fn().mockResolvedValue(signature),
+  } satisfies Signer;
 
   describe('constructor', () => {
     it('should create a new instance', () => {
-      const notary = new DSSENotary({ signatory, witnesses: [] });
+      const notary = new DSSEBundleBuilder({ signer: signer, witnesses: [] });
       expect(notary).toBeDefined();
     });
   });
 
   describe('notarize', () => {
-    const subject = new DSSENotary({ signatory, witnesses: [] });
+    const subject = new DSSEBundleBuilder({ signer: signer, witnesses: [] });
 
     describe('when the artifact type is NOT provided', () => {
       const artifact: Artifact = {
         data: Buffer.from('artifact'),
       };
 
-      it('invokes the signatory', async () => {
-        await subject.notarize(artifact);
+      it('invokes the signer', async () => {
+        await subject.create(artifact);
 
         const expectedBlob = dsse.preAuthEncoding('', artifact.data);
-        expect(signatory.sign).toHaveBeenCalledWith(expectedBlob);
+        expect(signer.sign).toHaveBeenCalledWith(expectedBlob);
       });
 
       it('returns a bundle', async () => {
-        const b = await subject.notarize(artifact);
+        const b = await subject.create(artifact);
 
         expect(b).toBeTruthy();
         expect(b.mediaType).toEqual(
@@ -74,17 +74,17 @@ describe('DSSENotary', () => {
         expect(b.content.dsseEnvelope.payloadType).toEqual('');
         expect(b.content.dsseEnvelope.signatures).toHaveLength(1);
         expect(b.content.dsseEnvelope.signatures[0].keyid).toEqual(
-          endorsement.key.hint
+          signature.key.hint
         );
         expect(b.content.dsseEnvelope.signatures[0].sig).toEqual(
-          endorsement.signature
+          signature.signature
         );
 
         expect(b.verificationMaterial).toBeTruthy();
         assert(b.verificationMaterial.content?.$case === 'publicKey');
         expect(b.verificationMaterial.content?.publicKey).toBeTruthy();
         expect(b.verificationMaterial.content?.publicKey.hint).toEqual(
-          endorsement.key.hint
+          signature.key.hint
         );
       });
     });
@@ -95,15 +95,15 @@ describe('DSSENotary', () => {
         type: 'text/plain',
       } satisfies Artifact;
 
-      it('invokes the signatory', async () => {
-        await subject.notarize(artifact);
+      it('invokes the signer', async () => {
+        await subject.create(artifact);
 
         const expectedBlob = dsse.preAuthEncoding(artifact.type, artifact.data);
-        expect(signatory.sign).toHaveBeenCalledWith(expectedBlob);
+        expect(signer.sign).toHaveBeenCalledWith(expectedBlob);
       });
 
       it('returns a bundle', async () => {
-        const b = await subject.notarize(artifact);
+        const b = await subject.create(artifact);
 
         expect(b).toBeTruthy();
         expect(b.mediaType).toEqual(
@@ -116,17 +116,17 @@ describe('DSSENotary', () => {
         expect(b.content.dsseEnvelope.payloadType).toEqual(artifact.type);
         expect(b.content.dsseEnvelope.signatures).toHaveLength(1);
         expect(b.content.dsseEnvelope.signatures[0].keyid).toEqual(
-          endorsement.key.hint
+          signature.key.hint
         );
         expect(b.content.dsseEnvelope.signatures[0].sig).toEqual(
-          endorsement.signature
+          signature.signature
         );
 
         expect(b.verificationMaterial).toBeTruthy();
         assert(b.verificationMaterial.content?.$case === 'publicKey');
         expect(b.verificationMaterial.content?.publicKey).toBeTruthy();
         expect(b.verificationMaterial.content?.publicKey.hint).toEqual(
-          endorsement.key.hint
+          signature.key.hint
         );
       });
     });

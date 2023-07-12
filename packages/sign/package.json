@@ -29,16 +29,11 @@
     "@sigstore/jest": "^0.0.0",
     "@sigstore/mock": "^0.1.0",
     "@sigstore/rekor-types": "^1.0.0",
-    "@total-typescript/shoehorn": "^0.1.0",
-    "@types/make-fetch-happen": "^10.0.0",
-    "@types/node": "^20.2.3",
-    "nock": "^13.2.4",
-    "shx": "^0.3.3",
-    "typescript": "^5.0.2"
+    "@types/make-fetch-happen": "^10.0.0"
   },
   "dependencies": {
     "@sigstore/bundle": "^0.0.0",
-    "@sigstore/protobuf-specs": "^0.1.0",
+    "@sigstore/protobuf-specs": "^0.2.0",
     "make-fetch-happen": "^11.0.1"
   },
   "engines": {

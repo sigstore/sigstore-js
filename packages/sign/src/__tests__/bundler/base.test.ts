@@ -16,49 +16,49 @@ limitations under the License.
 import * as sigstore from '@sigstore/bundle';
 import { HashAlgorithm } from '@sigstore/protobuf-specs';
 import assert from 'assert';
-import { toMessageSignatureBundle } from '../../notary/bundle';
-import { Artifact, BaseNotary } from '../../notary/notary';
-import { Endorsement, Signatory } from '../../signatory';
+import { Artifact, BaseBundleBuilder } from '../../bundler/base';
+import { toMessageSignatureBundle } from '../../bundler/bundle';
+import { Signature, Signer } from '../../signer';
 import { crypto, pem } from '../../util';
-import { Affidavit, Witness } from '../../witness';
+import { VerificationMaterial, Witness } from '../../witness';
 
-describe('BaseNotary', () => {
+describe('BaseBundleBuilder', () => {
   const artifact: Artifact = {
     data: Buffer.from('data'),
   };
 
-  // Endorsement fixture to return from fake Signatory
+  // Signature fixture to return from fake Signer
   const signature = Buffer.from('signature');
   const key = 'publickey';
 
-  const publicKeyEndorsement = {
+  const publicKeySignature = {
     key: {
       $case: 'publicKey',
       publicKey: key,
       hint: 'hint',
     },
     signature: signature,
-  } satisfies Endorsement;
+  } satisfies Signature;
 
-  const fakePublicKeySignatory = {
-    sign: jest.fn().mockResolvedValue(publicKeyEndorsement),
-  } satisfies Signatory;
+  const fakePublicKeySigner = {
+    sign: jest.fn().mockResolvedValue(publicKeySignature),
+  } satisfies Signer;
 
-  const certificateEndorsement = {
+  const certificateSignature = {
     key: {
       $case: 'x509Certificate',
       certificate: key,
     },
     signature: signature,
-  } satisfies Endorsement;
+  } satisfies Signature;
 
-  const fakeCertificateSignatory = {
-    sign: jest.fn().mockResolvedValue(certificateEndorsement),
-  } satisfies Signatory;
+  const fakeCertificateSigner = {
+    sign: jest.fn().mockResolvedValue(certificateSignature),
+  } satisfies Signer;
 
   // VerificationMaterial fixture to return from fake Witness
   const timestamp = Buffer.from('timestamp');
-  const timestampAffidavit: Affidavit = {
+  const timestampAffidavit: VerificationMaterial = {
     rfc3161Timestamps: [{ signedTimestamp: timestamp }],
   };
 
@@ -66,7 +66,7 @@ describe('BaseNotary', () => {
     testify: jest.fn().mockResolvedValue(timestampAffidavit),
   };
 
-  const tlogAffidavit: Affidavit = {
+  const tlogAffidavit: VerificationMaterial = {
     tlogEntries: [
       {
         logIndex: '1234',
@@ -91,33 +91,33 @@ describe('BaseNotary', () => {
     testify: jest.fn().mockResolvedValue(tlogAffidavit),
   };
 
-  class FakeNotary extends BaseNotary {
+  class FakeBundleBuilder extends BaseBundleBuilder {
     protected override async package(
       artifact: Artifact,
-      endorsement: Endorsement
+      signature: Signature
     ): Promise<sigstore.Bundle> {
-      return toMessageSignatureBundle(artifact, endorsement);
+      return toMessageSignatureBundle(artifact, signature);
     }
   }
 
-  describe('notarize', () => {
+  describe('create', () => {
     afterEach(() => {
       jest.clearAllMocks();
     });
 
-    describe('when configured with a public key signatory', () => {
-      const subject = new FakeNotary({
-        signatory: fakePublicKeySignatory,
+    describe('when configured with a public key signer', () => {
+      const subject = new FakeBundleBuilder({
+        signer: fakePublicKeySigner,
         witnesses: [fakeTSAWitness, fakeRekorWitness],
       });
 
-      it('invokes the signatory', async () => {
-        await subject.notarize(artifact);
-        expect(fakePublicKeySignatory.sign).toBeCalledWith(artifact.data);
+      it('invokes the signer', async () => {
+        await subject.create(artifact);
+        expect(fakePublicKeySigner.sign).toBeCalledWith(artifact.data);
       });
 
       it('invokes the witnesses', async () => {
-        await subject.notarize(artifact);
+        await subject.create(artifact);
 
         const expectedContent: sigstore.Bundle['content'] = {
           $case: 'messageSignature',
@@ -132,17 +132,17 @@ describe('BaseNotary', () => {
 
         expect(fakeTSAWitness.testify).toBeCalledWith(
           expectedContent,
-          publicKeyEndorsement.key.publicKey
+          publicKeySignature.key.publicKey
         );
 
         expect(fakeRekorWitness.testify).toBeCalledWith(
           expectedContent,
-          publicKeyEndorsement.key.publicKey
+          publicKeySignature.key.publicKey
         );
       });
 
       it('returns a valid bundle', async () => {
-        const bundle = await subject.notarize(artifact);
+        const bundle = await subject.create(artifact);
 
         expect(bundle).toBeTruthy();
         expect(bundle.mediaType).toEqual(
@@ -168,7 +168,7 @@ describe('BaseNotary', () => {
         assert(bundle.verificationMaterial?.content?.$case === 'publicKey');
         expect(bundle.verificationMaterial?.content?.publicKey).toBeTruthy();
         expect(bundle.verificationMaterial?.content?.publicKey.hint).toEqual(
-          publicKeyEndorsement.key.hint
+          publicKeySignature.key.hint
         );
 
         // VerificationMaterial - TimestampVerificationData
@@ -197,19 +197,19 @@ describe('BaseNotary', () => {
       });
     });
 
-    describe('when configured with a certificate signatory', () => {
-      const subject = new FakeNotary({
-        signatory: fakeCertificateSignatory,
+    describe('when configured with a certificate signer', () => {
+      const subject = new FakeBundleBuilder({
+        signer: fakeCertificateSigner,
         witnesses: [fakeRekorWitness, fakeTSAWitness],
       });
 
-      it('invokes the signatory', async () => {
-        await subject.notarize(artifact);
-        expect(fakeCertificateSignatory.sign).toBeCalledWith(artifact.data);
+      it('invokes the signer', async () => {
+        await subject.create(artifact);
+        expect(fakeCertificateSigner.sign).toBeCalledWith(artifact.data);
       });
 
       it('invokes the witness', async () => {
-        await subject.notarize(artifact);
+        await subject.create(artifact);
 
         const expectedContent: sigstore.Bundle['content'] = {
           $case: 'messageSignature',
@@ -224,17 +224,17 @@ describe('BaseNotary', () => {
 
         expect(fakeTSAWitness.testify).toBeCalledWith(
           expectedContent,
-          publicKeyEndorsement.key.publicKey
+          publicKeySignature.key.publicKey
         );
 
         expect(fakeRekorWitness.testify).toBeCalledWith(
           expectedContent,
-          publicKeyEndorsement.key.publicKey
+          publicKeySignature.key.publicKey
         );
       });
 
       it('returns a valid bundle', async () => {
-        const bundle = await subject.notarize(artifact);
+        const bundle = await subject.create(artifact);
 
         expect(bundle).toBeTruthy();
         expect(bundle.mediaType).toEqual(
@@ -299,8 +299,8 @@ describe('BaseNotary', () => {
     });
 
     describe('when configured with multiple witnesses of the same type', () => {
-      const subject = new FakeNotary({
-        signatory: fakePublicKeySignatory,
+      const subject = new FakeBundleBuilder({
+        signer: fakePublicKeySigner,
         witnesses: [
           fakeTSAWitness,
           fakeRekorWitness,
@@ -310,14 +310,14 @@ describe('BaseNotary', () => {
       });
 
       it('invokes the witnesses the correct number of times', async () => {
-        await subject.notarize(artifact);
+        await subject.create(artifact);
 
         expect(fakeTSAWitness.testify).toBeCalledTimes(2);
         expect(fakeRekorWitness.testify).toBeCalledTimes(2);
       });
 
       it('returns a bundle with all the verification material', async () => {
-        const bundle = await subject.notarize(artifact);
+        const bundle = await subject.create(artifact);
 
         expect(bundle).toBeTruthy();
         expect(bundle.verificationMaterial?.tlogEntries).toHaveLength(2);

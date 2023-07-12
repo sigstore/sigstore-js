@@ -13,27 +13,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { BUNDLE_V01_MEDIA_TYPE } from '@sigstore/bundle';
 import { HashAlgorithm } from '@sigstore/protobuf-specs';
 import { crypto, pem } from '../util';
 
 import type * as sigstore from '@sigstore/bundle';
-import type { Endorsement, KeyMaterial } from '../signatory';
-import type { Artifact } from './notary';
+import type { KeyMaterial, Signature } from '../signer';
+import type { Artifact } from './base';
 
 // Helper functions for assembling the parts of a Sigstore bundle
-
-const BUNDLE_MEDIA_TYPE =
-  'application/vnd.dev.sigstore.bundle+json;version=0.1';
 
 // Message signature bundle - $case: 'messageSignature'
 export function toMessageSignatureBundle(
   artifact: Artifact,
-  endorsement: Endorsement
+  signature: Signature
 ): sigstore.Bundle {
   const digest = crypto.hash(artifact.data);
 
   return {
-    mediaType: BUNDLE_MEDIA_TYPE,
+    mediaType: BUNDLE_V01_MEDIA_TYPE,
     content: {
       $case: 'messageSignature',
       messageSignature: {
@@ -41,50 +39,50 @@ export function toMessageSignatureBundle(
           algorithm: HashAlgorithm.SHA2_256,
           digest: digest,
         },
-        signature: endorsement.signature,
+        signature: signature.signature,
       },
     },
-    verificationMaterial: toVerificationMaterial(endorsement.key),
+    verificationMaterial: toVerificationMaterial(signature.key),
   };
 }
 
 // DSSE envelope bundle - $case: 'dsseEnvelope'
 export function toDSSEBundle(
   artifact: Required<Artifact>,
-  endorsement: Endorsement
+  signature: Signature
 ): sigstore.Bundle {
   return {
-    mediaType: BUNDLE_MEDIA_TYPE,
+    mediaType: BUNDLE_V01_MEDIA_TYPE,
     content: {
       $case: 'dsseEnvelope',
-      dsseEnvelope: toEnvelope(artifact, endorsement),
+      dsseEnvelope: toEnvelope(artifact, signature),
     },
-    verificationMaterial: toVerificationMaterial(endorsement.key),
+    verificationMaterial: toVerificationMaterial(signature.key),
   };
 }
 
 function toEnvelope(
   artifact: Required<Artifact>,
-  endorsement: Endorsement
+  signature: Signature
 ): sigstore.Envelope {
   return {
     payloadType: artifact.type,
     payload: artifact.data,
-    signatures: [toSignature(endorsement)],
+    signatures: [toSignature(signature)],
   };
 }
 
-function toSignature(endorsement: Endorsement): sigstore.Signature {
+function toSignature(signature: Signature): sigstore.Signature {
   return {
-    keyid: toKeyID(endorsement),
-    sig: endorsement.signature,
+    keyid: toKeyID(signature),
+    sig: signature.signature,
   };
 }
 
-function toKeyID(endorsement: Endorsement): string {
-  switch (endorsement.key.$case) {
+function toKeyID(signature: Signature): string {
+  switch (signature.key.$case) {
     case 'publicKey':
-      return endorsement.key.hint || '';
+      return signature.key.hint || '';
     case 'x509Certificate':
       return '';
   }

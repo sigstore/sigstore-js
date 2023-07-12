@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { envelopeToJSON } from '@sigstore/bundle';
 import { HashAlgorithm } from '@sigstore/protobuf-specs';
 import assert from 'assert';
 import { crypto, encoding as enc } from '../../../util';
@@ -196,6 +197,38 @@ describe('toProposedEntry', () => {
         // changed the hashing algorithm.
         expect(entry.spec.content.hash?.value).toBe(
           '37d47ab456ca63a84f6457be655dd49799542f2e1db5d05160b214fb0b9a7f55'
+        );
+      });
+    });
+  });
+
+  describe('when a DSSE envelope is provided', () => {
+    describe('when the keyid is a non-empty string', () => {
+      const sigBundle: SignatureBundle = {
+        $case: 'dsseEnvelope',
+        dsseEnvelope: {
+          signatures: [{ keyid: '123', sig: signature }],
+          payloadType: 'application/vnd.in-toto+json',
+          payload: Buffer.from('payload'),
+        },
+      };
+
+      it('return a valid ProposedEntry entry', () => {
+        const entry = toProposedEntry(sigBundle, publicKey, 'dsse');
+
+        assert(entry.apiVersion === '0.0.1');
+        assert(entry.kind === 'dsse');
+        expect(entry.spec).toBeTruthy();
+        expect(entry.spec.proposedContent).toBeTruthy();
+
+        const e = entry.spec.proposedContent?.envelope;
+        expect(e).toEqual(
+          JSON.stringify(envelopeToJSON(sigBundle.dsseEnvelope))
+        );
+
+        expect(entry.spec.proposedContent?.verifiers).toHaveLength(1);
+        expect(entry.spec.proposedContent?.verifiers[0]).toEqual(
+          enc.base64Encode(publicKey)
         );
       });
     });

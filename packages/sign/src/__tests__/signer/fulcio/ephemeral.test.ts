@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import assert from 'assert';
-import { EphemeralSigner } from '../../../signatory/fulcio/ephemeral';
+import { EphemeralSigner } from '../../../signer/fulcio/ephemeral';
 
 describe('EphemeralSigner', () => {
   describe('constructor', () => {
@@ -29,12 +29,12 @@ describe('EphemeralSigner', () => {
     const message = Buffer.from('message');
 
     it('returns the signature', async () => {
-      const endorsement = await subject.sign(message);
-      expect(endorsement).toBeDefined();
-      expect(endorsement.signature).toBeDefined();
-      expect(endorsement.key.$case).toEqual('publicKey');
-      assert(endorsement.key.$case === 'publicKey');
-      expect(endorsement.key.publicKey).toBeDefined();
+      const signature = await subject.sign(message);
+      expect(signature).toBeDefined();
+      expect(signature.signature).toBeDefined();
+      expect(signature.key.$case).toEqual('publicKey');
+      assert(signature.key.$case === 'publicKey');
+      expect(signature.key.publicKey).toBeDefined();
     });
   });
 });

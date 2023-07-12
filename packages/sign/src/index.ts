@@ -1,16 +1,16 @@
 export type { Bundle } from '@sigstore/bundle';
+export { DSSEBundleBuilder, MessageBundleBuilder } from './bundler';
+export type { Artifact, BundleBuilder, BundleBuilderOptions } from './bundler';
 export { InternalError } from './error';
 export { CIContextProvider } from './identity';
 export type { IdentityProvider } from './identity';
-export { DSSENotary, MessageNotary } from './notary';
-export type { Artifact, Notary, NotaryOptions } from './notary';
-export { FulcioSigner } from './signatory';
-export type { Endorsement, FulcioSignerOptions, Signatory } from './signatory';
+export { FulcioSigner } from './signer';
+export type { FulcioSignerOptions, Signature, Signer } from './signer';
 export { RekorWitness, TSAWitness } from './witness';
 export type {
-  Affidavit,
   RekorWitnessOptions,
   SignatureBundle,
   TSAWitnessOptions,
+  VerificationMaterial,
   Witness,
 } from './witness';

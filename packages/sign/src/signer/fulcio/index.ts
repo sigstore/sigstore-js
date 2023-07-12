@@ -19,22 +19,22 @@ import { CA, CAClient } from './ca';
 import { EphemeralSigner } from './ephemeral';
 
 import type { IdentityProvider } from '../../identity';
-import type { Endorsement, Signatory } from '../signatory';
+import type { Signature, Signer } from '../signer';
 
 export interface FulcioSignerOptions {
   fulcioBaseURL: string;
   identityProvider: IdentityProvider;
-  keyHolder?: Signatory;
+  keyHolder?: Signer;
 }
 
-// Signatory implementation which can be used to decorate another signatory
-// with a Fulcio-issued signing certificate for the signatory's public key.
+// Signer implementation which can be used to decorate another signer
+// with a Fulcio-issued signing certificate for the signer's public key.
 // Must be instantiated with an identity provider which can provide a JWT
 // which represents the identity to be bound to the signing certificate.
-export class FulcioSigner implements Signatory {
+export class FulcioSigner implements Signer {
   private ca: CA;
   private identityProvider: IdentityProvider;
-  private keyHolder: Signatory;
+  private keyHolder: Signer;
 
   constructor(options: FulcioSignerOptions) {
     this.ca = new CAClient(options);
@@ -42,7 +42,7 @@ export class FulcioSigner implements Signatory {
     this.keyHolder = options.keyHolder || new EphemeralSigner();
   }
 
-  public async sign(data: Buffer): Promise<Endorsement> {
+  public async sign(data: Buffer): Promise<Signature> {
     // Retrieve identity token from the supplied identity provider
     const identityToken = await this.getIdentityToken();
 

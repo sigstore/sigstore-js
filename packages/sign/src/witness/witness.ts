@@ -22,7 +22,8 @@ import type {
 // Sigstore bundle with required content fields populated
 export type SignatureBundle = Bundle['content'];
 
-export type Affidavit = {
+// Collection of transparency log entries and/or RFC3161 timestamps
+export type VerificationMaterial = {
   tlogEntries?: TransparencyLogEntry[];
   rfc3161Timestamps?: RFC3161SignedTimestamp[];
 };
@@ -31,5 +32,5 @@ export interface Witness {
   testify: (
     signature: SignatureBundle,
     publicKey: string
-  ) => Promise<Affidavit>;
+  ) => Promise<VerificationMaterial>;
 }

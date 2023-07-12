@@ -13,10 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { Envelope, MessageSignature } from '@sigstore/bundle';
+import { Envelope, MessageSignature, envelopeToJSON } from '@sigstore/bundle';
 import { crypto, encoding as enc, json } from '../../util';
 
 import type {
+  ProposedDSSEEntry,
   ProposedEntry,
   ProposedHashedRekordEntry,
   ProposedIntotoEntry,
@@ -25,10 +26,16 @@ import type { SignatureBundle } from '../witness';
 
 export function toProposedEntry(
   content: SignatureBundle,
-  publicKey: string
+  publicKey: string,
+  // TODO: Remove this parameter once have completely switched to 'dsse' entries
+  entryType: 'dsse' | 'intoto' = 'intoto'
 ): ProposedEntry {
   switch (content.$case) {
     case 'dsseEnvelope':
+      // TODO: Remove this conditional once have completely switched to 'dsse' entries
+      if (entryType === 'dsse') {
+        return toProposedDSSEEntry(content.dsseEnvelope, publicKey);
+      }
       return toProposedIntotoEntry(content.dsseEnvelope, publicKey);
     case 'messageSignature':
       return toProposedHashedRekordEntry(content.messageSignature, publicKey);
@@ -60,6 +67,27 @@ function toProposedHashedRekordEntry(
         publicKey: {
           content: b64Key,
         },
+      },
+    },
+  };
+}
+
+// Returns a properly formatted Rekor "dsse" entry for the given DSSE envelope
+// and signature
+function toProposedDSSEEntry(
+  envelope: Envelope,
+  publicKey: string
+): ProposedDSSEEntry {
+  const envelopeJSON = JSON.stringify(envelopeToJSON(envelope));
+  const encodedKey = enc.base64Encode(publicKey);
+
+  return {
+    apiVersion: '0.0.1',
+    kind: 'dsse',
+    spec: {
+      proposedContent: {
+        envelope: envelopeJSON,
+        verifiers: [encodedKey],
       },
     },
   };

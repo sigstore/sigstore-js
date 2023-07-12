@@ -15,15 +15,15 @@ limitations under the License.
 */
 import crypto, { KeyPairKeyObjectResult } from 'crypto';
 
-import type { Endorsement, Signatory } from '../signatory';
+import type { Signature, Signer } from '../signer';
 
 const EC_KEYPAIR_TYPE = 'ec';
 const P256_CURVE = 'P-256';
 
-// Signatory implementation which uses an ephemeral keypair to sign artifacts.
+// Signer implementation which uses an ephemeral keypair to sign artifacts.
 // The private key lives only in memory and is tied to the lifetime of the
 // EphemeralSigner instance.
-export class EphemeralSigner implements Signatory {
+export class EphemeralSigner implements Signer {
   private keypair: KeyPairKeyObjectResult;
 
   constructor() {
@@ -32,7 +32,7 @@ export class EphemeralSigner implements Signatory {
     });
   }
 
-  public async sign(data: Buffer): Promise<Endorsement> {
+  public async sign(data: Buffer): Promise<Signature> {
     const signature = crypto.sign(null, data, this.keypair.privateKey);
     const publicKey = this.keypair.publicKey
       .export({ format: 'pem', type: 'spki' })

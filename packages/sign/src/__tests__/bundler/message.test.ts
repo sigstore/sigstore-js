@@ -15,33 +15,36 @@ limitations under the License.
 */
 import { HashAlgorithm } from '@sigstore/protobuf-specs';
 import assert from 'assert';
-import { MessageNotary } from '../../notary/message';
+import { MessageBundleBuilder } from '../../bundler/message';
 import { crypto } from '../../util';
 
-import type { Artifact } from '../../notary';
-import type { Endorsement, Signatory } from '../../signatory';
+import type { Artifact } from '../../bundler';
+import type { Signature, Signer } from '../../signer';
 
 describe('MessageNotary', () => {
-  // Endorsement fixture to return from fake Signatory
-  const signature = Buffer.from('signature');
+  // Signature fixture to return from fake Signer
+  const sigBytes = Buffer.from('signature');
   const key = 'publickey';
 
-  const endorsement = {
+  const signature = {
     key: {
       $case: 'publicKey',
       publicKey: key,
       hint: 'hint',
     },
-    signature: signature,
-  } satisfies Endorsement;
+    signature: sigBytes,
+  } satisfies Signature;
 
-  const signatory = {
-    sign: jest.fn().mockResolvedValue(endorsement),
-  } satisfies Signatory;
+  const signer = {
+    sign: jest.fn().mockResolvedValue(signature),
+  } satisfies Signer;
 
   describe('constructor', () => {
     it('should create a new instance', () => {
-      const notary = new MessageNotary({ signatory, witnesses: [] });
+      const notary = new MessageBundleBuilder({
+        signer: signer,
+        witnesses: [],
+      });
       expect(notary).toBeDefined();
     });
   });
@@ -51,15 +54,15 @@ describe('MessageNotary', () => {
       data: Buffer.from('artifact'),
     };
 
-    const subject = new MessageNotary({ signatory, witnesses: [] });
+    const subject = new MessageBundleBuilder({ signer: signer, witnesses: [] });
 
-    it('invokes the signatory', async () => {
-      await subject.notarize(artifact);
-      expect(signatory.sign).toHaveBeenCalled();
+    it('invokes the signer', async () => {
+      await subject.create(artifact);
+      expect(signer.sign).toHaveBeenCalled();
     });
 
     it('returns a bundle', async () => {
-      const b = await subject.notarize(artifact);
+      const b = await subject.create(artifact);
 
       expect(b).toBeTruthy();
       expect(b.mediaType).toEqual(
@@ -74,13 +77,13 @@ describe('MessageNotary', () => {
       expect(b.content.messageSignature.messageDigest.digest).toEqual(
         crypto.hash(artifact.data)
       );
-      expect(b.content.messageSignature.signature).toEqual(signature);
+      expect(b.content.messageSignature.signature).toEqual(sigBytes);
 
       expect(b.verificationMaterial).toBeTruthy();
       assert(b.verificationMaterial.content?.$case === 'publicKey');
       expect(b.verificationMaterial.content?.publicKey).toBeTruthy();
       expect(b.verificationMaterial.content?.publicKey.hint).toEqual(
-        endorsement.key.hint
+        signature.key.hint
       );
     });
   });

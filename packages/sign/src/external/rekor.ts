@@ -19,6 +19,7 @@ import { checkStatus } from './error';
 
 import type {
   LogEntry,
+  ProposedDSSEEntry,
   ProposedEntry,
   ProposedHashedRekordEntry,
   ProposedIntotoEntry,
@@ -28,6 +29,7 @@ import type {
 import type { FetchOptions } from '../types/fetch';
 
 export type {
+  ProposedDSSEEntry,
   ProposedEntry,
   ProposedHashedRekordEntry,
   ProposedIntotoEntry,
@@ -42,7 +44,7 @@ export type {
 // entry's data.
 export type Entry = {
   uuid: string;
-} & LogEntry['x'];
+} & LogEntry[string];
 
 // Client options
 export type RekorOptions = {

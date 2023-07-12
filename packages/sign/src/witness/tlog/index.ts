@@ -24,7 +24,11 @@ import {
 import { toProposedEntry } from './entry';
 
 import type { TransparencyLogEntry } from '@sigstore/bundle';
-import type { Affidavit, SignatureBundle, Witness } from '../witness';
+import type {
+  SignatureBundle,
+  VerificationMaterial,
+  Witness,
+} from '../witness';
 
 export type RekorWitnessOptions = TLogClientOptions;
 
@@ -38,32 +42,29 @@ export class RekorWitness implements Witness {
   public async testify(
     content: SignatureBundle,
     publicKey: string
-  ): Promise<Affidavit> {
+  ): Promise<VerificationMaterial> {
     const proposedEntry = toProposedEntry(content, publicKey);
     const entry = await this.tlog.createEntry(proposedEntry);
-    return affidavit(entry);
+    return toTransparencyLogEntry(entry);
   }
 }
 
-function affidavit(entry: Entry): Affidavit {
-  const set = Buffer.from(
-    entry?.verification?.signedEntryTimestamp || '',
-    'base64'
-  );
-
-  const proof = entry?.verification?.inclusionProof
-    ? inclusionProof(entry.verification.inclusionProof)
-    : undefined;
+function toTransparencyLogEntry(entry: Entry): VerificationMaterial {
   const logID = Buffer.from(entry.logID, 'hex');
 
   // Parse entry body so we can extract the kind and version.
   const bodyJSON = enc.base64Decode(entry.body);
   const entryBody: ProposedEntry = JSON.parse(bodyJSON);
 
-  const tlogEntry = {
-    inclusionPromise: {
-      signedEntryTimestamp: set,
-    },
+  const promise = entry?.verification?.signedEntryTimestamp
+    ? inclusionPromise(entry.verification.signedEntryTimestamp)
+    : undefined;
+
+  const proof = entry?.verification?.inclusionProof
+    ? inclusionProof(entry.verification.inclusionProof)
+    : undefined;
+
+  const tlogEntry: TransparencyLogEntry = {
     logIndex: entry.logIndex.toString(),
     logId: {
       keyId: logID,
@@ -73,12 +74,23 @@ function affidavit(entry: Entry): Affidavit {
       kind: entryBody.kind,
       version: entryBody.apiVersion,
     },
+    inclusionPromise: promise,
     inclusionProof: proof,
     canonicalizedBody: Buffer.from(entry.body, 'base64'),
   };
 
   return {
     tlogEntries: [tlogEntry],
+  };
+}
+
+function inclusionPromise(
+  promise: NonNullable<
+    NonNullable<Entry['verification']>['signedEntryTimestamp']
+  >
+): TransparencyLogEntry['inclusionPromise'] {
+  return {
+    signedEntryTimestamp: Buffer.from(promise, 'base64'),
   };
 }
 
