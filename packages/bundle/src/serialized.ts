@@ -43,9 +43,11 @@ type SerializedTLogEntry = {
       }
     | undefined;
   integratedTime: string;
-  inclusionPromise: {
-    signedEntryTimestamp: string;
-  };
+  inclusionPromise:
+    | {
+        signedEntryTimestamp: string;
+      }
+    | undefined;
   inclusionProof:
     | {
         logIndex: string;

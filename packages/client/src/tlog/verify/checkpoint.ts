@@ -1,4 +1,4 @@
-import type { TransparencyLogEntry } from '@sigstore/bundle';
+import type { TLogEntryWithInclusionProof } from '@sigstore/bundle';
 import { VerificationError } from '../../error';
 import * as sigstore from '../../types/sigstore';
 import { crypto } from '../../util';
@@ -29,40 +29,24 @@ interface TLogSignature {
 //    inclusion proof
 // See: https://github.com/transparency-dev/formats/blob/main/log/README.md
 export function verifyCheckpoint(
-  entry: TransparencyLogEntry,
+  entry: TLogEntryWithInclusionProof,
   tlogs: sigstore.TransparencyLogInstance[]
-) {
-  const inclusionProof = entry.inclusionProof;
-  if (!inclusionProof) {
-    throw new VerificationError('tlog entry has no inclusion proof');
-  }
-
-  const envelope = inclusionProof?.checkpoint?.envelope;
-  if (!envelope) {
-    throw new VerificationError('tlog entry has no checkpoint');
-  }
-
+): boolean {
   // Filter tlog instances to just those which were valid at the time of the
   // entry
   const validTLogs = filterTLogInstances(tlogs, entry.integratedTime);
 
-  const signedNote = SignedNote.fromString(envelope);
+  const inclusionProof = entry.inclusionProof;
+  const signedNote = SignedNote.fromString(inclusionProof.checkpoint.envelope);
   const checkpoint = LogCheckpoint.fromString(signedNote.note);
 
-  // Verify that the signatures in the checkpoint are all valid
-  if (!signedNote.verify(validTLogs)) {
-    throw new VerificationError(
-      'inclusion proof contains invalid checkpoint signature'
-    );
-  }
-
-  // Verify that the root hash from the checkpoint matches the root hash in the
+  // Verify that the signatures in the checkpoint are all valid, also check
+  // that the root hash from the checkpoint matches the root hash in the
   // inclusion proof
-  if (!crypto.bufferEqual(checkpoint.logHash, inclusionProof.rootHash)) {
-    throw new VerificationError(
-      'inclusion proof contains invalid root hash signature'
-    );
-  }
+  return (
+    signedNote.verify(validTLogs) &&
+    crypto.bufferEqual(checkpoint.logHash, inclusionProof.rootHash)
+  );
 }
 
 // SignedNote represents a signed note from a transparency log checkpoint. Consists

@@ -22,6 +22,12 @@ import type {
 } from '@sigstore/protobuf-specs';
 import type { WithRequired } from './utility';
 
+export const BUNDLE_V01_MEDIA_TYPE =
+  'application/vnd.dev.sigstore.bundle+json;version=0.1';
+
+export const BUNDLE_V02_MEDIA_TYPE =
+  'application/vnd.dev.sigstore.bundle+json;version=0.2';
+
 // Extract types that are not explicitly defined in the protobuf specs.
 type DsseEnvelopeContent = Extract<
   ProtoBundle['content'],

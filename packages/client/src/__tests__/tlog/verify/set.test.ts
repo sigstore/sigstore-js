@@ -20,7 +20,7 @@ import {
 import { verifyTLogSET } from '../../../tlog/verify/set';
 import * as sigstore from '../../../types/sigstore';
 import { crypto } from '../../../util';
-import bundles from '../../__fixtures__/bundles';
+import bundles from '../../__fixtures__/bundles/v01';
 
 describe('verifyTLogSET', () => {
   const keyBytes = Buffer.from(

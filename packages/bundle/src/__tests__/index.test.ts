@@ -15,6 +15,8 @@ limitations under the License.
 */
 import { fromPartial } from '@total-typescript/shoehorn';
 import {
+  BUNDLE_V01_MEDIA_TYPE,
+  BUNDLE_V02_MEDIA_TYPE,
   Bundle,
   BundleLatest,
   BundleV01,
@@ -142,6 +144,11 @@ describe('public interface', () => {
   it('exports serialization functions', () => {
     expect(bundleFromJSON).toBeDefined();
     expect(bundleToJSON).toBeDefined();
+  });
+
+  it('exports constants', () => {
+    expect(BUNDLE_V01_MEDIA_TYPE).toBeDefined();
+    expect(BUNDLE_V02_MEDIA_TYPE).toBeDefined();
   });
 
   it('exports errors', () => {

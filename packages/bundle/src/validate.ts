@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { BUNDLE_V01_MEDIA_TYPE } from './bundle';
 import { ValidationError } from './error';
 
 import type { Bundle as ProtoBundle } from '@sigstore/protobuf-specs';
@@ -127,10 +128,7 @@ export function assertBundle(b: ProtoBundle): asserts b is Bundle {
 export function assertBundleV01(b: Bundle): asserts b is BundleV01 {
   const invalidValues: string[] = [];
 
-  if (
-    b.mediaType &&
-    b.mediaType !== 'application/vnd.dev.sigstore.bundle+json;version=0.1'
-  ) {
+  if (b.mediaType && b.mediaType !== BUNDLE_V01_MEDIA_TYPE) {
     invalidValues.push('mediaType');
   }
 

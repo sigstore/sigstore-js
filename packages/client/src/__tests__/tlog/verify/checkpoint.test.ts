@@ -1,4 +1,4 @@
-import type { TransparencyLogEntry } from '@sigstore/bundle';
+import type { TLogEntryWithInclusionProof } from '@sigstore/bundle';
 import { fromPartial } from '@total-typescript/shoehorn';
 import { VerificationError } from '../../../error';
 import { verifyCheckpoint } from '../../../tlog/verify/checkpoint';
@@ -43,55 +43,34 @@ describe('verifyCheckpoint', () => {
   const checkpoint =
     'rekor.sigstore.dev - 2605736670972794746\n21428036\nrxnoKyFZlJ7/R6bMh/d3lcqwKqAy5CL1LcNBJP17kgQ=\nTimestamp: 1688058656037355364\n\n— rekor.sigstore.dev wNI9ajBFAiEAuDk7uu5Ae8Own/MjhSZNuVzbLuYH2jBMxbSA0WaNDNACIDV4reKpYiOpkwtvazCClnpUuduF2o/th2xR3gRZAUU4\n';
 
-  const inclusionProof: TransparencyLogEntry['inclusionProof'] = fromPartial({
-    checkpoint: { envelope: checkpoint },
-    rootHash: Buffer.from(
-      'rxnoKyFZlJ7/R6bMh/d3lcqwKqAy5CL1LcNBJP17kgQ=',
-      'base64'
-    ),
-  });
+  const inclusionProof: TLogEntryWithInclusionProof['inclusionProof'] =
+    fromPartial({
+      checkpoint: { envelope: checkpoint },
+      rootHash: Buffer.from(
+        'rxnoKyFZlJ7/R6bMh/d3lcqwKqAy5CL1LcNBJP17kgQ=',
+        'base64'
+      ),
+    });
 
-  const entry: TransparencyLogEntry = fromPartial({
+  const entry: TLogEntryWithInclusionProof = fromPartial({
     inclusionProof: inclusionProof,
     integratedTime: '1688058655',
   });
 
   describe('when the entry has a valid checkpoint', () => {
-    it('does NOT throw an error', () => {
-      expect(() => verifyCheckpoint(entry, tlogs)).not.toThrow();
-    });
-  });
-
-  describe('when the entry has no inclusion proof', () => {
-    const entryWithoutProof: TransparencyLogEntry = fromPartial({
-      logId: { keyId: keyID },
-    });
-
-    it('throws a VerificationError', () => {
-      expect(() => verifyCheckpoint(entryWithoutProof, tlogs)).toThrow(
-        VerificationError
-      );
-    });
-  });
-
-  describe('when the entry has no checkpoint', () => {
-    const entryWithoutCheckpoint: TransparencyLogEntry = fromPartial({
-      inclusionProof: {},
-    });
-
-    it('throws a VerificationError', () => {
-      expect(() => verifyCheckpoint(entryWithoutCheckpoint, tlogs)).toThrow(
-        VerificationError
-      );
+    it('returns true', () => {
+      expect(verifyCheckpoint(entry, tlogs)).toBe(true);
     });
   });
 
   describe('when the checkpoint has no separator', () => {
-    const entryWithInvalidCheckpoint: TransparencyLogEntry = fromPartial({
-      inclusionProof: {
-        checkpoint: { envelope: 'rekor.sigstore.dev - 2605736670972794746' },
-      },
-    });
+    const entryWithInvalidCheckpoint: TLogEntryWithInclusionProof = fromPartial(
+      {
+        inclusionProof: {
+          checkpoint: { envelope: 'rekor.sigstore.dev - 2605736670972794746' },
+        },
+      }
+    );
 
     it('throws a VerificationError', () => {
       expect(() => verifyCheckpoint(entryWithInvalidCheckpoint, tlogs)).toThrow(
@@ -101,14 +80,16 @@ describe('verifyCheckpoint', () => {
   });
 
   describe('when the checkpoint signature is malformed', () => {
-    const entryWithInvalidCheckpoint: TransparencyLogEntry = fromPartial({
-      inclusionProof: {
-        checkpoint: {
-          envelope:
-            'rekor.sigstore.dev - 2605736670972794746\n\n— rekor.sigstore.dev foo\n',
+    const entryWithInvalidCheckpoint: TLogEntryWithInclusionProof = fromPartial(
+      {
+        inclusionProof: {
+          checkpoint: {
+            envelope:
+              'rekor.sigstore.dev - 2605736670972794746\n\n— rekor.sigstore.dev foo\n',
+          },
         },
-      },
-    });
+      }
+    );
 
     it('throws a VerificationError', () => {
       expect(() => verifyCheckpoint(entryWithInvalidCheckpoint, tlogs)).toThrow(
@@ -118,7 +99,7 @@ describe('verifyCheckpoint', () => {
   });
 
   describe('when the checkpoint has no signature', () => {
-    const entryWitInvalidCheckpoint: TransparencyLogEntry = fromPartial({
+    const entryWitInvalidCheckpoint: TLogEntryWithInclusionProof = fromPartial({
       inclusionProof: {
         checkpoint: {
           envelope: 'rekor.sigstore.dev - 2605736670972794746\n\n',
@@ -134,14 +115,16 @@ describe('verifyCheckpoint', () => {
   });
 
   describe('when the checkpoint header is too short', () => {
-    const entryWithInvalidCheckpoint: TransparencyLogEntry = fromPartial({
-      inclusionProof: {
-        checkpoint: {
-          envelope:
-            'rekor.sigstore.dev\n\n— rekor.sigstore.dev wNI9ajBFAiEAu\n',
+    const entryWithInvalidCheckpoint: TLogEntryWithInclusionProof = fromPartial(
+      {
+        inclusionProof: {
+          checkpoint: {
+            envelope:
+              'rekor.sigstore.dev\n\n— rekor.sigstore.dev wNI9ajBFAiEAu\n',
+          },
         },
-      },
-    });
+      }
+    );
 
     it('throws a VerificationError', () => {
       expect(() => verifyCheckpoint(entryWithInvalidCheckpoint, tlogs)).toThrow(
@@ -151,13 +134,15 @@ describe('verifyCheckpoint', () => {
   });
 
   describe('when the checkpoint origin is empty', () => {
-    const entryWithInvalidCheckpoint: TransparencyLogEntry = fromPartial({
-      inclusionProof: {
-        checkpoint: {
-          envelope: '\nA\nB\nC\n\n— rekor.sigstore.dev wNI9ajBFAiEAu\n',
+    const entryWithInvalidCheckpoint: TLogEntryWithInclusionProof = fromPartial(
+      {
+        inclusionProof: {
+          checkpoint: {
+            envelope: '\nA\nB\nC\n\n— rekor.sigstore.dev wNI9ajBFAiEAu\n',
+          },
         },
-      },
-    });
+      }
+    );
 
     it('throws a VerificationError', () => {
       expect(() => verifyCheckpoint(entryWithInvalidCheckpoint, tlogs)).toThrow(
@@ -167,11 +152,12 @@ describe('verifyCheckpoint', () => {
   });
 
   describe('when the entry checkpoint has the wrong root hash', () => {
-    const entry: TransparencyLogEntry = fromPartial({
+    const entry: TLogEntryWithInclusionProof = fromPartial({
       inclusionProof: { ...inclusionProof, rootHash: Buffer.from('foo') },
     });
-    it('does NOT throw an error', () => {
-      expect(() => verifyCheckpoint(entry, tlogs)).toThrow(VerificationError);
+
+    it('returns false', () => {
+      expect(verifyCheckpoint(entry, tlogs)).toBe(false);
     });
   });
 
@@ -179,34 +165,30 @@ describe('verifyCheckpoint', () => {
     const badSignatureCheckpoint =
       'rekor.sigstore.dev - 2605736670972794746\n21428036\nrxnoKyFZlJ7/R6bMh/d3lcqwKqAy5CL1LcNBJP17kgQ=\nTimestamp: 1688058656037355364\n\n— rekor.sigstore.dev wNI9ajBFAiEAuDk7uu5Ae8Own\n';
 
-    const entryWithBadCheckpointSig: TransparencyLogEntry = fromPartial({
+    const entryWithBadCheckpointSig: TLogEntryWithInclusionProof = fromPartial({
       inclusionProof: {
         ...inclusionProof,
         checkpoint: { envelope: badSignatureCheckpoint },
       },
     });
 
-    it('throws a VerificationError', () => {
-      expect(() => verifyCheckpoint(entryWithBadCheckpointSig, tlogs)).toThrow(
-        VerificationError
-      );
+    it('returns false', () => {
+      expect(verifyCheckpoint(entryWithBadCheckpointSig, tlogs)).toBe(false);
     });
   });
 
   describe('when there is no transparency log with the given key ID', () => {
     const checkpointWithBadKeyHint =
       'rekor.sigstore.dev - 2605736670972794746\n21428036\nrxnoKyFZlJ7/R6bMh/d3lcqwKqAy5CL1LcNBJP17kgQ=\nTimestamp: 1688058656037355364\n\n— rekor.sigstore.dev xNI9ajBFAiEAuDk7uu5Ae8Own/MjhSZNuVzbLuYH2jBMxbSA0WaNDNACIDV4reKpYiOpkwtvazCClnpUuduF2o/th2xR3gRZAUU4\n';
-    const entryWithBadLogID: TransparencyLogEntry = fromPartial({
+    const entryWithBadLogID: TLogEntryWithInclusionProof = fromPartial({
       inclusionProof: {
         ...inclusionProof,
         checkpoint: { envelope: checkpointWithBadKeyHint },
       },
     });
 
-    it('throws a VerificationError', () => {
-      expect(() => verifyCheckpoint(entryWithBadLogID, tlogs)).toThrow(
-        VerificationError
-      );
+    it('returns false', () => {
+      expect(verifyCheckpoint(entryWithBadLogID, tlogs)).toBe(false);
     });
   });
 
@@ -221,10 +203,8 @@ describe('verifyCheckpoint', () => {
       },
     ];
 
-    it('throws a VerificationError', () => {
-      expect(() => verifyCheckpoint(entry, invalidTLogs)).toThrow(
-        VerificationError
-      );
+    it('returns false', () => {
+      expect(verifyCheckpoint(entry, invalidTLogs)).toBe(false);
     });
   });
 
@@ -238,10 +218,9 @@ describe('verifyCheckpoint', () => {
         },
       },
     ];
-    it('throws a VerificationError', () => {
-      expect(() => verifyCheckpoint(entry, invalidTLogs)).toThrow(
-        VerificationError
-      );
+
+    it('returns false', () => {
+      expect(verifyCheckpoint(entry, invalidTLogs)).toBe(false);
     });
   });
 
@@ -258,10 +237,9 @@ describe('verifyCheckpoint', () => {
         },
       },
     ];
-    it('throws a VerificationError', () => {
-      expect(() => verifyCheckpoint(entry, invalidTLogs)).toThrow(
-        VerificationError
-      );
+
+    it('returns false', () => {
+      expect(verifyCheckpoint(entry, invalidTLogs)).toBe(false);
     });
   });
 });
