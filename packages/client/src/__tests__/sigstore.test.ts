@@ -29,7 +29,8 @@ import mocktuf, { Target } from '@tufjs/repo-mock';
 import { PolicyError, VerificationError } from '../error';
 import { Signer } from '../sign';
 import { attest, createVerifier, sign, tuf, verify } from '../sigstore';
-import bundles from './__fixtures__/bundles';
+import bundles from './__fixtures__/bundles/v01';
+import bundlesV02 from './__fixtures__/bundles/v02';
 import { trustedRoot } from './__fixtures__/trust';
 
 import type { TUFOptions, VerifyOptions } from '../config';
@@ -315,6 +316,31 @@ describe('#verify', () => {
     it('throws an error', async () => {
       await expect(verify(bundle, artifact, tufOptions)).rejects.toThrowError(
         VerificationError
+      );
+    });
+  });
+
+  describe('when the bundle is a v0.2 bundle', () => {
+    const bundle = bundlesV02.signature.valid.withSigningCert;
+    const artifact = bundlesV02.signature.artifact;
+
+    it('does not throw an error', async () => {
+      await expect(verify(bundle, artifact, tufOptions)).resolves.toBe(
+        undefined
+      );
+    });
+  });
+
+  describe('when the bundle is newer then v0.2', () => {
+    // Check a theoretical v0.3 bundle that is the same shape as a v0.2 bundle
+    const bundle = { ...bundlesV02.signature.valid.withSigningCert };
+    bundle.mediaType = 'application/vnd.dev.sigstore.bundle+json;version=0.3';
+
+    const artifact = bundlesV02.signature.artifact;
+
+    it('does not throw an error', async () => {
+      await expect(verify(bundle, artifact, tufOptions)).resolves.toBe(
+        undefined
       );
     });
   });

@@ -17,7 +17,7 @@ import { bundleFromJSON } from '@sigstore/bundle';
 import { VerificationError } from '../error';
 import * as sigstore from '../types/sigstore';
 import { Verifier } from '../verify';
-import bundles from './__fixtures__/bundles';
+import bundles from './__fixtures__/bundles/v01';
 import { trustedRoot } from './__fixtures__/trust';
 
 describe('Verifier', () => {

@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 export {
+  BUNDLE_V01_MEDIA_TYPE,
+  BUNDLE_V02_MEDIA_TYPE,
   isBundleWithCertificateChain,
   isBundleWithDsseEnvelope,
   isBundleWithMessageSignature,

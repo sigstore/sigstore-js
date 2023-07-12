@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import type { TransparencyLogEntry } from '@sigstore/bundle';
+import type { TLogEntryWithInclusionProof } from '@sigstore/bundle';
 import { VerificationError } from '../../../error';
 import { verifyMerkleInclusion } from '../../../tlog/verify/merkle';
 
@@ -122,7 +122,7 @@ describe('verifyMerkleInclusion', () => {
     const entry = {
       canonicalizedBody,
       inclusionProof,
-    } as TransparencyLogEntry;
+    } as TLogEntryWithInclusionProof;
 
     it('returns true', () => {
       expect(verifyMerkleInclusion(entry)).toBe(true);
@@ -133,7 +133,7 @@ describe('verifyMerkleInclusion', () => {
     const invalidEntry = {
       canonicalizedBody: Buffer.from('invalid'),
       inclusionProof,
-    } as TransparencyLogEntry;
+    } as TLogEntryWithInclusionProof;
 
     it('returns false', () => {
       expect(verifyMerkleInclusion(invalidEntry)).toBe(false);
@@ -144,20 +144,7 @@ describe('verifyMerkleInclusion', () => {
     const invalidEntry = {
       canonicalizedBody,
       inclusionProof: { ...inclusionProof, logIndex: '-1' },
-    } as TransparencyLogEntry;
-
-    it('throws an error', () => {
-      expect(() => verifyMerkleInclusion(invalidEntry)).toThrow(
-        VerificationError
-      );
-    });
-  });
-
-  describe('when the entry does NOT contain an inclusion proof', () => {
-    const invalidEntry = {
-      canonicalizedBody,
-      inclusionProof: undefined,
-    } as TransparencyLogEntry;
+    } as TLogEntryWithInclusionProof;
 
     it('throws an error', () => {
       expect(() => verifyMerkleInclusion(invalidEntry)).toThrow(
@@ -170,9 +157,9 @@ describe('verifyMerkleInclusion', () => {
     const invalidEntry = {
       canonicalizedBody,
       inclusionProof: { ...inclusionProof, treeSize: '99', logIndex: '100' },
-    } as TransparencyLogEntry;
+    } as TLogEntryWithInclusionProof;
 
-    it('throws an error true', () => {
+    it('throws an error', () => {
       expect(() => verifyMerkleInclusion(invalidEntry)).toThrow(
         VerificationError
       );
@@ -186,9 +173,9 @@ describe('verifyMerkleInclusion', () => {
         ...inclusionProof,
         hashes: inclusionProof.hashes.slice(0, 1),
       },
-    } as TransparencyLogEntry;
+    } as TLogEntryWithInclusionProof;
 
-    it('throws an error true', () => {
+    it('throws an error', () => {
       expect(() => verifyMerkleInclusion(invalidEntry)).toThrow(
         VerificationError
       );

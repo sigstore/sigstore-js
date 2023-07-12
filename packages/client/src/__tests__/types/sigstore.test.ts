@@ -13,10 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import type { Entry } from '../../../external/rekor';
-import { SignatureMaterial } from '../../../types/signature';
-import * as sigstore from '../../../types/sigstore';
-import { encoding as enc, pem } from '../../../util';
+import type { Entry } from '../../external/rekor';
+import { SignatureMaterial } from '../../types/signature';
+import * as sigstore from '../../types/sigstore';
+import { encoding as enc, pem } from '../../util';
 
 describe('isCAVerificationOptions', () => {
   describe('when the verification options are for a CA', () => {
@@ -92,13 +92,12 @@ describe('bundle', () => {
   const signature = Buffer.from('signature');
   const certificate = `-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----`;
 
-  const sigMaterial: SignatureMaterial = {
-    signature,
-    certificates: [certificate],
-    key: undefined,
-  };
-
   describe('toDSSEBundle', () => {
+    const sigMaterial: SignatureMaterial = {
+      signature,
+      certificates: [certificate],
+      key: undefined,
+    };
     const envelope: sigstore.Envelope = {
       payloadType: 'application/vnd.in-toto+json',
       payload: Buffer.from('payload'),
@@ -211,6 +210,12 @@ describe('bundle', () => {
   });
 
   describe('toMessageSignatureBundle', () => {
+    const sigMaterial: SignatureMaterial = {
+      signature,
+      certificates: undefined,
+      key: { value: 'key', id: 'hint' },
+    };
+
     const digest = Buffer.from('digest');
 
     it('returns a valid message signature bundle', () => {
@@ -236,13 +241,12 @@ describe('bundle', () => {
       }
 
       // Verification material
-      if (b.verificationMaterial?.content?.$case === 'x509CertificateChain') {
-        const chain = b.verificationMaterial.content.x509CertificateChain;
-        expect(chain).toBeTruthy();
-        expect(chain.certificates).toHaveLength(1);
-        expect(chain.certificates[0].rawBytes).toEqual(pem.toDER(certificate));
+      if (b.verificationMaterial?.content?.$case === 'publicKey') {
+        const publicKey = b.verificationMaterial.content.publicKey;
+        expect(publicKey).toBeTruthy();
+        expect(publicKey.hint).toEqual('hint');
       } else {
-        fail('Expected x509CertificateChain');
+        fail('Expected publicKey');
       }
 
       expect(b.verificationMaterial?.timestampVerificationData).toBeUndefined();

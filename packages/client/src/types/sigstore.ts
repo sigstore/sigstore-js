@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { BUNDLE_V01_MEDIA_TYPE } from '@sigstore/bundle';
 import { HashAlgorithm } from '@sigstore/protobuf-specs';
 import { encoding as enc, pem } from '../util';
 import { SignatureMaterial } from './signature';
@@ -55,9 +56,6 @@ export type {
   TransparencyLogInstance,
   TrustedRoot,
 } from '@sigstore/protobuf-specs';
-
-const BUNDLE_MEDIA_TYPE =
-  'application/vnd.dev.sigstore.bundle+json;version=0.1';
 
 export type RequiredArtifactVerificationOptions = WithRequired<
   ArtifactVerificationOptions,
@@ -106,7 +104,7 @@ export function toDSSEBundle({
   timestamp?: Buffer;
 }): Bundle {
   return {
-    mediaType: BUNDLE_MEDIA_TYPE,
+    mediaType: BUNDLE_V01_MEDIA_TYPE,
     content: { $case: 'dsseEnvelope', dsseEnvelope: envelope },
     verificationMaterial: toVerificationMaterial({
       signature,
@@ -128,7 +126,7 @@ export function toMessageSignatureBundle({
   timestamp?: Buffer;
 }): Bundle {
   return {
-    mediaType: BUNDLE_MEDIA_TYPE,
+    mediaType: BUNDLE_V01_MEDIA_TYPE,
     content: {
       $case: 'messageSignature',
       messageSignature: {
@@ -148,6 +146,7 @@ export function toMessageSignatureBundle({
 }
 
 function toTransparencyLogEntry(entry: Entry): TransparencyLogEntry {
+  /* istanbul ignore next */
   const b64SET = entry.verification?.signedEntryTimestamp || '';
   const set = Buffer.from(b64SET, 'base64');
   const logID = Buffer.from(entry.logID, 'hex');
