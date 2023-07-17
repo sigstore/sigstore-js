@@ -45,6 +45,8 @@ import {
   assertBundleV01,
   bundleFromJSON,
   bundleToJSON,
+  envelopeFromJSON,
+  envelopeToJSON,
   isBundleV01,
   isBundleWithCertificateChain,
   isBundleWithDsseEnvelope,
@@ -144,6 +146,8 @@ describe('public interface', () => {
   it('exports serialization functions', () => {
     expect(bundleFromJSON).toBeDefined();
     expect(bundleToJSON).toBeDefined();
+    expect(envelopeFromJSON).toBeDefined();
+    expect(envelopeToJSON).toBeDefined();
   });
 
   it('exports constants', () => {
