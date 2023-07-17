@@ -1,0 +1,27 @@
+name: "Conformance tests"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+    - name: Setup node
+      uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3
+      with:
+        node-version: 16
+        cache: npm
+    - name: Install dependencies
+      run: npm ci
+    - name: Build sigstore-js
+      run: npm run build
+    - uses: sigstore/sigstore-conformance@954233f9a4ea6d0b355626b283b4f837f465e4ec # v0.0.5
+      with:
+        entrypoint: ${{ github.workspace }}/packages/conformance/bin/run
