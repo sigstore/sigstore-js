@@ -157,13 +157,13 @@ export function artifactVerificationOptions(
   // Construct the artifact verification options w/ defaults
   return {
     ctlogOptions: {
-      disable: false,
-      threshold: options.ctLogThreshold || 1,
+      disable: options.ctLogThreshold === 0,
+      threshold: options.ctLogThreshold ?? 1,
       detachedSct: false,
     },
     tlogOptions: {
-      disable: false,
-      threshold: options.tlogThreshold || 1,
+      disable: options.tlogThreshold === 0,
+      threshold: options.tlogThreshold ?? 1,
       performOnlineVerification: false,
     },
     signers,
