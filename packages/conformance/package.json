@@ -1,0 +1,35 @@
+{
+  "name": "@sigstore/conformance",
+  "version": "0.0.0",
+  "private": "true",
+  "description": "Sigstore Conformance Test CLI",
+  "bin": {
+    "sigstore": "./bin/run"
+  },
+  "files": [
+    "/bin",
+    "/dist",
+    "/oclif.manifest.json"
+  ],
+  "scripts": {
+    "clean": "shx rm -rf dist",
+    "prebuild": "npm run clean",
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@oclif/core": "^2",
+    "sigstore": "^1.7.0"
+  },
+  "devDependencies": {
+    "oclif": "^3",
+    "tslib": "^2.6.0"
+  },
+  "oclif": {
+    "bin": "sigstore-conformance",
+    "commands": "./dist/commands",
+    "topicSeparator": " "
+  },
+  "engines": {
+    "node": "^14.17.0 || ^16.13.0 || >=18.0.0"
+  }
+}

@@ -23,7 +23,12 @@ import {
   X509CertificateChain,
   hashAlgorithmToJSON,
 } from '@sigstore/protobuf-specs';
-import { bundleFromJSON, bundleToJSON } from '../serialized';
+import {
+  bundleFromJSON,
+  bundleToJSON,
+  envelopeFromJSON,
+  envelopeToJSON,
+} from '../serialized';
 
 import type { Bundle } from '../bundle';
 
@@ -359,5 +364,46 @@ describe('bundleFromJSON', () => {
     const json = bundleToJSON(bundle);
     const deserializedBundle = bundleFromJSON(json);
     expect(deserializedBundle).toEqual(bundle);
+  });
+});
+
+describe('envelopeToJSON', () => {
+  const dsseEnvelope: Envelope = {
+    payload: Buffer.from('payload'),
+    payloadType: 'application/vnd.in-toto+json',
+    signatures: [
+      {
+        keyid: 'keyid',
+        sig: Buffer.from('signature'),
+      },
+    ],
+  };
+
+  it('matches the serialized form of the Envelope', () => {
+    const json = envelopeToJSON(dsseEnvelope);
+
+    expect(json).toBeTruthy();
+    expect(json.payload).toEqual(dsseEnvelope.payload.toString('base64'));
+    expect(json.payloadType).toEqual(dsseEnvelope.payloadType);
+    expect(json.signatures).toHaveLength(dsseEnvelope.signatures.length);
+    const signature = json.signatures[0];
+    const expectedSignature = dsseEnvelope.signatures[0];
+    expect(signature).toBeTruthy();
+    expect(signature?.keyid).toEqual(expectedSignature.keyid);
+    expect(signature?.sig).toEqual(expectedSignature.sig.toString('base64'));
+  });
+});
+
+describe('envelopeFromJSON', () => {
+  const envelope = {
+    payload: Buffer.from('ABC'),
+    payloadType: 'application/json',
+    signatures: [{ sig: Buffer.from('BAR'), keyid: '' }],
+  };
+
+  it('matches the deserialized form of the Envelope', () => {
+    const json = envelopeToJSON(envelope);
+    const deserializedEnvelope = envelopeFromJSON(json);
+    expect(deserializedEnvelope).toEqual(envelope);
   });
 });

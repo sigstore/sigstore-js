@@ -13,22 +13,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { Bundle as ProtoBundle } from '@sigstore/protobuf-specs';
+import { Envelope, Bundle as ProtoBundle } from '@sigstore/protobuf-specs';
 import { assertBundle } from './validate';
 
 import type { Bundle } from './bundle';
 import type { OneOf } from './utility';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const bundleFromJSON = (obj: any): Bundle => {
+export const bundleFromJSON = (obj: unknown): Bundle => {
   const bundle = ProtoBundle.fromJSON(obj);
   assertBundle(bundle);
   return bundle;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const bundleToJSON = (bundle: Bundle): SerializedBundle => {
   return ProtoBundle.toJSON(bundle) as SerializedBundle;
+};
+
+export const envelopeFromJSON = (obj: unknown): Envelope => {
+  return Envelope.fromJSON(obj);
+};
+
+export const envelopeToJSON = (envelope: Envelope): SerializedEnvelope => {
+  return Envelope.toJSON(envelope) as SerializedEnvelope;
 };
 
 type SerializedTLogEntry = {
@@ -76,7 +82,7 @@ type SerializedMessageSignature = {
 };
 
 // Serialized form of the dsseEnvelope option in the Sigstore Bundle
-type SerializedDSSEEnvelope = {
+export type SerializedEnvelope = {
   payload: string;
   payloadType: string;
   signatures: {
@@ -84,9 +90,6 @@ type SerializedDSSEEnvelope = {
     keyid: string;
   }[];
 };
-
-// Serialized form of the DSSE Envelope
-export type { SerializedDSSEEnvelope as SerializedEnvelope };
 
 // Serialized form of the Sigstore Bundle union type with all possible options
 // represented
@@ -103,6 +106,6 @@ export type SerializedBundle = {
     timestampVerificationData: SerializedTimestampVerificationData | undefined;
   };
 } & OneOf<{
-  dsseEnvelope: SerializedDSSEEnvelope;
+  dsseEnvelope: SerializedEnvelope;
   messageSignature: SerializedMessageSignature;
 }>;

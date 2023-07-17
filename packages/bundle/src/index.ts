@@ -22,7 +22,12 @@ export {
   isBundleWithPublicKey,
 } from './bundle';
 export { ValidationError } from './error';
-export { bundleFromJSON, bundleToJSON } from './serialized';
+export {
+  bundleFromJSON,
+  bundleToJSON,
+  envelopeFromJSON,
+  envelopeToJSON,
+} from './serialized';
 export {
   assertBundle,
   assertBundleLatest,

@@ -107,17 +107,17 @@ describe('artifactVerificationOptions', () => {
         '1.2.3.4': 'value1',
         '5.6.7.8': 'value2',
       },
-      ctLogThreshold: 2,
-      tlogThreshold: 3,
+      ctLogThreshold: 0,
+      tlogThreshold: 0,
     };
 
     it('returns the expected options', () => {
       const result = artifactVerificationOptions(options);
-      expect(result.ctlogOptions.disable).toBe(false);
-      expect(result.ctlogOptions.threshold).toBe(2);
+      expect(result.ctlogOptions.disable).toBe(true);
+      expect(result.ctlogOptions.threshold).toBe(0);
       expect(result.ctlogOptions.detachedSct).toBe(false);
-      expect(result.tlogOptions.disable).toBe(false);
-      expect(result.tlogOptions.threshold).toBe(3);
+      expect(result.tlogOptions.disable).toBe(true);
+      expect(result.tlogOptions.threshold).toBe(0);
       expect(result.tlogOptions.performOnlineVerification).toBe(false);
       expect(result.signers).toBeDefined();
 
