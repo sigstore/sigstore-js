@@ -1,5 +1,25 @@
 # sigstore
 
+## 1.8.0
+
+### Minor Changes
+
+- f1b8bad: Support for verifying v0.2 Sigstore bundles that contain inclusion proofs from Rekor
+- d9b1540: Integrate @sigstore/bundle package
+
+### Patch Changes
+
+- e0c16ec: Bump @sigstore/protobuf-specs from 0.1.0 to 0.2.0
+- 6abe9ec: Fix bug when setting `tlogThreshold`/`ctLogThreshold` verification options to 0
+- Updated dependencies [e0c16ec]
+- Updated dependencies [f1b8bad]
+- Updated dependencies [a388e25]
+- Updated dependencies [e0c16ec]
+- Updated dependencies [2a5f500]
+- Updated dependencies [2a869ba]
+  - @sigstore/bundle@1.0.0
+  - @sigstore/tuf@1.0.3
+
 ## 1.7.0
 
 ### Minor Changes

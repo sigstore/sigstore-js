@@ -1,5 +1,19 @@
 # @sigstore/cli
 
+## 0.1.1
+
+### Patch Changes
+
+- c0a4baa: Bump @oclif/color from 1.0.6 to 1.0.7
+- 8b7d0cf: Bump @oclif/color from 1.0.8 to 1.0.9
+- 580469a: Bump @oclif/color from 1.0.7 to 1.0.8
+- b7ea8c8: Bump openid-client from 5.4.2 to 5.4.3
+- Updated dependencies [e0c16ec]
+- Updated dependencies [6abe9ec]
+- Updated dependencies [f1b8bad]
+- Updated dependencies [d9b1540]
+  - sigstore@1.8.0
+
 ## 0.1.0
 
 ### Minor Changes

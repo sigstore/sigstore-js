@@ -1,6 +1,6 @@
 {
   "name": "@sigstore/bundle",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Sigstore bundle type",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
