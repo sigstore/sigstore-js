@@ -1,6 +1,6 @@
 {
   "name": "sigstore",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "code-signing for npm packages",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,9 +36,9 @@
     "@types/make-fetch-happen": "^10.0.0"
   },
   "dependencies": {
-    "@sigstore/bundle": "^0.0.0",
+    "@sigstore/bundle": "^1.0.0",
     "@sigstore/protobuf-specs": "^0.2.0",
-    "@sigstore/tuf": "^1.0.1",
+    "@sigstore/tuf": "^1.0.3",
     "make-fetch-happen": "^11.0.1"
   },
   "engines": {
