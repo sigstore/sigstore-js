@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "composite": true
+  },
+  "exclude": [
+    "./dist",
+    "**/__tests__",
+    "jest.setup.ts"
+  ],
+  "references": [
+    { "path": "../bundle" },
+    { "path": "../mock" },
+    { "path": "../rekor-types" },
+    { "path": "../jest" }
+  ]
+}
