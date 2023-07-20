@@ -15,4 +15,4 @@ limitations under the License.
 */
 export type { Artifact, BundleBuilder, BundleBuilderOptions } from './base';
 export { DSSEBundleBuilder } from './dsse';
-export { MessageBundleBuilder } from './message';
+export { MessageSignatureBundleBuilder } from './message';

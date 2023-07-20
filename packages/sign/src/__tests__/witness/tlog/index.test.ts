@@ -90,8 +90,6 @@ describe('RekorWitness', () => {
           const vm = await subject.testify(sigBundle, publicKey);
 
           expect(vm).toBeDefined();
-          expect(vm.rfc3161Timestamps).toBeUndefined();
-
           assert(vm.tlogEntries);
           expect(vm.tlogEntries).toHaveLength(1);
 
@@ -164,8 +162,6 @@ describe('RekorWitness', () => {
           const vm = await subject.testify(sigBundle, publicKey);
 
           expect(vm).toBeDefined();
-          expect(vm.rfc3161Timestamps).toBeUndefined();
-
           assert(vm.tlogEntries);
           expect(vm.tlogEntries).toHaveLength(1);
 

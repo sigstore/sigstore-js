@@ -19,7 +19,7 @@ import {
   DSSEBundleBuilder,
   FulcioSigner,
   InternalError,
-  MessageBundleBuilder,
+  MessageSignatureBundleBuilder,
   RekorWitness,
   TSAWitness,
 } from '..';
@@ -85,7 +85,7 @@ it('exports types', async () => {
 it('exports classes', () => {
   expect(CIContextProvider).toBeInstanceOf(Function);
   expect(DSSEBundleBuilder).toBeInstanceOf(Function);
-  expect(MessageBundleBuilder).toBeInstanceOf(Function);
+  expect(MessageSignatureBundleBuilder).toBeInstanceOf(Function);
   expect(FulcioSigner).toBeInstanceOf(Function);
   expect(RekorWitness).toBeInstanceOf(Function);
   expect(TSAWitness).toBeInstanceOf(Function);

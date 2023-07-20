@@ -20,7 +20,7 @@ import { dsse } from '../../util';
 import type { Artifact } from '../../bundler';
 import type { Signature, Signer } from '../../signer';
 
-describe('DSSENotary', () => {
+describe('DSSEBundleBuilder', () => {
   // Signature fixture to return from fake signer
   const sigBytes = Buffer.from('signature');
   const key = 'publickey';
@@ -40,12 +40,12 @@ describe('DSSENotary', () => {
 
   describe('constructor', () => {
     it('should create a new instance', () => {
-      const notary = new DSSEBundleBuilder({ signer: signer, witnesses: [] });
-      expect(notary).toBeDefined();
+      const bundler = new DSSEBundleBuilder({ signer: signer, witnesses: [] });
+      expect(bundler).toBeDefined();
     });
   });
 
-  describe('notarize', () => {
+  describe('#create', () => {
     const subject = new DSSEBundleBuilder({ signer: signer, witnesses: [] });
 
     describe('when the artifact type is NOT provided', () => {
@@ -68,9 +68,8 @@ describe('DSSENotary', () => {
           'application/vnd.dev.sigstore.bundle+json;version=0.1'
         );
 
-        assert(b.content?.$case === 'dsseEnvelope');
-        expect(b.content?.dsseEnvelope).toBeTruthy();
-        expect(b.content?.dsseEnvelope.payload).toEqual(artifact.data);
+        expect(b.content.dsseEnvelope).toBeTruthy();
+        expect(b.content.dsseEnvelope.payload).toEqual(artifact.data);
         expect(b.content.dsseEnvelope.payloadType).toEqual('');
         expect(b.content.dsseEnvelope.signatures).toHaveLength(1);
         expect(b.content.dsseEnvelope.signatures[0].keyid).toEqual(
@@ -110,9 +109,8 @@ describe('DSSENotary', () => {
           'application/vnd.dev.sigstore.bundle+json;version=0.1'
         );
 
-        assert(b.content?.$case === 'dsseEnvelope');
-        expect(b.content?.dsseEnvelope).toBeTruthy();
-        expect(b.content?.dsseEnvelope.payload).toEqual(artifact.data);
+        expect(b.content.dsseEnvelope).toBeTruthy();
+        expect(b.content.dsseEnvelope.payload).toEqual(artifact.data);
         expect(b.content.dsseEnvelope.payloadType).toEqual(artifact.type);
         expect(b.content.dsseEnvelope.signatures).toHaveLength(1);
         expect(b.content.dsseEnvelope.signatures[0].keyid).toEqual(

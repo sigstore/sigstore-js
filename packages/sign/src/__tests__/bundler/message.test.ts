@@ -15,13 +15,13 @@ limitations under the License.
 */
 import { HashAlgorithm } from '@sigstore/protobuf-specs';
 import assert from 'assert';
-import { MessageBundleBuilder } from '../../bundler/message';
+import { MessageSignatureBundleBuilder } from '../../bundler/message';
 import { crypto } from '../../util';
 
 import type { Artifact } from '../../bundler';
 import type { Signature, Signer } from '../../signer';
 
-describe('MessageNotary', () => {
+describe('MessageSignatureBundleBuilder', () => {
   // Signature fixture to return from fake Signer
   const sigBytes = Buffer.from('signature');
   const key = 'publickey';
@@ -41,20 +41,23 @@ describe('MessageNotary', () => {
 
   describe('constructor', () => {
     it('should create a new instance', () => {
-      const notary = new MessageBundleBuilder({
+      const bundler = new MessageSignatureBundleBuilder({
         signer: signer,
         witnesses: [],
       });
-      expect(notary).toBeDefined();
+      expect(bundler).toBeDefined();
     });
   });
 
-  describe('notarize', () => {
+  describe('#create', () => {
     const artifact: Artifact = {
       data: Buffer.from('artifact'),
     };
 
-    const subject = new MessageBundleBuilder({ signer: signer, witnesses: [] });
+    const subject = new MessageSignatureBundleBuilder({
+      signer: signer,
+      witnesses: [],
+    });
 
     it('invokes the signer', async () => {
       await subject.create(artifact);
@@ -69,7 +72,6 @@ describe('MessageNotary', () => {
         'application/vnd.dev.sigstore.bundle+json;version=0.1'
       );
 
-      assert(b.content?.$case === 'messageSignature');
       expect(b.content.messageSignature).toBeTruthy();
       expect(b.content.messageSignature.messageDigest.algorithm).toEqual(
         HashAlgorithm.SHA2_256
