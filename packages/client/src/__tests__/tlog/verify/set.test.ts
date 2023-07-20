@@ -17,6 +17,7 @@ import {
   bundleFromJSON,
   TLogEntryWithInclusionPromise,
 } from '@sigstore/bundle';
+import { HashAlgorithm, PublicKeyDetails } from '@sigstore/protobuf-specs';
 import { verifyTLogSET } from '../../../tlog/verify/set';
 import * as sigstore from '../../../types/sigstore';
 import { crypto } from '../../../util';
@@ -31,22 +32,22 @@ describe('verifyTLogSET', () => {
 
   const publicKey: sigstore.PublicKey = {
     rawBytes: keyBytes,
-    keyDetails: sigstore.PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
+    keyDetails: PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
   };
 
   const validTLog: sigstore.TransparencyLogInstance = {
     baseUrl: 'https://tlog.sigstore.dev',
-    hashAlgorithm: sigstore.HashAlgorithm.SHA2_256,
+    hashAlgorithm: HashAlgorithm.SHA2_256,
     publicKey,
     logId: { keyId: keyID },
   };
 
   const invalidTLog: sigstore.TransparencyLogInstance = {
-    hashAlgorithm: sigstore.HashAlgorithm.SHA2_256,
+    hashAlgorithm: HashAlgorithm.SHA2_256,
     baseUrl: 'https://invalid.tlog.example.com',
     logId: { keyId: Buffer.from('invalid') },
     publicKey: {
-      keyDetails: sigstore.PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
+      keyDetails: PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
       rawBytes: Buffer.from('invalid'),
     },
   };
@@ -107,7 +108,7 @@ describe('verifyTLogSET', () => {
             ...validTLog,
             publicKey: {
               rawBytes: undefined,
-              keyDetails: sigstore.PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
+              keyDetails: PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
               validFor: { start: undefined },
             },
           },

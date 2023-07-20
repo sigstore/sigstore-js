@@ -13,34 +13,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { CA, CAClient } from './ca';
-import identity, { Provider } from './identity';
-import { TLog, TLogClient } from './tlog';
-import { TSA, TSAClient } from './tsa';
+import {
+  BundleBuilder,
+  BundleBuilderOptions,
+  CIContextProvider,
+  DSSEBundleBuilder,
+  FulcioSigner,
+  IdentityProvider,
+  MessageSignatureBundleBuilder,
+  RekorWitness,
+  Signer,
+  TSAWitness,
+  Witness,
+} from '@sigstore/sign';
+import identity from './identity';
+import { CallbackSigner, SignerFunc } from './types/signature';
 import * as sigstore from './types/sigstore';
 
 import type { FetchOptions, Retry } from './types/fetch';
 import type { KeySelector } from './verify';
-
-interface CAOptions {
-  fulcioURL?: string;
-}
-
-interface TLogOptions {
-  rekorURL?: string;
-}
-
-interface TSAOptions {
-  tsaServerURL?: string;
-}
-
-export interface IdentityProviderOptions {
-  identityToken?: string;
-  oidcIssuer?: string;
-  oidcClientID?: string;
-  oidcClientSecret?: string;
-  oidcRedirectURL?: string;
-}
 
 export type TUFOptions = {
   tufMirrorURL?: string;
@@ -49,13 +40,18 @@ export type TUFOptions = {
 } & FetchOptions;
 
 export type SignOptions = {
-  identityProvider?: Provider;
+  fulcioURL?: string;
+  identityProvider?: IdentityProvider;
+  identityToken?: string;
+  oidcIssuer?: string;
+  oidcClientID?: string;
+  oidcClientSecret?: string;
+  oidcRedirectURL?: string;
+  rekorURL?: string;
+  signer?: SignerFunc;
   tlogUpload?: boolean;
-} & CAOptions &
-  TLogOptions &
-  TSAOptions &
-  FetchOptions &
-  IdentityProviderOptions;
+  tsaServerURL?: string;
+} & FetchOptions;
 
 export type VerifyOptions = {
   ctLogThreshold?: number;
@@ -65,8 +61,8 @@ export type VerifyOptions = {
   certificateIdentityURI?: string;
   certificateOIDs?: Record<string, string>;
   keySelector?: KeySelector;
-} & TLogOptions &
-  TUFOptions;
+  rekorURL?: string;
+} & TUFOptions;
 
 export type CreateVerifierOptions = {
   keySelector?: KeySelector;
@@ -78,32 +74,118 @@ export const DEFAULT_REKOR_URL = 'https://rekor.sigstore.dev';
 export const DEFAULT_RETRY: Retry = { retries: 2 };
 export const DEFAULT_TIMEOUT = 5000;
 
-export function createCAClient(options: CAOptions & FetchOptions): CA {
-  return new CAClient({
-    fulcioBaseURL: options.fulcioURL || DEFAULT_FULCIO_URL,
-    retry: options.retry ?? DEFAULT_RETRY,
-    timeout: options.timeout ?? DEFAULT_TIMEOUT,
-  });
+export type BundleType = 'messageSignature' | 'dsseEnvelope';
+
+export function createBundleBuilder(
+  bundleType: 'messageSignature',
+  options: SignOptions
+): MessageSignatureBundleBuilder;
+export function createBundleBuilder(
+  bundleType: 'dsseEnvelope',
+  options: SignOptions
+): DSSEBundleBuilder;
+export function createBundleBuilder(
+  bundleType: BundleType,
+  options: SignOptions
+): BundleBuilder {
+  const bundlerOptions: BundleBuilderOptions = {
+    signer: initSigner(options),
+    witnesses: initWitnesses(options),
+  };
+
+  switch (bundleType) {
+    case 'messageSignature':
+      return new MessageSignatureBundleBuilder(bundlerOptions);
+    case 'dsseEnvelope':
+      return new DSSEBundleBuilder(bundlerOptions);
+  }
 }
 
-export function createTLogClient(options: TLogOptions & FetchOptions): TLog {
-  return new TLogClient({
-    rekorBaseURL: options.rekorURL || DEFAULT_REKOR_URL,
-    retry: options.retry ?? DEFAULT_RETRY,
-    timeout: options.timeout ?? DEFAULT_TIMEOUT,
-  });
+// Instantiate a signer based on the supplied options. If a signer function is
+// provided, use that. Otherwise, if a Fulcio URL is provided, use the Fulcio
+// signer. Otherwise, throw an error.
+function initSigner(options: SignOptions): Signer {
+  if (isCallbackSignerEnabled(options)) {
+    return new CallbackSigner(options);
+  } else {
+    return new FulcioSigner({
+      fulcioBaseURL: options.fulcioURL || DEFAULT_FULCIO_URL,
+      identityProvider:
+        options.identityProvider || initIdentityProvider(options),
+      retry: options.retry ?? DEFAULT_RETRY,
+      timeout: options.timeout ?? DEFAULT_TIMEOUT,
+    });
+  }
 }
 
-export function createTSAClient(
-  options: TSAOptions & FetchOptions
-): TSA | undefined {
-  return options.tsaServerURL
-    ? new TSAClient({
+// Instantiate an identity provider based on the supplied options. If an
+// explicit identity token is provided, use that. Otherwise, if an OIDC issuer
+// and client ID are provided, use the OIDC provider. Otherwise, use the CI
+// context provider.
+function initIdentityProvider(options: SignOptions): IdentityProvider {
+  const token = options.identityToken;
+
+  if (token) {
+    return { getToken: () => Promise.resolve(token) };
+  } else if (options.oidcIssuer && options.oidcClientID) {
+    return identity.oauthProvider({
+      issuer: options.oidcIssuer,
+      clientID: options.oidcClientID,
+      clientSecret: options.oidcClientSecret,
+      redirectURL: options.oidcRedirectURL,
+    });
+  } else {
+    return new CIContextProvider('sigstore');
+  }
+}
+
+// Instantiate a collection of witnesses based on the supplied options.
+function initWitnesses(options: SignOptions): Witness[] {
+  const witnesses: Witness[] = [];
+
+  if (isRekorEnabled(options)) {
+    witnesses.push(
+      new RekorWitness({
+        rekorBaseURL: options.rekorURL || DEFAULT_REKOR_URL,
+        fetchOnConflict: false,
+        retry: options.retry ?? DEFAULT_RETRY,
+        timeout: options.timeout ?? DEFAULT_TIMEOUT,
+      })
+    );
+  }
+
+  if (isTSAEnabled(options)) {
+    witnesses.push(
+      new TSAWitness({
         tsaBaseURL: options.tsaServerURL,
         retry: options.retry ?? DEFAULT_RETRY,
         timeout: options.timeout ?? DEFAULT_TIMEOUT,
       })
-    : undefined;
+    );
+  }
+
+  return witnesses;
+}
+
+// Type assertion to ensure that the signer is enabled
+function isCallbackSignerEnabled(
+  options: SignOptions
+): options is SignOptions & { signer: SignerFunc } {
+  return options.signer !== undefined;
+}
+
+// Type assertion to ensure that Rekor is enabled
+function isRekorEnabled(
+  options: SignOptions
+): options is SignOptions & { tlogUpload: boolean } {
+  return options.tlogUpload !== false;
+}
+
+// Type assertion to ensure that TSA is enabled
+function isTSAEnabled(
+  options: SignOptions
+): options is SignOptions & { tsaServerURL: string } {
+  return options.tsaServerURL !== undefined;
 }
 
 // Assembles the AtifactVerificationOptions from the supplied VerifyOptions.
@@ -134,7 +216,7 @@ export function artifactVerificationOptions(
     }
 
     const oids = Object.entries(
-      options.certificateOIDs || {}
+      options.certificateOIDs || /* istanbul ignore next */ {}
     ).map<sigstore.ObjectIdentifierValuePair>(([oid, value]) => ({
       oid: { id: oid.split('.').map((s) => parseInt(s, 10)) },
       value: Buffer.from(value),
@@ -168,34 +250,4 @@ export function artifactVerificationOptions(
     },
     signers,
   };
-}
-
-// Translates the IdenityProviderOptions into a list of Providers which
-// should be queried to retrieve an identity token.
-export function identityProviders(
-  options: IdentityProviderOptions
-): Provider[] {
-  const idps: Provider[] = [];
-  const token = options.identityToken;
-
-  // If an explicit identity token is provided, use that. Setup a dummy
-  // provider that just returns the token. Otherwise, setup the CI context
-  // provider and (optionally) the OAuth provider.
-  if (token) {
-    idps.push({ getToken: () => Promise.resolve(token) });
-  } else {
-    idps.push(identity.ciContextProvider());
-    if (options.oidcIssuer && options.oidcClientID) {
-      idps.push(
-        identity.oauthProvider({
-          issuer: options.oidcIssuer,
-          clientID: options.oidcClientID,
-          clientSecret: options.oidcClientSecret,
-          redirectURL: options.oidcRedirectURL,
-        })
-      );
-    }
-  }
-
-  return idps;
 }

@@ -12,6 +12,8 @@
   ],
   "references": [
     { "path": "../bundle" },
+    { "path": "../mock" },
+    { "path": "../sign" },
     { "path": "../tuf" },
     { "path": "../rekor-types" },
     { "path": "../jest" }
