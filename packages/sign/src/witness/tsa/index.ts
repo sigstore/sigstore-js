@@ -15,11 +15,10 @@ limitations under the License.
 */
 import { TSA, TSAClient, TSAClientOptions } from './client';
 
-import type {
-  SignatureBundle,
-  VerificationMaterial,
-  Witness,
-} from '../witness';
+import type { RFC3161SignedTimestamp } from '@sigstore/bundle';
+import type { SignatureBundle, Witness } from '../witness';
+
+type RFC3161SignedTimestamps = { rfc3161Timestamps: RFC3161SignedTimestamp[] };
 
 export type TSAWitnessOptions = TSAClientOptions;
 
@@ -36,7 +35,7 @@ export class TSAWitness implements Witness {
 
   public async testify(
     content: SignatureBundle
-  ): Promise<VerificationMaterial> {
+  ): Promise<RFC3161SignedTimestamps> {
     const signature = extractSignature(content);
     const timestamp = await this.tsa.createTimestamp(signature);
 

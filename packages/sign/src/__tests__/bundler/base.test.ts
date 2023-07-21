@@ -91,7 +91,7 @@ describe('BaseBundleBuilder', () => {
     testify: jest.fn().mockResolvedValue(tlogAffidavit),
   };
 
-  class FakeBundleBuilder extends BaseBundleBuilder {
+  class FakeBundleBuilder extends BaseBundleBuilder<sigstore.Bundle> {
     protected override async package(
       artifact: Artifact,
       signature: Signature

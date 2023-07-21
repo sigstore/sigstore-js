@@ -27,7 +27,7 @@ import type { Artifact } from './base';
 export function toMessageSignatureBundle(
   artifact: Artifact,
   signature: Signature
-): sigstore.Bundle {
+): sigstore.BundleWithMessageSignature {
   const digest = crypto.hash(artifact.data);
 
   return {
@@ -50,7 +50,7 @@ export function toMessageSignatureBundle(
 export function toDSSEBundle(
   artifact: Required<Artifact>,
   signature: Signature
-): sigstore.Bundle {
+): sigstore.BundleWithDsseEnvelope {
   return {
     mediaType: BUNDLE_V01_MEDIA_TYPE,
     content: {

@@ -24,11 +24,9 @@ import {
 import { toProposedEntry } from './entry';
 
 import type { TransparencyLogEntry } from '@sigstore/bundle';
-import type {
-  SignatureBundle,
-  VerificationMaterial,
-  Witness,
-} from '../witness';
+import type { SignatureBundle, Witness } from '../witness';
+
+type TransparencyLogEntries = { tlogEntries: TransparencyLogEntry[] };
 
 export type RekorWitnessOptions = TLogClientOptions;
 
@@ -42,14 +40,14 @@ export class RekorWitness implements Witness {
   public async testify(
     content: SignatureBundle,
     publicKey: string
-  ): Promise<VerificationMaterial> {
+  ): Promise<TransparencyLogEntries> {
     const proposedEntry = toProposedEntry(content, publicKey);
     const entry = await this.tlog.createEntry(proposedEntry);
     return toTransparencyLogEntry(entry);
   }
 }
 
-function toTransparencyLogEntry(entry: Entry): VerificationMaterial {
+function toTransparencyLogEntry(entry: Entry): TransparencyLogEntries {
   const logID = Buffer.from(entry.logID, 'hex');
 
   // Parse entry body so we can extract the kind and version.

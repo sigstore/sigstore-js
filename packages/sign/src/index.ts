@@ -1,5 +1,5 @@
 export type { Bundle } from '@sigstore/bundle';
-export { DSSEBundleBuilder, MessageBundleBuilder } from './bundler';
+export { DSSEBundleBuilder, MessageSignatureBundleBuilder } from './bundler';
 export type { Artifact, BundleBuilder, BundleBuilderOptions } from './bundler';
 export { InternalError } from './error';
 export { CIContextProvider } from './identity';

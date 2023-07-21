@@ -15,17 +15,16 @@ limitations under the License.
 */
 import { InternalError } from '../../error';
 import { oidc } from '../../util';
-import { CA, CAClient } from './ca';
+import { CA, CAClient, CAClientOptions } from './ca';
 import { EphemeralSigner } from './ephemeral';
 
 import type { IdentityProvider } from '../../identity';
 import type { Signature, Signer } from '../signer';
 
-export interface FulcioSignerOptions {
-  fulcioBaseURL: string;
+export type FulcioSignerOptions = {
   identityProvider: IdentityProvider;
   keyHolder?: Signer;
-}
+} & CAClientOptions;
 
 // Signer implementation which can be used to decorate another signer
 // with a Fulcio-issued signing certificate for the signer's public key.

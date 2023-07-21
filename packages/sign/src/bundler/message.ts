@@ -16,19 +16,19 @@ limitations under the License.
 import { Artifact, BaseBundleBuilder, BundleBuilderOptions } from './base';
 import { toMessageSignatureBundle } from './bundle';
 
-import type { Bundle } from '@sigstore/bundle';
+import type { BundleWithMessageSignature } from '@sigstore/bundle';
 import type { Signature } from '../signer';
 
 // BundleBuilder implementation for raw message signatures
-export class MessageBundleBuilder extends BaseBundleBuilder {
+export class MessageSignatureBundleBuilder extends BaseBundleBuilder<BundleWithMessageSignature> {
   constructor(options: BundleBuilderOptions) {
     super(options);
   }
 
-  override async package(
+  protected override async package(
     artifact: Artifact,
     signature: Signature
-  ): Promise<Bundle> {
+  ): Promise<BundleWithMessageSignature> {
     return toMessageSignatureBundle(artifact, signature);
   }
 }

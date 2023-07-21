@@ -43,7 +43,9 @@ export interface BundleBuilder {
 // provides a the basic wokflow for signing and witnessing an artifact.
 // Subclasses must implement the `package` method to assemble a valid bundle
 // with the generated signature and verification material.
-export abstract class BaseBundleBuilder implements BundleBuilder {
+export abstract class BaseBundleBuilder<T extends Bundle>
+  implements BundleBuilder
+{
   protected signer: Signer;
   private witnesses: Witness[];
 
@@ -53,7 +55,7 @@ export abstract class BaseBundleBuilder implements BundleBuilder {
   }
 
   // Executes the signing/witnessing process for the given artifact.
-  public async create(artifact: Artifact): Promise<Bundle> {
+  public async create(artifact: Artifact): Promise<T> {
     const signature = await this.prepare(artifact).then((blob) =>
       this.signer.sign(blob)
     );
@@ -97,7 +99,7 @@ export abstract class BaseBundleBuilder implements BundleBuilder {
   protected abstract package(
     artifact: Artifact,
     signature: Signature
-  ): Promise<Bundle>;
+  ): Promise<T>;
 }
 
 // Extracts the public key from a KeyMaterial. Returns either the public key

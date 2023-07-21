@@ -3,7 +3,7 @@ import assert from 'assert';
 import {
   DSSEBundleBuilder,
   FulcioSigner,
-  MessageBundleBuilder,
+  MessageSignatureBundleBuilder,
   RekorWitness,
   TSAWitness,
 } from '..';
@@ -36,7 +36,7 @@ describe('artifact signing', () => {
 
   describe('when building a message signature bundle', () => {
     const data = Buffer.from('hello, world');
-    const bundler = new MessageBundleBuilder({
+    const bundler = new MessageSignatureBundleBuilder({
       signer,
       witnesses: [rekorWitness, tsaWitness],
     });
@@ -45,7 +45,6 @@ describe('artifact signing', () => {
       const bundle = await bundler.create({ data });
 
       expect(bundle).toBeDefined();
-      assert(bundle.content.$case === 'messageSignature');
       expect(bundle.content.messageSignature.signature).toBeDefined();
       expect(bundle.content.messageSignature.messageDigest).toBeDefined();
 
@@ -78,7 +77,6 @@ describe('artifact signing', () => {
       const bundle = await bundler.create({ data, type: 'text/plain' });
 
       expect(bundle).toBeDefined();
-      assert(bundle.content.$case === 'dsseEnvelope');
       expect(bundle.content.dsseEnvelope.payloadType).toBe('text/plain');
       expect(bundle.content.dsseEnvelope.payload).toBe(data);
       expect(bundle.content.dsseEnvelope.signatures).toHaveLength(1);

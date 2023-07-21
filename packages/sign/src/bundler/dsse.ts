@@ -17,11 +17,11 @@ import { dsse } from '../util';
 import { Artifact, BaseBundleBuilder, BundleBuilderOptions } from './base';
 import { toDSSEBundle } from './bundle';
 
-import type * as sigstore from '@sigstore/bundle';
+import type { BundleWithDsseEnvelope } from '@sigstore/bundle';
 import type { Signature } from '../signer';
 
 // BundleBuilder implementation for DSSE wrapped attestations
-export class DSSEBundleBuilder extends BaseBundleBuilder {
+export class DSSEBundleBuilder extends BaseBundleBuilder<BundleWithDsseEnvelope> {
   constructor(options: BundleBuilderOptions) {
     super(options);
   }
@@ -37,7 +37,7 @@ export class DSSEBundleBuilder extends BaseBundleBuilder {
   protected override async package(
     artifact: Artifact,
     signature: Signature
-  ): Promise<sigstore.Bundle> {
+  ): Promise<BundleWithDsseEnvelope> {
     return toDSSEBundle(artifactDefaults(artifact), signature);
   }
 }
