@@ -90,7 +90,7 @@ describe('artifact signing', () => {
 
       expect(bundle.verificationMaterial.tlogEntries).toHaveLength(1);
       expect(bundle.verificationMaterial.tlogEntries[0].kindVersion.kind).toBe(
-        'intoto'
+        'dsse'
       );
 
       expect(
