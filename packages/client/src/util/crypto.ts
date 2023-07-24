@@ -13,17 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import crypto, { BinaryLike, KeyLike, KeyPairKeyObjectResult } from 'crypto';
+import crypto, { BinaryLike, KeyLike } from 'crypto';
 
-const EC_KEYPAIR_TYPE = 'ec';
-const P256_CURVE = 'P-256';
 const SHA256_ALGORITHM = 'sha256';
-
-export function generateKeyPair(): KeyPairKeyObjectResult {
-  return crypto.generateKeyPairSync(EC_KEYPAIR_TYPE, {
-    namedCurve: P256_CURVE,
-  });
-}
 
 export function createPublicKey(key: string | Buffer): KeyLike {
   if (typeof key === 'string') {
@@ -31,13 +23,6 @@ export function createPublicKey(key: string | Buffer): KeyLike {
   } else {
     return crypto.createPublicKey({ key, format: 'der', type: 'spki' });
   }
-}
-
-export function signBlob(
-  data: NodeJS.ArrayBufferView,
-  privateKey: KeyLike
-): Buffer {
-  return crypto.sign(null, data, privateKey);
 }
 
 export function verifyBlob(
@@ -51,6 +36,7 @@ export function verifyBlob(
   try {
     return crypto.verify(algorithm, data, key, signature);
   } catch (e) {
+    /* istanbul ignore next */
     return false;
   }
 }

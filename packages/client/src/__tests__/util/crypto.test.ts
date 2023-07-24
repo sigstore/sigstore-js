@@ -13,28 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { KeyObject } from 'crypto';
+import { KeyObject, generateKeyPairSync, sign } from 'crypto';
 import {
   bufferEqual,
   createPublicKey,
-  generateKeyPair,
   hash,
   randomBytes,
-  signBlob,
   verifyBlob,
 } from '../../util/crypto';
-
-describe('generateKeyPair', () => {
-  it('generates an EC keypair', () => {
-    const keypair = generateKeyPair();
-
-    expect(keypair.privateKey).toBeDefined();
-    expect(keypair.privateKey.asymmetricKeyType).toBe('ec');
-
-    expect(keypair.publicKey).toBeDefined();
-    expect(keypair.publicKey.asymmetricKeyType).toBe('ec');
-  });
-});
 
 describe('createPublicKey', () => {
   describe('when the input in a PEM-encoded key', () => {
@@ -74,20 +60,12 @@ describe('hash', () => {
   });
 });
 
-describe('signBlob', () => {
-  const key = generateKeyPair();
-  it('returns the signature of the blob', () => {
-    const blob = Buffer.from('hello world');
-    const signature = signBlob(blob, key.privateKey);
-
-    expect(signature).toBeTruthy();
-  });
-});
-
 describe('verifyBlob', () => {
-  const key = generateKeyPair();
+  const key = generateKeyPairSync('ec', {
+    namedCurve: 'P-256',
+  });
   const blob = Buffer.from('hello world');
-  const signature = signBlob(blob, key.privateKey);
+  const signature = sign(null, blob, key.privateKey);
 
   describe('when the signature is valid', () => {
     it('returns true', () => {

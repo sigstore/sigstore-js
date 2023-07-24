@@ -24,33 +24,38 @@ class BaseError extends Error {
   }
 }
 
-export class VerificationError extends BaseError {}
-
-export class PolicyError extends BaseError {}
-
-type InternalErrorCode =
-  | 'TLOG_FETCH_ENTRY_ERROR'
-  | 'TLOG_CREATE_ENTRY_ERROR'
-  | 'CA_CREATE_SIGNING_CERTIFICATE_ERROR'
-  | 'TSA_CREATE_TIMESTAMP_ERROR'
-  | 'TUF_FIND_TARGET_ERROR'
-  | 'TUF_REFRESH_METADATA_ERROR'
-  | 'TUF_DOWNLOAD_TARGET_ERROR'
-  | 'TUF_READ_TARGET_ERROR';
-
-export class InternalError extends BaseError {
-  code: InternalErrorCode;
+class ErrorWithCode<T extends string> extends BaseError {
+  code: T;
 
   constructor({
     code,
     message,
     cause,
   }: {
-    code: InternalErrorCode;
+    code: T;
     message: string;
-    cause?: any;
+    cause?: any /* eslint-disable-line @typescript-eslint/no-explicit-any */;
   }) {
     super(message, cause);
     this.code = code;
+    this.name = this.constructor.name;
   }
 }
+
+export class VerificationError extends BaseError {}
+
+export class PolicyError extends BaseError {}
+
+type InternalErrorCode =
+  | 'TUF_FIND_TARGET_ERROR'
+  | 'TUF_REFRESH_METADATA_ERROR'
+  | 'TUF_DOWNLOAD_TARGET_ERROR'
+  | 'TUF_READ_TARGET_ERROR';
+
+export class InternalError extends ErrorWithCode<InternalErrorCode> {}
+
+type SignatureErrorCode =
+  | 'MISSING_SIGNATURE_ERROR'
+  | 'MISSING_PUBLIC_KEY_ERROR';
+
+export class SignatureError extends ErrorWithCode<SignatureErrorCode> {}

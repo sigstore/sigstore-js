@@ -14,14 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import {
+  BUNDLE_V01_MEDIA_TYPE,
+  Bundle,
   SerializedBundle,
   SerializedEnvelope,
   bundleToJSON,
+  envelopeFromJSON,
+  envelopeToJSON,
 } from '@sigstore/bundle';
-import { SignOptions, createTLogClient } from './config';
-import { SignerFunc, extractSignatureMaterial } from './types/signature';
-import * as sigstore from './types/sigstore';
-import { dsse } from './util';
+import { RekorWitness, SignatureBundle } from '@sigstore/sign';
+import {
+  DEFAULT_REKOR_URL,
+  DEFAULT_RETRY,
+  DEFAULT_TIMEOUT,
+  SignOptions,
+  createBundleBuilder,
+} from './config';
+import { SignerFunc } from './types/signature';
 
 export async function createDSSEEnvelope(
   payload: Buffer,
@@ -30,24 +39,12 @@ export async function createDSSEEnvelope(
     signer: SignerFunc;
   }
 ): Promise<SerializedEnvelope> {
-  // Pre-authentication encoding to be signed
-  const paeBuffer = dsse.preAuthEncoding(payloadType, payload);
-
-  // Get signature and verification material for pae
-  const sigMaterial = await options.signer(paeBuffer);
-
-  const envelope: sigstore.Envelope = {
-    payloadType,
-    payload,
-    signatures: [
-      {
-        keyid: sigMaterial.key?.id || '',
-        sig: sigMaterial.signature,
-      },
-    ],
-  };
-
-  return sigstore.Envelope.toJSON(envelope) as SerializedEnvelope;
+  const bundler = createBundleBuilder('dsseEnvelope', {
+    signer: options.signer,
+    tlogUpload: false,
+  });
+  const bundle = await bundler.create({ data: payload, type: payloadType });
+  return envelopeToJSON(bundle.content.dsseEnvelope);
 }
 
 // Accepts a signed DSSE envelope and a PEM-encoded public key to be added to the
@@ -55,20 +52,37 @@ export async function createDSSEEnvelope(
 export async function createRekorEntry(
   dsseEnvelope: SerializedEnvelope,
   publicKey: string,
+  /* istanbul ignore next */
   options: SignOptions = {}
 ): Promise<SerializedBundle> {
-  const envelope = sigstore.Envelope.fromJSON(dsseEnvelope);
-  const tlog = createTLogClient(options);
+  const envelope = envelopeFromJSON(dsseEnvelope);
+  const content: SignatureBundle = {
+    $case: 'dsseEnvelope',
+    dsseEnvelope: envelope,
+  };
 
-  const sigMaterial = extractSignatureMaterial(envelope, publicKey);
-  const entry = await tlog.createDSSEEntry(envelope, sigMaterial, {
+  const tlog = new RekorWitness({
+    rekorBaseURL:
+      options.rekorURL || /* istanbul ignore next */ DEFAULT_REKOR_URL,
     fetchOnConflict: true,
+    retry: options.retry ?? DEFAULT_RETRY,
+    timeout: options.timeout ?? DEFAULT_TIMEOUT,
   });
 
-  const bundle = sigstore.toDSSEBundle({
-    envelope,
-    signature: sigMaterial,
-    tlogEntry: entry,
-  });
+  const vm = await tlog.testify(content, publicKey);
+
+  const bundle: Bundle = {
+    mediaType: BUNDLE_V01_MEDIA_TYPE,
+    content,
+    verificationMaterial: {
+      content: {
+        $case: 'publicKey',
+        publicKey: { hint: dsseEnvelope.signatures[0].keyid },
+      },
+      timestampVerificationData: undefined,
+      tlogEntries: [...vm.tlogEntries],
+    },
+  };
+
   return bundleToJSON(bundle);
 }
