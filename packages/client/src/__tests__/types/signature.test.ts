@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The Sigstore Authors.
+Copyright 2023 The Sigstore Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,30 +13,97 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { extractSignatureMaterial } from '../../types/signature';
-import { Envelope } from '../../types/sigstore';
+import assert from 'assert';
+import { SignatureError } from '../../error';
+import {
+  CallbackSigner,
+  SignatureMaterial,
+  SignerFunc,
+} from '../../types/signature';
 
-describe('extractSignatureMaterial', () => {
-  const envelope: Envelope = {
-    payload: Buffer.from('Hello, world!'),
-    payloadType: 'text/plain',
-    signatures: [
-      {
-        keyid: 'keyid',
-        sig: Buffer.from('signature'),
-      },
-    ],
-  };
+describe('CallbackSigner', () => {
+  const data = Buffer.from('artifact');
 
-  const publicKey = '-----BEGIN PUBLIC KEY-----\nABC\n-----END PUBLIC KEY-----';
+  const signer = jest.fn();
 
-  it('returns the correct signature material', () => {
-    const sigMaterial = extractSignatureMaterial(envelope, publicKey);
+  describe('constructor', () => {
+    it('should create a new instance', () => {
+      const client = new CallbackSigner({ signer });
+      expect(client).toBeDefined();
+    });
+  });
 
-    expect(sigMaterial.key).toBeDefined();
-    expect(sigMaterial.signature).toEqual(envelope.signatures[0].sig);
-    expect(sigMaterial.key?.id).toEqual(envelope.signatures[0].keyid);
-    expect(sigMaterial.key?.value).toEqual(publicKey);
-    expect(sigMaterial.certificates).toBeUndefined();
+  describe('sign', () => {
+    describe('when the callback returns valid data', () => {
+      const sigMaterial: SignatureMaterial = {
+        signature: Buffer.from('signature'),
+        certificates: undefined,
+        key: { value: 'key', id: 'hint' },
+      };
+
+      const signer = jest
+        .fn()
+        .mockResolvedValue(sigMaterial) satisfies SignerFunc;
+
+      const subject = new CallbackSigner({ signer });
+
+      it('invokes the callback', async () => {
+        await subject.sign(data);
+
+        expect(signer).toHaveBeenCalledTimes(1);
+        expect(signer).toHaveBeenCalledWith(data);
+      });
+
+      it('returns a signature', async () => {
+        const endorsement = await subject.sign(data);
+
+        expect(endorsement).toBeTruthy();
+        expect(endorsement.signature).toEqual(sigMaterial.signature);
+        expect(endorsement.key).toBeTruthy();
+        assert(endorsement.key.$case === 'publicKey');
+        expect(endorsement.key.publicKey).toEqual(sigMaterial.key.value);
+        expect(endorsement.key.hint).toEqual(sigMaterial.key.id);
+      });
+    });
+
+    describe('when the callback returns data with a missing signature', () => {
+      const sigMaterial = {
+        certificates: undefined,
+        key: { value: 'key', id: 'hint' },
+      };
+
+      const signer = jest
+        .fn()
+        .mockResolvedValue(sigMaterial) satisfies SignerFunc;
+
+      const subject = new CallbackSigner({ signer });
+
+      it('returns a signature', async () => {
+        await expect(subject.sign(data)).rejects.toThrowWithCode(
+          SignatureError,
+          'MISSING_SIGNATURE_ERROR'
+        );
+      });
+    });
+
+    describe('when the callback returns data with a missing key', () => {
+      const sigMaterial = {
+        signature: Buffer.from('signature'),
+        certificates: undefined,
+      };
+
+      const signer = jest
+        .fn()
+        .mockResolvedValue(sigMaterial) satisfies SignerFunc;
+
+      const subject = new CallbackSigner({ signer });
+
+      it('returns a signature', async () => {
+        await expect(subject.sign(data)).rejects.toThrowWithCode(
+          SignatureError,
+          'MISSING_PUBLIC_KEY_ERROR'
+        );
+      });
+    });
   });
 });

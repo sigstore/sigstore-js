@@ -1,10 +1,98 @@
+/*
+Copyright 2023 The Sigstore Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 import { SubjectAlternativeNameType } from '@sigstore/protobuf-specs';
 import {
-  artifactVerificationOptions,
-  IdentityProviderOptions,
-  identityProviders,
+  DSSEBundleBuilder,
+  MessageSignatureBundleBuilder,
+} from '@sigstore/sign';
+import {
   VerifyOptions,
+  artifactVerificationOptions,
+  createBundleBuilder,
 } from '../config';
+
+describe('createBundleBuilder', () => {
+  describe('when the bundleType is messageSignature', () => {
+    const bundleType = 'messageSignature';
+
+    describe('when a custom signer is provided', () => {
+      const options = { signer: jest.fn() };
+
+      it('returns a MessageSignatureBundleBuilder', () => {
+        const bundler = createBundleBuilder(bundleType, options);
+        expect(bundler).toBeInstanceOf(MessageSignatureBundleBuilder);
+      });
+    });
+
+    describe('when a custom signer is NOT provided', () => {
+      describe('when a hard-coded OIDC token is provided', () => {
+        const options = { identityToken: 'abc' };
+        it('returns a MessageSignatureBundleBuilder', () => {
+          const bundler = createBundleBuilder(bundleType, options);
+          expect(bundler).toBeInstanceOf(MessageSignatureBundleBuilder);
+        });
+      });
+
+      describe('when an OIDC issuer is provided', () => {
+        const options = {
+          oidcIssuer: 'https://example.com',
+          oidcClientID: 'abc',
+        };
+        it('returns a MessageSignatureBundleBuilder', () => {
+          const bundler = createBundleBuilder(bundleType, options);
+          expect(bundler).toBeInstanceOf(MessageSignatureBundleBuilder);
+        });
+      });
+
+      describe('when no OIDC options are provided', () => {
+        it('returns a MessageSignatureBundleBuilder', () => {
+          const bundler = createBundleBuilder(bundleType, {});
+          expect(bundler).toBeInstanceOf(MessageSignatureBundleBuilder);
+        });
+      });
+    });
+
+    describe('when Rekor is disabled', () => {
+      const options = { tlogUpload: false };
+
+      it('returns a MessageSignatureBundleBuilder', () => {
+        const bundler = createBundleBuilder(bundleType, options);
+        expect(bundler).toBeInstanceOf(MessageSignatureBundleBuilder);
+      });
+    });
+
+    describe('when TSA is enabled', () => {
+      const options = { tsaServerURL: 'https://tsa.example.com' };
+
+      it('returns a MessageSignatureBundleBuilder', () => {
+        const bundler = createBundleBuilder(bundleType, options);
+        expect(bundler).toBeInstanceOf(MessageSignatureBundleBuilder);
+      });
+    });
+  });
+
+  describe('when the bundleType is dsseEnvelope', () => {
+    const bundleType = 'dsseEnvelope';
+
+    it('returns a MessageSignatureBundleBuilder', () => {
+      const bundler = createBundleBuilder(bundleType, {});
+      expect(bundler).toBeInstanceOf(DSSEBundleBuilder);
+    });
+  });
+});
 
 describe('artifactVerificationOptions', () => {
   describe('when no certificate issuer is provided', () => {
@@ -176,49 +264,6 @@ describe('artifactVerificationOptions', () => {
       expect(
         result.signers.certificateIdentities.identities[0].oids?.[1].value
       ).toEqual(Buffer.from('value2'));
-    });
-  });
-});
-
-describe('identityProvider', () => {
-  describe('when no options are supplied', () => {
-    const options: IdentityProviderOptions = {};
-
-    it('returns the static IdentityProvider', async () => {
-      const result = identityProviders(options);
-      expect(result).toBeDefined();
-      expect(result).toHaveLength(1);
-
-      const { getToken } = result[0];
-      await expect(getToken()).rejects.toThrowError();
-    });
-  });
-
-  describe('when a static token is provided', () => {
-    const options: IdentityProviderOptions = {
-      identityToken: 'token',
-    };
-
-    it('returns the CI IdentityProvider', async () => {
-      const result = identityProviders(options);
-      expect(result).toBeDefined();
-      expect(result).toHaveLength(1);
-
-      const { getToken } = result[0];
-      await expect(getToken()).resolves.toEqual(options.identityToken);
-    });
-  });
-
-  describe('when OAuth config options are provided', () => {
-    const options: IdentityProviderOptions = {
-      oidcIssuer: 'https://example.com',
-      oidcClientID: 'client-id',
-    };
-
-    it('returns both the CI and OAuth IdentityProviders', async () => {
-      const result = identityProviders(options);
-      expect(result).toBeDefined();
-      expect(result).toHaveLength(2);
     });
   });
 });

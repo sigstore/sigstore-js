@@ -13,10 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { CIContextProvider } from './ci';
+import { IdentityProvider } from '@sigstore/sign';
 import { Issuer } from './issuer';
 import { OAuthProvider } from './oauth';
-import { Provider } from './provider';
 
 /**
  * oauthProvider returns a new Provider instance which attempts to retrieve
@@ -25,14 +24,14 @@ import { Provider } from './provider';
  * @param issuer Base URL of the issuer
  * @param clientID Client ID for the issuer
  * @param clientSecret Client secret for the issuer (optional)
- * @returns {Provider}
+ * @returns {IdentityProvider}
  */
 function oauthProvider(options: {
   issuer: string;
   clientID: string;
   clientSecret?: string;
   redirectURL?: string;
-}): Provider {
+}): IdentityProvider {
   return new OAuthProvider({
     issuer: new Issuer(options.issuer),
     clientID: options.clientID,
@@ -41,20 +40,6 @@ function oauthProvider(options: {
   });
 }
 
-/**
- * ciContextProvider returns a new Provider instance which attempts to retrieve
- * an identity token from the CI context.
- *
- * @param audience audience claim for the generated token
- * @returns {Provider}
- */
-function ciContextProvider(audience = 'sigstore'): Provider {
-  return new CIContextProvider(audience);
-}
-
 export default {
-  ciContextProvider,
   oauthProvider,
 };
-
-export { Provider } from './provider';

@@ -27,7 +27,7 @@ import type {
   ProposedEntry,
   ProposedHashedRekordEntry,
   ProposedIntotoEntry,
-} from '../../external/rekor';
+} from '@sigstore/rekor-types';
 
 const TLOG_MISMATCH_ERROR_MSG = 'bundle content and tlog entry do not match';
 
