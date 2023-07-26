@@ -146,7 +146,7 @@ describe('BaseBundleBuilder', () => {
 
         expect(bundle).toBeTruthy();
         expect(bundle.mediaType).toEqual(
-          'application/vnd.dev.sigstore.bundle+json;version=0.1'
+          'application/vnd.dev.sigstore.bundle+json;version=0.2'
         );
         expect(bundle.content).toBeTruthy();
         expect(bundle.verificationMaterial).toBeTruthy();
@@ -238,7 +238,7 @@ describe('BaseBundleBuilder', () => {
 
         expect(bundle).toBeTruthy();
         expect(bundle.mediaType).toEqual(
-          'application/vnd.dev.sigstore.bundle+json;version=0.1'
+          'application/vnd.dev.sigstore.bundle+json;version=0.2'
         );
         expect(bundle.content).toBeTruthy();
         expect(bundle.verificationMaterial).toBeTruthy();

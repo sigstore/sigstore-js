@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { HashAlgorithm } from '@sigstore/protobuf-specs';
-import { BUNDLE_V01_MEDIA_TYPE } from './bundle';
+import { BUNDLE_V02_MEDIA_TYPE } from './bundle';
 
 import type { Envelope, Signature } from '@sigstore/protobuf-specs';
 import type {
@@ -46,7 +46,7 @@ export function toMessageSignatureBundle(
   options: MessageSignatureBundleOptions
 ): BundleWithMessageSignature {
   return {
-    mediaType: BUNDLE_V01_MEDIA_TYPE,
+    mediaType: BUNDLE_V02_MEDIA_TYPE,
     content: {
       $case: 'messageSignature',
       messageSignature: {
@@ -67,7 +67,7 @@ export function toDSSEBundle(
   options: DSSEBundleOptions
 ): BundleWithDsseEnvelope {
   return {
-    mediaType: BUNDLE_V01_MEDIA_TYPE,
+    mediaType: BUNDLE_V02_MEDIA_TYPE,
     content: {
       $case: 'dsseEnvelope',
       dsseEnvelope: toEnvelope(options),
