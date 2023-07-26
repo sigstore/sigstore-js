@@ -50,7 +50,7 @@ export async function mockFulcio(options: FulcioOptions = {}) {
 export async function mockRekor(options: RekorOptions = {}) {
   const url = options.baseURL || DEFAULT_REKOR_URL;
   const strict = options.strict ?? true;
-  const handler = await initializeTLog().then((tlog) =>
+  const handler = await initializeTLog(url).then((tlog) =>
     rekorHandler(tlog, { strict })
   );
   mock(url, handler);
@@ -67,11 +67,11 @@ export async function mockTSA(options: TSAOptions = {}) {
 
 export type { HandlerFn } from './shared.types';
 export {
+  fulcioHandler,
   initializeCA,
   initializeCTLog,
   initializeTLog,
   initializeTSA,
-  fulcioHandler,
   rekorHandler,
   tsaHandler,
 };
