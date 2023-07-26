@@ -13,19 +13,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { createDSSEEnvelope } from '../sigstore-utils';
+import { envelopeToJSON } from '@sigstore/bundle';
+import { mockRekor } from '@sigstore/mock';
+import { createDSSEEnvelope, createRekorEntry } from '../sigstore-utils';
 import { dsse } from '../util';
 
-describe('createDSSEEnvelope', () => {
-  const payload = Buffer.from('Hello, world!');
-  const payloadType = 'text/plain';
-  const sigMaterial = {
-    key: {
-      id: 'sha256-1234',
-    },
-    signature: Buffer.from('abc'),
-  };
+const payload = Buffer.from('Hello, world!');
+const payloadType = 'text/plain';
+const sigMaterial = {
+  key: {
+    id: 'sha256-1234',
+    value: 'key',
+  },
+  signature: Buffer.from('abc'),
+};
 
+describe('createDSSEEnvelope', () => {
   const mockSign = jest.fn();
   const options = {
     signer: mockSign,
@@ -63,5 +66,44 @@ describe('createDSSEEnvelope', () => {
         },
       ],
     });
+  });
+});
+
+describe('createRekorEntry', () => {
+  const rekorURL = 'https://rekor.example.com';
+
+  const envelope = envelopeToJSON({
+    payloadType,
+    payload,
+    signatures: [
+      {
+        keyid: 'sha256-1234',
+        sig: Buffer.from('deadbeef', 'hex'),
+      },
+    ],
+  });
+
+  beforeEach(async () => {
+    await mockRekor({ baseURL: rekorURL });
+  });
+
+  it('returns a bundle', async () => {
+    const bundle = await createRekorEntry(envelope, 'foo', { rekorURL });
+
+    expect(bundle).toBeDefined();
+    expect(bundle.dsseEnvelope?.payloadType).toBe(payloadType);
+    expect(bundle.dsseEnvelope?.payload).toBe(payload.toString('base64'));
+    expect(bundle.dsseEnvelope?.signatures).toHaveLength(1);
+
+    expect(bundle.verificationMaterial.publicKey?.hint).toBe('sha256-1234');
+
+    expect(bundle.verificationMaterial.tlogEntries).toHaveLength(1);
+    expect(bundle.verificationMaterial.tlogEntries[0].kindVersion?.kind).toBe(
+      'intoto'
+    );
+
+    expect(
+      bundle.verificationMaterial.timestampVerificationData
+    ).toBeUndefined();
   });
 });

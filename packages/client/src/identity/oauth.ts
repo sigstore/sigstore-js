@@ -19,10 +19,10 @@ import http from 'http';
 import fetch from 'make-fetch-happen';
 import { AddressInfo, Socket } from 'net';
 import { URL, URLSearchParams } from 'url';
-
 import { crypto, encoding as enc } from '../util';
 import { Issuer } from './issuer';
-import { Provider } from './provider';
+
+import type { IdentityProvider } from '@sigstore/sign';
 
 interface OAuthProviderOptions {
   issuer: Issuer;
@@ -31,7 +31,7 @@ interface OAuthProviderOptions {
   redirectURL?: string;
 }
 
-export class OAuthProvider implements Provider {
+export class OAuthProvider implements IdentityProvider {
   private clientID: string;
   private clientSecret: string;
   private issuer: Issuer;
@@ -198,7 +198,7 @@ export class OAuthProvider implements Provider {
   // Open the supplied URL in the user's default browser
   private async openURL(url: string) {
     return new Promise<void>((resolve, reject) => {
-      let open = null;
+      let open: string | null = null;
       let command = `"${url}"`;
       switch (process.platform) {
         case 'darwin':

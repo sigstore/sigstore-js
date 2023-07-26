@@ -32,12 +32,14 @@
   "devDependencies": {
     "@sigstore/rekor-types": "^1.0.0",
     "@sigstore/jest": "^0.0.0",
+    "@sigstore/mock": "^0.1.1",
     "@tufjs/repo-mock": "^1.1.0",
     "@types/make-fetch-happen": "^10.0.0"
   },
   "dependencies": {
     "@sigstore/bundle": "^1.0.0",
     "@sigstore/protobuf-specs": "^0.2.0",
+    "@sigstore/sign": "^0.0.0",
     "@sigstore/tuf": "^1.0.3",
     "make-fetch-happen": "^11.0.1"
   },

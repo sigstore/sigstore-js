@@ -20,26 +20,14 @@ import {
 } from '@sigstore/bundle';
 import * as tuf from '@sigstore/tuf';
 import * as config from './config';
-import { Signer } from './sign';
 import { Verifier } from './verify';
 
 export async function sign(
   payload: Buffer,
   options: config.SignOptions = {}
 ): Promise<SerializedBundle> {
-  const ca = config.createCAClient(options);
-  const tlog = config.createTLogClient(options);
-  const idps = config.identityProviders(options);
-  const signer = new Signer({
-    ca,
-    tlog,
-    identityProviders: options.identityProvider
-      ? [options.identityProvider]
-      : idps,
-    tlogUpload: options.tlogUpload,
-  });
-
-  const bundle = await signer.signBlob(payload);
+  const bundler = config.createBundleBuilder('messageSignature', options);
+  const bundle = await bundler.create({ data: payload });
   return bundleToJSON(bundle);
 }
 
@@ -48,21 +36,8 @@ export async function attest(
   payloadType: string,
   options: config.SignOptions = {}
 ): Promise<SerializedBundle> {
-  const ca = config.createCAClient(options);
-  const tlog = config.createTLogClient(options);
-  const tsa = config.createTSAClient(options);
-  const idps = config.identityProviders(options);
-  const signer = new Signer({
-    ca,
-    tlog,
-    tsa,
-    identityProviders: options.identityProvider
-      ? [options.identityProvider]
-      : idps,
-    tlogUpload: options.tlogUpload,
-  });
-
-  const bundle = await signer.signAttestation(payload, payloadType);
+  const bundler = config.createBundleBuilder('dsseEnvelope', options);
+  const bundle = await bundler.create({ data: payload, type: payloadType });
   return bundleToJSON(bundle);
 }
 
