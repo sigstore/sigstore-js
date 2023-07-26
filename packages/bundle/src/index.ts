@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+export { toDSSEBundle, toMessageSignatureBundle } from './build';
 export {
   BUNDLE_V01_MEDIA_TYPE,
   BUNDLE_V02_MEDIA_TYPE,

@@ -20,9 +20,11 @@ import { rekorHandler } from './handler';
 import { initializeTLog, TLog } from './tlog';
 
 describe('rekorHandler', () => {
+  const url = 'https://rekor.sigstore.dev';
+
   describe('#path', () => {
     it('returns the correct path', async () => {
-      const tlog = await initializeTLog();
+      const tlog = await initializeTLog(url);
       const handler = rekorHandler(tlog);
       expect(handler.path).toBe('/api/v1/log/entries');
     });
@@ -30,7 +32,7 @@ describe('rekorHandler', () => {
 
   describe('#fn', () => {
     it('returns a function', async () => {
-      const tlog = await initializeTLog();
+      const tlog = await initializeTLog(url);
       const handler = rekorHandler(tlog);
       expect(handler.fn).toBeInstanceOf(Function);
     });
@@ -42,7 +44,7 @@ describe('rekorHandler', () => {
       };
 
       it('returns a tlog entry', async () => {
-        const tlog = await initializeTLog();
+        const tlog = await initializeTLog(url);
         const { fn } = rekorHandler(tlog);
 
         const resp = await fn(JSON.stringify(proposedEntry));
@@ -69,7 +71,7 @@ describe('rekorHandler', () => {
         ).toEqual(proposedEntry);
         expect(entry.integratedTime).toBeGreaterThan(0);
         expect(entry.logID).toBe(logID);
-        expect(entry.logIndex).toBeGreaterThan(0);
+        expect(entry.logIndex).toBe(0);
         expect(entry.verification).toBeDefined();
         expect(entry.verification?.signedEntryTimestamp).toBeDefined();
       });
