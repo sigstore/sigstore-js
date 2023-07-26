@@ -52,6 +52,8 @@ import {
   isBundleWithDsseEnvelope,
   isBundleWithMessageSignature,
   isBundleWithPublicKey,
+  toDSSEBundle,
+  toMessageSignatureBundle,
 } from '../index';
 
 describe('public interface', () => {
@@ -127,6 +129,11 @@ describe('public interface', () => {
 
     const x509CertificateChain: X509CertificateChain = fromPartial({});
     expect(x509CertificateChain).toBeDefined();
+  });
+
+  it('exports bundle construction functions', () => {
+    expect(toDSSEBundle).toBeDefined();
+    expect(toMessageSignatureBundle).toBeDefined();
   });
 
   it('exports type guard functions', () => {
