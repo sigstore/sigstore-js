@@ -23,48 +23,43 @@ type InclusionProof = NonNullable<
   LogEntry['x']['verification']
 >['inclusionProof'];
 
-const EMPTY_INCLUSION_PROOF: InclusionProof = {
-  checkpoint: '',
-  hashes: [],
-  logIndex: 0,
-  rootHash: '',
-  treeSize: 0,
-};
-
 export interface TLog {
   publicKey: Buffer;
   log(proposedEntry: object): Promise<LogEntry>;
 }
 
-export async function initializeTLog(): Promise<TLog> {
+export async function initializeTLog(url: string): Promise<TLog> {
+  const host = new URL(url).host;
   const { publicKey, privateKey } = crypto.generateKeyPairSync('ec', {
     namedCurve: 'P-256',
   });
 
-  return new TLogImpl(publicKey, privateKey);
+  return new TLogImpl(host, publicKey, privateKey);
 }
 
 class TLogImpl implements TLog {
   public readonly publicKey: Buffer;
   private readonly privateKey: crypto.KeyObject;
+  private readonly host: string;
 
-  constructor(publicKey: crypto.KeyObject, privateKey: crypto.KeyObject) {
+  constructor(
+    host: string,
+    publicKey: crypto.KeyObject,
+    privateKey: crypto.KeyObject
+  ) {
+    this.host = host;
     this.privateKey = privateKey;
     this.publicKey = publicKey.export({ format: 'der', type: 'spki' });
   }
 
   public async log(proposedEntry: object): Promise<LogEntry> {
+    const logIndex = 0;
+    const treeSize = 1;
+    const treeID = crypto.randomInt(0, 2 ** 48 - 1);
     const uuid = crypto.randomBytes(32).toString('hex');
     const timestamp = Math.floor(Date.now() / 1000);
-    const logID = crypto
-      .createHash('sha256')
-      .update(this.publicKey)
-      .digest()
-      .toString('hex');
+    const logID = crypto.createHash('sha256').update(this.publicKey).digest();
     const body = canonicalize(proposedEntry);
-
-    // Random number for logIndex
-    const logIndex = Math.floor(Math.random() * 9000000) + 1000000;
 
     // Calculate SET
     // https://github.com/sigstore/rekor/blob/9eb7ec628a41ffed291b605a57e716e86ef0d680/pkg/api/entries.go#L71
@@ -72,19 +67,59 @@ class TLogImpl implements TLog {
       body: body,
       integratedTime: timestamp,
       logIndex: logIndex,
-      logID: logID,
+      logID: logID.toString('hex'),
     };
     const setBuffer = Buffer.from(canonicalize(setData)!, 'utf8');
     const set = crypto.sign('sha256', setBuffer, this.privateKey);
+
+    // Calculate inclusion proof assuming that the entry being added is the first
+    // entry in the log.
+    const leafHash = crypto
+      .createHash('sha256')
+      .update(Buffer.from([0x00]))
+      .update(body!)
+      .digest();
+    const rootHash = crypto
+      .createHash('sha256')
+      .update(Buffer.from([0x01]))
+      .update(leafHash)
+      .update(leafHash)
+      .digest();
+
+    // Construct checkpoint note
+    // https://github.com/sigstore/rekor/blob/2bd83dacf5a302da83ab4eaf20ff7ad119cb6c11/pkg/util/signed_note.go
+    const note = [
+      `${this.host} - ${treeID}`,
+      `${treeSize}`,
+      rootHash.toString('base64'),
+      `Timestamp: ${timestamp * 1_000_000_000}`,
+      '',
+    ].join('\n');
+
+    // Calculate checkpoint signature
+    const sig = crypto.sign('sha256', Buffer.from(note), this.privateKey);
+    const hintAndSig = Buffer.concat([logID.subarray(0, 4), sig]);
+    const sigLine = `\u2014 ${this.host} ${hintAndSig.toString('base64')}`;
+
+    // Assemble checkpoint from note and signature
+    const checkpoint = [note, sigLine, ''].join('\n');
+
+    const proof: InclusionProof = {
+      logIndex: logIndex,
+      treeSize: treeSize,
+      checkpoint,
+      hashes: [leafHash.toString('hex')],
+      rootHash: rootHash.toString('hex'),
+    };
 
     return {
       [uuid]: {
         body: Buffer.from(body!).toString('base64'),
         integratedTime: timestamp,
-        logID: logID,
+        logID: logID.toString('hex'),
         logIndex: logIndex,
         verification: {
-          inclusionProof: EMPTY_INCLUSION_PROOF,
+          inclusionProof: proof,
           signedEntryTimestamp: set.toString('base64'),
         },
       },
