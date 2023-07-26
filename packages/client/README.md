@@ -20,6 +20,123 @@ and verify any file.
 npm install sigstore
 ```
 
+## Compatibility
+
+The following table documents which combinations of Sigstore bundle versions
+and Rekor types can be verified by different versions of the `sigstore`
+library. It also lists which `sigstore` versions were shipped with different
+`npm` CLI versions.
+
+<table>
+  <thead>
+    <tr>
+      <th colspan=2><code>sigstore</code></th>
+      <th>1.0</th>
+      <th>1.1</th>
+      <th>1.2</th>
+      <th>1.3</th>
+      <th>1.4</th>
+      <th>1.5</th>
+      <th>1.6</th>
+      <th>1.7</th>
+      <th>1.8</th>
+    </tr>
+    <tr>
+      <th colspan=2><code>npm</code></th>
+      <th>9.5.0</th>
+      <th>9.6.2</th>
+      <th>9.6.3</th>
+      <th>9.6.5</th>
+      <th>9.6.6</th>
+      <th>9.6.7</th>
+      <th>9.7.2</th>
+      <th>9.8.0</th>
+      <th></th>
+    </tr>
+    <tr>
+      <th>Bundle Version</th>
+      <th>Rekor Type</th>
+      <th colspan=9></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan=3>0.1</td>
+      <td>hashedrekord</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+    </tr>
+    <tr>
+      <td>intoto</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+    </tr>
+    <tr>
+      <td>dsse</td>
+      <td>:x:</td>
+      <td>:x:</td>
+      <td>:x:</td>
+      <td>:x:</td>
+      <td>:x:</td>
+      <td>:x:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+    </tr>
+    <tr>
+      <td rowspan=3>0.2</td>
+      <td>hashedrekord</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+    </tr>
+    <tr>
+      <td>intoto</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+    </tr>
+    <tr>
+      <td>dsse</td>
+      <td>:x:</td>
+      <td>:x:</td>
+      <td>:x:</td>
+      <td>:x:</td>
+      <td>:x:</td>
+      <td>:x:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+      <td>:white_check_mark:</td>
+    </tr>
+  </tbody>
+</table>
+
 ## Usage
 
 ```javascript
