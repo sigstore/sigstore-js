@@ -14,15 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import {
-  BUNDLE_V01_MEDIA_TYPE,
-  Bundle,
   SerializedBundle,
   SerializedEnvelope,
   bundleToJSON,
   envelopeFromJSON,
   envelopeToJSON,
+  toDSSEBundle,
 } from '@sigstore/bundle';
-import { RekorWitness, SignatureBundle } from '@sigstore/sign';
+import { RekorWitness } from '@sigstore/sign';
 import {
   DEFAULT_REKOR_URL,
   DEFAULT_RETRY,
@@ -56,10 +55,12 @@ export async function createRekorEntry(
   options: SignOptions = {}
 ): Promise<SerializedBundle> {
   const envelope = envelopeFromJSON(dsseEnvelope);
-  const content: SignatureBundle = {
-    $case: 'dsseEnvelope',
-    dsseEnvelope: envelope,
-  };
+  const bundle = toDSSEBundle({
+    artifact: envelope.payload,
+    artifactType: envelope.payloadType,
+    signature: envelope.signatures[0].sig,
+    keyHint: envelope.signatures[0].keyid,
+  });
 
   const tlog = new RekorWitness({
     rekorBaseURL:
@@ -69,20 +70,11 @@ export async function createRekorEntry(
     timeout: options.timeout ?? DEFAULT_TIMEOUT,
   });
 
-  const vm = await tlog.testify(content, publicKey);
+  // Add entry to transparency log
+  const vm = await tlog.testify(bundle.content, publicKey);
 
-  const bundle: Bundle = {
-    mediaType: BUNDLE_V01_MEDIA_TYPE,
-    content,
-    verificationMaterial: {
-      content: {
-        $case: 'publicKey',
-        publicKey: { hint: dsseEnvelope.signatures[0].keyid },
-      },
-      timestampVerificationData: undefined,
-      tlogEntries: [...vm.tlogEntries],
-    },
-  };
+  // Add transparency log entries to bundle
+  bundle.verificationMaterial.tlogEntries = [...vm.tlogEntries];
 
   return bundleToJSON(bundle);
 }

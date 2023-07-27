@@ -103,7 +103,7 @@ describe('createRekorEntry', () => {
     );
 
     expect(
-      bundle.verificationMaterial.timestampVerificationData
-    ).toBeUndefined();
+      bundle.verificationMaterial.timestampVerificationData?.rfc3161Timestamps
+    ).toHaveLength(0);
   });
 });
