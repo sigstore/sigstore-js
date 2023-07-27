@@ -88,13 +88,21 @@ function chainBorderRight(seed: Buffer, hashes: Buffer[]): Buffer {
 }
 
 function innerProofSize(index: bigint, size: bigint): number {
-  return (index ^ (size - BigInt(1))).toString(2).length;
+  return bitLength(index ^ (size - BigInt(1)));
 }
 
 // Counts the number of ones in the binary representation of the given number.
 // https://en.wikipedia.org/wiki/Hamming_weight
 function onesCount(x: bigint): number {
   return x.toString(2).split('1').length - 1;
+}
+
+// Returns the number of bits necessary to represent an integer in binary.
+function bitLength(n: bigint): number {
+  if (n === 0n) {
+    return 0;
+  }
+  return n.toString(2).length;
 }
 
 // Hashing logic according to RFC6962.
