@@ -53,16 +53,44 @@ class TLogImpl implements TLog {
   }
 
   public async log(proposedEntry: object): Promise<LogEntry> {
-    const logIndex = 0;
-    const treeSize = 1;
-    const treeID = crypto.randomInt(0, 2 ** 48 - 1);
-    const uuid = crypto.randomBytes(32).toString('hex');
-    const timestamp = Math.floor(Date.now() / 1000);
     const logID = crypto.createHash('sha256').update(this.publicKey).digest();
-    const body = canonicalize(proposedEntry);
+    const logIndex = crypto.randomInt(10_000_000);
+    const timestamp = Math.floor(Date.now() / 1000);
+    const body = canonicalize(proposedEntry)!;
 
-    // Calculate SET
-    // https://github.com/sigstore/rekor/blob/9eb7ec628a41ffed291b605a57e716e86ef0d680/pkg/api/entries.go#L71
+    const entry = { logID, logIndex, timestamp, body };
+    const set = this.calculateSET(entry);
+    const proof = this.calculateInclusionProof(entry);
+
+    const uuid = crypto.randomBytes(32).toString('hex');
+
+    return {
+      [uuid]: {
+        body: Buffer.from(body).toString('base64'),
+        integratedTime: timestamp,
+        logID: logID.toString('hex'),
+        logIndex: logIndex,
+        verification: {
+          inclusionProof: proof,
+          signedEntryTimestamp: set.toString('base64'),
+        },
+      },
+    };
+  }
+
+  // Compute the Signed Entry Timestamp (SET) for the given entry.
+  // https://github.com/sigstore/rekor/blob/9eb7ec628a41ffed291b605a57e716e86ef0d680/pkg/api/entries.go#L71
+  private calculateSET({
+    body,
+    timestamp,
+    logIndex,
+    logID,
+  }: {
+    body: string;
+    timestamp: number;
+    logIndex: number;
+    logID: Buffer;
+  }): Buffer {
     const setData = {
       body: body,
       integratedTime: timestamp,
@@ -70,24 +98,31 @@ class TLogImpl implements TLog {
       logID: logID.toString('hex'),
     };
     const setBuffer = Buffer.from(canonicalize(setData)!, 'utf8');
-    const set = crypto.sign('sha256', setBuffer, this.privateKey);
+    return crypto.sign('sha256', setBuffer, this.privateKey);
+  }
 
-    // Calculate inclusion proof assuming that the entry being added is the first
-    // entry in the log.
-    const leafHash = crypto
-      .createHash('sha256')
-      .update(Buffer.from([0x00]))
-      .update(body!)
-      .digest();
+  // Calculate inclusion proof assuming that the entry being added is the
+  // first and only entry in the log.
+  // https://github.com/sigstore/rekor/blob/2bd83dacf5a302da83ab4eaf20ff7ad119cb6c11/pkg/util/signed_note.go
+  private calculateInclusionProof({
+    body,
+    timestamp,
+    logID,
+  }: {
+    body: string;
+    timestamp: number;
+    logID: Buffer;
+  }): InclusionProof {
+    const treeSize = 1;
+    const treeID = crypto.randomInt(2 ** 48 - 1);
+
     const rootHash = crypto
       .createHash('sha256')
-      .update(Buffer.from([0x01]))
-      .update(leafHash)
-      .update(leafHash)
+      .update(Buffer.from([0x00]))
+      .update(body)
       .digest();
 
     // Construct checkpoint note
-    // https://github.com/sigstore/rekor/blob/2bd83dacf5a302da83ab4eaf20ff7ad119cb6c11/pkg/util/signed_note.go
     const note = [
       `${this.host} - ${treeID}`,
       `${treeSize}`,
@@ -104,25 +139,12 @@ class TLogImpl implements TLog {
     // Assemble checkpoint from note and signature
     const checkpoint = [note, sigLine, ''].join('\n');
 
-    const proof: InclusionProof = {
-      logIndex: logIndex,
+    return {
+      logIndex: 0,
       treeSize: treeSize,
       checkpoint,
-      hashes: [leafHash.toString('hex')],
+      hashes: [],
       rootHash: rootHash.toString('hex'),
-    };
-
-    return {
-      [uuid]: {
-        body: Buffer.from(body!).toString('base64'),
-        integratedTime: timestamp,
-        logID: logID.toString('hex'),
-        logIndex: logIndex,
-        verification: {
-          inclusionProof: proof,
-          signedEntryTimestamp: set.toString('base64'),
-        },
-      },
     };
   }
 }
