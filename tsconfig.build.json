@@ -9,6 +9,7 @@
     { "path": "packages/rekor-types" },
     { "path": "packages/jest" },
     { "path": "packages/jest-types" },
+    { "path": "packages/server" },
     { "path": "packages/tuf" }
   ]
 }
