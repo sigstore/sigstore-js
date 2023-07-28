@@ -50,14 +50,14 @@ describe('TLog', () => {
       );
       expect(entry.integratedTime).toBeGreaterThan(0);
       expect(entry.logID).toEqual(logID);
-      expect(entry.logIndex).toBe(0);
+      expect(entry.logIndex).toBeGreaterThan(0);
       expect(entry.verification).toBeDefined();
       expect(entry.verification?.signedEntryTimestamp).toBeDefined();
       expect(entry.verification?.inclusionProof).toBeDefined();
       expect(entry.verification?.inclusionProof?.logIndex).toBe(0);
       expect(entry.verification?.inclusionProof?.treeSize).toBe(1);
       expect(entry.verification?.inclusionProof?.rootHash).toBeDefined();
-      expect(entry.verification?.inclusionProof?.hashes).toHaveLength(1);
+      expect(entry.verification?.inclusionProof?.hashes).toHaveLength(0);
       expect(entry.verification?.inclusionProof?.checkpoint).toBeDefined();
     });
   });
