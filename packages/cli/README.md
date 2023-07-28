@@ -9,7 +9,7 @@ $ npm install -g @sigstore/cli
 $ sigstore COMMAND
 running command...
 $ sigstore (--version)
-@sigstore/cli/0.0.5 darwin-arm64 node-v18.12.1
+@sigstore/cli/0.1.1 darwin-arm64 node-v18.12.1
 $ sigstore --help [COMMAND]
 USAGE
   $ sigstore COMMAND
@@ -29,23 +29,24 @@ attest the supplied file
 ```
 USAGE
   $ sigstore attest FILE [--json] [--fulcio-url <value>] [--rekor-url <value>] [--tsa-server-url <value>]
-    [--tlog-upload] [--oidc-client-id <value>] [--oidc-issuer <value>] [--oidc-redirect-url <value>] [-t <value>] [-o
-    <value>]
+    [--tlog-upload] [--oidc-client-id <value>] [--oidc-client-secret <value>] [--oidc-issuer <value>]
+    [--oidc-redirect-url <value>] [-t <value>] [-o <value>]
 
 ARGUMENTS
   FILE  file to attest
 
 FLAGS
-  -o, --output-file=<value>    write output to file
-  -t, --payload-type=<value>   [default: application/vnd.in-toto+json] MIME or content type to apply to the DSSE
-                               envelope
-  --fulcio-url=<value>         [default: https://fulcio.sigstore.dev] URL to the Sigstore PKI server
-  --oidc-client-id=<value>     [default: sigstore] OIDC client ID for application
-  --oidc-issuer=<value>        [default: https://oauth2.sigstore.dev/auth] OIDC provider to be used to issue ID token
-  --oidc-redirect-url=<value>  OIDC redirect URL
-  --rekor-url=<value>          [default: https://rekor.sigstore.dev] URL to the Rekor transparency log
-  --[no-]tlog-upload           whether or not to upload entry to the transparency log
-  --tsa-server-url=<value>     URL to the Timestamping Authority
+  -o, --output-file=<value>     write output to file
+  -t, --payload-type=<value>    [default: application/vnd.in-toto+json] MIME or content type to apply to the DSSE
+                                envelope
+  --fulcio-url=<value>          [default: https://fulcio.sigstore.dev] URL to the Sigstore PKI server
+  --oidc-client-id=<value>      [default: sigstore] OIDC client ID for application
+  --oidc-client-secret=<value>  OIDC client secret for application
+  --oidc-issuer=<value>         [default: https://oauth2.sigstore.dev/auth] OIDC provider to be used to issue ID token
+  --oidc-redirect-url=<value>   OIDC redirect URL
+  --rekor-url=<value>           [default: https://rekor.sigstore.dev] URL to the Rekor transparency log
+  --[no-]tlog-upload            whether or not to upload entry to the transparency log
+  --tsa-server-url=<value>      URL to the Timestamping Authority
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -57,7 +58,7 @@ EXAMPLES
   $ sigstore attest ./statement.json
 ```
 
-_See code: [dist/commands/attest.ts](https://github.com/sigstore/sigstore-js/blob/v0.0.5/dist/commands/attest.ts)_
+
 
 ## `sigstore help [COMMANDS]`
 
@@ -77,7 +78,7 @@ DESCRIPTION
   Display help for sigstore.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.9/src/commands/help.ts)_
+
 
 ## `sigstore verify BUNDLE`
 
@@ -104,5 +105,5 @@ EXAMPLES
   $ sigstore verify ./bundle.sigstore
 ```
 
-_See code: [dist/commands/verify.ts](https://github.com/sigstore/sigstore-js/blob/v0.0.5/dist/commands/verify.ts)_
+
 <!-- commandsstop -->
