@@ -56,7 +56,7 @@ class TLogImpl implements TLog {
     const logID = crypto.createHash('sha256').update(this.publicKey).digest();
     const logIndex = crypto.randomInt(10_000_000);
     const timestamp = Math.floor(Date.now() / 1000);
-    const body = canonicalize(proposedEntry)!;
+    const body = Buffer.from(canonicalize(proposedEntry)!).toString('base64');
 
     const entry = { logID, logIndex, timestamp, body };
     const set = this.calculateSET(entry);
@@ -66,7 +66,7 @@ class TLogImpl implements TLog {
 
     return {
       [uuid]: {
-        body: Buffer.from(body).toString('base64'),
+        body: body,
         integratedTime: timestamp,
         logID: logID.toString('hex'),
         logIndex: logIndex,
