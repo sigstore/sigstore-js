@@ -6,10 +6,10 @@
     { "path": "packages/client" },
     { "path": "packages/conformance" },
     { "path": "packages/mock" },
+    { "path": "packages/mock-server" },
     { "path": "packages/rekor-types" },
     { "path": "packages/jest" },
     { "path": "packages/jest-types" },
-    { "path": "packages/server" },
     { "path": "packages/tuf" }
   ]
 }

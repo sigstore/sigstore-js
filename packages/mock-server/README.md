@@ -1,4 +1,4 @@
-# @sigstore/server
+# @sigstore/mock-server
 
 HTTP server which provides mocked versions of the core Sigstore services:
 Fulcio, Rekor, and Timestamp Authority. This is for testing purposes only and
