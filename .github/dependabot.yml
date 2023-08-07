@@ -13,6 +13,10 @@ updates:
         - "eslint*"
         - "@typescript-eslint/*"
         - "prettier"
+    oclif:
+      patterns:
+        - "oclif"
+        - "@oclif/*"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
