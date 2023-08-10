@@ -1,5 +1,22 @@
 # sigstore
 
+## 1.9.0
+
+### Minor Changes
+
+- 75ba6cd: Integrate `@sigstore/sign` package
+- e44f05c: Use bundle construction helpers from `@sigstore/bundle` package
+
+### Patch Changes
+
+- 9b8c140: Fix bug in inclusion proof verification
+- Updated dependencies [fe31654]
+- Updated dependencies [5de42a0]
+- Updated dependencies [84eee0b]
+- Updated dependencies [abcebbf]
+  - @sigstore/sign@1.0.0
+  - @sigstore/bundle@1.1.0
+
 ## 1.8.0
 
 ### Minor Changes

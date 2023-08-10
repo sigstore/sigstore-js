@@ -1,5 +1,11 @@
 # @sigstore/bundle
 
+## 1.1.0
+
+### Minor Changes
+
+- 84eee0b: Move bundle construction helpers to the `@sigstore/bundle` package.
+
 ## 1.0.0
 
 ### Major Changes

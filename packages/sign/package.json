@@ -1,6 +1,6 @@
 {
   "name": "@sigstore/sign",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Sigstore signing library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,12 +27,12 @@
   },
   "devDependencies": {
     "@sigstore/jest": "^0.0.0",
-    "@sigstore/mock": "^0.1.0",
+    "@sigstore/mock": "^0.2.0",
     "@sigstore/rekor-types": "^1.0.0",
     "@types/make-fetch-happen": "^10.0.0"
   },
   "dependencies": {
-    "@sigstore/bundle": "^1.0.0",
+    "@sigstore/bundle": "^1.1.0",
     "@sigstore/protobuf-specs": "^0.2.0",
     "make-fetch-happen": "^11.0.1"
   },
