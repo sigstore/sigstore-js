@@ -1,5 +1,15 @@
 # @sigstore/cli
 
+## 0.1.2
+
+### Patch Changes
+
+- a322817: Bump @oclif/color from 1.0.9 to 1.0.10
+- Updated dependencies [75ba6cd]
+- Updated dependencies [e44f05c]
+- Updated dependencies [9b8c140]
+  - sigstore@1.9.0
+
 ## 0.1.1
 
 ### Patch Changes
