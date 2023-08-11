@@ -226,12 +226,6 @@ internal TUF state between requests.
   * `tufCachePath` `<string>`: Absolute path to the directory to be used for caching downloaded TUF metadata and targets. Defaults to a directory named "sigstore-js" within the platform-specific application data directory.
 
 
-### utils
-
-The `utils` object contains a few internal utility functions. These are exposed
-to support the needs of specific `sigstore-js` consumers but should **NOT** be
-considered part of the stable public interface.
-
 ## CLI
 
 The `sigstore-js` library comes packaged with a basic command line interface

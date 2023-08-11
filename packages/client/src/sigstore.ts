@@ -123,7 +123,6 @@ export type {
 export type { TUF } from '@sigstore/tuf';
 export type { SignOptions, VerifyOptions } from './config';
 export { InternalError, PolicyError, VerificationError } from './error';
-export * as utils from './sigstore-utils';
 export { tufUtils as tuf };
 export const DEFAULT_FULCIO_URL = config.DEFAULT_FULCIO_URL;
 export const DEFAULT_REKOR_URL = config.DEFAULT_REKOR_URL;
