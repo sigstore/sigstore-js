@@ -232,26 +232,6 @@ The `utils` object contains a few internal utility functions. These are exposed
 to support the needs of specific `sigstore-js` consumers but should **NOT** be
 considered part of the stable public interface.
 
-## CLI
-
-The `sigstore-js` library comes packaged with a basic command line interface
-for testing and demo purposes. However, the CLI should **NOT** be considered
-part of the stable interface of the library. If you require a production-ready
-Sigstore CLI, we recommend you use [`cosign`][4].
-
-```shell
-$ npx sigstore help
-sigstore <command> <artifact>
-
-  Usage:
-
-  sigstore sign         sign an artifact
-  sigstore attest       sign an artifact using dsse (Dead Simple Signing Envelope)
-  sigstore verify       verify an artifact
-  sigstore version      print version information
-  sigstore help         print help information
-```
-
 ## Credential Sources
 
 ### GitHub Actions
