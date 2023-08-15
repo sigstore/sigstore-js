@@ -17,16 +17,15 @@ limitations under the License.
 import type { SerializedBundle } from '@sigstore/bundle';
 import { mockFulcio, mockRekor, mockTSA } from '@sigstore/mock';
 import { TrustedRoot } from '@sigstore/protobuf-specs';
-import { TUFError } from '@sigstore/tuf';
 import { fromPartial } from '@total-typescript/shoehorn';
 import mocktuf, { Target } from '@tufjs/repo-mock';
 import { PolicyError, VerificationError } from '../error';
-import { attest, createVerifier, sign, tuf, verify } from '../sigstore';
+import { attest, createVerifier, sign, verify } from '../sigstore';
 import bundles from './__fixtures__/bundles/v01';
 import bundlesV02 from './__fixtures__/bundles/v02';
 import { trustedRoot } from './__fixtures__/trust';
 
-import type { SignOptions, TUFOptions, VerifyOptions } from '../config';
+import type { SignOptions, VerifyOptions } from '../config';
 
 const fulcioURL = 'https://fulcio.example.com';
 const rekorURL = 'https://rekor.example.com';
@@ -294,44 +293,6 @@ describe('#createVerifier', () => {
       expect(() => {
         verifier.verify(bundle);
       }).toThrowError(VerificationError);
-    });
-  });
-});
-
-describe('tuf', () => {
-  let tufRepo: ReturnType<typeof mocktuf> | undefined;
-  let options: TUFOptions | undefined;
-
-  const target: Target = {
-    name: 'foo',
-    content: 'bar',
-  };
-
-  beforeEach(() => {
-    tufRepo = mocktuf(target, { metadataPathPrefix: '' });
-    options = {
-      tufMirrorURL: tufRepo.baseURL,
-      tufCachePath: tufRepo.cachePath,
-    };
-  });
-
-  afterEach(() => tufRepo?.teardown());
-
-  describe('getTarget', () => {
-    describe('when the target exists', () => {
-      it('returns the target', async () => {
-        const result = await tuf.getTarget(target.name, options);
-        expect(result).toEqual(target.content);
-      });
-    });
-
-    describe('when the target does NOT exist', () => {
-      it('throws an error', async () => {
-        await expect(tuf.getTarget('baz', options)).rejects.toThrowWithCode(
-          TUFError,
-          'TUF_FIND_TARGET_ERROR'
-        );
-      });
     });
   });
 });
