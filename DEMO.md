@@ -2,10 +2,10 @@
 
 ## Set-up
 
-Start by installing `sigstore-js`:
+Start by installing the CLI:
 
 ```shell
-$ npm install sigstore
+$ npm install -g @sigstore/cli
 ```
 
 ## Signing
@@ -19,18 +19,18 @@ $ echo "content to be signed" > artifact
 Generate a signature for the artifact with the following:
 
 ```shell
-$ npx sigstore sign artifact > bundle.sigstore
+$ sigstore attest artifact -o bundle.json
 
-Created entry at index 12842224, available at
-https://rekor.sigstore.dev/api/v1/log/entries?logIndex=12842224
+Created entry at index 30955468, available at
+https://search.sigstore.dev?logIndex=30955468
 ```
 
 You should see that a browser window is opened to the Sigstore OAuth page.
 After authenticating with one of the available idenity providers, a signature
-bundle will be generated and written to the file named "signature".
+bundle will be generated and written to the file named "bundle.json".
 
 ```shell
-$ cat bundle.sigstore | jq
+$ cat bundle.json | jq
 
 {
   "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.1",
@@ -38,72 +38,94 @@ $ cat bundle.sigstore | jq
     "x509CertificateChain": {
       "certificates": [
         {
-          "rawBytes": "MIICoDCCAiagAwIBAgIUZjkP0mPmq0ERI9O4+UkwzqcayUgwCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjMwMjA3MjAyMDQ5WhcNMjMwMjA3MjAzMDQ5WjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEOopRz43xkYXzx2p4yJlbbNilNkHeHrmnH23ax4i0jIn/wWEAt0zsRnqOgLVF1yz3jJyq6jyJDvHGv4+JQ924lqOCAUUwggFBMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUnfbpllVEqDcyeA2vzn5tX5SFBv4wHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGKBgorBgEEAdZ5AgQCBHwEegB4AHYA3T0wasbHETJjGR4cmWc3AqJKXrjePK3/h4pygC8p7o4AAAGGLYnITwAABAMARzBFAiBbkdIypZqnuZc9lSMYZ6Im5lsWprJiphdEHsN5gOkDAwIhAK75IJOx18mXlrvqXXoD/a41LGTz4kBibZOcrt6HRI/zMAoGCCqGSM49BAMDA2gAMGUCMQCpAPIPUqdBqIZB0MpcJlzYbdGWWSP61M0qe7hxjr6eDcSaaaEpBUmSgsEieLVIWC0CMDo9P4d99Gx71vIx65lGKMC5ckhwNIGzjU7LHbsd/yj2ALGmL9w37Z2GxoqE8lltwA=="
-        },
-        {
-          "rawBytes": "MIICGjCCAaGgAwIBAgIUALnViVfnU0brJasmRkHrn/UnfaQwCgYIKoZIzj0EAwMwKjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0yMjA0MTMyMDA2MTVaFw0zMTEwMDUxMzU2NThaMDcxFTATBgNVBAoTDHNpZ3N0b3JlLmRldjEeMBwGA1UEAxMVc2lnc3RvcmUtaW50ZXJtZWRpYXRlMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE8RVS/ysH+NOvuDZyPIZtilgUF9NlarYpAd9HP1vBBH1U5CV77LSS7s0ZiH4nE7Hv7ptS6LvvR/STk798LVgMzLlJ4HeIfF3tHSaexLcYpSASr1kS0N/RgBJz/9jWCiXno3sweTAOBgNVHQ8BAf8EBAMCAQYwEwYDVR0lBAwwCgYIKwYBBQUHAwMwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0jBBgwFoAUWMAeX5FFpWapesyQoZMi0CrFxfowCgYIKoZIzj0EAwMDZwAwZAIwPCsQK4DYiZYDPIaDi5HFKnfxXx6ASSVmERfsynYBiX2X6SJRnZU84/9DZdnFvvxmAjBOt6QpBlc4J/0DxvkTCqpclvziL6BCCPnjdlIB3Pu3BxsPmygUY7Ii2zbdCdliiow="
-        },
-        {
-          "rawBytes": "MIIB9zCCAXygAwIBAgIUALZNAPFdxHPwjeDloDwyYChAO/4wCgYIKoZIzj0EAwMwKjEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MREwDwYDVQQDEwhzaWdzdG9yZTAeFw0yMTEwMDcxMzU2NTlaFw0zMTEwMDUxMzU2NThaMCoxFTATBgNVBAoTDHNpZ3N0b3JlLmRldjERMA8GA1UEAxMIc2lnc3RvcmUwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAAT7XeFT4rb3PQGwS4IajtLk3/OlnpgangaBclYpsYBr5i+4ynB07ceb3LP0OIOZdxexX69c5iVuyJRQ+Hz05yi+UF3uBWAlHpiS5sh0+H2GHE7SXrk1EC5m1Tr19L9gg92jYzBhMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRYwB5fkUWlZql6zJChkyLQKsXF+jAfBgNVHSMEGDAWgBRYwB5fkUWlZql6zJChkyLQKsXF+jAKBggqhkjOPQQDAwNpADBmAjEAj1nHeXZp+13NWBNa+EDsDP8G1WWg1tCMWP/WHPqpaVo0jhsweNFZgSs0eE7wYI4qAjEA2WB9ot98sIkoF3vZYdd3/VtWB5b9TNMea7Ix/stJ5TfcLLeABLE4BNJOsQ4vnBHJ"
+          "rawBytes": "MIIC0DCCAlagAwIBAgIUeDHfseinRdn7daK/8Z/FyZbP3bIwCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjMwODExMTkxODUzWhcNMjMwODExMTkyODUzWjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEHxLLliGg8KvMDsipkUeQ7vn9R2MzCnJ2k3R4SHFl/JjY8Sx8hxiBQE2o91Aqz/3zlm3il3YEW19R/nyS/JmWnqOCAXUwggFxMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQU/WTuM0/SvrYxbi2eNdzmeu8u9BcwHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMC4GCisGAQQBg78wAQgEIAweaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGKBgorBgEEAdZ5AgQCBHwEegB4AHYA3T0wasbHETJjGR4cmWc3AqJKXrjePK3/h4pygC8p7o4AAAGJ5gmOLAAABAMARzBFAiEA4Qda0970UObGop4NGyCF1nqV2elc8735kFIKRdH3KuoCIGIzZ5n+TMs3sC8AvJBpR07Jw/LWF8VGoXoWVWf2GGATMAoGCCqGSM49BAMDA2gAMGUCMFG0aUg0LAgFmsgbjGeKJq/7mC9gO6xBZDAU5w4ioKkE4CunWHGN93v4W6WhiieQuwIxANvAdelWupffNYMInKHNnEodhrMS/R0r7Aauv9v0RMpZU7ucKaQ3qpcL2y3e0WdZaQ=="
         }
       ]
     },
     "tlogEntries": [
       {
-        "logIndex": "12842224",
+        "logIndex": "30955468",
         "logId": {
           "keyId": "wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0="
         },
         "kindVersion": {
-          "kind": "hashedrekord",
-          "version": "0.0.1"
+          "kind": "intoto",
+          "version": "0.0.2"
         },
-        "integratedTime": "1675801250",
+        "integratedTime": "1691781533",
         "inclusionPromise": {
-          "signedEntryTimestamp": "MEUCIAxR9WmdYqmuPzqEDg0cIs/WGmTCRBm0zv9g1PoqbiJgAiEAoXsW7w67mQSawMF6SvYhh5nUkI0E9aI9jp91EAu/sHk="
+          "signedEntryTimestamp": "MEUCIA8Gl6f/EvSd+5t3v8iZOkeaP130qH48lIECNaG8G32jAiEA8BmHu8IGzaxJJiNK6Vx+tr1ZBXzsuGB3uv3dx1P7umk="
         },
-        "canonicalizedBody": "eyJhcGlWZXJzaW9uIjoiMC4wLjEiLCJraW5kIjoiaGFzaGVkcmVrb3JkIiwic3BlYyI6eyJkYXRhIjp7Imhhc2giOnsiYWxnb3JpdGhtIjoic2hhMjU2IiwidmFsdWUiOiI5YjcwYThhNDhlNzA5ZDM0OWQzNDMwNDIzMjlmN2RhNmM0NjYwNzY4YzY4NjMwOTcxY2Y1MjE5Mzk4OTc1YTM2In19LCJzaWduYXR1cmUiOnsiY29udGVudCI6Ik1FWUNJUURUU3lMREFRN1Z4amRVcEs5NTBjNTRrbzEwUGh6U2tiNUowUjdtcUF0R1FBSWhBTGNIRnJCZEVCSFc2alNJQVlwR1BDeWphVVQwMU5XUjJmV0VMUWcwNDFPRSIsInB1YmxpY0tleSI6eyJjb250ZW50IjoiTFMwdExTMUNSVWRKVGlCRFJWSlVTVVpKUTBGVVJTMHRMUzB0Q2sxSlNVTnZSRU5EUVdsaFowRjNTVUpCWjBsVldtcHJVREJ0VUcxeE1FVlNTVGxQTkN0VmEzZDZjV05oZVZWbmQwTm5XVWxMYjFwSmVtb3dSVUYzVFhjS1RucEZWazFDVFVkQk1WVkZRMmhOVFdNeWJHNWpNMUoyWTIxVmRWcEhWakpOVWpSM1NFRlpSRlpSVVVSRmVGWjZZVmRrZW1SSE9YbGFVekZ3WW01U2JBcGpiVEZzV2tkc2FHUkhWWGRJYUdOT1RXcE5kMDFxUVROTmFrRjVUVVJSTlZkb1kwNU5hazEzVFdwQk0wMXFRWHBOUkZFMVYycEJRVTFHYTNkRmQxbElDa3R2V2tsNmFqQkRRVkZaU1V0dldrbDZhakJFUVZGalJGRm5RVVZQYjNCU2VqUXplR3RaV0hwNE1uQTBlVXBzWW1KT2FXeE9hMGhsU0hKdGJrZ3lNMkVLZURScE1HcEpiaTkzVjBWQmREQjZjMUp1Y1U5blRGWkdNWGw2TTJwS2VYRTJhbmxLUkhaSVIzWTBLMHBST1RJMGJIRlBRMEZWVlhkblowWkNUVUUwUndwQk1WVmtSSGRGUWk5M1VVVkJkMGxJWjBSQlZFSm5UbFpJVTFWRlJFUkJTMEpuWjNKQ1owVkdRbEZqUkVGNlFXUkNaMDVXU0ZFMFJVWm5VVlZ1Wm1Kd0NteHNWa1Z4UkdONVpVRXlkbnB1TlhSWU5WTkdRblkwZDBoM1dVUldVakJxUWtKbmQwWnZRVlV6T1ZCd2VqRlphMFZhWWpWeFRtcHdTMFpYYVhocE5Ga0tXa1E0ZDBoM1dVUldVakJTUVZGSUwwSkNWWGRGTkVWU1dXNUtjRmxYTlVGYVIxWnZXVmN4YkdOcE5XcGlNakIzVEVGWlMwdDNXVUpDUVVkRWRucEJRZ3BCVVZGbFlVaFNNR05JVFRaTWVUbHVZVmhTYjJSWFNYVlpNamwwVERKNGRsb3liSFZNTWpsb1pGaFNiMDFKUjB0Q1oyOXlRbWRGUlVGa1dqVkJaMUZEQ2tKSWQwVmxaMEkwUVVoWlFUTlVNSGRoYzJKSVJWUktha2RTTkdOdFYyTXpRWEZLUzFoeWFtVlFTek12YURSd2VXZERPSEEzYnpSQlFVRkhSMHhaYmtrS1ZIZEJRVUpCVFVGU2VrSkdRV2xDWW10a1NYbHdXbkZ1ZFZwak9XeFRUVmxhTmtsdE5XeHpWM0J5U21sd2FHUkZTSE5PTldkUGEwUkJkMGxvUVVzM05RcEpTazk0TVRodFdHeHlkbkZZV0c5RUwyRTBNVXhIVkhvMGEwSnBZbHBQWTNKME5raFNTUzk2VFVGdlIwTkRjVWRUVFRRNVFrRk5SRUV5WjBGTlIxVkRDazFSUTNCQlVFbFFWWEZrUW5GSldrSXdUWEJqU214NldXSmtSMWRYVTFBMk1VMHdjV1UzYUhocWNqWmxSR05UWVdGaFJYQkNWVzFUWjNORmFXVk1Wa2tLVjBNd1EwMUViemxRTkdRNU9VZDROekYyU1hnMk5XeEhTMDFETldOcmFIZE9TVWQ2YWxVM1RFaGljMlF2ZVdveVFVeEhiVXc1ZHpNM1dqSkhlRzl4UlFvNGJHeDBkMEU5UFFvdExTMHRMVVZPUkNCRFJWSlVTVVpKUTBGVVJTMHRMUzB0Q2c9PSJ9fX19"
+        "inclusionProof": {
+          "logIndex": "26792037",
+          "rootHash": "cQcl3UjHWft0wEVP9BBGd+dKOcmUlaEMIYdC64mNONc=",
+          "treeSize": "26792039",
+          "hashes": [
+            "vKGMQ1vPXwU8c5vyZgfeTPLP4FMUEpTYvXK8tiallMQ=",
+            "Wb0EPMtK0MahApzam7tNvIzBUl+q7sKxT804/6NY7gI=",
+            "0LvZhb2g5YcpDl5uIxDfQhGkrHGNAu9IFsRYL1XT7ec=",
+            "wv1N3YOEW23a2pWHJ26ztTFU9BYAP7K5ub07HXbTVFs=",
+            "NaZSOZHPk5+FIJQZ8VsBENYiUi+RauBP/COLsyk6Tro=",
+            "jm0lw6HdiXlZ7GboXVWDiQvECU/hnY1hYbzrQrEoZhU=",
+            "Be0XOwdJkv66MJS0dgQaI6TS+s8AL4ocQF2cFGMvhs0=",
+            "9FWyBkZrudpCTcINV4W2mDTr9e7lXaqrPHlG3xrQKr4=",
+            "cacw9L43sGssehTnMe+2LolJXTL9E73sEsxWjfl4DT8=",
+            "umCBn5o/ndq+tuxz0bp50E/SrWnOjZXHd6tIWp+ts2s=",
+            "jRUq4D8O+FI47Wbw96s7yHCu4qzWUxpIVfxQEeprDmc=",
+            "rXEsmEJN4PEoTU8US4qVtdIsGB1MCiRlGOepoiC99kM="
+          ],
+          "checkpoint": {
+            "envelope": "rekor.sigstore.dev - 2605736670972794746\n26792039\ncQcl3UjHWft0wEVP9BBGd+dKOcmUlaEMIYdC64mNONc=\nTimestamp: 1691781533798160174\n\n— rekor.sigstore.dev wNI9ajBEAiAq6zQXfHpGZ9D4aVzzCNt1vUwxQMMpnbfsC0LawPzkpwIgfDHE3XjN4N7zXG6vpN8eXDGqY30jTLojMOjHGFtySuk=\n"
+          }
+        },
+        "canonicalizedBody": "eyJhcGlWZXJzaW9uIjoiMC4wLjIiLCJraW5kIjoiaW50b3RvIiwic3BlYyI6eyJjb250ZW50Ijp7ImVudmVsb3BlIjp7InBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmluLXRvdG8ranNvbiIsInNpZ25hdHVyZXMiOlt7InB1YmxpY0tleSI6IkxTMHRMUzFDUlVkSlRpQkRSVkpVU1VaSlEwRlVSUzB0TFMwdENrMUpTVU13UkVORFFXeGhaMEYzU1VKQlowbFZaVVJJWm5ObGFXNVNaRzQzWkdGTEx6aGFMMFo1V21KUU0ySkpkME5uV1VsTGIxcEplbW93UlVGM1RYY0tUbnBGVmsxQ1RVZEJNVlZGUTJoTlRXTXliRzVqTTFKMlkyMVZkVnBIVmpKTlVqUjNTRUZaUkZaUlVVUkZlRlo2WVZka2VtUkhPWGxhVXpGd1ltNVNiQXBqYlRGc1drZHNhR1JIVlhkSWFHTk9UV3BOZDA5RVJYaE5WR3Q0VDBSVmVsZG9ZMDVOYWsxM1QwUkZlRTFVYTNsUFJGVjZWMnBCUVUxR2EzZEZkMWxJQ2t0dldrbDZhakJEUVZGWlNVdHZXa2w2YWpCRVFWRmpSRkZuUVVWSWVFeE1iR2xIWnpoTGRrMUVjMmx3YTFWbFVUZDJiamxTTWsxNlEyNUtNbXN6VWpRS1UwaEdiQzlLYWxrNFUzZzRhSGhwUWxGRk1tODVNVUZ4ZWk4emVteHRNMmxzTTFsRlZ6RTVVaTl1ZVZNdlNtMVhibkZQUTBGWVZYZG5aMFo0VFVFMFJ3cEJNVlZrUkhkRlFpOTNVVVZCZDBsSVowUkJWRUpuVGxaSVUxVkZSRVJCUzBKblozSkNaMFZHUWxGalJFRjZRV1JDWjA1V1NGRTBSVVpuVVZVdlYxUjFDazB3TDFOMmNsbDRZbWt5WlU1a2VtMWxkVGgxT1VKamQwaDNXVVJXVWpCcVFrSm5kMFp2UVZVek9WQndlakZaYTBWYVlqVnhUbXB3UzBaWGFYaHBORmtLV2tRNGQwaDNXVVJXVWpCU1FWRklMMEpDVlhkRk5FVlNXVzVLY0ZsWE5VRmFSMVp2V1ZjeGJHTnBOV3BpTWpCM1RFRlpTMHQzV1VKQ1FVZEVkbnBCUWdwQlVWRmxZVWhTTUdOSVRUWk1lVGx1WVZoU2IyUlhTWFZaTWpsMFRESjRkbG95YkhWTU1qbG9aRmhTYjAxRE5FZERhWE5IUVZGUlFtYzNPSGRCVVdkRkNrbEJkMlZoU0ZJd1kwaE5Oa3g1T1c1aFdGSnZaRmRKZFZreU9YUk1NbmgyV2pKc2RVd3lPV2hrV0ZKdlRVbEhTMEpuYjNKQ1owVkZRV1JhTlVGblVVTUtRa2gzUldWblFqUkJTRmxCTTFRd2QyRnpZa2hGVkVwcVIxSTBZMjFYWXpOQmNVcExXSEpxWlZCTE15OW9OSEI1WjBNNGNEZHZORUZCUVVkS05XZHRUd3BNUVVGQlFrRk5RVko2UWtaQmFVVkJORkZrWVRBNU56QlZUMkpIYjNBMFRrZDVRMFl4Ym5GV01tVnNZemczTXpWclJrbExVbVJJTTB0MWIwTkpSMGw2Q2xvMWJpdFVUWE16YzBNNFFYWktRbkJTTURkS2R5OU1WMFk0VmtkdldHOVhWbGRtTWtkSFFWUk5RVzlIUTBOeFIxTk5ORGxDUVUxRVFUSm5RVTFIVlVNS1RVWkhNR0ZWWnpCTVFXZEdiWE5uWW1wSFpVdEtjUzgzYlVNNVowODJlRUphUkVGVk5YYzBhVzlMYTBVMFEzVnVWMGhIVGpremRqUlhObGRvYVdsbFVRcDFkMGw0UVU1MlFXUmxiRmQxY0dabVRsbE5TVzVMU0U1dVJXOWthSEpOVXk5U01ISTNRV0YxZGpsMk1GSk5jRnBWTjNWalMyRlJNM0Z3WTB3eWVUTmxDakJYWkZwaFVUMDlDaTB0TFMwdFJVNUVJRU5GVWxSSlJrbERRVlJGTFMwdExTMD0iLCJzaWciOiJUVVZaUTBsUlEwTlVhMFo1VG5WcVN6RXpORGRCUkVWVVlucGlWVFpIY0VaNU9VNWtTRzFqV2poSFZuTk5PR3BEUWxGSmFFRk1lVkozT0dzMllrMWllSHAxWnpoaldHeEpiRWhrZWxJeFduZHJjamQxUlU4eE16QjBURVUwTVZKciJ9XX0sImhhc2giOnsiYWxnb3JpdGhtIjoic2hhMjU2IiwidmFsdWUiOiIwZmU4NDVmNGRjYmYyZjMzODZlOTFlZGZlZGFiODU1YzY4ZDFhNjYyYzg2NzIzZWEwZTM0NjY4YTNjZDliNTA1In0sInBheWxvYWRIYXNoIjp7ImFsZ29yaXRobSI6InNoYTI1NiIsInZhbHVlIjoiOWI3MGE4YTQ4ZTcwOWQzNDlkMzQzMDQyMzI5ZjdkYTZjNDY2MDc2OGM2ODYzMDk3MWNmNTIxOTM5ODk3NWEzNiJ9fX19"
+      }
+    ],
+    "timestampVerificationData": {
+      "rfc3161Timestamps": []
+    }
+  },
+  "dsseEnvelope": {
+    "payload": "Y29udGVudCB0byBiZSBzaWduZWQK",
+    "payloadType": "application/vnd.in-toto+json",
+    "signatures": [
+      {
+        "sig": "MEYCIQCCTkFyNujK1347ADETbzbU6GpFy9NdHmcZ8GVsM8jCBQIhALyRw8k6bMbxzug8cXlIlHdzR1Zwkr7uEO130tLE41Rk",
+        "keyid": ""
       }
     ]
-  },
-  "messageSignature": {
-    "messageDigest": {
-      "algorithm": "SHA2_256",
-      "digest": "m3CopI5wnTSdNDBCMp99psRmB2jGhjCXHPUhk5iXWjY="
-    },
-    "signature": "MEYCIQDTSyLDAQ7VxjdUpK950c54ko10PhzSkb5J0R7mqAtGQAIhALcHFrBdEBHW6jSIAYpGPCyjaUT01NWR2fWELQg041OE"
   }
 }
 ```
 
-You'll see that the signature bundle contains the SHA256 digest of the
-artifact, the signature, the signing certificate and metadata about the
-entry which was made in Rekor.
+You'll see that the signature bundle contains the base64-encoded version of
+the artifact, the generated signature, the signing certificate and metadata 
+about the entry which was made in Rekor.
 
 You can extract and view the signing certificate with the following:
 ```shell
-$ cat bundle.sigstore | jq --raw-output '.verificationMaterial.x509CertificateChain.certificates[0].rawBytes' | base64 -d | openssl x509 -inform der -text
+$ cat bundle.json | jq --raw-output '.verificationMaterial.x509CertificateChain.certificates[0].rawBytes' | base64 -d | openssl x509 -inform der -text
 
 Certificate:
     Data:
         Version: 3 (0x2)
         Serial Number:
-            66:39:0f:d2:63:e6:ab:41:11:23:d3:b8:f9:49:30:ce:a7:1a:c9:48
+            78:31:df:b1:e8:a7:45:d9:fb:75:a2:bf:f1:9f:c5:c9:96:cf:dd:b2
         Signature Algorithm: ecdsa-with-SHA384
         Issuer: O = sigstore.dev, CN = sigstore-intermediate
         Validity
-            Not Before: Feb  7 20:20:49 2023 GMT
-            Not After : Feb  7 20:30:49 2023 GMT
+            Not Before: Aug 11 19:18:53 2023 GMT
+            Not After : Aug 11 19:28:53 2023 GMT
         Subject: 
         Subject Public Key Info:
             Public Key Algorithm: id-ecPublicKey
                 Public-Key: (256 bit)
                 pub:
-                    04:3a:8a:51:cf:8d:f1:91:85:f3:c7:6a:78:c8:99:
-                    5b:6c:d8:a5:36:41:de:1e:b9:a7:1f:6d:da:c7:88:
-                    b4:8c:89:ff:c1:61:00:b7:4c:ec:46:7a:8e:80:b5:
-                    45:d7:2c:f7:8c:9c:aa:ea:3c:89:0e:f1:c6:bf:8f:
-                    89:43:dd:b8:96
+                    04:1f:12:cb:96:21:a0:f0:ab:cc:0e:c8:a9:91:47:
+                    90:ee:f9:fd:47:63:33:0a:72:76:93:74:78:48:71:
+                    65:fc:98:d8:f1:2c:7c:87:18:81:40:4d:a8:f7:50:
+                    2a:cf:fd:f3:96:6d:e2:97:76:04:5b:5f:51:fe:7c:
+                    92:fc:99:96:9e
                 ASN1 OID: prime256v1
                 NIST CURVE: P-256
         X509v3 extensions:
@@ -112,50 +134,53 @@ Certificate:
             X509v3 Extended Key Usage: 
                 Code Signing
             X509v3 Subject Key Identifier: 
-                9D:F6:E9:96:55:44:A8:37:32:78:0D:AF:CE:7E:6D:5F:94:85:06:FE
+                FD:64:EE:33:4F:D2:BE:B6:31:6E:2D:9E:35:DC:E6:7A:EF:2E:F4:17
             X509v3 Authority Key Identifier: 
                 DF:D3:E9:CF:56:24:11:96:F9:A8:D8:E9:28:55:A2:C6:2E:18:64:3F
             X509v3 Subject Alternative Name: critical
                 email:foo@bar.com
             1.3.6.1.4.1.57264.1.1: 
                 https://github.com/login/oauth
+            1.3.6.1.4.1.57264.1.8: 
+                ..https://github.com/login/oauth
             CT Precertificate SCTs: 
                 Signed Certificate Timestamp:
                     Version   : v1 (0x0)
                     Log ID    : DD:3D:30:6A:C6:C7:11:32:63:19:1E:1C:99:67:37:02:
                                 A2:4A:5E:B8:DE:3C:AD:FF:87:8A:72:80:2F:29:EE:8E
-                    Timestamp : Feb  7 20:20:49.871 2023 GMT
+                    Timestamp : Aug 11 19:18:53.228 2023 GMT
                     Extensions: none
                     Signature : ecdsa-with-SHA256
-                                30:45:02:20:5B:91:D2:32:A5:9A:A7:B9:97:3D:95:23:
-                                18:67:A2:26:E6:5B:16:A6:B2:62:A6:17:44:1E:C3:79:
-                                80:E9:03:03:02:21:00:AE:F9:20:93:B1:D7:C9:97:96:
-                                BB:EA:5D:7A:03:FD:AE:35:2C:64:F3:E2:40:62:6D:93:
-                                9C:AE:DE:87:44:8F:F3
+                                30:45:02:21:00:E1:07:5A:D3:DE:F4:50:E6:C6:A2:9E:
+                                0D:1B:20:85:D6:7A:95:D9:E9:5C:F3:BD:F9:90:52:0A:
+                                45:D1:F7:2A:EA:02:20:62:33:67:99:FE:4C:CB:37:B0:
+                                2F:00:BC:90:69:47:4E:C9:C3:F2:D6:17:C5:46:A1:7A:
+                                16:55:67:F6:18:60:13
     Signature Algorithm: ecdsa-with-SHA384
     Signature Value:
-        30:65:02:31:00:a9:00:f2:0f:52:a7:41:a8:86:41:d0:ca:5c:
-        26:5c:d8:6d:d1:96:59:23:fa:d4:cd:2a:7b:b8:71:8e:be:9e:
-        0d:c4:9a:69:a1:29:05:49:92:82:c1:22:78:b5:48:58:2d:02:
-        30:3a:3d:3f:87:7d:f4:6c:7b:d6:f2:31:eb:99:46:28:c0:b9:
-        72:48:70:34:81:b3:8d:4e:cb:1d:bb:1d:ff:28:f6:00:b1:a6:
-        2f:dc:37:ed:9d:86:c6:8a:84:f2:59:6d:c0
+        30:65:02:30:51:b4:69:48:34:2c:08:05:9a:c8:1b:8c:67:8a:
+        26:af:fb:98:2f:60:3b:ac:41:64:30:14:e7:0e:22:a0:a9:04:
+        e0:2b:a7:58:71:8d:f7:7b:f8:5b:a5:a1:8a:27:90:bb:02:31:
+        00:db:c0:75:e9:56:ba:97:df:35:83:08:9c:a1:cd:9c:4a:1d:
+        86:b3:12:fd:1d:2b:ec:06:ae:bf:db:f4:44:ca:59:53:bb:9c:
+        29:a4:37:aa:97:0b:db:2d:de:d1:67:59:69
 -----BEGIN CERTIFICATE-----
-MIICoDCCAiagAwIBAgIUZjkP0mPmq0ERI9O4+UkwzqcayUgwCgYIKoZIzj0EAwMw
+MIIC0DCCAlagAwIBAgIUeDHfseinRdn7daK/8Z/FyZbP3bIwCgYIKoZIzj0EAwMw
 NzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRl
-cm1lZGlhdGUwHhcNMjMwMjA3MjAyMDQ5WhcNMjMwMjA3MjAzMDQ5WjAAMFkwEwYH
-KoZIzj0CAQYIKoZIzj0DAQcDQgAEOopRz43xkYXzx2p4yJlbbNilNkHeHrmnH23a
-x4i0jIn/wWEAt0zsRnqOgLVF1yz3jJyq6jyJDvHGv4+JQ924lqOCAUUwggFBMA4G
-A1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUnfbp
-llVEqDcyeA2vzn5tX5SFBv4wHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4Y
+cm1lZGlhdGUwHhcNMjMwODExMTkxODUzWhcNMjMwODExMTkyODUzWjAAMFkwEwYH
+KoZIzj0CAQYIKoZIzj0DAQcDQgAEHxLLliGg8KvMDsipkUeQ7vn9R2MzCnJ2k3R4
+SHFl/JjY8Sx8hxiBQE2o91Aqz/3zlm3il3YEW19R/nyS/JmWnqOCAXUwggFxMA4G
+A1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQU/WTu
+M0/SvrYxbi2eNdzmeu8u9BcwHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4Y
 ZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzAB
-AQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGKBgorBgEEAdZ5AgQC
-BHwEegB4AHYA3T0wasbHETJjGR4cmWc3AqJKXrjePK3/h4pygC8p7o4AAAGGLYnI
-TwAABAMARzBFAiBbkdIypZqnuZc9lSMYZ6Im5lsWprJiphdEHsN5gOkDAwIhAK75
-IJOx18mXlrvqXXoD/a41LGTz4kBibZOcrt6HRI/zMAoGCCqGSM49BAMDA2gAMGUC
-MQCpAPIPUqdBqIZB0MpcJlzYbdGWWSP61M0qe7hxjr6eDcSaaaEpBUmSgsEieLVI
-WC0CMDo9P4d99Gx71vIx65lGKMC5ckhwNIGzjU7LHbsd/yj2ALGmL9w37Z2GxoqE
-8lltwA==
+AQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMC4GCisGAQQBg78wAQgE
+IAweaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGKBgorBgEEAdZ5AgQC
+BHwEegB4AHYA3T0wasbHETJjGR4cmWc3AqJKXrjePK3/h4pygC8p7o4AAAGJ5gmO
+LAAABAMARzBFAiEA4Qda0970UObGop4NGyCF1nqV2elc8735kFIKRdH3KuoCIGIz
+Z5n+TMs3sC8AvJBpR07Jw/LWF8VGoXoWVWf2GGATMAoGCCqGSM49BAMDA2gAMGUC
+MFG0aUg0LAgFmsgbjGeKJq/7mC9gO6xBZDAU5w4ioKkE4CunWHGN93v4W6WhiieQ
+uwIxANvAdelWupffNYMInKHNnEodhrMS/R0r7Aauv9v0RMpZU7ucKaQ3qpcL2y3e
+0WdZaQ==
 -----END CERTIFICATE-----
 ```
 
@@ -166,33 +191,40 @@ Using the Rekor URL displayed as part of the signing process you should also be
 able to retrieve the Rekor entry for this signature:
 
 ```shell
-$ curl --silent "https://rekor.sigstore.dev/api/v1/log/entries?logIndex=12842224" \
+$ curl --silent "https://rekor.sigstore.dev/api/v1/log/entries?logIndex=30955468" \
   | jq --raw-output '.[].body' \
   | base64 --decode \
   | jq
 
 {
-  "apiVersion": "0.0.1",
-  "kind": "hashedrekord",
+  "apiVersion": "0.0.2",
+  "kind": "intoto",
   "spec": {
-    "data": {
+    "content": {
+      "envelope": {
+        "payloadType": "application/vnd.in-toto+json",
+        "signatures": [
+          {
+            "publicKey": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMwRENDQWxhZ0F3SUJBZ0lVZURIZnNlaW5SZG43ZGFLLzhaL0Z5WmJQM2JJd0NnWUlLb1pJemowRUF3TXcKTnpFVk1CTUdBMVVFQ2hNTWMybG5jM1J2Y21VdVpHVjJNUjR3SEFZRFZRUURFeFZ6YVdkemRHOXlaUzFwYm5SbApjbTFsWkdsaGRHVXdIaGNOTWpNd09ERXhNVGt4T0RVeldoY05Nak13T0RFeE1Ua3lPRFV6V2pBQU1Ga3dFd1lICktvWkl6ajBDQVFZSUtvWkl6ajBEQVFjRFFnQUVIeExMbGlHZzhLdk1Ec2lwa1VlUTd2bjlSMk16Q25KMmszUjQKU0hGbC9Kalk4U3g4aHhpQlFFMm85MUFxei8zemxtM2lsM1lFVzE5Ui9ueVMvSm1XbnFPQ0FYVXdnZ0Z4TUE0RwpBMVVkRHdFQi93UUVBd0lIZ0RBVEJnTlZIU1VFRERBS0JnZ3JCZ0VGQlFjREF6QWRCZ05WSFE0RUZnUVUvV1R1Ck0wL1N2cll4YmkyZU5kem1ldTh1OUJjd0h3WURWUjBqQkJnd0ZvQVUzOVBwejFZa0VaYjVxTmpwS0ZXaXhpNFkKWkQ4d0h3WURWUjBSQVFIL0JCVXdFNEVSWW5KcFlXNUFaR1ZvWVcxbGNpNWpiMjB3TEFZS0t3WUJCQUdEdnpBQgpBUVFlYUhSMGNITTZMeTluYVhSb2RXSXVZMjl0TDJ4dloybHVMMjloZFhSb01DNEdDaXNHQVFRQmc3OHdBUWdFCklBd2VhSFIwY0hNNkx5OW5hWFJvZFdJdVkyOXRMMnh2WjJsdUwyOWhkWFJvTUlHS0Jnb3JCZ0VFQWRaNUFnUUMKQkh3RWVnQjRBSFlBM1Qwd2FzYkhFVEpqR1I0Y21XYzNBcUpLWHJqZVBLMy9oNHB5Z0M4cDdvNEFBQUdKNWdtTwpMQUFBQkFNQVJ6QkZBaUVBNFFkYTA5NzBVT2JHb3A0Tkd5Q0YxbnFWMmVsYzg3MzVrRklLUmRIM0t1b0NJR0l6Clo1bitUTXMzc0M4QXZKQnBSMDdKdy9MV0Y4VkdvWG9XVldmMkdHQVRNQW9HQ0NxR1NNNDlCQU1EQTJnQU1HVUMKTUZHMGFVZzBMQWdGbXNnYmpHZUtKcS83bUM5Z082eEJaREFVNXc0aW9La0U0Q3VuV0hHTjkzdjRXNldoaWllUQp1d0l4QU52QWRlbFd1cGZmTllNSW5LSE5uRW9kaHJNUy9SMHI3QWF1djl2MFJNcFpVN3VjS2FRM3FwY0wyeTNlCjBXZFphUT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0=",
+            "sig": "TUVZQ0lRQ0NUa0Z5TnVqSzEzNDdBREVUYnpiVTZHcEZ5OU5kSG1jWjhHVnNNOGpDQlFJaEFMeVJ3OGs2Yk1ieHp1ZzhjWGxJbEhkelIxWndrcjd1RU8xMzB0TEU0MVJr"
+          }
+        ]
+      },
       "hash": {
         "algorithm": "sha256",
+        "value": "0fe845f4dcbf2f3386e91edfedab855c68d1a662c86723ea0e34668a3cd9b505"
+      },
+      "payloadHash": {
+        "algorithm": "sha256",
         "value": "9b70a8a48e709d349d343042329f7da6c4660768c68630971cf5219398975a36"
-      }
-    },
-    "signature": {
-      "content": "MEYCIQDTSyLDAQ7VxjdUpK950c54ko10PhzSkb5J0R7mqAtGQAIhALcHFrBdEBHW6jSIAYpGPCyjaUT01NWR2fWELQg041OE",
-      "publicKey": {
-        "content": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNvRENDQWlhZ0F3SUJBZ0lVWmprUDBtUG1xMEVSSTlPNCtVa3d6cWNheVVnd0NnWUlLb1pJemowRUF3TXcKTnpFVk1CTUdBMVVFQ2hNTWMybG5jM1J2Y21VdVpHVjJNUjR3SEFZRFZRUURFeFZ6YVdkemRHOXlaUzFwYm5SbApjbTFsWkdsaGRHVXdIaGNOTWpNd01qQTNNakF5TURRNVdoY05Nak13TWpBM01qQXpNRFE1V2pBQU1Ga3dFd1lICktvWkl6ajBDQVFZSUtvWkl6ajBEQVFjRFFnQUVPb3BSejQzeGtZWHp4MnA0eUpsYmJOaWxOa0hlSHJtbkgyM2EKeDRpMGpJbi93V0VBdDB6c1JucU9nTFZGMXl6M2pKeXE2anlKRHZIR3Y0K0pROTI0bHFPQ0FVVXdnZ0ZCTUE0RwpBMVVkRHdFQi93UUVBd0lIZ0RBVEJnTlZIU1VFRERBS0JnZ3JCZ0VGQlFjREF6QWRCZ05WSFE0RUZnUVVuZmJwCmxsVkVxRGN5ZUEydnpuNXRYNVNGQnY0d0h3WURWUjBqQkJnd0ZvQVUzOVBwejFZa0VaYjVxTmpwS0ZXaXhpNFkKWkQ4d0h3WURWUjBSQVFIL0JCVXdFNEVSWW5KcFlXNUFaR1ZvWVcxbGNpNWpiMjB3TEFZS0t3WUJCQUdEdnpBQgpBUVFlYUhSMGNITTZMeTluYVhSb2RXSXVZMjl0TDJ4dloybHVMMjloZFhSb01JR0tCZ29yQmdFRUFkWjVBZ1FDCkJId0VlZ0I0QUhZQTNUMHdhc2JIRVRKakdSNGNtV2MzQXFKS1hyamVQSzMvaDRweWdDOHA3bzRBQUFHR0xZbkkKVHdBQUJBTUFSekJGQWlCYmtkSXlwWnFudVpjOWxTTVlaNkltNWxzV3BySmlwaGRFSHNONWdPa0RBd0loQUs3NQpJSk94MThtWGxydnFYWG9EL2E0MUxHVHo0a0JpYlpPY3J0NkhSSS96TUFvR0NDcUdTTTQ5QkFNREEyZ0FNR1VDCk1RQ3BBUElQVXFkQnFJWkIwTXBjSmx6WWJkR1dXU1A2MU0wcWU3aHhqcjZlRGNTYWFhRXBCVW1TZ3NFaWVMVkkKV0MwQ01EbzlQNGQ5OUd4NzF2SXg2NWxHS01DNWNraHdOSUd6alU3TEhic2QveWoyQUxHbUw5dzM3WjJHeG9xRQo4bGx0d0E9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg=="
       }
     }
   }
 }
 ```
 
-Note that the `.spec.signature.content` value matches the signature that was
-saved locally.
+Note that the `.spec.content.envelope.signatures[0].sig` value matches the signature that was
+saved to the generated bundle.
 
 
 ## Verifying
@@ -201,11 +233,8 @@ Use the `verify` command to make sure that the saved signature matches
 the artifact:
 
 ```shell
-$ npx sigstore verify bundle.sigstore artifact
+$ igstore verify bundle.sigstore
 
-Signature verified OK
+Verification succeeded
 ```
-
-This will use the signing certificate to ensure that the SHA256 digest
-encoded in the supplied signature matches the digest of the package itself.
 
