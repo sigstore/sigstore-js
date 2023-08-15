@@ -195,12 +195,6 @@ Verifies the signature in the supplied bundle.
   * `keySelector` `<Function>`: Callback invoked to retrieve the public key (as either `string` or `Buffer`) necessary to verify the bundle signature. Not used when the signature was generated from a Fulcio-issued signing certificate.
     * `hint` `<String>`: The hint from the bundle used to identify the the signing key.
 
-### utils
-
-The `utils` object contains a few internal utility functions. These are exposed
-to support the needs of specific `sigstore-js` consumers but should **NOT** be
-considered part of the stable public interface.
-
 ## Credential Sources
 
 ### GitHub Actions
