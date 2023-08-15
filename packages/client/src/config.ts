@@ -26,7 +26,6 @@ import {
   TSAWitness,
   Witness,
 } from '@sigstore/sign';
-import identity from './identity';
 import { CallbackSigner, SignerFunc } from './types/signature';
 import * as sigstore from './types/sigstore';
 
@@ -43,10 +42,6 @@ export type SignOptions = {
   fulcioURL?: string;
   identityProvider?: IdentityProvider;
   identityToken?: string;
-  oidcIssuer?: string;
-  oidcClientID?: string;
-  oidcClientSecret?: string;
-  oidcRedirectURL?: string;
   rekorURL?: string;
   signer?: SignerFunc;
   tlogUpload?: boolean;
@@ -119,21 +114,13 @@ function initSigner(options: SignOptions): Signer {
 }
 
 // Instantiate an identity provider based on the supplied options. If an
-// explicit identity token is provided, use that. Otherwise, if an OIDC issuer
-// and client ID are provided, use the OIDC provider. Otherwise, use the CI
+// explicit identity token is provided, use that. Otherwise, use the CI
 // context provider.
 function initIdentityProvider(options: SignOptions): IdentityProvider {
   const token = options.identityToken;
 
   if (token) {
     return { getToken: () => Promise.resolve(token) };
-  } else if (options.oidcIssuer && options.oidcClientID) {
-    return identity.oauthProvider({
-      issuer: options.oidcIssuer,
-      clientID: options.oidcClientID,
-      clientSecret: options.oidcClientSecret,
-      redirectURL: options.oidcRedirectURL,
-    });
   } else {
     return new CIContextProvider('sigstore');
   }
