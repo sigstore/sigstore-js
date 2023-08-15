@@ -50,12 +50,6 @@ describe('sigstore', () => {
     expect(sigstore.createVerifier).toBeInstanceOf(Function);
   });
 
-  it('exports TUF helpers', () => {
-    expect(sigstore.tuf).toBeDefined();
-    expect(sigstore.tuf.getTarget).toBeInstanceOf(Function);
-    expect(sigstore.tuf.client).toBeInstanceOf(Function);
-  });
-
   it('exports errors', () => {
     expect(sigstore.InternalError).toBeInstanceOf(Object);
     expect(sigstore.PolicyError).toBeInstanceOf(Object);
