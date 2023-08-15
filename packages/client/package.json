@@ -9,9 +9,6 @@
     "build": "tsc --build",
     "test": "jest"
   },
-  "bin": {
-    "sigstore": "bin/sigstore.js"
-  },
   "files": [
     "dist",
     "store"
