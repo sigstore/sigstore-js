@@ -13,19 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-class BaseError extends Error {
-  cause: any | undefined;
 
-  constructor(message: string, cause?: any) {
-    super(message);
-    this.name = this.constructor.name;
-    this.cause = cause;
-  }
-}
-
-class ErrorWithCode<T extends string> extends BaseError {
+class BaseError<T extends string> extends Error {
   code: T;
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  cause: any | undefined;
 
   constructor({
     code,
@@ -36,20 +28,21 @@ class ErrorWithCode<T extends string> extends BaseError {
     message: string;
     cause?: any /* eslint-disable-line @typescript-eslint/no-explicit-any */;
   }) {
-    super(message, cause);
-    this.code = code;
+    super(message);
     this.name = this.constructor.name;
+    this.code = code;
+    this.cause = cause;
   }
 }
 
-export class VerificationError extends BaseError {}
+type VerificationErrorCode = 'VERIFICATION_ERROR';
 
-export class PolicyError extends BaseError {}
+export class VerificationError extends BaseError<VerificationErrorCode> {
+  constructor(message: string) {
+    super({ code: 'VERIFICATION_ERROR', message });
+  }
+}
 
-type InternalErrorCode =
-  | 'TUF_FIND_TARGET_ERROR'
-  | 'TUF_REFRESH_METADATA_ERROR'
-  | 'TUF_DOWNLOAD_TARGET_ERROR'
-  | 'TUF_READ_TARGET_ERROR';
+type PolicyErrorCode = 'UNTRUSTED_SIGNER_ERROR';
 
-export class InternalError extends ErrorWithCode<InternalErrorCode> {}
+export class PolicyError extends BaseError<PolicyErrorCode> {}

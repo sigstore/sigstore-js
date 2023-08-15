@@ -1,6 +1,6 @@
 import { Args, Command, Flags } from '@oclif/core';
 import fs from 'fs/promises';
-import { sigstore } from 'sigstore';
+import * as sigstore from 'sigstore';
 
 export default class Sign extends Command {
   static override flags = {

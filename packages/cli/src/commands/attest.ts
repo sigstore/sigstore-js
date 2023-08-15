@@ -1,7 +1,7 @@
 import color from '@oclif/color';
 import { Args, Command, Flags } from '@oclif/core';
 import fs from 'fs/promises';
-import { sigstore } from 'sigstore';
+import * as sigstore from 'sigstore';
 import { OAuthIdentityProvider } from '../oauth';
 
 import type { IdentityProvider } from 'sigstore';
