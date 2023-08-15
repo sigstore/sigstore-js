@@ -50,12 +50,6 @@ describe('sigstore', () => {
     expect(sigstore.createVerifier).toBeInstanceOf(Function);
   });
 
-  it('exports sigstore utils', () => {
-    expect(sigstore.utils).toBeDefined();
-    expect(sigstore.utils.createDSSEEnvelope).toBeInstanceOf(Function);
-    expect(sigstore.utils.createRekorEntry).toBeInstanceOf(Function);
-  });
-
   it('exports errors', () => {
     expect(sigstore.InternalError).toBeInstanceOf(Object);
     expect(sigstore.PolicyError).toBeInstanceOf(Object);

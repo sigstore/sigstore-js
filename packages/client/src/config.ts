@@ -26,7 +26,6 @@ import {
   TSAWitness,
   Witness,
 } from '@sigstore/sign';
-import { CallbackSigner, SignerFunc } from './types/signature';
 import * as sigstore from './types/sigstore';
 
 import type { FetchOptions, Retry } from './types/fetch';
@@ -43,7 +42,6 @@ export type SignOptions = {
   identityProvider?: IdentityProvider;
   identityToken?: string;
   rekorURL?: string;
-  signer?: SignerFunc;
   tlogUpload?: boolean;
   tsaServerURL?: string;
 } & FetchOptions;
@@ -96,21 +94,14 @@ export function createBundleBuilder(
   }
 }
 
-// Instantiate a signer based on the supplied options. If a signer function is
-// provided, use that. Otherwise, if a Fulcio URL is provided, use the Fulcio
-// signer. Otherwise, throw an error.
+// Instantiate the FulcioSigner based on the supplied options.
 function initSigner(options: SignOptions): Signer {
-  if (isCallbackSignerEnabled(options)) {
-    return new CallbackSigner(options);
-  } else {
-    return new FulcioSigner({
-      fulcioBaseURL: options.fulcioURL || DEFAULT_FULCIO_URL,
-      identityProvider:
-        options.identityProvider || initIdentityProvider(options),
-      retry: options.retry ?? DEFAULT_RETRY,
-      timeout: options.timeout ?? DEFAULT_TIMEOUT,
-    });
-  }
+  return new FulcioSigner({
+    fulcioBaseURL: options.fulcioURL || DEFAULT_FULCIO_URL,
+    identityProvider: options.identityProvider || initIdentityProvider(options),
+    retry: options.retry ?? DEFAULT_RETRY,
+    timeout: options.timeout ?? DEFAULT_TIMEOUT,
+  });
 }
 
 // Instantiate an identity provider based on the supplied options. If an
@@ -152,13 +143,6 @@ function initWitnesses(options: SignOptions): Witness[] {
   }
 
   return witnesses;
-}
-
-// Type assertion to ensure that the signer is enabled
-function isCallbackSignerEnabled(
-  options: SignOptions
-): options is SignOptions & { signer: SignerFunc } {
-  return options.signer !== undefined;
 }
 
 // Type assertion to ensure that Rekor is enabled
