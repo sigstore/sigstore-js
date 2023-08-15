@@ -36,18 +36,7 @@ describe('createBundleBuilder', () => {
       });
     });
 
-    describe('when an OIDC issuer is provided', () => {
-      const options = {
-        oidcIssuer: 'https://example.com',
-        oidcClientID: 'abc',
-      };
-      it('returns a MessageSignatureBundleBuilder', () => {
-        const bundler = createBundleBuilder(bundleType, options);
-        expect(bundler).toBeInstanceOf(MessageSignatureBundleBuilder);
-      });
-    });
-
-    describe('when no OIDC options are provided', () => {
+    describe('when no OIDC token is provided', () => {
       it('returns a MessageSignatureBundleBuilder', () => {
         const bundler = createBundleBuilder(bundleType, {});
         expect(bundler).toBeInstanceOf(MessageSignatureBundleBuilder);
