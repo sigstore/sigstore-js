@@ -218,12 +218,6 @@ for more details.
 If the `SIGSTORE_ID_TOKEN` environment variable is set, it will use this to authenticate to Fulcio.
 It is the callers responsibility to make sure that this token has the correct scopes.
 
-### Interactive Flow
-
-If sigstore-js cannot detect ambient credentials, then it will prompt the user to go through the
-interactive flow.
-
-
 
 [1]: https://github.com/sigstore/rekor
 [2]: https://github.com/sigstore/protobuf-specs/blob/9b722b68a717778ba4f11543afa4ef93205ab502/protos/sigstore_bundle.proto#L63-L84
