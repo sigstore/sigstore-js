@@ -25,7 +25,7 @@ import {
   Signer,
   TSAWitness,
   Witness,
-} from '@sigstore/sign';=
+} from '@sigstore/sign';
 import * as sigstore from './types/sigstore';
 
 import type { FetchOptions, Retry } from './types/fetch';
