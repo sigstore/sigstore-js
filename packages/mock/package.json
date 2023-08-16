@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@sigstore/rekor-types": "^0.0.3",
-    "make-fetch-happen": "^11.0.1"
+    "make-fetch-happen": "^13.0.0"
   },
   "dependencies": {
     "@peculiar/webcrypto": "^1.4.3",
