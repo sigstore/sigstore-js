@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import fetch from 'make-fetch-happen';
-import { promise } from '../util';
 import type { IdentityProvider } from './provider';
 
 type ProviderFunc = (audience: string) => Promise<string>;
@@ -38,9 +37,9 @@ export class CIContextProvider implements IdentityProvider {
   // Invoke all registered ProviderFuncs and return the value of whichever one
   // resolves first.
   public async getToken() {
-    return promise
-      .promiseAny(providers.map((getToken) => getToken(this.audience)))
-      .catch(() => Promise.reject('CI: no tokens available'));
+    return Promise.any(
+      providers.map((getToken) => getToken(this.audience))
+    ).catch(() => Promise.reject('CI: no tokens available'));
   }
 }
 

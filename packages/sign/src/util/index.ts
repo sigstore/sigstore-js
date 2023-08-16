@@ -19,5 +19,4 @@ export * as encoding from './encoding';
 export * as json from './json';
 export * as oidc from './oidc';
 export * as pem from './pem';
-export * as promise from './promise';
 export * as ua from './ua';
