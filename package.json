@@ -17,7 +17,7 @@
   "devDependencies": {
     "@changesets/cli": "^2.26.2",
     "@total-typescript/shoehorn": "^0.1.1",
-    "@tsconfig/node14": "^14.1.0",
+    "@tsconfig/node16": "^16.1.0",
     "@types/jest": "^29.5.3",
     "@types/node": "^20.5.0",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
@@ -27,7 +27,7 @@
     "eslint-plugin-prettier": "^5.0.0",
     "jest": "^29.6.2",
     "nock": "^13.3.2",
-    "prettier": "^3.0.1",
+    "prettier": "^3.0.2",
     "shx": "^0.3.3",
     "ts-jest": "^29.1.1",
     "typescript": "^5.1.6"
@@ -36,6 +36,6 @@
     "./packages/*"
   ],
   "engines": {
-    "node": "^14.17.0 || ^16.13.0 || >=18.0.0"
+    "node": "^16.14.0 || >=18.0.0"
   }
 }
