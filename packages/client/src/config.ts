@@ -31,12 +31,6 @@ import * as sigstore from './types/sigstore';
 import type { FetchOptions, Retry } from './types/fetch';
 import type { KeySelector } from './verify';
 
-export type TUFOptions = {
-  tufMirrorURL?: string;
-  tufRootPath?: string;
-  tufCachePath?: string;
-} & FetchOptions;
-
 export type SignOptions = {
   fulcioURL?: string;
   identityProvider?: IdentityProvider;
@@ -54,12 +48,10 @@ export type VerifyOptions = {
   certificateIdentityURI?: string;
   certificateOIDs?: Record<string, string>;
   keySelector?: KeySelector;
-  rekorURL?: string;
-} & TUFOptions;
-
-export type CreateVerifierOptions = {
-  keySelector?: KeySelector;
-} & TUFOptions;
+  tufMirrorURL?: string;
+  tufRootPath?: string;
+  tufCachePath?: string;
+} & FetchOptions;
 
 export const DEFAULT_FULCIO_URL = 'https://fulcio.sigstore.dev';
 export const DEFAULT_REKOR_URL = 'https://rekor.sigstore.dev';
