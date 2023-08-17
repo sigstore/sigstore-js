@@ -28,40 +28,18 @@ describe('createBundleBuilder', () => {
   describe('when the bundleType is messageSignature', () => {
     const bundleType = 'messageSignature';
 
-    describe('when a custom signer is provided', () => {
-      const options = { signer: jest.fn() };
-
+    describe('when a hard-coded OIDC token is provided', () => {
+      const options = { identityToken: 'abc' };
       it('returns a MessageSignatureBundleBuilder', () => {
         const bundler = createBundleBuilder(bundleType, options);
         expect(bundler).toBeInstanceOf(MessageSignatureBundleBuilder);
       });
     });
 
-    describe('when a custom signer is NOT provided', () => {
-      describe('when a hard-coded OIDC token is provided', () => {
-        const options = { identityToken: 'abc' };
-        it('returns a MessageSignatureBundleBuilder', () => {
-          const bundler = createBundleBuilder(bundleType, options);
-          expect(bundler).toBeInstanceOf(MessageSignatureBundleBuilder);
-        });
-      });
-
-      describe('when an OIDC issuer is provided', () => {
-        const options = {
-          oidcIssuer: 'https://example.com',
-          oidcClientID: 'abc',
-        };
-        it('returns a MessageSignatureBundleBuilder', () => {
-          const bundler = createBundleBuilder(bundleType, options);
-          expect(bundler).toBeInstanceOf(MessageSignatureBundleBuilder);
-        });
-      });
-
-      describe('when no OIDC options are provided', () => {
-        it('returns a MessageSignatureBundleBuilder', () => {
-          const bundler = createBundleBuilder(bundleType, {});
-          expect(bundler).toBeInstanceOf(MessageSignatureBundleBuilder);
-        });
+    describe('when no OIDC token is provided', () => {
+      it('returns a MessageSignatureBundleBuilder', () => {
+        const bundler = createBundleBuilder(bundleType, {});
+        expect(bundler).toBeInstanceOf(MessageSignatureBundleBuilder);
       });
     });
 

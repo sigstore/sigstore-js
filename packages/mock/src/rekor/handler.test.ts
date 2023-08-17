@@ -71,7 +71,7 @@ describe('rekorHandler', () => {
         ).toEqual(proposedEntry);
         expect(entry.integratedTime).toBeGreaterThan(0);
         expect(entry.logID).toBe(logID);
-        expect(entry.logIndex).toBe(0);
+        expect(entry.logIndex).toBeGreaterThan(0);
         expect(entry.verification).toBeDefined();
         expect(entry.verification?.signedEntryTimestamp).toBeDefined();
       });

@@ -53,9 +53,3 @@ type InternalErrorCode =
   | 'TUF_READ_TARGET_ERROR';
 
 export class InternalError extends ErrorWithCode<InternalErrorCode> {}
-
-type SignatureErrorCode =
-  | 'MISSING_SIGNATURE_ERROR'
-  | 'MISSING_PUBLIC_KEY_ERROR';
-
-export class SignatureError extends ErrorWithCode<SignatureErrorCode> {}

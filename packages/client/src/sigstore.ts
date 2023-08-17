@@ -85,45 +85,12 @@ export async function createVerifier(
   };
 }
 
-const tufUtils = {
-  client: (options: config.TUFOptions = {}): Promise<tuf.TUF> => {
-    return tuf.initTUF({
-      mirrorURL: options.tufMirrorURL,
-      rootPath: options.tufRootPath,
-      cachePath: options.tufCachePath,
-      retry: options.retry,
-      timeout: options.timeout,
-    });
-  },
-
-  /*
-   * @deprecated Use tufUtils.client instead.
-   */
-  getTarget: (
-    path: string,
-    options: config.TUFOptions = {}
-  ): Promise<string> => {
-    return tuf
-      .initTUF({
-        mirrorURL: options.tufMirrorURL,
-        rootPath: options.tufRootPath,
-        cachePath: options.tufCachePath,
-        retry: options.retry,
-        timeout: options.timeout,
-      })
-      .then((t) => t.getTarget(path));
-  },
-};
-
 export { ValidationError } from '@sigstore/bundle';
 export type {
   SerializedBundle as Bundle,
   SerializedEnvelope as Envelope,
 } from '@sigstore/bundle';
-export type { TUF } from '@sigstore/tuf';
 export type { SignOptions, VerifyOptions } from './config';
 export { InternalError, PolicyError, VerificationError } from './error';
-export * as utils from './sigstore-utils';
-export { tufUtils as tuf };
 export const DEFAULT_FULCIO_URL = config.DEFAULT_FULCIO_URL;
 export const DEFAULT_REKOR_URL = config.DEFAULT_REKOR_URL;

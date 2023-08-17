@@ -26,8 +26,6 @@ import {
   TSAWitness,
   Witness,
 } from '@sigstore/sign';
-import identity from './identity';
-import { CallbackSigner, SignerFunc } from './types/signature';
 import * as sigstore from './types/sigstore';
 
 import type { FetchOptions, Retry } from './types/fetch';
@@ -43,12 +41,7 @@ export type SignOptions = {
   fulcioURL?: string;
   identityProvider?: IdentityProvider;
   identityToken?: string;
-  oidcIssuer?: string;
-  oidcClientID?: string;
-  oidcClientSecret?: string;
-  oidcRedirectURL?: string;
   rekorURL?: string;
-  signer?: SignerFunc;
   tlogUpload?: boolean;
   tsaServerURL?: string;
 } & FetchOptions;
@@ -101,39 +94,24 @@ export function createBundleBuilder(
   }
 }
 
-// Instantiate a signer based on the supplied options. If a signer function is
-// provided, use that. Otherwise, if a Fulcio URL is provided, use the Fulcio
-// signer. Otherwise, throw an error.
+// Instantiate the FulcioSigner based on the supplied options.
 function initSigner(options: SignOptions): Signer {
-  if (isCallbackSignerEnabled(options)) {
-    return new CallbackSigner(options);
-  } else {
-    return new FulcioSigner({
-      fulcioBaseURL: options.fulcioURL || DEFAULT_FULCIO_URL,
-      identityProvider:
-        options.identityProvider || initIdentityProvider(options),
-      retry: options.retry ?? DEFAULT_RETRY,
-      timeout: options.timeout ?? DEFAULT_TIMEOUT,
-    });
-  }
+  return new FulcioSigner({
+    fulcioBaseURL: options.fulcioURL || DEFAULT_FULCIO_URL,
+    identityProvider: options.identityProvider || initIdentityProvider(options),
+    retry: options.retry ?? DEFAULT_RETRY,
+    timeout: options.timeout ?? DEFAULT_TIMEOUT,
+  });
 }
 
 // Instantiate an identity provider based on the supplied options. If an
-// explicit identity token is provided, use that. Otherwise, if an OIDC issuer
-// and client ID are provided, use the OIDC provider. Otherwise, use the CI
+// explicit identity token is provided, use that. Otherwise, use the CI
 // context provider.
 function initIdentityProvider(options: SignOptions): IdentityProvider {
   const token = options.identityToken;
 
   if (token) {
     return { getToken: () => Promise.resolve(token) };
-  } else if (options.oidcIssuer && options.oidcClientID) {
-    return identity.oauthProvider({
-      issuer: options.oidcIssuer,
-      clientID: options.oidcClientID,
-      clientSecret: options.oidcClientSecret,
-      redirectURL: options.oidcRedirectURL,
-    });
   } else {
     return new CIContextProvider('sigstore');
   }
@@ -165,13 +143,6 @@ function initWitnesses(options: SignOptions): Witness[] {
   }
 
   return witnesses;
-}
-
-// Type assertion to ensure that the signer is enabled
-function isCallbackSignerEnabled(
-  options: SignOptions
-): options is SignOptions & { signer: SignerFunc } {
-  return options.signer !== undefined;
 }
 
 // Type assertion to ensure that Rekor is enabled

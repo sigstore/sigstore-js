@@ -1,5 +1,15 @@
 # @sigstore/mock
 
+## 0.2.0
+
+### Minor Changes
+
+- e8f258d: Add verifiable inclusion proof to mock tlog response
+
+### Patch Changes
+
+- 917f48c: Fix bug in inclusion proof returned with mocked transaction log enries
+
 ## 0.1.1
 
 ### Patch Changes
