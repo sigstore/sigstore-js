@@ -13,5 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+export { ValidationError } from '@sigstore/bundle';
+export { InternalError } from '@sigstore/sign';
+export { TUFError } from '@sigstore/tuf';
+export { DEFAULT_FULCIO_URL, DEFAULT_REKOR_URL } from './config';
+export { PolicyError, VerificationError } from './error';
+export { attest, createVerifier, sign, verify } from './sigstore';
+
+export type { SerializedBundle as Bundle } from '@sigstore/bundle';
 export type { IdentityProvider } from '@sigstore/sign';
-export * as sigstore from './sigstore';
+export type { SignOptions, VerifyOptions } from './config';
+export type { BundleVerifier } from './sigstore';
