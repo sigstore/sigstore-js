@@ -38,7 +38,10 @@ export function verifySignerIdentity(
   );
 
   if (!signerVerified) {
-    throw new PolicyError('Certificate issued to untrusted signer');
+    throw new PolicyError({
+      code: 'UNTRUSTED_SIGNER_ERROR',
+      message: 'Certificate issued to untrusted signer',
+    });
   }
 }
 

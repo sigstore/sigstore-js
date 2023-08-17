@@ -1,7 +1,7 @@
 import { Args, Command, Flags } from '@oclif/core';
 import crypto, { BinaryLike } from 'crypto';
 import fs from 'fs/promises';
-import { sigstore } from 'sigstore';
+import * as sigstore from 'sigstore';
 
 export default class Verify extends Command {
   static override flags = {
