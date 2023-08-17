@@ -6,9 +6,9 @@ and verify any file.
 
 ## Features
 
-* Support for signing using an OpenID Connect identity
-* Support for publishing signatures to a [Rekor][1] instance
-* Support for verifying Sigstore bundles
+- Support for signing using an OpenID Connect identity
+- Support for publishing signatures to a [Rekor][1] instance
+- Support for verifying Sigstore bundles
 
 ## Prerequisites
 
@@ -140,11 +140,11 @@ library. It also lists which `sigstore` versions were shipped with different
 ## Usage
 
 ```javascript
-const { sigstore } = require('sigstore')
+const { attest, verify } = require('sigstore');
 ```
 
 ```javascript
-import { sigstore } from 'sigstore'
+import { attest, verify } from 'sigstore';
 ```
 
 ### sign(payload[, options])
@@ -153,14 +153,14 @@ Generates a Sigstore signature for the supplied payload. Returns a
 [Sigstore bundle][2] containing the signature and the verification material
 necessary to verify the signature.
 
-* `payload` `<Buffer>`: The bytes of the artifact to be signed.
-* `options` `<Object>`
-  * `fulcioURL` `<string>`: The base URL of the Fulcio instance to use for retrieving the signing certificate. Defaults to `'https://fulcio.sigstore.dev'`.
-  * `rekorURL` `<string>`: The base URL of the Rekor instance to use when adding the signature to the transparency log. Defaults to `'https://rekor.sigstore.dev'`.
-  * `tsaServerURL` `<string>`: The base URL of the Timestamp Authority instance to use when requesting a signed timestamp. If omitted, no timestamp will be requested.
-  * `tlogUpload` `<boolean>`: Flag indicating whether or not the signature should be recorded on the Rekor transparency log. Defaults to `true`.
-  * `identityToken` `<string>`: The OIDC token identifying the signer. If no explicit token is supplied, an attempt will be made to retrieve one from the environment. This config cannot be used with `identityProvider`.
-  * `identityProvider` `<IdentityProvider>`: Object which implements `getToken: () => Promise<string>`. The supplied provider will be used to retrieve an OIDC token. If no provider is supplied, an attempt will be made to retrieve an OIDC token from the environment. This config cannot be used with `identityToken`.
+- `payload` `<Buffer>`: The bytes of the artifact to be signed.
+- `options` `<Object>`
+  - `fulcioURL` `<string>`: The base URL of the Fulcio instance to use for retrieving the signing certificate. Defaults to `'https://fulcio.sigstore.dev'`.
+  - `rekorURL` `<string>`: The base URL of the Rekor instance to use when adding the signature to the transparency log. Defaults to `'https://rekor.sigstore.dev'`.
+  - `tsaServerURL` `<string>`: The base URL of the Timestamp Authority instance to use when requesting a signed timestamp. If omitted, no timestamp will be requested.
+  - `tlogUpload` `<boolean>`: Flag indicating whether or not the signature should be recorded on the Rekor transparency log. Defaults to `true`.
+  - `identityToken` `<string>`: The OIDC token identifying the signer. If no explicit token is supplied, an attempt will be made to retrieve one from the environment. This config cannot be used with `identityProvider`.
+  - `identityProvider` `<IdentityProvider>`: Object which implements `getToken: () => Promise<string>`. The supplied provider will be used to retrieve an OIDC token. If no provider is supplied, an attempt will be made to retrieve an OIDC token from the environment. This config cannot be used with `identityToken`.
 
 ### attest(payload, payloadType[, options])
 
@@ -168,32 +168,31 @@ Generates a Sigstore signature for the supplied in-toto statement. Returns a
 [Sigstore bundle][2] containing the [DSSE][3]-wrapped statement and signature
 as well as the verification material necessary to verify the signature.
 
-* `payload` `<Buffer>`: The bytes of the statement to be signed.
-* `payloadType` `<string>`: MIME or content type describing the statement to be signed.
-* `options` `<Object>`
-  * `fulcioURL` `<string>`: The base URL of the Fulcio instance to use for retrieving the signing certificate. Defaults to `'https://fulcio.sigstore.dev'`.
-  * `rekorURL` `<string>`: The base URL of the Rekor instance to use when adding the signature to the transparency log. Defaults to `'https://rekor.sigstore.dev'`.
-  * `tsaServerURL` `<string>`: The base URL of the Timestamp Authority instance to use when requesting a signed timestamp. If omitted, no timestamp will be requested.
-  * `tlogUpload` `<boolean>`: Flag indicating whether or not the signed statement should be recorded on the Rekor transparency log. Defaults to `true`.
-  * `identityToken` `<string>`: The OIDC token identifying the signer. If no explicit token is supplied, an attempt will be made to retrieve one from the environment. This config cannot be used with `identityProvider`.
-  * `identityProvider` `<IdentityProvider>`: Object which implements `getToken: () => Promise<string>`. The supplied provider will be used to retrieve an OIDC token. If no provider is supplied, an attempt will be made to retrieve an OIDC token from the environment. This config cannot be used with `identityToken`.
-
+- `payload` `<Buffer>`: The bytes of the statement to be signed.
+- `payloadType` `<string>`: MIME or content type describing the statement to be signed.
+- `options` `<Object>`
+  - `fulcioURL` `<string>`: The base URL of the Fulcio instance to use for retrieving the signing certificate. Defaults to `'https://fulcio.sigstore.dev'`.
+  - `rekorURL` `<string>`: The base URL of the Rekor instance to use when adding the signature to the transparency log. Defaults to `'https://rekor.sigstore.dev'`.
+  - `tsaServerURL` `<string>`: The base URL of the Timestamp Authority instance to use when requesting a signed timestamp. If omitted, no timestamp will be requested.
+  - `tlogUpload` `<boolean>`: Flag indicating whether or not the signed statement should be recorded on the Rekor transparency log. Defaults to `true`.
+  - `identityToken` `<string>`: The OIDC token identifying the signer. If no explicit token is supplied, an attempt will be made to retrieve one from the environment. This config cannot be used with `identityProvider`.
+  - `identityProvider` `<IdentityProvider>`: Object which implements `getToken: () => Promise<string>`. The supplied provider will be used to retrieve an OIDC token. If no provider is supplied, an attempt will be made to retrieve an OIDC token from the environment. This config cannot be used with `identityToken`.
 
 ### verify(bundle[, payload][, options])
 
 Verifies the signature in the supplied bundle.
 
-* `bundle` `<Bundle>`: The Sigstore bundle containing the signature to be verified and the verification material necessary to verify the signature.
-* `payload` `<Buffer>`: The bytes of the artifact over which the signature was created. Only necessary when the `sign` function was used to generate the signature since the Bundle does not contain any information about the artifact which was signed. Not required when the `attest` function was used to generate the Bundle.
-* `options` `<Object>`
-  * `ctLogThreshold` `<number>`: The number of certificate transparency logs on which the signing certificate must appear. Defaults to `1`.
-  * `tlogThreshold` `<number>`: The number of transparency logs on which the signature must appear. Defaults to `1`.
-  * `certificateIssuer` `<string>`: Value that must appear in the signing certificate's issuer extension (OID 1.3.6.1.4.1.57264.1.1). Not verified if no value is supplied.
-  * `certificateIdentityEmail` `<string>`: Email address which must appear in the signing certificate's Subject Alternative Name (SAN) extension. Must be specified in conjunction with the `certificateIssuer` option. Takes precedence over the `certificateIdentityURI` option. Not verified if no value is supplied.
-  * `certificateIdentityURI` `<string>`: URI which must appear in the signing certificate's Subject Alternative Name (SAN) extension. Must be specified in conjunction with the `certificateIssuer` option. Ignored if the `certificateIdentityEmail` option is set. Not verified if no value is supplied.
-  * `certificateOIDs` `<Object>`: A collection of OID/value pairs which must be present in the certificate's extension list. Not verified if no value is supplied.
-  * `keySelector` `<Function>`: Callback invoked to retrieve the public key (as either `string` or `Buffer`) necessary to verify the bundle signature. Not used when the signature was generated from a Fulcio-issued signing certificate.
-    * `hint` `<String>`: The hint from the bundle used to identify the the signing key.
+- `bundle` `<Bundle>`: The Sigstore bundle containing the signature to be verified and the verification material necessary to verify the signature.
+- `payload` `<Buffer>`: The bytes of the artifact over which the signature was created. Only necessary when the `sign` function was used to generate the signature since the Bundle does not contain any information about the artifact which was signed. Not required when the `attest` function was used to generate the Bundle.
+- `options` `<Object>`
+  - `ctLogThreshold` `<number>`: The number of certificate transparency logs on which the signing certificate must appear. Defaults to `1`.
+  - `tlogThreshold` `<number>`: The number of transparency logs on which the signature must appear. Defaults to `1`.
+  - `certificateIssuer` `<string>`: Value that must appear in the signing certificate's issuer extension (OID 1.3.6.1.4.1.57264.1.1). Not verified if no value is supplied.
+  - `certificateIdentityEmail` `<string>`: Email address which must appear in the signing certificate's Subject Alternative Name (SAN) extension. Must be specified in conjunction with the `certificateIssuer` option. Takes precedence over the `certificateIdentityURI` option. Not verified if no value is supplied.
+  - `certificateIdentityURI` `<string>`: URI which must appear in the signing certificate's Subject Alternative Name (SAN) extension. Must be specified in conjunction with the `certificateIssuer` option. Ignored if the `certificateIdentityEmail` option is set. Not verified if no value is supplied.
+  - `certificateOIDs` `<Object>`: A collection of OID/value pairs which must be present in the certificate's extension list. Not verified if no value is supplied.
+  - `keySelector` `<Function>`: Callback invoked to retrieve the public key (as either `string` or `Buffer`) necessary to verify the bundle signature. Not used when the signature was generated from a Fulcio-issued signing certificate.
+    - `hint` `<String>`: The hint from the bundle used to identify the the signing key.
 
 ## Credential Sources
 
@@ -211,7 +210,6 @@ for more details.
 
 If the `SIGSTORE_ID_TOKEN` environment variable is set, it will use this to authenticate to Fulcio.
 It is the callers responsibility to make sure that this token has the correct scopes.
-
 
 [1]: https://github.com/sigstore/rekor
 [2]: https://github.com/sigstore/protobuf-specs/blob/9b722b68a717778ba4f11543afa4ef93205ab502/protos/sigstore_bundle.proto#L63-L84

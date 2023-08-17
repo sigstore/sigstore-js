@@ -136,13 +136,10 @@ describe('#verify', () => {
   };
 
   describe('when everything in the bundle is valid', () => {
-    const bundle = bundles.signature.valid.withSigningCert;
-    const artifact = bundles.signature.artifact;
+    const bundle = bundles.dsse.valid.withSigningCert;
 
     it('does not throw an error', async () => {
-      await expect(verify(bundle, artifact, tufOptions)).resolves.toBe(
-        undefined
-      );
+      await expect(verify(bundle, tufOptions)).resolves.toBe(undefined);
     });
   });
 
