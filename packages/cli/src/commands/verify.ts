@@ -1,6 +1,6 @@
 import { Args, Command, Flags } from '@oclif/core';
 import fs from 'fs/promises';
-import { sigstore } from 'sigstore';
+import * as sigstore from 'sigstore';
 
 export default class Verify extends Command {
   static override description = 'verify the supplied .sigstore bundle file';
@@ -43,7 +43,7 @@ export default class Verify extends Command {
       .readFile(args.bundle)
       .then((data) => JSON.parse(data.toString()));
 
-    return sigstore.verify(bundle, undefined, options).then(() => {
+    return sigstore.verify(bundle, options).then(() => {
       this.logToStderr('Verification succeeded');
       return { verified: true };
     });

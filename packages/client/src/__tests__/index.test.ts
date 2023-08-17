@@ -13,47 +13,43 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { IdentityProvider, sigstore } from '..';
+import { fromPartial } from '@total-typescript/shoehorn';
+import * as sigstore from '..';
 
-describe('sigstore', () => {
-  // This test is a bit of a hack to ensure that the types are exported
-  it('exports sigstore types', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bundle: sigstore.Bundle = {} as any;
-    expect(bundle).toBeDefined();
+// This test is a bit of a hack to ensure that the types are exported
+it('exports sigstore types', async () => {
+  const bundle: sigstore.Bundle = fromPartial({});
+  expect(bundle).toBeDefined();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const envelope: sigstore.Envelope = {} as any;
-    expect(envelope).toBeDefined();
+  const signOptions: sigstore.SignOptions = fromPartial({});
+  expect(signOptions).toBeDefined();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const signOptions: sigstore.SignOptions = {} as any;
-    expect(signOptions).toBeDefined();
+  const verifyOptions: sigstore.VerifyOptions = fromPartial({});
+  expect(verifyOptions).toBeDefined();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const verifyOptions: sigstore.VerifyOptions = {} as any;
-    expect(verifyOptions).toBeDefined();
+  const identityProvider: sigstore.IdentityProvider = fromPartial({});
+  expect(identityProvider).toBeDefined();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const identityProvider: IdentityProvider = {} as any;
-    expect(identityProvider).toBeDefined();
+  const bundleVerifier: sigstore.BundleVerifier = fromPartial({});
+  expect(bundleVerifier).toBeDefined();
+});
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bundleVerifier: sigstore.BundleVerifier = {} as any;
-    expect(bundleVerifier).toBeDefined();
-  });
+it('exports sigstore core functions', async () => {
+  expect(sigstore.attest).toBeInstanceOf(Function);
+  expect(sigstore.sign).toBeInstanceOf(Function);
+  expect(sigstore.verify).toBeInstanceOf(Function);
+  expect(sigstore.createVerifier).toBeInstanceOf(Function);
+});
 
-  it('exports sigstore core functions', async () => {
-    expect(sigstore.attest).toBeInstanceOf(Function);
-    expect(sigstore.sign).toBeInstanceOf(Function);
-    expect(sigstore.verify).toBeInstanceOf(Function);
-    expect(sigstore.createVerifier).toBeInstanceOf(Function);
-  });
+it('exports errors', () => {
+  expect(sigstore.InternalError).toBeInstanceOf(Object);
+  expect(sigstore.PolicyError).toBeInstanceOf(Object);
+  expect(sigstore.VerificationError).toBeInstanceOf(Object);
+  expect(sigstore.ValidationError).toBeInstanceOf(Object);
+  expect(sigstore.TUFError).toBeInstanceOf(Object);
+});
 
-  it('exports errors', () => {
-    expect(sigstore.InternalError).toBeInstanceOf(Object);
-    expect(sigstore.PolicyError).toBeInstanceOf(Object);
-    expect(sigstore.VerificationError).toBeInstanceOf(Object);
-    expect(sigstore.ValidationError).toBeInstanceOf(Object);
-  });
+it('exports constants', () => {
+  expect(sigstore.DEFAULT_FULCIO_URL).toBeDefined();
+  expect(sigstore.DEFAULT_REKOR_URL).toBeDefined();
 });

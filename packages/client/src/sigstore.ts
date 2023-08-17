@@ -24,6 +24,7 @@ import { Verifier } from './verify';
 
 export async function sign(
   payload: Buffer,
+  /* istanbul ignore next */
   options: config.SignOptions = {}
 ): Promise<SerializedBundle> {
   const bundler = config.createBundleBuilder('messageSignature', options);
@@ -34,6 +35,7 @@ export async function sign(
 export async function attest(
   payload: Buffer,
   payloadType: string,
+  /* istanbul ignore next */
   options: config.SignOptions = {}
 ): Promise<SerializedBundle> {
   const bundler = config.createBundleBuilder('dsseEnvelope', options);
@@ -43,29 +45,37 @@ export async function attest(
 
 export async function verify(
   bundle: SerializedBundle,
-  payload?: Buffer,
-  options: config.VerifyOptions = {}
+  options?: config.VerifyOptions
+): Promise<void>;
+export async function verify(
+  bundle: SerializedBundle,
+  data: Buffer,
+  options?: config.VerifyOptions
+): Promise<void>;
+export async function verify(
+  bundle: SerializedBundle,
+  dataOrOptions?: Buffer | config.VerifyOptions,
+  options?: config.VerifyOptions
 ): Promise<void> {
-  const trustedRoot = await tuf.getTrustedRoot({
-    mirrorURL: options.tufMirrorURL,
-    rootPath: options.tufRootPath,
-    cachePath: options.tufCachePath,
-    retry: options.retry ?? config.DEFAULT_RETRY,
-    timeout: options.timeout ?? config.DEFAULT_TIMEOUT,
-  });
-  const verifier = new Verifier(trustedRoot, options.keySelector);
+  let data: Buffer | undefined;
+  if (Buffer.isBuffer(dataOrOptions)) {
+    data = dataOrOptions;
+  } else {
+    options = dataOrOptions;
+  }
 
-  const deserializedBundle = bundleFromJSON(bundle);
-  const opts = config.artifactVerificationOptions(options);
-  return verifier.verify(deserializedBundle, opts, payload);
+  return createVerifier(options).then((verifier) =>
+    verifier.verify(bundle, data)
+  );
 }
 
 export interface BundleVerifier {
-  verify(bundle: SerializedBundle): void;
+  verify(bundle: SerializedBundle, data?: Buffer): void;
 }
 
 export async function createVerifier(
-  options: config.CreateVerifierOptions
+  /* istanbul ignore next */
+  options: config.VerifyOptions = {}
 ): Promise<BundleVerifier> {
   const trustedRoot = await tuf.getTrustedRoot({
     mirrorURL: options.tufMirrorURL,
@@ -78,19 +88,9 @@ export async function createVerifier(
   const verifyOpts = config.artifactVerificationOptions(options);
 
   return {
-    verify: (bundle: SerializedBundle): void => {
+    verify: (bundle: SerializedBundle, payload?: Buffer): void => {
       const deserializedBundle = bundleFromJSON(bundle);
-      return verifier.verify(deserializedBundle, verifyOpts);
+      return verifier.verify(deserializedBundle, verifyOpts, payload);
     },
   };
 }
-
-export { ValidationError } from '@sigstore/bundle';
-export type {
-  SerializedBundle as Bundle,
-  SerializedEnvelope as Envelope,
-} from '@sigstore/bundle';
-export type { SignOptions, VerifyOptions } from './config';
-export { InternalError, PolicyError, VerificationError } from './error';
-export const DEFAULT_FULCIO_URL = config.DEFAULT_FULCIO_URL;
-export const DEFAULT_REKOR_URL = config.DEFAULT_REKOR_URL;
