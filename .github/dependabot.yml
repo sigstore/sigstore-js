@@ -7,18 +7,31 @@ updates:
   versioning-strategy: auto
   open-pull-requests-limit: 10
   groups:
-    dev-dependencies:
-      patterns:
-        - "@types/*"
-        - "eslint*"
-        - "@typescript-eslint/*"
-        - "prettier"
     oclif:
       patterns:
         - "oclif"
         - "@oclif/*"
+    sigstore:
+      patterns:
+        - "sigstore/*"
+    prod-patch-deps:
+      dependency-type: "production"
+      update-types:
+        - "patch"
+      exclude-patterns:
+        - "sigstore/*"
+    dev-deps:
+      dependency-type: "development"      
+      update-types:
+        - "minor"
+        - "patch"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
       interval: daily
   open-pull-requests-limit: 10
+  groups:
+    minor-patch:
+      update-types:
+        - "minor"
+        - "patch"
