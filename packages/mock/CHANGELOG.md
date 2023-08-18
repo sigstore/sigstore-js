@@ -1,5 +1,18 @@
 # @sigstore/mock
 
+## 0.3.0
+
+### Minor Changes
+
+- d0053a3: Drop node 14 support
+
+### Patch Changes
+
+- 4e49006: Bump @tufjs/repo-mock from 1.4.0 to 2.0.0
+- 1e0fb61: Bump nock from 13.3.2 to 13.3.3
+- 06ea684: Bump @sigstore/protobuf-specs from 0.2.0 to 0.2.1
+- c8de4e9: Fix incorrect dependency reference in `package.json`
+
 ## 0.2.0
 
 ### Minor Changes
