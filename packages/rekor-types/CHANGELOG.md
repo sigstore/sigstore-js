@@ -1,5 +1,11 @@
 # @sigstore/rekor-types
 
+## 2.0.0
+
+### Major Changes
+
+- d0053a3: Drop node 14 support
+
 ## 1.0.0
 
 ### Major Changes

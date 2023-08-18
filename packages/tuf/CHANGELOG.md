@@ -1,5 +1,17 @@
 # @sigstore/tuf
 
+## 2.0.0
+
+### Major Changes
+
+- d0053a3: Drop node 14 support
+- 3bc1817: Bump `tuf-js` to v2.0.0
+
+### Patch Changes
+
+- 4e49006: Bump @tufjs/repo-mock from 1.4.0 to 2.0.0
+- 06ea684: Bump @sigstore/protobuf-specs from 0.2.0 to 0.2.1
+
 ## 1.0.3
 
 ### Patch Changes
