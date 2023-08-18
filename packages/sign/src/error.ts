@@ -19,7 +19,8 @@ type InternalErrorCode =
   | 'TLOG_CREATE_ENTRY_ERROR'
   | 'CA_CREATE_SIGNING_CERTIFICATE_ERROR'
   | 'TSA_CREATE_TIMESTAMP_ERROR'
-  | 'IDENTITY_TOKEN_READ_ERROR';
+  | 'IDENTITY_TOKEN_READ_ERROR'
+  | 'IDENTITY_TOKEN_PARSE_ERROR';
 
 export class InternalError extends Error {
   code: InternalErrorCode;
