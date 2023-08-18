@@ -111,20 +111,8 @@ function initClient(
   const baseURL = remote.mirror;
   const config: ConstructorParameters<typeof Updater>[0]['config'] = {
     fetchTimeout: options.timeout,
+    fetchRetry: options.retry,
   };
-
-  // tuf-js only supports a number for fetchRetries so we have to
-  // convert the boolean and object options to a number.
-  /* istanbul ignore if */
-  if (typeof options.retry !== 'undefined') {
-    if (typeof options.retry === 'number') {
-      config.fetchRetries = options.retry;
-    } else if (typeof options.retry === 'object') {
-      config.fetchRetries = options.retry.retries;
-    } else if (options.retry === true) {
-      config.fetchRetries = 1;
-    }
-  }
 
   return new Updater({
     metadataBaseUrl: baseURL,
