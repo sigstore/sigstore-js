@@ -26,15 +26,21 @@ import { toProposedEntry } from './entry';
 import type { TransparencyLogEntry } from '@sigstore/bundle';
 import type { SignatureBundle, Witness } from '../witness';
 
+export const DEFAULT_REKOR_URL = 'https://rekor.sigstore.dev';
+
 type TransparencyLogEntries = { tlogEntries: TransparencyLogEntry[] };
 
-export type RekorWitnessOptions = TLogClientOptions;
+export type RekorWitnessOptions = Partial<TLogClientOptions>;
 
 export class RekorWitness implements Witness {
   private tlog: TLog;
 
   constructor(options: RekorWitnessOptions) {
-    this.tlog = new TLogClient(options);
+    this.tlog = new TLogClient({
+      ...options,
+      rekorBaseURL:
+        options.rekorBaseURL || /* istanbul ignore next */ DEFAULT_REKOR_URL,
+    });
   }
 
   public async testify(

@@ -16,6 +16,8 @@ limitations under the License.
 import { fromPartial } from '@total-typescript/shoehorn';
 import {
   CIContextProvider,
+  DEFAULT_FULCIO_URL,
+  DEFAULT_REKOR_URL,
   DSSEBundleBuilder,
   FulcioSigner,
   InternalError,
@@ -93,4 +95,9 @@ it('exports classes', () => {
 
 it('exports errors', () => {
   expect(InternalError).toBeInstanceOf(Function);
+});
+
+it('exports constants', () => {
+  expect(DEFAULT_FULCIO_URL).toBeDefined();
+  expect(DEFAULT_REKOR_URL).toBeDefined();
 });
