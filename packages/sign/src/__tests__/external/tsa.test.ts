@@ -59,7 +59,7 @@ describe('TimestampAuthority', () => {
 
       it('returns an error', async () => {
         await expect(subject.createTimestamp(timestampRequest)).rejects.toThrow(
-          'HTTP Error: 400 Bad Request'
+          '(400) Error generating timestamp response'
         );
       });
     });

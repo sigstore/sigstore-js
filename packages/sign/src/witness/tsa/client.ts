@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { InternalError } from '../../error';
+import { internalError } from '../../error';
 import { TimestampAuthority } from '../../external/tsa';
 import { crypto } from '../../util';
 
@@ -47,11 +47,11 @@ export class TSAClient implements TSA {
     try {
       return await this.tsa.createTimestamp(request);
     } catch (err) {
-      throw new InternalError({
-        code: 'TSA_CREATE_TIMESTAMP_ERROR',
-        message: 'error creating timestamp',
-        cause: err,
-      });
+      internalError(
+        err,
+        'TSA_CREATE_TIMESTAMP_ERROR',
+        'error creating timestamp'
+      );
     }
   }
 }
