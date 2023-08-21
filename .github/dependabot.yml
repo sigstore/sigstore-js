@@ -16,7 +16,8 @@ updates:
       update-types:
         - "patch"
       exclude-patterns:
-        - "sigstore/*"
+        - "sigstore"
+        - "@sigstore/*"
     dev-deps:
       dependency-type: "development"      
       update-types:
