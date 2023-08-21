@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "oclif": "^3",
-    "tslib": "^2.6.1"
+    "tslib": "^2.6.2"
   },
   "oclif": {
     "bin": "sigstore-conformance",
