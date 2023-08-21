@@ -88,6 +88,24 @@ describe('KeylessSigner', () => {
       });
     });
 
+    describe('when the identity provider returns an invalid token', () => {
+      const errorProvider: IdentityProvider = {
+        getToken: jest.fn().mockResolvedValue(''),
+      };
+
+      const subject = new FulcioSigner({
+        ...options,
+        identityProvider: errorProvider,
+      });
+
+      it('throws an error', async () => {
+        await expect(subject.sign(payload)).rejects.toThrowWithCode(
+          InternalError,
+          'IDENTITY_TOKEN_PARSE_ERROR'
+        );
+      });
+    });
+
     describe('when the child signer returns an invalid key', () => {
       const keyHolder: Signer = {
         sign: () =>

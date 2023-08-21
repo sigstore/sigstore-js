@@ -46,7 +46,16 @@ export class FulcioSigner implements Signer {
     const identityToken = await this.getIdentityToken();
 
     // Extract challenge claim from OIDC token
-    const subject = oidc.extractJWTSubject(identityToken);
+    let subject: string;
+    try {
+      subject = oidc.extractJWTSubject(identityToken);
+    } catch (err) {
+      throw new InternalError({
+        code: 'IDENTITY_TOKEN_PARSE_ERROR',
+        message: `invalid identity token: ${identityToken}`,
+        cause: err,
+      });
+    }
 
     // Construct challenge value by signing the subject claim
     const challenge = await this.keyHolder.sign(Buffer.from(subject));

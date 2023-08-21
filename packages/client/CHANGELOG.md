@@ -1,5 +1,32 @@
 # sigstore
 
+## 2.0.0
+
+### Major Changes
+
+- 829e123: Replaces the exported `sigstore` object with individual functions/types
+- 4455f7f: Remove TUF helper functions (please use `@sigstore/tuf` package instead)
+- d5060c0: Removes `oidcIssuer`, `oidcClient`, `oidcClientSecret`, and `oidcRedirectURL` from the options for the `sign` and `attest` functions. The OAuth identity provider that was associated with these options has been relocated to the `@sigstore/cli` package.
+- d0053a3: Drop node 14 support
+- 3bd0fbb: Removes `signer` from the options for the `sign` and `attest` functions (see the `@sigstore/sign` package if you require something other than Fulcio-style keyless signing)
+- e36bbfa: Removes the legacy CLI (please use the `@sigstore/cli` package instead)
+- 3bd0fbb: Remove `sigstore-utils` object from public interface
+
+### Patch Changes
+
+- 4e49006: Bump @tufjs/repo-mock from 1.4.0 to 2.0.0
+- 06ea684: Bump @sigstore/protobuf-specs from 0.2.0 to 0.2.1
+- Updated dependencies [4e49006]
+- Updated dependencies [06ea684]
+- Updated dependencies [06ea684]
+- Updated dependencies [06ea684]
+- Updated dependencies [d0053a3]
+- Updated dependencies [d0053a3]
+- Updated dependencies [3bc1817]
+  - @sigstore/tuf@2.0.0
+  - @sigstore/sign@2.0.0
+  - @sigstore/bundle@2.0.0
+
 ## 1.9.0
 
 ### Minor Changes

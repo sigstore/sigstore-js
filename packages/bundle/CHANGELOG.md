@@ -1,5 +1,15 @@
 # @sigstore/bundle
 
+## 2.0.0
+
+### Major Changes
+
+- d0053a3: Drop node 14 support
+
+### Patch Changes
+
+- 06ea684: Bump @sigstore/protobuf-specs from 0.2.0 to 0.2.1
+
 ## 1.1.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@sigstore/mock",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Mocked version of the Sigstore services",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,14 +26,13 @@
     "provenance": true
   },
   "devDependencies": {
-    "@sigstore/rekor-types": "^0.0.3",
+    "@sigstore/rekor-types": "^2.0.0",
     "make-fetch-happen": "^13.0.0"
   },
   "dependencies": {
     "@peculiar/webcrypto": "^1.4.3",
     "@peculiar/x509": "^1.9.3",
     "@sigstore/protobuf-specs": "^0.2.1",
-    "@tufjs/repo-mock": "^1.1.0",
     "asn1js": "^3.0.5",
     "bytestreamjs": "^2.0.1",
     "canonicalize": "^2.0.0",
