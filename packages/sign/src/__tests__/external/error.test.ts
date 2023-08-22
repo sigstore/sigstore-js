@@ -51,4 +51,38 @@ describe('checkStatus', () => {
       }
     });
   });
+
+  describe('when the response has a message', () => {
+    const response: Response = fromPartial({
+      status: 404,
+      statusText: 'Not Found',
+      ok: false,
+      headers: {
+        get: (header: string) => {
+          if (header === 'Content-Type') {
+            return 'application/json';
+          }
+          if (header === 'Location') {
+            return 'https://example.com';
+          }
+          return undefined;
+        },
+      },
+      json: () => {
+        return Promise.resolve({ message: 'record not found' });
+      },
+    });
+
+    it('throws an error with the message', async () => {
+      expect.assertions(3);
+      try {
+        await checkStatus(response);
+      } catch (e) {
+        assert(e instanceof HTTPError);
+        expect(e.message).toEqual('(404) record not found');
+        expect(e.statusCode).toEqual(404);
+        expect(e.location).toEqual('https://example.com');
+      }
+    });
+  });
 });
