@@ -13,6 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-export { RekorWitness, RekorWitnessOptions } from './tlog';
+export { DEFAULT_REKOR_URL, RekorWitness, RekorWitnessOptions } from './tlog';
 export { TSAWitness, TSAWitnessOptions } from './tsa';
 export type { SignatureBundle, VerificationMaterial, Witness } from './witness';

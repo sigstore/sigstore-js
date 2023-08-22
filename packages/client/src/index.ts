@@ -14,9 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 export { ValidationError } from '@sigstore/bundle';
-export { InternalError } from '@sigstore/sign';
+export {
+  DEFAULT_FULCIO_URL,
+  DEFAULT_REKOR_URL,
+  InternalError,
+} from '@sigstore/sign';
 export { TUFError } from '@sigstore/tuf';
-export { DEFAULT_FULCIO_URL, DEFAULT_REKOR_URL } from './config';
 export { PolicyError, VerificationError } from './error';
 export { attest, createVerifier, sign, verify } from './sigstore';
 
