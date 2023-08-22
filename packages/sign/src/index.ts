@@ -4,9 +4,9 @@ export type { Artifact, BundleBuilder, BundleBuilderOptions } from './bundler';
 export { InternalError } from './error';
 export { CIContextProvider } from './identity';
 export type { IdentityProvider } from './identity';
-export { FulcioSigner } from './signer';
+export { DEFAULT_FULCIO_URL, FulcioSigner } from './signer';
 export type { FulcioSignerOptions, Signature, Signer } from './signer';
-export { RekorWitness, TSAWitness } from './witness';
+export { DEFAULT_REKOR_URL, RekorWitness, TSAWitness } from './witness';
 export type {
   RekorWitnessOptions,
   SignatureBundle,

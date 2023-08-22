@@ -53,9 +53,6 @@ export type VerifyOptions = {
   tufCachePath?: string;
 } & FetchOptions;
 
-export const DEFAULT_FULCIO_URL = 'https://fulcio.sigstore.dev';
-export const DEFAULT_REKOR_URL = 'https://rekor.sigstore.dev';
-
 export const DEFAULT_RETRY: Retry = { retries: 2 };
 export const DEFAULT_TIMEOUT = 5000;
 
@@ -89,7 +86,7 @@ export function createBundleBuilder(
 // Instantiate the FulcioSigner based on the supplied options.
 function initSigner(options: SignOptions): Signer {
   return new FulcioSigner({
-    fulcioBaseURL: options.fulcioURL || DEFAULT_FULCIO_URL,
+    fulcioBaseURL: options.fulcioURL,
     identityProvider: options.identityProvider || initIdentityProvider(options),
     retry: options.retry ?? DEFAULT_RETRY,
     timeout: options.timeout ?? DEFAULT_TIMEOUT,
@@ -116,7 +113,7 @@ function initWitnesses(options: SignOptions): Witness[] {
   if (isRekorEnabled(options)) {
     witnesses.push(
       new RekorWitness({
-        rekorBaseURL: options.rekorURL || DEFAULT_REKOR_URL,
+        rekorBaseURL: options.rekorURL,
         fetchOnConflict: false,
         retry: options.retry ?? DEFAULT_RETRY,
         timeout: options.timeout ?? DEFAULT_TIMEOUT,
