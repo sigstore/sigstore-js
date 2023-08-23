@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { InternalError } from '../../error';
+import { internalError } from '../../error';
 import { Fulcio, SigningCertificateRequest } from '../../external/fulcio';
 
 import type { FetchOptions } from '../../types/fetch';
@@ -60,11 +60,11 @@ export class CAClient implements CA {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return cert!.chain.certificates;
     } catch (err) {
-      throw new InternalError({
-        code: 'CA_CREATE_SIGNING_CERTIFICATE_ERROR',
-        message: 'error creating signing certificate',
-        cause: err,
-      });
+      internalError(
+        err,
+        'CA_CREATE_SIGNING_CERTIFICATE_ERROR',
+        'error creating signing certificate'
+      );
     }
   }
 }

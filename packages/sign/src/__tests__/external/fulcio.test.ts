@@ -83,7 +83,7 @@ describe('Fulcio', () => {
       it('returns an error', async () => {
         await expect(
           subject.createSigningCertificate(certRequest)
-        ).rejects.toThrow('HTTP Error: 400 Bad Request');
+        ).rejects.toThrow('(400) Invalid certificate request');
       });
     });
   });
