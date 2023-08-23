@@ -99,7 +99,7 @@ describe('Rekor', () => {
 
       it('returns an error', async () => {
         await expect(subject.createEntry(proposedEntry)).rejects.toThrow(
-          'HTTP Error: 409 Conflict'
+          '(409) An equivalent entry already exists'
         );
       });
     });
@@ -153,7 +153,7 @@ describe('Rekor', () => {
 
       it('returns an error', async () => {
         await expect(subject.getEntry('foo')).rejects.toThrow(
-          'HTTP Error: 404 Not Found'
+          '(404) Entry not found'
         );
       });
     });
@@ -229,7 +229,7 @@ describe('Rekor', () => {
 
       it('returns an error', async () => {
         await expect(subject.getEntry('foo')).rejects.toThrow(
-          'HTTP Error: 422 Unprocessable Entity'
+          '(422) Invalid query'
         );
       });
     });

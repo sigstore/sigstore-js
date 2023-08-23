@@ -76,7 +76,7 @@ export class Fulcio {
       method: 'POST',
       body: JSON.stringify(request),
     });
-    checkStatus(response);
+    await checkStatus(response);
 
     const data = await response.json();
     return data;

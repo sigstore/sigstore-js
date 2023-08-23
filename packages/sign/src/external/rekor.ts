@@ -84,7 +84,7 @@ export class Rekor {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(propsedEntry),
     });
-    checkStatus(response);
+    await checkStatus(response);
 
     const data = await response.json();
     return entryFromResponse(data);
@@ -99,7 +99,7 @@ export class Rekor {
     const url = `${this.baseUrl}/api/v1/log/entries/${uuid}`;
 
     const response = await this.fetch(url);
-    checkStatus(response);
+    await checkStatus(response);
 
     const data: LogEntry = await response.json();
     return entryFromResponse(data);
@@ -118,7 +118,7 @@ export class Rekor {
       body: JSON.stringify(opts),
       headers: { 'Content-Type': 'application/json' },
     });
-    checkStatus(response);
+    await checkStatus(response);
 
     const data = await response.json();
     return data;
@@ -137,7 +137,7 @@ export class Rekor {
       body: JSON.stringify(opts),
       headers: { 'Content-Type': 'application/json' },
     });
-    checkStatus(response);
+    await checkStatus(response);
 
     const rawData: LogEntry[] = await response.json();
     const data = rawData.map((d) => entryFromResponse(d));

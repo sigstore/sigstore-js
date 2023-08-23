@@ -19,22 +19,47 @@ import fetch from 'make-fetch-happen';
 type Response = Awaited<ReturnType<typeof fetch>>;
 
 export class HTTPError extends Error {
-  public response: Response;
   public statusCode: number;
   public location?: string;
 
-  constructor(response: Response) {
-    super(`HTTP Error: ${response.status} ${response.statusText}`);
-    this.response = response;
-    this.statusCode = response.status;
-    this.location = response.headers?.get('Location') || undefined;
+  constructor({
+    status,
+    message,
+    location,
+  }: {
+    status: number;
+    message: string;
+    location?: string;
+  }) {
+    super(`(${status}) ${message}`);
+    this.statusCode = status;
+    this.location = location;
   }
 }
 
-export const checkStatus = (response: Response): Response => {
+export const checkStatus = async (response: Response): Promise<Response> => {
   if (response.ok) {
     return response;
   } else {
-    throw new HTTPError(response);
+    let message = response.statusText;
+    const location = response.headers?.get('Location') || undefined;
+    const contentType = response.headers?.get('Content-Type');
+
+    // If response type is JSON, try to parse the body for a message
+    if (contentType?.includes('application/json')) {
+      try {
+        await response.json().then((body) => {
+          message = body.message;
+        });
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    throw new HTTPError({
+      status: response.status,
+      message: message,
+      location: location,
+    });
   }
 };

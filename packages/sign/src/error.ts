@@ -13,6 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+import { HTTPError } from './external/error';
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type InternalErrorCode =
   | 'TLOG_FETCH_ENTRY_ERROR'
@@ -40,4 +43,20 @@ export class InternalError extends Error {
     this.cause = cause;
     this.code = code;
   }
+}
+
+export function internalError(
+  err: unknown,
+  code: InternalErrorCode,
+  message: string
+): never {
+  if (err instanceof HTTPError) {
+    message += ` - ${err.message}`;
+  }
+
+  throw new InternalError({
+    code: code,
+    message: message,
+    cause: err,
+  });
 }
