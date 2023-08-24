@@ -21,10 +21,12 @@ import { EphemeralSigner } from './ephemeral';
 import type { IdentityProvider } from '../../identity';
 import type { Signature, Signer } from '../signer';
 
+export const DEFAULT_FULCIO_URL = 'https://fulcio.sigstore.dev';
+
 export type FulcioSignerOptions = {
   identityProvider: IdentityProvider;
   keyHolder?: Signer;
-} & CAClientOptions;
+} & Partial<CAClientOptions>;
 
 // Signer implementation which can be used to decorate another signer
 // with a Fulcio-issued signing certificate for the signer's public key.
@@ -36,7 +38,11 @@ export class FulcioSigner implements Signer {
   private keyHolder: Signer;
 
   constructor(options: FulcioSignerOptions) {
-    this.ca = new CAClient(options);
+    this.ca = new CAClient({
+      ...options,
+      fulcioBaseURL:
+        options.fulcioBaseURL || /* istanbul ignore next */ DEFAULT_FULCIO_URL,
+    });
     this.identityProvider = options.identityProvider;
     this.keyHolder = options.keyHolder || new EphemeralSigner();
   }
@@ -46,7 +52,16 @@ export class FulcioSigner implements Signer {
     const identityToken = await this.getIdentityToken();
 
     // Extract challenge claim from OIDC token
-    const subject = oidc.extractJWTSubject(identityToken);
+    let subject: string;
+    try {
+      subject = oidc.extractJWTSubject(identityToken);
+    } catch (err) {
+      throw new InternalError({
+        code: 'IDENTITY_TOKEN_PARSE_ERROR',
+        message: `invalid identity token: ${identityToken}`,
+        cause: err,
+      });
+    }
 
     // Construct challenge value by signing the subject claim
     const challenge = await this.keyHolder.sign(Buffer.from(subject));

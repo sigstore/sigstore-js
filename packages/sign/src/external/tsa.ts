@@ -54,7 +54,7 @@ export class TimestampAuthority {
       method: 'POST',
       body: JSON.stringify(request),
     });
-    checkStatus(response);
+    await checkStatus(response);
 
     return response.buffer();
   }

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { InternalError } from '../../error';
+import { internalError } from '../../error';
 import { HTTPError } from '../../external/error';
 import { Rekor } from '../../external/rekor';
 
@@ -58,18 +58,18 @@ export class TLogClient implements TLog {
         try {
           entry = await this.rekor.getEntry(uuid);
         } catch (err) {
-          throw new InternalError({
-            code: 'TLOG_FETCH_ENTRY_ERROR',
-            message: 'error fetching tlog entry',
-            cause: err,
-          });
+          internalError(
+            err,
+            'TLOG_FETCH_ENTRY_ERROR',
+            'error fetching tlog entry'
+          );
         }
       } else {
-        throw new InternalError({
-          code: 'TLOG_CREATE_ENTRY_ERROR',
-          message: 'error creating tlog entry',
-          cause: err,
-        });
+        internalError(
+          err,
+          'TLOG_CREATE_ENTRY_ERROR',
+          'error creating tlog entry'
+        );
       }
     }
 
