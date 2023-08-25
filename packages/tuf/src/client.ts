@@ -15,7 +15,7 @@ limitations under the License.
 */
 import fs from 'fs';
 import path from 'path';
-import { Updater } from 'tuf-js';
+import { Config, Updater } from 'tuf-js';
 import { readTarget } from './target';
 
 import type { MakeFetchHappenOptions } from 'make-fetch-happen';
@@ -109,7 +109,7 @@ function initClient(
   options: FetchOptions
 ): Updater {
   const baseURL = remote.mirror;
-  const config: ConstructorParameters<typeof Updater>[0]['config'] = {
+  const config: Partial<Config> = {
     fetchTimeout: options.timeout,
     fetchRetry: options.retry,
   };
