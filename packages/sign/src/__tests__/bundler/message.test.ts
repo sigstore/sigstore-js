@@ -69,7 +69,7 @@ describe('MessageSignatureBundleBuilder', () => {
 
       expect(b).toBeTruthy();
       expect(b.mediaType).toEqual(
-        'application/vnd.dev.sigstore.bundle+json;version=0.1'
+        'application/vnd.dev.sigstore.bundle+json;version=0.2'
       );
 
       expect(b.content.messageSignature).toBeTruthy();

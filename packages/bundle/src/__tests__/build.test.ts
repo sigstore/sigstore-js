@@ -16,6 +16,7 @@ limitations under the License.
 import { HashAlgorithm } from '@sigstore/protobuf-specs';
 import assert from 'assert';
 import { toDSSEBundle, toMessageSignatureBundle } from '../build';
+import { BUNDLE_V02_MEDIA_TYPE } from '../bundle';
 
 const signature = Buffer.from('signature');
 const keyHint = 'hint';
@@ -32,9 +33,7 @@ describe('toMessageSignatureBundle', () => {
     });
 
     expect(b).toBeTruthy();
-    expect(b.mediaType).toEqual(
-      'application/vnd.dev.sigstore.bundle+json;version=0.1'
-    );
+    expect(b.mediaType).toEqual(BUNDLE_V02_MEDIA_TYPE);
 
     assert(b.content?.$case === 'messageSignature');
     expect(b.content.messageSignature).toBeTruthy();
@@ -70,9 +69,7 @@ describe('toDSSEBundle', () => {
       });
 
       expect(b).toBeTruthy();
-      expect(b.mediaType).toEqual(
-        'application/vnd.dev.sigstore.bundle+json;version=0.1'
-      );
+      expect(b.mediaType).toEqual(BUNDLE_V02_MEDIA_TYPE);
 
       assert(b.content?.$case === 'dsseEnvelope');
       expect(b.content.dsseEnvelope).toBeTruthy();
@@ -98,9 +95,7 @@ describe('toDSSEBundle', () => {
       });
 
       expect(b).toBeTruthy();
-      expect(b.mediaType).toEqual(
-        'application/vnd.dev.sigstore.bundle+json;version=0.1'
-      );
+      expect(b.mediaType).toEqual(BUNDLE_V02_MEDIA_TYPE);
 
       assert(b.content?.$case === 'dsseEnvelope');
       expect(b.content.dsseEnvelope).toBeTruthy();
@@ -127,9 +122,7 @@ describe('toDSSEBundle', () => {
       });
 
       expect(b).toBeTruthy();
-      expect(b.mediaType).toEqual(
-        'application/vnd.dev.sigstore.bundle+json;version=0.1'
-      );
+      expect(b.mediaType).toEqual(BUNDLE_V02_MEDIA_TYPE);
 
       assert(b.content?.$case === 'dsseEnvelope');
       expect(b.content.dsseEnvelope).toBeTruthy();
