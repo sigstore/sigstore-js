@@ -43,7 +43,7 @@ describe('toMessageSignatureBundle', () => {
 
     expect(b).toBeTruthy();
     expect(b.mediaType).toEqual(
-      'application/vnd.dev.sigstore.bundle+json;version=0.1'
+      'application/vnd.dev.sigstore.bundle+json;version=0.2'
     );
 
     assert(b.content?.$case === 'messageSignature');
@@ -84,7 +84,7 @@ describe('toDSSEBundle', () => {
 
       expect(b).toBeTruthy();
       expect(b.mediaType).toEqual(
-        'application/vnd.dev.sigstore.bundle+json;version=0.1'
+        'application/vnd.dev.sigstore.bundle+json;version=0.2'
       );
 
       assert(b.content?.$case === 'dsseEnvelope');
@@ -120,7 +120,7 @@ describe('toDSSEBundle', () => {
 
       expect(b).toBeTruthy();
       expect(b.mediaType).toEqual(
-        'application/vnd.dev.sigstore.bundle+json;version=0.1'
+        'application/vnd.dev.sigstore.bundle+json;version=0.2'
       );
 
       assert(b.content?.$case === 'dsseEnvelope');
@@ -152,7 +152,7 @@ describe('toDSSEBundle', () => {
 
       expect(b).toBeTruthy();
       expect(b.mediaType).toEqual(
-        'application/vnd.dev.sigstore.bundle+json;version=0.1'
+        'application/vnd.dev.sigstore.bundle+json;version=0.2'
       );
 
       assert(b.content?.$case === 'dsseEnvelope');
