@@ -169,6 +169,7 @@ const bundler = new DSSEBundleBuilder({
 
 // Sign a thing
 const artifact = {
+  type: 'dsse_envelope',
   data: Buffer.from('something to be signed'),
 };
 const bundle = await bundler.create(artifact);
