@@ -11,6 +11,8 @@ updates:
       patterns:
         - "oclif"
         - "@oclif/*"
+      update-types:
+        - "minor"
     prod-patch-deps:
       dependency-type: "production"
       update-types:
@@ -19,7 +21,7 @@ updates:
         - "sigstore"
         - "@sigstore/*"
     dev-deps:
-      dependency-type: "development"      
+      dependency-type: "development"
       update-types:
         - "minor"
         - "patch"
