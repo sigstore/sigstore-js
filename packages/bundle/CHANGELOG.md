@@ -1,5 +1,11 @@
 # @sigstore/bundle
 
+## 2.1.0
+
+### Minor Changes
+
+- 70cb986: Generate v0.2 Sigstore bundles
+
 ## 2.0.0
 
 ### Major Changes

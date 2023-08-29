@@ -1,5 +1,14 @@
 # @sigstore/mock-server
 
+## 0.0.3
+
+### Patch Changes
+
+- 7f8d194: Bump @oclif/color from to
+- Updated dependencies [ef1a163]
+- Updated dependencies [5e5bd85]
+  - @sigstore/mock@0.4.0
+
 ## 0.0.2
 
 ### Patch Changes

@@ -1,5 +1,22 @@
 # sigstore
 
+## 2.1.0
+
+### Minor Changes
+
+- 70cb986: Generate v0.2 Sigstore bundles
+
+### Patch Changes
+
+- Updated dependencies [4a386dc]
+- Updated dependencies [9256f86]
+- Updated dependencies [70cb986]
+- Updated dependencies [fca33dc]
+- Updated dependencies [73370db]
+  - @sigstore/sign@2.1.0
+  - @sigstore/bundle@2.1.0
+  - @sigstore/tuf@2.1.0
+
 ## 2.0.0
 
 ### Major Changes
