@@ -1,5 +1,19 @@
 # @sigstore/sign
 
+## 2.1.0
+
+### Minor Changes
+
+- 9256f86: Export default Fulcio and Rekor URLs
+- 70cb986: Generate v0.2 Sigstore bundles
+- fca33dc: Surface error messages returned from Sigstore services in thrown errors
+
+### Patch Changes
+
+- 4a386dc: Better error handling when an invalid OIDC token is encountered
+- Updated dependencies [70cb986]
+  - @sigstore/bundle@2.1.0
+
 ## 2.0.0
 
 ### Major Changes
