@@ -1,5 +1,15 @@
 # @sigstore/mock
 
+## 0.4.0
+
+### Minor Changes
+
+- ef1a163: Remove extraneous `@tufjs/repo-mock` dependency
+
+### Patch Changes
+
+- 5e5bd85: Bump @peculiar/x509 from 1.9.3 to 1.9.5
+
 ## 0.3.0
 
 ### Minor Changes

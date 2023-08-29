@@ -1,5 +1,11 @@
 # @sigstore/tuf
 
+## 2.1.0
+
+### Minor Changes
+
+- 73370db: Bump tuf-js from 2.0.0 to 2.1.0
+
 ## 2.0.0
 
 ### Major Changes
