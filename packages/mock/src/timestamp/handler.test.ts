@@ -15,13 +15,16 @@ limitations under the License.
 */
 
 import { fromPartial } from '@total-typescript/shoehorn';
+import { generateKeyPair } from '../util/key';
 import { tsaHandler } from './handler';
 import { initializeTSA, TSA } from './tsa';
 
 describe('tsaHandler', () => {
+  const keyPair = generateKeyPair('prime256v1');
+
   describe('#path', () => {
     it('returns the correct path', async () => {
-      const tsa = await initializeTSA();
+      const tsa = await initializeTSA(keyPair);
       const handler = tsaHandler(tsa);
       expect(handler.path).toBe('/api/v1/timestamp');
     });
@@ -29,7 +32,7 @@ describe('tsaHandler', () => {
 
   describe('#fn', () => {
     it('returns a function', async () => {
-      const tsa = await initializeTSA();
+      const tsa = await initializeTSA(keyPair);
       const handler = tsaHandler(tsa);
       expect(handler.fn).toBeInstanceOf(Function);
     });
@@ -41,7 +44,7 @@ describe('tsaHandler', () => {
       };
 
       it('returns a tlog entry', async () => {
-        const tsa = await initializeTSA();
+        const tsa = await initializeTSA(keyPair);
         const { fn } = tsaHandler(tsa);
 
         const resp = await fn(JSON.stringify(timestampRequest));

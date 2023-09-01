@@ -28,11 +28,12 @@ export interface TLog {
   log(proposedEntry: object): Promise<LogEntry>;
 }
 
-export async function initializeTLog(url: string): Promise<TLog> {
+export async function initializeTLog(
+  url: string,
+  keyPair: crypto.KeyPairKeyObjectResult
+): Promise<TLog> {
   const host = new URL(url).host;
-  const { publicKey, privateKey } = crypto.generateKeyPairSync('ec', {
-    namedCurve: 'P-256',
-  });
+  const { publicKey, privateKey } = keyPair;
 
   return new TLogImpl(host, publicKey, privateKey);
 }

@@ -17,12 +17,13 @@ limitations under the License.
 import { Crypto } from '@peculiar/webcrypto';
 import x509 from '@peculiar/x509';
 import * as asn1js from 'asn1js';
+import type { KeyPairKeyObjectResult } from 'crypto';
 import {
   DIGEST_SHA256,
   KEY_ALGORITHM_ECDSA_P256,
-  KEY_ALGORITHM_ECDSA_P384,
   SIGNING_ALGORITHM_ECDSA_SHA384,
 } from '../constants';
+import { keyObjectToCryptoKey } from '../util/key';
 import { createRootCertificate } from '../util/root-cert';
 import type { CTLog } from './ctlog';
 
@@ -53,10 +54,18 @@ interface ExtensionValue {
 // the #issueCertificate method. Doing this work in a function allows us to
 // work around the fact that some of these operations are async and can't be
 // done in the constructor.
-export async function initializeCA(ctLog?: CTLog): Promise<CA> {
+export async function initializeCA(
+  keyPair: KeyPairKeyObjectResult,
+  ctLog?: CTLog
+): Promise<CA> {
+  const cryptoKeyPair = {
+    privateKey: await keyObjectToCryptoKey(keyPair.privateKey),
+    publicKey: await keyObjectToCryptoKey(keyPair.publicKey),
+  };
+
   const root = await createRootCertificate(
     ISSUER,
-    KEY_ALGORITHM_ECDSA_P384,
+    cryptoKeyPair,
     SIGNING_ALGORITHM_ECDSA_SHA384
   );
 

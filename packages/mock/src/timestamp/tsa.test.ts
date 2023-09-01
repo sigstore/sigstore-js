@@ -15,15 +15,17 @@ limitations under the License.
 */
 
 import * as pkijs from 'pkijs';
+import { generateKeyPair } from '../util/key';
 import { initializeTSA, TimestampRequest } from './tsa';
 
 const OID_TSA_POLICY = '1.3.6.1.4.1.57264.2';
 const OID_SHA256_ALGO_ID = '2.16.840.1.101.3.4.2.1';
 
 describe('TSA', () => {
+  const keyPair = generateKeyPair('prime256v1');
   describe('rootCertificate', () => {
     it('returns the root certificate', async () => {
-      const tsa = await initializeTSA();
+      const tsa = await initializeTSA(keyPair);
       const root = tsa.rootCertificate;
 
       expect(root).toBeDefined();
@@ -45,7 +47,7 @@ describe('TSA', () => {
     };
 
     it('returns a timestamp', async () => {
-      const tsa = await initializeTSA();
+      const tsa = await initializeTSA(keyPair);
       const result = await tsa.timestamp(request);
       expect(result).toBeDefined();
 
