@@ -21,6 +21,7 @@ USAGE
 * [`sigstore attest FILE`](#sigstore-attest-file)
 * [`sigstore help [COMMANDS]`](#sigstore-help-commands)
 * [`sigstore verify BUNDLE`](#sigstore-verify-bundle)
+* [`sigstore token`](#sigstore-token)
 
 ## `sigstore attest FILE`
 
@@ -105,5 +106,21 @@ EXAMPLES
   $ sigstore verify ./bundle.sigstore
 ```
 
+
+
+## `sigstore token`
+
+returns a Sigstore ID Token in JWT format
+
+```
+USAGE
+  $ sigstore token
+
+DESCRIPTION
+  returns a JWT token using one of the OIDC providers supported by Fulcio.
+
+EXAMPLES
+  $ sigstore token
+```
 
 <!-- commandsstop -->
