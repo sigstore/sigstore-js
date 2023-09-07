@@ -22,8 +22,8 @@ import {
   TUFClient,
 } from './client';
 
+export const DEFAULT_MIRROR_URL = 'https://tuf-repo-cdn.sigstore.dev';
 const DEFAULT_CACHE_DIR = 'sigstore-js';
-const DEFAULT_MIRROR_URL = 'https://tuf-repo-cdn.sigstore.dev';
 const DEFAULT_TUF_ROOT_PATH = '../store/public-good-instance-root.json';
 const DEFAULT_RETRY: Retry = { retries: 2 };
 const DEFAULT_TIMEOUT = 5000;
@@ -58,6 +58,7 @@ function createClient(options: TUFOptions) {
     mirrorURL: options.mirrorURL || DEFAULT_MIRROR_URL,
     retry: options.retry ?? DEFAULT_RETRY,
     timeout: options.timeout ?? DEFAULT_TIMEOUT,
+    force: options.force ?? false,
   });
 }
 
