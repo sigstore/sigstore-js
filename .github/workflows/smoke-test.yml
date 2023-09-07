@@ -35,14 +35,67 @@ jobs:
         echo -n "hello world" > artifact
     - name: Sign artifact
       run: |
-        ./packages/cli/bin/run attest --type "text/plain" --out bundle.sigstore artifact
+        ./packages/cli/bin/run attest --type "text/plain" --out bundle.json artifact
     - name: Verify bundle
       run: |
-        ./packages/cli/bin/run verify bundle.sigstore
+        ./packages/cli/bin/run verify bundle.json
     - name: Archive bundle
       if: success() || failure()
       uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3
       with:
-        name: bundle
-        path: bundle.sigstore
+        name: bundle.public-good.json
+        path: bundle.json
+
+  sign-verify-mock:
+    name: Sign/Verify Artifact (Mock Stack)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      DEBUG: "tuf:*"
+      SIGSTORE_URL: "http://localhost:8000"
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v3
+    - name: Setup node
+      uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3
+      with:
+        node-version: 16
+        cache: npm
+    - name: Install dependencies
+      run: npm ci
+    - name: Build sigstore-js
+      run: |
+        npm run build
+    - name: Start mock server (background)
+      run: |
+        npm run start --workspace packages/mock-server &
+    - name: Retrieve TUF trusted root
+      run: |
+        wget "${SIGSTORE_URL}/1.root.json"
+    - name: Initialize local TUF cache
+      run: |
+        ./packages/cli/bin/run init --mirror ${SIGSTORE_URL} --root ./1.root.json --force
+    - name: Create artifact to sign
+      run: |
+        echo -n "hello world" > artifact
+    - name: Sign artifact
+      run: |
+        ./packages/cli/bin/run attest \
+          --fulcio-url ${SIGSTORE_URL} \
+          --rekor-url ${SIGSTORE_URL} \
+          --tsa-server-url ${SIGSTORE_URL} \
+          --type "text/plain" \
+          --out bundle.json \
+          artifact
+    - name: Verify bundle
+      run: |
+        ./packages/cli/bin/run verify bundle.json
+    - name: Archive bundle
+      if: success() || failure()
+      uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3
+      with:
+        name: bundle.mock.json
+        path: bundle.json
 
