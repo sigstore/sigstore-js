@@ -15,13 +15,16 @@ limitations under the License.
 */
 
 import { generateKeyPairSync } from 'crypto';
+import { generateKeyPair } from '../util/key';
 import { CA, initializeCA } from './ca';
 import { fulcioHandler } from './handler';
 
 describe('fulcioHandler', () => {
+  const keyPair = generateKeyPair('prime256v1');
+
   describe('#path', () => {
     it('returns the correct path', async () => {
-      const ca = await initializeCA();
+      const ca = await initializeCA(keyPair);
       const handler = fulcioHandler(ca);
       expect(handler.path).toBe('/api/v2/signingCert');
     });
@@ -29,7 +32,7 @@ describe('fulcioHandler', () => {
 
   describe('#fn', () => {
     it('returns a function', async () => {
-      const ca = await initializeCA();
+      const ca = await initializeCA(keyPair);
       const handler = fulcioHandler(ca);
       expect(handler.fn).toBeInstanceOf(Function);
     });
@@ -58,7 +61,7 @@ describe('fulcioHandler', () => {
       };
 
       it('returns a certificate chain', async () => {
-        const ca = await initializeCA();
+        const ca = await initializeCA(keyPair);
         const { fn } = fulcioHandler(ca);
 
         // Make a request

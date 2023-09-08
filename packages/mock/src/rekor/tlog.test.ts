@@ -15,14 +15,16 @@ limitations under the License.
 */
 
 import crypto from 'crypto';
+import { generateKeyPair } from '../util/key';
 import { initializeTLog } from './tlog';
 
 describe('TLog', () => {
   const url = 'https://tlog.sigstore.dev';
+  const keyPair = generateKeyPair();
 
   describe('#publicKey', () => {
     it('should be a public key', async () => {
-      const subject = await initializeTLog(url);
+      const subject = await initializeTLog(url, keyPair);
       expect(subject.publicKey).toBeDefined();
     });
   });
@@ -30,7 +32,7 @@ describe('TLog', () => {
   describe('#log', () => {
     it('returns an entry', async () => {
       const proposedEntry = { foo: 'bar' };
-      const subject = await initializeTLog(url);
+      const subject = await initializeTLog(url, keyPair);
       const result = await subject.log(proposedEntry);
 
       const logID = crypto

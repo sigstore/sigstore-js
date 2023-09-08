@@ -16,15 +16,17 @@ limitations under the License.
 
 import { fromPartial } from '@total-typescript/shoehorn';
 import crypto from 'crypto';
+import { generateKeyPair } from '../util/key';
 import { rekorHandler } from './handler';
 import { initializeTLog, TLog } from './tlog';
 
 describe('rekorHandler', () => {
   const url = 'https://rekor.sigstore.dev';
+  const keyPair = generateKeyPair();
 
   describe('#path', () => {
     it('returns the correct path', async () => {
-      const tlog = await initializeTLog(url);
+      const tlog = await initializeTLog(url, keyPair);
       const handler = rekorHandler(tlog);
       expect(handler.path).toBe('/api/v1/log/entries');
     });
@@ -32,7 +34,7 @@ describe('rekorHandler', () => {
 
   describe('#fn', () => {
     it('returns a function', async () => {
-      const tlog = await initializeTLog(url);
+      const tlog = await initializeTLog(url, keyPair);
       const handler = rekorHandler(tlog);
       expect(handler.fn).toBeInstanceOf(Function);
     });
@@ -44,7 +46,7 @@ describe('rekorHandler', () => {
       };
 
       it('returns a tlog entry', async () => {
-        const tlog = await initializeTLog(url);
+        const tlog = await initializeTLog(url, keyPair);
         const { fn } = rekorHandler(tlog);
 
         const resp = await fn(JSON.stringify(proposedEntry));

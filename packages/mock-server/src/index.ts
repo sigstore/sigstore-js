@@ -18,7 +18,7 @@ import {
   TrustedRoot,
 } from '@sigstore/protobuf-specs';
 import { initializeTUFRepo, tufHandlers } from '@tufjs/repo-mock';
-import crypto from 'crypto';
+import crypto, { generateKeyPairSync } from 'crypto';
 import express from 'express';
 
 // TODO: Export these types from @sigstore/mock
@@ -47,21 +47,22 @@ export default class Server extends Command {
   public async run(): Promise<void> {
     const { flags } = await this.parse(Server);
     const url = `http://localhost:${flags.port}`;
+    const keyPair = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
 
     // Set-up the fake Fuclio server
-    const ctlog = await initializeCTLog();
-    const ca = await initializeCA(ctlog);
+    const ctlog = await initializeCTLog(keyPair);
+    const ca = await initializeCA(keyPair, ctlog);
     const fulcio = fulcioHandler(ca, {
       strict: flags['strict'],
       subjectClaim: 'email',
     });
 
     // Set-up the fake Rekor server
-    const tlog = await initializeTLog(url);
+    const tlog = await initializeTLog(url, keyPair);
     const rekor = rekorHandler(tlog, { strict: flags['strict'] });
 
     // Set-up the fake TSA server
-    const tsa = await initializeTSA();
+    const tsa = await initializeTSA(keyPair);
     const timestamp = tsaHandler(tsa, { strict: flags['strict'] });
 
     // Build the trusted root from the key material of the fake services

@@ -16,12 +16,13 @@ limitations under the License.
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Crypto } from '@peculiar/webcrypto';
-import { generateKeyPairSync } from 'crypto';
 import * as pkijs from 'pkijs';
+import { generateKeyPair } from '../util/key';
 import { initializeCA } from './ca';
 import { initializeCTLog } from './ctlog';
 
 describe('CA', () => {
+  const rootKeyPair = generateKeyPair();
   const crypto = new pkijs.CryptoEngine({ crypto: new Crypto() });
 
   beforeEach(() => {
@@ -37,7 +38,7 @@ describe('CA', () => {
 
   describe('#rootCertificate', () => {
     it('returns the root certificate', async () => {
-      const ca = await initializeCA();
+      const ca = await initializeCA(rootKeyPair);
       const root = ca.rootCertificate;
 
       const cert = pkijs.Certificate.fromBER(root);
@@ -51,15 +52,13 @@ describe('CA', () => {
   });
 
   describe('#issueCertificate', () => {
-    const { publicKey } = generateKeyPairSync('ec', {
-      namedCurve: 'P-256',
-    });
+    const { publicKey } = generateKeyPair('P-256');
 
     const keyBytes = publicKey.export({ format: 'der', type: 'spki' });
 
     describe('when no CT log is provided', () => {
       it('issues a cert', async () => {
-        const ca = await initializeCA();
+        const ca = await initializeCA(rootKeyPair);
 
         // Issue a certificate with the key above
         const signingCert = await ca.issueCertificate({
@@ -78,7 +77,7 @@ describe('CA', () => {
       });
 
       it('issue a cert with the correct key', async () => {
-        const ca = await initializeCA();
+        const ca = await initializeCA(rootKeyPair);
 
         // Issue a certificate with the key above
         const signingCert = await ca.issueCertificate({
@@ -96,7 +95,7 @@ describe('CA', () => {
       });
 
       it('issue a cert with the correct SAN', async () => {
-        const ca = await initializeCA();
+        const ca = await initializeCA(rootKeyPair);
 
         // Issue a certificate with the key above
         const signingCert = await ca.issueCertificate({
@@ -116,7 +115,7 @@ describe('CA', () => {
       });
 
       it('issue a cert chained back to the root cert', async () => {
-        const ca = await initializeCA();
+        const ca = await initializeCA(rootKeyPair);
 
         // Issue a certificate with the key above
         const signingCert = await ca.issueCertificate({
@@ -141,7 +140,7 @@ describe('CA', () => {
 
     describe('when a custom extension is provided', () => {
       it('issues a cert with the extension', async () => {
-        const ca = await initializeCA();
+        const ca = await initializeCA(rootKeyPair);
 
         // Issue a certificate with the key above
         const signingCert = await ca.issueCertificate({
@@ -163,8 +162,8 @@ describe('CA', () => {
 
     describe('when a CT log is provided', () => {
       it('issues a cert with a verifiable SCT', async () => {
-        const ctLog = await initializeCTLog();
-        const ca = await initializeCA(ctLog);
+        const ctLog = await initializeCTLog(rootKeyPair);
+        const ca = await initializeCA(rootKeyPair, ctLog);
 
         // Issue a certificate with the key above
         const signingCert = await ca.issueCertificate({

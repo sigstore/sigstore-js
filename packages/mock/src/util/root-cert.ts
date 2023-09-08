@@ -25,14 +25,10 @@ interface CertWithKey {
 
 export async function createRootCertificate(
   name: string,
-  keyAlgo: EcKeyGenParams,
+  keyPair: CryptoKeyPair,
   signAlgo: EcdsaParams
 ): Promise<CertWithKey> {
   const crypto = new Crypto();
-  const keyPair = await crypto.subtle.generateKey(keyAlgo, true, [
-    'sign',
-    'verify',
-  ]);
 
   const tbs: x509.X509CertificateCreateSelfSignedParams = {
     serialNumber: '01',

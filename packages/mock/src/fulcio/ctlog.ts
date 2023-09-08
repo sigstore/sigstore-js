@@ -17,13 +17,11 @@ limitations under the License.
 import { Crypto, CryptoKey } from '@peculiar/webcrypto';
 import * as asn1js from 'asn1js';
 import * as bs from 'bytestreamjs';
+import type { KeyPairKeyObjectResult } from 'crypto';
 import * as pkijs from 'pkijs';
 import * as pvutils from 'pvutils';
-import {
-  DIGEST_SHA256,
-  KEY_ALGORITHM_ECDSA_P256,
-  SIGNING_ALGORITHM_ECDSA_SHA256,
-} from '../constants';
+import { DIGEST_SHA256, SIGNING_ALGORITHM_ECDSA_SHA256 } from '../constants';
+import { keyObjectToCryptoKey } from '../util/key';
 
 export interface CTLog {
   publicKey: Buffer;
@@ -34,14 +32,14 @@ export interface CTLog {
   ) => Promise<ArrayBuffer>;
 }
 
-export async function initializeCTLog(): Promise<CTLog> {
+export async function initializeCTLog(
+  keyPair: KeyPairKeyObjectResult
+): Promise<CTLog> {
   const crypto = new Crypto();
 
-  const { publicKey, privateKey } = await crypto.subtle.generateKey(
-    KEY_ALGORITHM_ECDSA_P256,
-    true,
-    ['sign', 'verify']
-  );
+  // Need to translate between the Node.js crypto API and the WebCrypto API
+  const privateKey = await keyObjectToCryptoKey(keyPair.privateKey);
+  const publicKey = await keyObjectToCryptoKey(keyPair.publicKey);
 
   const publicKeyBytes = await crypto.subtle
     .exportKey('spki', publicKey)
