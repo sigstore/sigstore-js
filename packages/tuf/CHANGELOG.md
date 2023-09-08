@@ -1,5 +1,11 @@
 # @sigstore/tuf
 
+## 2.2.0
+
+### Minor Changes
+
+- e3e725c: Add `force` option to force re-initialization of local TUF cache
+
 ## 2.1.0
 
 ### Minor Changes

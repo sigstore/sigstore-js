@@ -1,5 +1,19 @@
 # @sigstore/mock
 
+## 0.5.0
+
+### Minor Changes
+
+- 7a4efe0: Configurable keys for mock services
+
+### Patch Changes
+
+- 442c57f: Bump dependencies:
+
+  - jose from 4.14.4 to 4.14.6
+
+- 13e78ac: Fix bug in mocked inclusion proof calculation
+
 ## 0.4.0
 
 ### Minor Changes
