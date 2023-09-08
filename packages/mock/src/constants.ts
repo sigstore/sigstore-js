@@ -16,7 +16,7 @@ limitations under the License.
 export const DIGEST_SHA256 = 'SHA-256';
 
 export const KEY_ALGORITHM_ECDSA_P256 = { name: 'ECDSA', namedCurve: 'P-256' };
-export const KEY_ALGORITHM_ECDSA_P384 = { name: 'ECDSA', namedCurve: 'P-384' };
+
 export const SIGNING_ALGORITHM_ECDSA_SHA256 = {
   name: 'ECDSA',
   hash: 'SHA-256',

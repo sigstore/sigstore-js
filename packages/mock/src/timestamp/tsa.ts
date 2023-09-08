@@ -16,12 +16,10 @@ limitations under the License.
 
 import { Crypto } from '@peculiar/webcrypto';
 import * as asn1js from 'asn1js';
+import type { KeyPairKeyObjectResult } from 'crypto';
 import * as pkijs from 'pkijs';
-import {
-  DIGEST_SHA256,
-  KEY_ALGORITHM_ECDSA_P256,
-  SIGNING_ALGORITHM_ECDSA_SHA384,
-} from '../constants';
+import { DIGEST_SHA256, SIGNING_ALGORITHM_ECDSA_SHA384 } from '../constants';
+import { keyObjectToCryptoKey } from '../util/key';
 import { createRootCertificate } from '../util/root-cert';
 
 const ISSUER = 'CN=tsa,O=sigstore.mock';
@@ -41,10 +39,16 @@ export interface TimestampRequest {
   certReq?: boolean;
 }
 
-export async function initializeTSA(): Promise<TSA> {
+export async function initializeTSA(
+  keyPair: KeyPairKeyObjectResult
+): Promise<TSA> {
+  const cryptoKeyPair = {
+    privateKey: await keyObjectToCryptoKey(keyPair.privateKey),
+    publicKey: await keyObjectToCryptoKey(keyPair.publicKey),
+  };
   const root = await createRootCertificate(
     ISSUER,
-    KEY_ALGORITHM_ECDSA_P256,
+    cryptoKeyPair,
     SIGNING_ALGORITHM_ECDSA_SHA384
   );
   return new TSAImpl({
