@@ -1,5 +1,15 @@
 # @sigstore/cli
 
+## 0.3.0
+
+### Minor Changes
+
+- e3e725c: Add `initialize` command to bootstrap local TUF cache
+
+### Patch Changes
+
+- c4489fc: Bump openid-client from 5.4.3 to 5.5.0
+
 ## 0.2.1
 
 ### Patch Changes
