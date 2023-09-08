@@ -57,7 +57,7 @@ class TLogImpl implements TLog {
     const logID = crypto.createHash('sha256').update(this.publicKey).digest();
     const logIndex = crypto.randomInt(10_000_000);
     const timestamp = Math.floor(Date.now() / 1000);
-    const body = Buffer.from(canonicalize(proposedEntry)!).toString('base64');
+    const body = Buffer.from(canonicalize(proposedEntry)!);
 
     const entry = { logID, logIndex, timestamp, body };
     const set = this.calculateSET(entry);
@@ -87,13 +87,13 @@ class TLogImpl implements TLog {
     logIndex,
     logID,
   }: {
-    body: string;
+    body: Buffer;
     timestamp: number;
     logIndex: number;
     logID: Buffer;
   }): Buffer {
     const setData = {
-      body: body,
+      body: body.toString('base64'),
       integratedTime: timestamp,
       logIndex: logIndex,
       logID: logID.toString('hex'),
@@ -110,7 +110,7 @@ class TLogImpl implements TLog {
     timestamp,
     logID,
   }: {
-    body: string;
+    body: Buffer;
     timestamp: number;
     logID: Buffer;
   }): InclusionProof {
