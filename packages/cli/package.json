@@ -29,7 +29,7 @@
     "postpack": "shx rm -f oclif.manifest.json",
     "prepack": "npm run build && oclif manifest && npm run readme",
     "test": "jest",
-    "readme": "oclif readme && shx sed -i \"s/^_See code:.*$//g\" README.md"
+    "readme": "oclif readme --no-aliases && shx sed -i \"s/^_See code:.*$//g\" README.md"
   },
   "dependencies": {
     "@oclif/color": "^1.0.11",

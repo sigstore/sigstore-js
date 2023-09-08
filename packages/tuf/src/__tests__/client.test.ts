@@ -29,11 +29,12 @@ describe('TUFClient', () => {
   describe('constructor', () => {
     const cacheDir = path.join(os.tmpdir(), 'tuf-client-test');
     const mirrorURL = 'https://example.com';
+    const force = false;
     afterEach(() => fs.rmSync(cacheDir, { recursive: true }));
 
     describe('when the cache directory does not exist', () => {
       it('creates the cache directory', () => {
-        new TUFClient({ cachePath: cacheDir, mirrorURL, rootPath });
+        new TUFClient({ cachePath: cacheDir, mirrorURL, rootPath, force });
         expect(fs.existsSync(cacheDir)).toEqual(true);
         expect(fs.existsSync(path.join(cacheDir, 'root.json'))).toEqual(true);
         expect(fs.existsSync(path.join(cacheDir, 'remote.json'))).toEqual(true);
@@ -52,8 +53,51 @@ describe('TUFClient', () => {
 
       it('loads config from the existing directory without error', () => {
         expect(
-          () => new TUFClient({ cachePath: cacheDir, mirrorURL, rootPath })
+          () =>
+            new TUFClient({ cachePath: cacheDir, mirrorURL, rootPath, force })
         ).not.toThrow();
+      });
+    });
+
+    describe('when forcing re-initialization of an existing directory', () => {
+      const oldMirrorURL = mirrorURL;
+      const newMirrorURL = 'https://new.org';
+      const force = true;
+
+      beforeEach(() => {
+        fs.mkdirSync(cacheDir, { recursive: true });
+        fs.copyFileSync(rootPath, path.join(cacheDir, 'root.json'));
+        fs.writeFileSync(
+          path.join(cacheDir, 'remote.json'),
+          JSON.stringify({ mirror: oldMirrorURL })
+        );
+      });
+
+      it('initializes the client without error', () => {
+        expect(
+          () =>
+            new TUFClient({
+              cachePath: cacheDir,
+              mirrorURL: newMirrorURL,
+              rootPath,
+              force,
+            })
+        ).not.toThrow();
+      });
+
+      it('overwrites the existing values', () => {
+        new TUFClient({
+          cachePath: cacheDir,
+          mirrorURL: newMirrorURL,
+          rootPath,
+          force,
+        });
+
+        const remote = fs.readFileSync(
+          path.join(cacheDir, 'remote.json'),
+          'utf-8'
+        );
+        expect(JSON.parse(remote)).toEqual({ mirror: newMirrorURL });
       });
     });
   });
@@ -74,6 +118,7 @@ describe('TUFClient', () => {
         cachePath: tufRepo.cachePath,
         retry: false,
         rootPath,
+        force: false,
       };
     });
 

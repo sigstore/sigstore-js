@@ -31,6 +31,7 @@ export type TUFOptions = {
   cachePath: string;
   mirrorURL: string;
   rootPath: string;
+  force: boolean;
 } & FetchOptions;
 
 export interface TUF {
@@ -45,8 +46,8 @@ export class TUFClient implements TUF {
   private updater: Updater;
 
   constructor(options: TUFOptions) {
-    initTufCache(options.cachePath, options.rootPath);
-    const remote = initRemoteConfig(options.cachePath, options.mirrorURL);
+    initTufCache(options);
+    const remote = initRemoteConfig(options);
     this.updater = initClient(options.cachePath, remote, options);
   }
 
@@ -64,7 +65,11 @@ export class TUFClient implements TUF {
 // created. If the targets directory does not exist, it will be created.
 // If the root.json file does not exist, it will be copied from the
 // rootPath argument.
-function initTufCache(cachePath: string, tufRootPath: string): string {
+function initTufCache({
+  cachePath,
+  rootPath: tufRootPath,
+  force,
+}: TUFOptions): string {
   const targetsPath = path.join(cachePath, 'targets');
   const cachedRootPath = path.join(cachePath, 'root.json');
 
@@ -76,7 +81,9 @@ function initTufCache(cachePath: string, tufRootPath: string): string {
     fs.mkdirSync(targetsPath);
   }
 
-  if (!fs.existsSync(cachedRootPath)) {
+  // If the root.json file does not exist (or we're forcing re-initialization),
+  // copy it from the rootPath argument
+  if (!fs.existsSync(cachedRootPath) || force) {
     fs.copyFileSync(tufRootPath, cachedRootPath);
   }
 
@@ -86,16 +93,24 @@ function initTufCache(cachePath: string, tufRootPath: string): string {
 // Initializes the remote.json file, which contains the URL of the TUF
 // repository. If the file does not exist, it will be created. If the file
 // exists, it will be parsed and returned.
-function initRemoteConfig(rootDir: string, mirrorURL: string): RemoteConfig {
+function initRemoteConfig({
+  cachePath,
+  mirrorURL,
+  force,
+}: TUFOptions): RemoteConfig {
   let remoteConfig: RemoteConfig | undefined;
-  const remoteConfigPath = path.join(rootDir, 'remote.json');
+  const remoteConfigPath = path.join(cachePath, 'remote.json');
 
-  if (fs.existsSync(remoteConfigPath)) {
+  // If the remote config file exists, read it and parse it (skip if force is
+  // true)
+  if (!force && fs.existsSync(remoteConfigPath)) {
     const data = fs.readFileSync(remoteConfigPath, 'utf-8');
     remoteConfig = JSON.parse(data);
   }
 
-  if (!remoteConfig) {
+  // If the remote config file does not exist (or we're forcing initialization),
+  // create it
+  if (!remoteConfig || force) {
     remoteConfig = { mirror: mirrorURL };
     fs.writeFileSync(remoteConfigPath, JSON.stringify(remoteConfig));
   }

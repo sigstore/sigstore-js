@@ -9,7 +9,7 @@ $ npm install -g @sigstore/cli
 $ sigstore COMMAND
 running command...
 $ sigstore (--version)
-@sigstore/cli/0.1.1 darwin-arm64 node-v18.12.1
+@sigstore/cli/0.2.1 darwin-arm64 node-v18.12.1
 $ sigstore --help [COMMAND]
 USAGE
   $ sigstore COMMAND
@@ -20,6 +20,7 @@ USAGE
 <!-- commands -->
 * [`sigstore attest FILE`](#sigstore-attest-file)
 * [`sigstore help [COMMANDS]`](#sigstore-help-commands)
+* [`sigstore initialize`](#sigstore-initialize)
 * [`sigstore verify BUNDLE`](#sigstore-verify-bundle)
 
 ## `sigstore attest FILE`
@@ -76,6 +77,31 @@ FLAGS
 
 DESCRIPTION
   Display help for sigstore.
+```
+
+
+
+## `sigstore initialize`
+
+initialize the Sigstore TUF root to retrieve trusted certificates and keys for verification
+
+```
+USAGE
+  $ sigstore initialize [--mirror <value>] [--root <value>] [--force]
+
+FLAGS
+  --force           force initialization even if the cache already exists
+  --mirror=<value>  [default: https://tuf-repo-cdn.sigstore.dev] URL to the Sigstore TUF repository
+  --root=<value>    path to the initial trusted root. Defaults to the embedded root.
+
+DESCRIPTION
+  initialize the Sigstore TUF root to retrieve trusted certificates and keys for verification
+
+ALIASES
+  $ sigstore init
+
+EXAMPLES
+  $ sigstore initialize
 ```
 
 
