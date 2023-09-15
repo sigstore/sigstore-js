@@ -30,33 +30,37 @@ export interface TLog {
 
 export async function initializeTLog(
   url: string,
-  keyPair: crypto.KeyPairKeyObjectResult
+  keyPair: crypto.KeyPairKeyObjectResult,
+  clock?: Date
 ): Promise<TLog> {
   const host = new URL(url).host;
   const { publicKey, privateKey } = keyPair;
 
-  return new TLogImpl(host, publicKey, privateKey);
+  return new TLogImpl(host, publicKey, privateKey, clock);
 }
 
 class TLogImpl implements TLog {
   public readonly publicKey: Buffer;
   private readonly privateKey: crypto.KeyObject;
+  private readonly getCurrentTime: () => number;
   private readonly host: string;
 
   constructor(
     host: string,
     publicKey: crypto.KeyObject,
-    privateKey: crypto.KeyObject
+    privateKey: crypto.KeyObject,
+    clock?: Date
   ) {
     this.host = host;
     this.privateKey = privateKey;
     this.publicKey = publicKey.export({ format: 'der', type: 'spki' });
+    this.getCurrentTime = () => (clock || new Date()).getTime();
   }
 
   public async log(proposedEntry: object): Promise<LogEntry> {
     const logID = crypto.createHash('sha256').update(this.publicKey).digest();
     const logIndex = crypto.randomInt(10_000_000);
-    const timestamp = Math.floor(Date.now() / 1000);
+    const timestamp = Math.floor(this.getCurrentTime() / 1000);
     const body = Buffer.from(canonicalize(proposedEntry)!);
 
     const entry = { logID, logIndex, timestamp, body };

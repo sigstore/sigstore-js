@@ -56,7 +56,8 @@ interface ExtensionValue {
 // done in the constructor.
 export async function initializeCA(
   keyPair: KeyPairKeyObjectResult,
-  ctLog?: CTLog
+  ctLog?: CTLog,
+  clock?: Date
 ): Promise<CA> {
   const cryptoKeyPair = {
     privateKey: await keyObjectToCryptoKey(keyPair.privateKey),
@@ -73,6 +74,7 @@ export async function initializeCA(
     keyPair: root.keyPair,
     rootCertificate: root.cert,
     ctLog,
+    clock,
   });
 }
 
@@ -80,16 +82,19 @@ class CAImpl implements CA {
   private root: x509.X509Certificate;
   private keyPair: CryptoKeyPair;
   private ctLog?: CTLog;
+  private getCurrentTime: () => Date;
   private crypto: Crypto;
 
   constructor(options: {
     rootCertificate: x509.X509Certificate;
     keyPair: CryptoKeyPair;
     ctLog?: CTLog;
+    clock?: Date;
   }) {
     this.root = options.rootCertificate;
     this.ctLog = options.ctLog;
     this.keyPair = options.keyPair;
+    this.getCurrentTime = () => options.clock || new Date();
     this.crypto = new Crypto();
   }
 
@@ -109,11 +114,13 @@ class CAImpl implements CA {
       ['sign', 'verify']
     );
 
+    const now = this.getCurrentTime();
+
     // https://github.com/sigstore/fulcio/blob/549813ca04ae02b4a19181817a90a66c2a00960c/pkg/ca/common.go#L29
     const tbs = {
       serialNumber: '11182004',
-      notBefore: new Date(),
-      notAfter: new Date(Date.now() + 10 * MS_PER_MINUTE),
+      notBefore: now,
+      notAfter: new Date(now.getTime() + 10 * MS_PER_MINUTE),
       issuer: ISSUER,
       publicKey: key,
       signingAlgorithm: SIGNING_ALGORITHM_ECDSA_SHA384,
