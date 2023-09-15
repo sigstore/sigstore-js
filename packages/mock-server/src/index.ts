@@ -20,6 +20,7 @@ import {
 import { initializeTUFRepo, tufHandlers } from '@tufjs/repo-mock';
 import crypto, { generateKeyPairSync } from 'crypto';
 import express from 'express';
+import fs from 'fs';
 
 // TODO: Export these types from @sigstore/mock
 type CA = Awaited<ReturnType<typeof initializeCA>>;
@@ -42,12 +43,27 @@ export default class Server extends Command {
       required: false,
       allowNo: true,
     }),
+    'private-key': Flags.file({
+      description: 'Path to private key file (PEM format) to use for signing',
+      required: false,
+    }),
   };
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Server);
     const url = `http://localhost:${flags.port}`;
-    const keyPair = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
+
+    // If a private key is provided, use it. Otherwise, generate a new one.
+    let keyPair: crypto.KeyPairKeyObjectResult | undefined;
+    if (flags['private-key']) {
+      const keyFile = fs.readFileSync(flags['private-key']);
+      keyPair = {
+        privateKey: crypto.createPrivateKey(keyFile),
+        publicKey: crypto.createPublicKey(keyFile),
+      };
+    } else {
+      keyPair = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
+    }
 
     // Set-up the fake Fuclio server
     const ctlog = await initializeCTLog(keyPair);

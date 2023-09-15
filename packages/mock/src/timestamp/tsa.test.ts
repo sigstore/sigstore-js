@@ -23,9 +23,10 @@ const OID_SHA256_ALGO_ID = '2.16.840.1.101.3.4.2.1';
 
 describe('TSA', () => {
   const keyPair = generateKeyPair('prime256v1');
+  const clock = new Date();
   describe('rootCertificate', () => {
     it('returns the root certificate', async () => {
-      const tsa = await initializeTSA(keyPair);
+      const tsa = await initializeTSA(keyPair, clock);
       const root = tsa.rootCertificate;
 
       expect(root).toBeDefined();

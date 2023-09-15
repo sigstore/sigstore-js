@@ -40,7 +40,8 @@ export interface TimestampRequest {
 }
 
 export async function initializeTSA(
-  keyPair: KeyPairKeyObjectResult
+  keyPair: KeyPairKeyObjectResult,
+  clock?: Date
 ): Promise<TSA> {
   const cryptoKeyPair = {
     privateKey: await keyObjectToCryptoKey(keyPair.privateKey),
@@ -54,21 +55,25 @@ export async function initializeTSA(
   return new TSAImpl({
     rootCertificate: pkijs.Certificate.fromBER(root.cert.rawData),
     keyPair: root.keyPair,
+    clock,
   });
 }
 
 interface TSAOptions {
   rootCertificate: pkijs.Certificate;
   keyPair: CryptoKeyPair;
+  clock?: Date;
 }
 
 class TSAImpl implements TSA {
   private rootCert: pkijs.Certificate;
   private keyPair: CryptoKeyPair;
+  private getCurrentTime: () => Date;
   private crypto: pkijs.ICryptoEngine;
   constructor(options: TSAOptions) {
     this.rootCert = options.rootCertificate;
     this.keyPair = options.keyPair;
+    this.getCurrentTime = () => options.clock || new Date();
     this.crypto = new pkijs.CryptoEngine({ crypto: new Crypto() });
   }
 
@@ -111,7 +116,7 @@ class TSAImpl implements TSA {
         hashedMessage: new asn1js.OctetString({ valueHex: req.artifactHash }),
       }),
       serialNumber: new asn1js.Integer({ value: 1 }),
-      genTime: new Date(),
+      genTime: this.getCurrentTime(),
       accuracy: new pkijs.Accuracy({ seconds: 1 }),
       nonce: new asn1js.Integer({ value: req.nonce }),
       tsa: generalName('tsa', 'sigstore.mock'),
