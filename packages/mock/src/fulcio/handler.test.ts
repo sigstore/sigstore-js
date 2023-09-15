@@ -42,6 +42,7 @@ describe('fulcioHandler', () => {
 
       const claims = {
         sub: 'http://github.com/foo/workflow.yml@refs/heads/main',
+        iss: 'http://foo.com',
       };
       const jwt = jwtify(claims);
 
