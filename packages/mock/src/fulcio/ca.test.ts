@@ -23,6 +23,7 @@ import { initializeCTLog } from './ctlog';
 
 describe('CA', () => {
   const rootKeyPair = generateKeyPair();
+  const clock = new Date();
   const crypto = new pkijs.CryptoEngine({ crypto: new Crypto() });
 
   beforeEach(() => {
@@ -163,7 +164,7 @@ describe('CA', () => {
     describe('when a CT log is provided', () => {
       it('issues a cert with a verifiable SCT', async () => {
         const ctLog = await initializeCTLog(rootKeyPair);
-        const ca = await initializeCA(rootKeyPair, ctLog);
+        const ca = await initializeCA(rootKeyPair, ctLog, clock);
 
         // Issue a certificate with the key above
         const signingCert = await ca.issueCertificate({

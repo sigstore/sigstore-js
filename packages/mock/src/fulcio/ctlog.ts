@@ -33,7 +33,8 @@ export interface CTLog {
 }
 
 export async function initializeCTLog(
-  keyPair: KeyPairKeyObjectResult
+  keyPair: KeyPairKeyObjectResult,
+  clock: Date = new Date()
 ): Promise<CTLog> {
   const crypto = new Crypto();
 
@@ -53,6 +54,7 @@ export async function initializeCTLog(
     publicKey: publicKeyBytes,
     privateKey,
     logID,
+    clock,
     crypto,
   });
 }
@@ -61,6 +63,7 @@ interface CTLogOptions {
   publicKey: Buffer;
   logID: Buffer;
   privateKey: CryptoKey;
+  clock: Date;
   crypto: Crypto;
 }
 
@@ -68,12 +71,14 @@ class CTLogImpl implements CTLog {
   public readonly publicKey: Buffer;
   public readonly logID: Buffer;
   private privateKey: CryptoKey;
+  private clock: Date;
   private crypto: Crypto;
 
   constructor(options: CTLogOptions) {
     this.publicKey = options.publicKey;
     this.privateKey = options.privateKey;
     this.logID = options.logID;
+    this.clock = options.clock;
     this.crypto = options.crypto;
   }
 
@@ -82,7 +87,7 @@ class CTLogImpl implements CTLog {
     issuerID: ArrayBuffer
   ): Promise<ArrayBuffer> {
     const version = 0;
-    const timestamp = new Date();
+    const timestamp = this.clock;
     const logID = this.logID;
 
     // A bit of a hack to get the TBS bytes
