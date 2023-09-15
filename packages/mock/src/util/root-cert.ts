@@ -33,8 +33,8 @@ export async function createRootCertificate(
   const tbs: x509.X509CertificateCreateSelfSignedParams = {
     serialNumber: '01',
     name: name,
-    notBefore: new Date(),
-    notAfter: new Date(Date.now() + 365 * MS_PER_DAY),
+    notBefore: new Date('2023-01-01'),
+    notAfter: new Date('2024-01-01'),
     signingAlgorithm: signAlgo,
     keys: keyPair,
     extensions: [

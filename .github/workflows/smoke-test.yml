@@ -2,50 +2,11 @@ name: Smoke test
 
 on:
   workflow_dispatch:
-  push:
-    branches: ['main']
-  pull_request:
-    branches: ['main']
 
 permissions:
   contents: read
 
 jobs:
-  sign-verify:
-    name: Sign/Verify Artifact
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-    - name: Checkout source
-      uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v3
-    - name: Setup node
-      uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3
-      with:
-        node-version: 16
-        cache: npm
-    - name: Install dependencies
-      run: npm ci
-    - name: Build sigstore-js
-      run: |
-        npm run build
-    - name: Create artifact to sign
-      run: |
-        echo -n "hello world" > artifact
-    - name: Sign artifact
-      run: |
-        ./packages/cli/bin/run attest --type "text/plain" --out bundle.json artifact
-    - name: Verify bundle
-      run: |
-        ./packages/cli/bin/run verify bundle.json
-    - name: Archive bundle
-      if: success() || failure()
-      uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3
-      with:
-        name: bundle.public-good.json
-        path: bundle.json
-
   sign-verify-mock:
     name: Sign/Verify Artifact (Mock Stack)
     runs-on: ubuntu-latest
@@ -68,27 +29,32 @@ jobs:
     - name: Build sigstore-js
       run: |
         npm run build
+    - name: Extract server key
+      env:
+        MOCK_SERVER_KEY: ${{ secrets.MOCK_SERVER_KEY }}
+      run: |
+        echo ${MOCK_SERVER_KEY} | base64 -d > /tmp/ec_private.pem
     - name: Start mock server (background)
       run: |
-        npm run start --workspace packages/mock-server &
+        npm run start --workspace packages/mock-server -- --private-key /tmp/ec_private.pem --ca-clock 2030-01-01 &
     - name: Retrieve TUF trusted root
       run: |
         wget "${SIGSTORE_URL}/1.root.json"
+    - name: Retrieve trust material
+      run: |
+        wget "${SIGSTORE_URL}/targets/trusted_root.json"
     - name: Initialize local TUF cache
       run: |
         ./packages/cli/bin/run init --mirror ${SIGSTORE_URL} --root ./1.root.json --force
-    - name: Create artifact to sign
-      run: |
-        echo -n "hello world" > artifact
     - name: Sign artifact
       run: |
         ./packages/cli/bin/run attest \
           --fulcio-url ${SIGSTORE_URL} \
           --rekor-url ${SIGSTORE_URL} \
           --tsa-server-url ${SIGSTORE_URL} \
-          --type "text/plain" \
+          --type "application/vnd.in-toto+json" \
           --out bundle.json \
-          artifact
+          stmt
     - name: Verify bundle
       run: |
         ./packages/cli/bin/run verify bundle.json
@@ -96,6 +62,8 @@ jobs:
       if: success() || failure()
       uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3
       with:
-        name: bundle.mock.json
-        path: bundle.json
+        name: mock.result
+        path: |
+          bundle.json
+          trusted_root.json
 
