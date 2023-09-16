@@ -66,6 +66,11 @@ export default class Attest extends Command {
       required: false,
       aliases: ['output', 'out'],
     }),
+    'identity-token': Flags.string({
+      description: 'OIDC identity token',
+      required: false,
+      hidden: true,
+    }),
   };
 
   static override args = {
@@ -80,18 +85,20 @@ export default class Attest extends Command {
     const { args, flags } = await this.parse(Attest);
     let identityProvider: IdentityProvider | undefined;
 
-    // If we're running in CI, we don't want to try to authenticate with an
-    // OAuth provider because we won't be able to interactively authenticate.
-    // Leaving the identity provider undefined will cause the attest function
-    // to use the default identity provider, which will retrieve an OIDC
-    // token from the environment.
-    if (!('CI' in process.env) || process.env.CI === 'false') {
-      identityProvider = new OAuthIdentityProvider({
-        issuer: flags['oidc-issuer'],
-        clientID: flags['oidc-client-id'],
-        clientSecret: flags['oidc-client-secret'],
-        redirectURL: flags['oidc-redirect-url'],
-      });
+    if (!flags['identity-token']) {
+      // If we're running in CI, we don't want to try to authenticate with an
+      // OAuth provider because we won't be able to interactively authenticate.
+      // Leaving the identity provider undefined will cause the attest function
+      // to use the default identity provider, which will retrieve an OIDC
+      // token from the environment.
+      if (!('CI' in process.env) || process.env.CI === 'false') {
+        identityProvider = new OAuthIdentityProvider({
+          issuer: flags['oidc-issuer'],
+          clientID: flags['oidc-client-id'],
+          clientSecret: flags['oidc-client-secret'],
+          redirectURL: flags['oidc-redirect-url'],
+        });
+      }
     }
 
     const options: Parameters<typeof sigstore.attest>[2] = {
@@ -99,6 +106,7 @@ export default class Attest extends Command {
       fulcioURL: flags['fulcio-url'],
       tsaServerURL: flags['tsa-server-url'],
       tlogUpload: flags['tlog-upload'],
+      identityToken: flags['identity-token'],
       identityProvider,
     };
 

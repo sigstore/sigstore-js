@@ -11,7 +11,8 @@
     "test:ci": "npm run test -- --maxWorkers=2 --coverage",
     "lint": "eslint --fix --ext .ts packages/**",
     "lint:check": "eslint --max-warnings 0 --ext .ts packages/**",
-    "release": "npm run build && changeset publish"
+    "release": "npm run build && changeset publish",
+    "attest": "sigstore attest --fulcio-url http://localhost:8000 --rekor-url http://localhost:8000 --tsa-server-url http://localhost:8000 --identity-token $(cat ./hack/error/oidc) --type 'application/vnd.in-toto+json' ./hack/error/statement.json"
   },
   "license": "Apache-2.0",
   "devDependencies": {

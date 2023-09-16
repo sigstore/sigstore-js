@@ -39,7 +39,9 @@ function createEntryHandler(tlog: TLog, opts: RekorHandlerOptions): HandlerFn {
 
   return async (body: string): Promise<HandlerFnResult> => {
     try {
-      const proposedEntry = strict ? JSON.parse(body) : {};
+      const proposedEntry = strict
+        ? JSON.parse(body)
+        : { kind: 'intoto', apiVersion: '0.0.2' };
       const tlogEntry = await tlog.log(proposedEntry);
       const response = JSON.stringify(tlogEntry);
 

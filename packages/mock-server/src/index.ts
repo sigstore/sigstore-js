@@ -18,15 +18,27 @@ import {
   TrustedRoot,
 } from '@sigstore/protobuf-specs';
 import { initializeTUFRepo, tufHandlers } from '@tufjs/repo-mock';
-import crypto, { generateKeyPairSync } from 'crypto';
+import crypto from 'crypto';
 import express from 'express';
 import fs from 'fs';
+
+const VALID_FOR_START = new Date('2023-01-01');
+const SERVICE_CLOCK = new Date('2023-02-01');
 
 // TODO: Export these types from @sigstore/mock
 type CA = Awaited<ReturnType<typeof initializeCA>>;
 type TLog = Awaited<ReturnType<typeof initializeTLog>>;
 type CTLog = Awaited<ReturnType<typeof initializeCTLog>>;
 type TSA = Awaited<ReturnType<typeof initializeTSA>>;
+
+// Default key material to use if no private key is provided
+const DEFAULT_KEY = {
+  kty: 'EC',
+  x: 'YI4heOTrNrZO27elFE8ynfrdPMikttRkbe-vJKQ50G4',
+  y: 'm38EN1soS6UcMMKIXpQwJvMUcyeep2LCGt1R4r1b6Zg',
+  crv: 'P-256',
+  d: 'Qi4tmjN6G_P2xkUKAb7MWMbOUwTBPmbS5i3xuUtk09k',
+};
 
 export default class Server extends Command {
   static override description = 'start mock services';
@@ -37,8 +49,9 @@ export default class Server extends Command {
       default: 8000,
       required: false,
     }),
-    strict: Flags.boolean({
-      description: 'Whether or not to enforce strict request validation',
+    'tlog-strict': Flags.boolean({
+      description:
+        'Whether or not to enforce strict request validation for the tlog',
       default: true,
       required: false,
       allowNo: true,
@@ -47,39 +60,61 @@ export default class Server extends Command {
       description: 'Path to private key file (PEM format) to use for signing',
       required: false,
     }),
+    'ca-clock': Flags.string({
+      description: 'Static time to use for CA timestamps',
+      required: false,
+      default: SERVICE_CLOCK.toISOString(),
+    }),
+    'ctlog-clock': Flags.string({
+      description: 'Static time to use for ctlog timestamps',
+      required: false,
+      default: SERVICE_CLOCK.toISOString(),
+    }),
+    'tlog-clock': Flags.string({
+      description: 'Static time to use for tlog timestamps',
+      required: false,
+      default: SERVICE_CLOCK.toISOString(),
+    }),
+    'tsa-clock': Flags.string({
+      description: 'Static time to use for TSA timestamps',
+      required: false,
+      default: SERVICE_CLOCK.toISOString(),
+    }),
   };
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Server);
     const url = `http://localhost:${flags.port}`;
 
-    // If a private key is provided, use it. Otherwise, generate a new one.
-    let keyPair: crypto.KeyPairKeyObjectResult | undefined;
-    if (flags['private-key']) {
-      const keyFile = fs.readFileSync(flags['private-key']);
-      keyPair = {
-        privateKey: crypto.createPrivateKey(keyFile),
-        publicKey: crypto.createPublicKey(keyFile),
-      };
-    } else {
-      keyPair = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
-    }
+    // If a private key is provided, use it. Otherwise, use the default
+    const key: Buffer | crypto.JsonWebKeyInput = flags['private-key']
+      ? fs.readFileSync(flags['private-key'])
+      : { key: DEFAULT_KEY, format: 'jwk' };
+
+    const keyPair = {
+      privateKey: crypto.createPrivateKey(key),
+      publicKey: crypto.createPublicKey(key),
+    };
 
     // Set-up the fake Fuclio server
-    const ctlog = await initializeCTLog(keyPair);
-    const ca = await initializeCA(keyPair, ctlog);
+    const ctlogClock = new Date(flags['ctlog-clock']);
+    const caClock = new Date(flags['ca-clock']);
+    const ctlog = await initializeCTLog(keyPair, ctlogClock);
+    const ca = await initializeCA(keyPair, ctlog, caClock);
     const fulcio = fulcioHandler(ca, {
-      strict: flags['strict'],
-      subjectClaim: 'email',
+      strict: true,
+      subjectClaim: 'sub',
     });
 
     // Set-up the fake Rekor server
-    const tlog = await initializeTLog(url, keyPair);
-    const rekor = rekorHandler(tlog, { strict: flags['strict'] });
+    const tlogClock = new Date(flags['tlog-clock']);
+    const tlog = await initializeTLog(url, keyPair, tlogClock);
+    const rekor = rekorHandler(tlog, { strict: flags['tlog-strict'] });
 
     // Set-up the fake TSA server
-    const tsa = await initializeTSA(keyPair);
-    const timestamp = tsaHandler(tsa, { strict: flags['strict'] });
+    const tsaClock = new Date(flags['tsa-clock']);
+    const tsa = await initializeTSA(keyPair, tsaClock);
+    const timestamp = tsaHandler(tsa, { strict: true });
 
     // Build the trusted root from the key material of the fake services
     const trustedRoot = assembleTrustedRoot({ ca, tlog, ctlog, tsa, url });
@@ -153,7 +188,7 @@ function certificateAuthority(
     certChain: {
       certificates: [{ rawBytes: certificate }],
     },
-    validFor: { start: new Date() },
+    validFor: { start: VALID_FOR_START },
   };
 }
 
@@ -170,7 +205,7 @@ function transparencyLogInstance(
     publicKey: {
       rawBytes: key,
       keyDetails: PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
-      validFor: { start: new Date() },
+      validFor: { start: VALID_FOR_START },
     },
   };
 }
