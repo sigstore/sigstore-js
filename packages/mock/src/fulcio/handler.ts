@@ -22,6 +22,9 @@ import type { CA } from './ca';
 
 const CREATE_SIGNING_CERT_PATH = '/api/v2/signingCert';
 const DEFAULT_SUBJECT = 'NO-SUBJECT';
+const DEFAULT_ISSUER = 'https://fake.oidcissuer.com';
+
+const ISSUER_EXT_OID = '1.3.6.1.4.1.57264.1.8';
 
 interface FulcioHandlerOptions {
   strict?: boolean;
@@ -48,7 +51,7 @@ function createSigningCertHandler(
   return async (body: string): Promise<HandlerFnResult> => {
     try {
       // Extract relevant fields from the request
-      const { subject, publicKey } = strict
+      const { subject, issuer, publicKey } = strict
         ? parseBody(body, subjectClaim)
         : stubBody();
 
@@ -56,6 +59,7 @@ function createSigningCertHandler(
       const cert = await ca.issueCertificate({
         publicKey: fromPEM(publicKey),
         subjectAltName: subject,
+        extensions: [{ oid: ISSUER_EXT_OID, value: issuer }],
       });
 
       // Format the response
@@ -72,7 +76,7 @@ function createSigningCertHandler(
 function parseBody(
   body: string,
   subjectClaim: string
-): { subject: string; publicKey: string } {
+): { subject: string; issuer: string; publicKey: string } {
   const json = JSON.parse(body.toString());
   const oidc = json.credentials.oidcIdentityToken;
   const pem = json.publicKeyRequest.publicKey.content;
@@ -82,15 +86,20 @@ function parseBody(
   const claims = jose.decodeJwt(oidc) as any;
 
   /* istanbul ignore next */
-  return { subject: claims[subjectClaim] || DEFAULT_SUBJECT, publicKey: pem };
+  return {
+    subject: claims[subjectClaim] || DEFAULT_SUBJECT,
+    issuer: claims['iss'] || DEFAULT_ISSUER,
+    publicKey: pem,
+  };
 }
 
-function stubBody(): { subject: string; publicKey: string } {
+function stubBody(): { subject: string; issuer: string; publicKey: string } {
   const { publicKey } = generateKeyPairSync('ec', {
     namedCurve: 'P-256',
   });
   return {
     subject: DEFAULT_SUBJECT,
+    issuer: DEFAULT_ISSUER,
     publicKey: publicKey.export({ format: 'pem', type: 'spki' }).toString(),
   };
 }
