@@ -9,7 +9,7 @@ $ npm install -g @sigstore/cli
 $ sigstore COMMAND
 running command...
 $ sigstore (--version)
-@sigstore/cli/0.2.1 darwin-arm64 node-v18.12.1
+@sigstore/cli/0.3.0 darwin-arm64 node-v18.12.1
 $ sigstore --help [COMMAND]
 USAGE
   $ sigstore COMMAND
@@ -31,7 +31,7 @@ attest the supplied file
 USAGE
   $ sigstore attest FILE [--json] [--fulcio-url <value>] [--rekor-url <value>] [--tsa-server-url <value>]
     [--tlog-upload] [--oidc-client-id <value>] [--oidc-client-secret <value>] [--oidc-issuer <value>]
-    [--oidc-redirect-url <value>] [-t <value>] [-o <value>]
+    [--oidc-redirect-url <value>] [-t <value>] [-o <value>] [--timeout <value>]
 
 ARGUMENTS
   FILE  file to attest
@@ -46,6 +46,7 @@ FLAGS
   --oidc-issuer=<value>         [default: https://oauth2.sigstore.dev/auth] OIDC provider to be used to issue ID token
   --oidc-redirect-url=<value>   OIDC redirect URL
   --rekor-url=<value>           [default: https://rekor.sigstore.dev] URL to the Rekor transparency log
+  --timeout=<value>             [default: 5] timeout in seconds for API requests
   --[no-]tlog-upload            whether or not to upload entry to the transparency log
   --tsa-server-url=<value>      URL to the Timestamping Authority
 

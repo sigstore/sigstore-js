@@ -66,6 +66,11 @@ export default class Attest extends Command {
       required: false,
       aliases: ['output', 'out'],
     }),
+    timeout: Flags.integer({
+      description: 'timeout in seconds for API requests',
+      default: 5,
+      required: false,
+    }),
   };
 
   static override args = {
@@ -100,6 +105,7 @@ export default class Attest extends Command {
       tsaServerURL: flags['tsa-server-url'],
       tlogUpload: flags['tlog-upload'],
       identityProvider,
+      timeout: flags.timeout * 1000,
     };
 
     const bundle = await fs
