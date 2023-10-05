@@ -1,5 +1,11 @@
 # @sigstore/conformance
 
+## 0.0.2
+
+### Patch Changes
+
+- c6d6498: Bump @oclif/core from 2.15.0 to 3.0.1
+
 ## 0.0.1
 
 ### Patch Changes

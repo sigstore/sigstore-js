@@ -1,5 +1,22 @@
 # @sigstore/mock-server
 
+## 0.0.5
+
+### Patch Changes
+
+- c6d6498: Bump @oclif/core from 2.15.0 to 3.0.1
+- 9173d9c: Bump dependencies:
+
+  - @oclif/color from to
+  - @oclif/plugin-help from to
+
+- Updated dependencies [9d3ccd6]
+- Updated dependencies [aa459dd]
+- Updated dependencies [b344a14]
+- Updated dependencies [76384c1]
+- Updated dependencies [e26aa53]
+  - @sigstore/mock@0.6.0
+
 ## 0.0.4
 
 ### Patch Changes
