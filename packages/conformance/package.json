@@ -17,7 +17,7 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "@oclif/core": "^2",
+    "@oclif/core": "^3",
     "sigstore": "^2.0.0"
   },
   "devDependencies": {
