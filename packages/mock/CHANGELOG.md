@@ -1,5 +1,18 @@
 # @sigstore/mock
 
+## 0.6.0
+
+### Minor Changes
+
+- b344a14: Allow explicit clock control for mocked services
+- 76384c1: Add "issuer" extension to certificates issued by mock Fulcio
+
+### Patch Changes
+
+- 9d3ccd6: Rekor mock running in non-strict mode creates a valid entry
+- aa459dd: Bump jose from 4.15.1 to 4.15.2
+- e26aa53: Bump jose from 4.14.6 to 4.15.1
+
 ## 0.5.0
 
 ### Minor Changes

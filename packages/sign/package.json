@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@sigstore/jest": "^0.0.0",
-    "@sigstore/mock": "^0.5.0",
+    "@sigstore/mock": "^0.6.0",
     "@sigstore/rekor-types": "^2.0.0",
     "@types/make-fetch-happen": "^10.0.2"
   },

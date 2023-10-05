@@ -1,5 +1,21 @@
 # @sigstore/cli
 
+## 0.4.0
+
+### Minor Changes
+
+- cc42dae: Add timeout flag to attest command
+
+### Patch Changes
+
+- 9173d9c: Bump dependencies:
+
+  - @oclif/color from 1.0.11 to 1.0.12
+  - @oclif/plugin-help from 5.2.19 to 5.2.20
+
+- c6d6498: Bump @oclif/core from 2.15.0 to 3.0.1
+- f52ee51: Bump openid-client from 5.5.0 to 5.6.0
+
 ## 0.3.0
 
 ### Minor Changes
@@ -14,7 +30,7 @@
 
 ### Patch Changes
 
-- 7f8d194: Bump @oclif/color from to
+- 7f8d194: Bump @oclif/color from 1.0.10 to 1.0.11
 - Updated dependencies [70cb986]
   - sigstore@2.1.0
 
