@@ -4,7 +4,5 @@
 
 Bump dependencies:
 
-- nock from to
-- @oclif/core from to
-- jose from to
-- openid-client from to
+- nock from 13.3.3 to 13.3.4
+- jose from 4.15.2 to 4.15.3
