@@ -4,6 +4,4 @@
 
 Bump dependencies:
 
-- nock from to
-- jose from to
-- openid-client from to
+- openid-client from 5.6.0 to 5.6.1
