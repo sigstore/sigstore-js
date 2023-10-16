@@ -21,7 +21,7 @@
     "sigstore": "^2.0.0"
   },
   "devDependencies": {
-    "oclif": "^3",
+    "oclif": "^4",
     "tslib": "^2.6.1"
   },
   "oclif": {
