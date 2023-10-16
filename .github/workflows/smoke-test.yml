@@ -23,7 +23,7 @@ jobs:
     - name: Setup node
       uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3
       with:
-        node-version: 16
+        node-version: 18
         cache: npm
     - name: Install dependencies
       run: npm ci
@@ -61,7 +61,7 @@ jobs:
     - name: Setup node
       uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3
       with:
-        node-version: 16
+        node-version: 18
         cache: npm
     - name: Install dependencies
       run: npm ci
