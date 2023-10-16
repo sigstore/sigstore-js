@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "make-fetch-happen": "^13.0.0",
-    "oclif": "^3",
+    "oclif": "^4",
     "tslib": "^2.6.1"
   },
   "repository": {
