@@ -18,7 +18,7 @@
     "start": "./bin/dev"
   },
   "dependencies": {
-    "@oclif/color": "^1.0.12",
+    "@oclif/color": "^1.0.13",
     "@oclif/core": "^3",
     "@sigstore/mock": "^0.6.0",
     "@tufjs/repo-mock": "^2.0.0",
