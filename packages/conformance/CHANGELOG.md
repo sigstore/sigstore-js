@@ -1,5 +1,11 @@
 # @sigstore/conformance
 
+## 0.1.0
+
+### Minor Changes
+
+- 4cd344d: Drop support for node 16
+
 ## 0.0.2
 
 ### Patch Changes

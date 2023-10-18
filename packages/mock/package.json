@@ -1,6 +1,6 @@
 {
   "name": "@sigstore/mock",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Mocked version of the Sigstore services",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

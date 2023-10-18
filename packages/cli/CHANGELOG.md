@@ -1,5 +1,22 @@
 # @sigstore/cli
 
+## 0.5.0
+
+### Minor Changes
+
+- 4cd344d: Drop support for node 16
+
+### Patch Changes
+
+- 69fdfdd: Bump dependencies:
+
+  - openid-client from 5.6.0 to 5.6.1
+
+- 97516ef: Bump @oclif/plugin-help from 5.2.20 to 6.0.3
+- cb81e53: Bump dependencies:
+
+  - @oclif/color from 1.0.12 to 1.0.13
+
 ## 0.4.0
 
 ### Minor Changes
