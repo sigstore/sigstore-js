@@ -7,15 +7,10 @@ updates:
   versioning-strategy: auto
   open-pull-requests-limit: 10
   groups:
-    oclif:
-      patterns:
-        - "oclif"
-        - "@oclif/*"
-      update-types:
-        - "minor"
-    prod-patch-deps:
+    prod-deps:
       dependency-type: "production"
       update-types:
+        - "minor"
         - "patch"
       exclude-patterns:
         - "sigstore"
