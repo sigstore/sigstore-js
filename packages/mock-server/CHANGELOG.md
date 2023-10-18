@@ -1,5 +1,20 @@
 # @sigstore/mock-server
 
+## 0.1.0
+
+### Minor Changes
+
+- 4cd344d: Drop support for node 16
+
+### Patch Changes
+
+- cb81e53: Bump dependencies:
+
+  - @oclif/color from 1.0.12 to 1.0.1
+
+- Updated dependencies [69fdfdd]
+  - @sigstore/mock@0.6.1
+
 ## 0.0.5
 
 ### Patch Changes
