@@ -32,7 +32,7 @@
     "readme": "oclif readme --no-aliases && shx sed -i \"s/^_See code:.*$//g\" README.md"
   },
   "dependencies": {
-    "@oclif/color": "^1.0.12",
+    "@oclif/color": "^1.0.13",
     "@oclif/core": "^3",
     "@oclif/plugin-help": "^6",
     "open": "^8.4.2",
