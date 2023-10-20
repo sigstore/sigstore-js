@@ -1,5 +1,11 @@
 # @sigstore/sign
 
+## 2.2.0
+
+### Minor Changes
+
+- c0a43d5: Expose `entryType` option on `RekorWitness` constructor
+
 ## 2.1.0
 
 ### Minor Changes
