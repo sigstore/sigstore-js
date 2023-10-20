@@ -30,12 +30,16 @@ export const DEFAULT_REKOR_URL = 'https://rekor.sigstore.dev';
 
 type TransparencyLogEntries = { tlogEntries: TransparencyLogEntry[] };
 
-export type RekorWitnessOptions = Partial<TLogClientOptions>;
+export type RekorWitnessOptions = Partial<TLogClientOptions> & {
+  entryType?: 'dsse' | 'intoto';
+};
 
 export class RekorWitness implements Witness {
   private tlog: TLog;
+  private entryType?: 'dsse' | 'intoto';
 
   constructor(options: RekorWitnessOptions) {
+    this.entryType = options.entryType;
     this.tlog = new TLogClient({
       ...options,
       rekorBaseURL:
@@ -47,7 +51,7 @@ export class RekorWitness implements Witness {
     content: SignatureBundle,
     publicKey: string
   ): Promise<TransparencyLogEntries> {
-    const proposedEntry = toProposedEntry(content, publicKey);
+    const proposedEntry = toProposedEntry(content, publicKey, this.entryType);
     const entry = await this.tlog.createEntry(proposedEntry);
     return toTransparencyLogEntry(entry);
   }

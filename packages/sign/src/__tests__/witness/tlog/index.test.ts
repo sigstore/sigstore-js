@@ -158,65 +158,140 @@ describe('RekorWitness', () => {
           },
         };
 
-        it('returns the tlog entry', async () => {
-          const vm = await subject.testify(sigBundle, publicKey);
+        describe('when the Rekor entry type is "intoto"', () => {
+          const subject = new RekorWitness({
+            rekorBaseURL,
+            entryType: 'intoto',
+          });
 
-          expect(vm).toBeDefined();
-          assert(vm.tlogEntries);
-          expect(vm.tlogEntries).toHaveLength(1);
+          it('returns the tlog entry', async () => {
+            const vm = await subject.testify(sigBundle, publicKey);
 
-          const tlogEntry = vm.tlogEntries[0];
-          expect(tlogEntry).toBeDefined();
-          expect(tlogEntry.logIndex).toEqual(
-            rekorEntry[uuid].logIndex.toString()
-          );
-          expect(tlogEntry.logId?.keyId).toEqual(
-            Buffer.from(rekorEntry[uuid].logID, 'hex')
-          );
-          expect(tlogEntry.kindVersion?.kind).toEqual(proposedEntry.kind);
-          expect(tlogEntry.kindVersion?.version).toEqual(
-            proposedEntry.apiVersion
-          );
-          expect(tlogEntry.integratedTime).toEqual(
-            rekorEntry[uuid].integratedTime.toString()
-          );
-          expect(tlogEntry.inclusionPromise?.signedEntryTimestamp).toEqual(
-            Buffer.from(
-              rekorEntry[uuid].verification.signedEntryTimestamp,
-              'base64'
-            )
-          );
-          expect(tlogEntry.inclusionProof?.checkpoint?.envelope).toEqual(
-            rekorEntry[uuid].verification.inclusionProof.checkpoint
-          );
-          expect(tlogEntry.inclusionProof?.hashes).toHaveLength(2);
-          expect(tlogEntry.inclusionProof?.hashes[0]).toEqual(
-            Buffer.from(
-              rekorEntry[uuid].verification.inclusionProof.hashes[0],
-              'hex'
-            )
-          );
-          expect(tlogEntry.inclusionProof?.hashes[1]).toEqual(
-            Buffer.from(
-              rekorEntry[uuid].verification.inclusionProof.hashes[1],
-              'hex'
-            )
-          );
-          expect(tlogEntry.inclusionProof?.logIndex).toEqual(
-            rekorEntry[uuid].verification.inclusionProof.logIndex.toString()
-          );
-          expect(tlogEntry.inclusionProof?.rootHash).toEqual(
-            Buffer.from(
-              rekorEntry[uuid].verification.inclusionProof.rootHash,
-              'hex'
-            )
-          );
-          expect(tlogEntry.inclusionProof?.treeSize).toEqual(
-            rekorEntry[uuid].verification.inclusionProof.treeSize.toString()
-          );
-          expect(tlogEntry.canonicalizedBody).toEqual(
-            Buffer.from(rekorEntry[uuid].body, 'base64')
-          );
+            expect(vm).toBeDefined();
+            assert(vm.tlogEntries);
+            expect(vm.tlogEntries).toHaveLength(1);
+
+            const tlogEntry = vm.tlogEntries[0];
+            expect(tlogEntry).toBeDefined();
+            expect(tlogEntry.logIndex).toEqual(
+              rekorEntry[uuid].logIndex.toString()
+            );
+            expect(tlogEntry.logId?.keyId).toEqual(
+              Buffer.from(rekorEntry[uuid].logID, 'hex')
+            );
+            expect(tlogEntry.kindVersion?.kind).toEqual(proposedEntry.kind);
+            expect(tlogEntry.kindVersion?.version).toEqual(
+              proposedEntry.apiVersion
+            );
+            expect(tlogEntry.integratedTime).toEqual(
+              rekorEntry[uuid].integratedTime.toString()
+            );
+            expect(tlogEntry.inclusionPromise?.signedEntryTimestamp).toEqual(
+              Buffer.from(
+                rekorEntry[uuid].verification.signedEntryTimestamp,
+                'base64'
+              )
+            );
+            expect(tlogEntry.inclusionProof?.checkpoint?.envelope).toEqual(
+              rekorEntry[uuid].verification.inclusionProof.checkpoint
+            );
+            expect(tlogEntry.inclusionProof?.hashes).toHaveLength(2);
+            expect(tlogEntry.inclusionProof?.hashes[0]).toEqual(
+              Buffer.from(
+                rekorEntry[uuid].verification.inclusionProof.hashes[0],
+                'hex'
+              )
+            );
+            expect(tlogEntry.inclusionProof?.hashes[1]).toEqual(
+              Buffer.from(
+                rekorEntry[uuid].verification.inclusionProof.hashes[1],
+                'hex'
+              )
+            );
+            expect(tlogEntry.inclusionProof?.logIndex).toEqual(
+              rekorEntry[uuid].verification.inclusionProof.logIndex.toString()
+            );
+            expect(tlogEntry.inclusionProof?.rootHash).toEqual(
+              Buffer.from(
+                rekorEntry[uuid].verification.inclusionProof.rootHash,
+                'hex'
+              )
+            );
+            expect(tlogEntry.inclusionProof?.treeSize).toEqual(
+              rekorEntry[uuid].verification.inclusionProof.treeSize.toString()
+            );
+            expect(tlogEntry.canonicalizedBody).toEqual(
+              Buffer.from(rekorEntry[uuid].body, 'base64')
+            );
+          });
+        });
+
+        describe('when the Rekor entry type is "dsse"', () => {
+          const subject = new RekorWitness({
+            rekorBaseURL,
+            entryType: 'dsse',
+          });
+
+          it('returns the tlog entry', async () => {
+            const vm = await subject.testify(sigBundle, publicKey);
+
+            expect(vm).toBeDefined();
+            assert(vm.tlogEntries);
+            expect(vm.tlogEntries).toHaveLength(1);
+
+            const tlogEntry = vm.tlogEntries[0];
+            expect(tlogEntry).toBeDefined();
+            expect(tlogEntry.logIndex).toEqual(
+              rekorEntry[uuid].logIndex.toString()
+            );
+            expect(tlogEntry.logId?.keyId).toEqual(
+              Buffer.from(rekorEntry[uuid].logID, 'hex')
+            );
+            expect(tlogEntry.kindVersion?.kind).toEqual(proposedEntry.kind);
+            expect(tlogEntry.kindVersion?.version).toEqual(
+              proposedEntry.apiVersion
+            );
+            expect(tlogEntry.integratedTime).toEqual(
+              rekorEntry[uuid].integratedTime.toString()
+            );
+            expect(tlogEntry.inclusionPromise?.signedEntryTimestamp).toEqual(
+              Buffer.from(
+                rekorEntry[uuid].verification.signedEntryTimestamp,
+                'base64'
+              )
+            );
+            expect(tlogEntry.inclusionProof?.checkpoint?.envelope).toEqual(
+              rekorEntry[uuid].verification.inclusionProof.checkpoint
+            );
+            expect(tlogEntry.inclusionProof?.hashes).toHaveLength(2);
+            expect(tlogEntry.inclusionProof?.hashes[0]).toEqual(
+              Buffer.from(
+                rekorEntry[uuid].verification.inclusionProof.hashes[0],
+                'hex'
+              )
+            );
+            expect(tlogEntry.inclusionProof?.hashes[1]).toEqual(
+              Buffer.from(
+                rekorEntry[uuid].verification.inclusionProof.hashes[1],
+                'hex'
+              )
+            );
+            expect(tlogEntry.inclusionProof?.logIndex).toEqual(
+              rekorEntry[uuid].verification.inclusionProof.logIndex.toString()
+            );
+            expect(tlogEntry.inclusionProof?.rootHash).toEqual(
+              Buffer.from(
+                rekorEntry[uuid].verification.inclusionProof.rootHash,
+                'hex'
+              )
+            );
+            expect(tlogEntry.inclusionProof?.treeSize).toEqual(
+              rekorEntry[uuid].verification.inclusionProof.treeSize.toString()
+            );
+            expect(tlogEntry.canonicalizedBody).toEqual(
+              Buffer.from(rekorEntry[uuid].body, 'base64')
+            );
+          });
         });
       });
     });
