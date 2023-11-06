@@ -2,7 +2,4 @@
 '@sigstore/mock': patch
 ---
 
-Bump dependencies:
-
-- nock from to
-- @oclif/core from to
+Bump nock from 13.3.6 to 13.3.8
