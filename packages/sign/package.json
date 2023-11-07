@@ -29,7 +29,7 @@
     "@sigstore/jest": "^0.0.0",
     "@sigstore/mock": "^0.6.0",
     "@sigstore/rekor-types": "^2.0.0",
-    "@types/make-fetch-happen": "^10.0.3"
+    "@types/make-fetch-happen": "^10.0.4"
   },
   "dependencies": {
     "@sigstore/bundle": "^2.1.0",
