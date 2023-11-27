@@ -74,7 +74,9 @@ class TSAImpl implements TSA {
     this.rootCert = options.rootCertificate;
     this.keyPair = options.keyPair;
     this.getCurrentTime = () => options.clock || new Date();
-    this.crypto = new pkijs.CryptoEngine({ crypto: new Crypto() });
+    this.crypto = new pkijs.CryptoEngine({
+      crypto: new Crypto(),
+    }) as pkijs.ICryptoEngine;
   }
 
   public get rootCertificate(): Buffer {
