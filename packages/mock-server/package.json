@@ -15,7 +15,7 @@
     "clean": "shx rm -rf dist",
     "prebuild": "npm run clean",
     "build": "tsc -b",
-    "start": "./bin/dev"
+    "start": "./bin/run"
   },
   "dependencies": {
     "@oclif/color": "^1.0.13",
