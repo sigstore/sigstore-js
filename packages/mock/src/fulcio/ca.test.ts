@@ -24,7 +24,9 @@ import { initializeCTLog } from './ctlog';
 describe('CA', () => {
   const rootKeyPair = generateKeyPair();
   const clock = new Date();
-  const crypto = new pkijs.CryptoEngine({ crypto: new Crypto() });
+  const crypto = new pkijs.CryptoEngine({
+    crypto: new Crypto(),
+  }) as pkijs.ICryptoEngine;
 
   beforeEach(() => {
     pkijs.setEngine('test', crypto);
