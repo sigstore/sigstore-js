@@ -1,5 +1,25 @@
 # @sigstore/mock
 
+## 0.6.2
+
+### Patch Changes
+
+- 84bc758: Bump jose from 5.1.0 to 5.1.1
+- 5957b94: Bump jose from 5.0.1 to 5.0.2
+- 532612c: Bump jose from 5.0.2 to 5.1.0
+- b7c386e: Bump dependencies:
+
+  - nock from 13.3.4 to 13.3.6
+
+- fe1530d: Bump dependencies:
+
+  - jose from 5.1.1 to 5.1.2
+  - nock from 13.3.8 to 13.4.0
+
+- 82d3150: Bump jose from 4.15.4 to 5.0.1
+- b1c3f06: Bump nock from 13.3.6 to 13.3.8
+- f68e429: Bump jose from 5.1.2 to 5.1.3
+
 ## 0.6.1
 
 ### Patch Changes
