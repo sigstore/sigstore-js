@@ -4,6 +4,7 @@
     { "path": "packages/bundle" },
     { "path": "packages/cli" },
     { "path": "packages/client" },
+    { "path": "packages/core" },
     { "path": "packages/conformance" },
     { "path": "packages/mock" },
     { "path": "packages/mock-server" },
