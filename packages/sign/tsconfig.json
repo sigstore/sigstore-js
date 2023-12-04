@@ -12,6 +12,7 @@
   ],
   "references": [
     { "path": "../bundle" },
+    { "path": "../core" },
     { "path": "../mock" },
     { "path": "../rekor-types" },
     { "path": "../jest" }

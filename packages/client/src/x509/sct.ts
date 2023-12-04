@@ -101,7 +101,7 @@ export class SignedCertificateTimestamp {
       stream.appendView(this.extensions);
     }
 
-    return crypto.verifyBlob(
+    return crypto.verify(
       stream.buffer,
       publicKey,
       this.signature,

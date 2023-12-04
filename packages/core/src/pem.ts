@@ -29,3 +29,17 @@ export function toDER(certificate: string): Buffer {
 
   return Buffer.from(der, 'base64');
 }
+
+// Translates a DER-encoded buffer into a PEM-encoded string. Standard PEM
+// encoding dictates that each certificate should have a trailing newline after
+// the footer.
+export function fromDER(certificate: Buffer, type = 'CERTIFICATE'): string {
+  // Base64-encode the certificate.
+  const der = certificate.toString('base64');
+  // Split the certificate into lines of 64 characters.
+  const lines = der.match(/.{1,64}/g) || '';
+
+  return [`-----BEGIN ${type}-----`, ...lines, `-----END ${type}-----`]
+    .join('\n')
+    .concat('\n');
+}

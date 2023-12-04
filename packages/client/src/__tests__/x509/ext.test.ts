@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { ASN1Obj } from '../../util/asn1';
+import { ASN1Obj } from '@sigstore/core';
 import { x509SCTExtension } from '../../x509/ext';
 import { SignedCertificateTimestamp } from '../../x509/sct';
 
