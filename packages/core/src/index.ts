@@ -15,6 +15,8 @@ limitations under the License.
 */
 export { ASN1Obj } from './asn1';
 export * as crypto from './crypto';
+export * as dsse from './dsse';
+export * as encoding from './encoding';
 export * as json from './json';
 export * as pem from './pem';
 export { X509Certificate } from './x509';

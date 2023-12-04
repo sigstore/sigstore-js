@@ -118,7 +118,7 @@ class SignedNote {
       }
 
       const publicKey = crypto.createPublicKey(tlog.publicKey.rawBytes);
-      return crypto.verifyBlob(data, publicKey, signature.signature);
+      return crypto.verify(data, publicKey, signature.signature);
     });
   }
 }

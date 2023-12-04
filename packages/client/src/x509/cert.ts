@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { ASN1Obj } from '@sigstore/core';
 import * as sigstore from '../types/sigstore';
 import { crypto, pem } from '../util';
-import { ASN1Obj } from '../util/asn1';
 import { ByteStream } from '../util/stream';
 import {
   x509AuthorityKeyIDExtension,
@@ -171,7 +171,7 @@ export class x509Certificate {
     const publicKey = issuerCertificate?.publicKey || this.publicKey;
     const key = crypto.createPublicKey(publicKey);
 
-    return crypto.verifyBlob(
+    return crypto.verify(
       this.tbsCertificate.toDER(),
       key,
       this.signatureValue,

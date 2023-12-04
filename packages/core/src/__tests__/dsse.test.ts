@@ -13,10 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import crypto, { BinaryLike } from 'crypto';
+import { preAuthEncoding } from '../dsse';
 
-const SHA256_ALGORITHM = 'sha256';
+describe('preAuthEncoding', () => {
+  const payloadType = 'text/plain';
+  const payload = Buffer.from('Hello, World!', 'utf8');
 
-export function hash(data: BinaryLike, algorithm = SHA256_ALGORITHM): Buffer {
-  return crypto.createHash(algorithm).update(data).digest();
-}
+  it('should return the correct pre-auth encoding', () => {
+    const pae = preAuthEncoding(payloadType, payload);
+    expect(pae).toEqual(Buffer.from('DSSEv1 10 text/plain 13 Hello, World!'));
+  });
+});

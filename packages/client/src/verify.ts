@@ -179,7 +179,7 @@ function verifyMessageSignature(
     throw new VerificationError('message digest verification failed');
   }
 
-  if (!crypto.verifyBlob(data, publicKey, signature)) {
+  if (!crypto.verify(data, publicKey, signature)) {
     throw new VerificationError('artifact signature verification failed');
   }
 }
@@ -195,7 +195,7 @@ function verifyDSSESignature(envelope: Envelope, publicKey: KeyLike): void {
   // Only support a single signature in DSSE
   const signature = envelope.signatures[0].sig;
 
-  if (!crypto.verifyBlob(data, publicKey, signature)) {
+  if (!crypto.verify(data, publicKey, signature)) {
     throw new VerificationError('artifact signature verification failed');
   }
 }

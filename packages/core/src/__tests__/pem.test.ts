@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { toDER } from '../pem';
+import { fromDER, toDER } from '../pem';
 
 describe('toDER', () => {
   describe('when the object is a certificate', () => {
@@ -31,5 +31,17 @@ describe('toDER', () => {
       const der = toDER(pem);
       expect(der).toEqual(Buffer.from('DEFG', 'base64'));
     });
+  });
+});
+
+describe('fromDER', () => {
+  const cert =
+    '-----BEGIN CERTIFICATE-----\nMIICoTCCAiagAwIBAgIUDnU0n6QHoPRvPj6b2Ee38VOD4TswCgYIKoZIzj0EAwMw\ncm1l\n-----END CERTIFICATE-----\n';
+
+  const der = toDER(cert);
+
+  it('returns a PEM-encoded certificate', () => {
+    const pem = fromDER(der);
+    expect(pem).toEqual(cert);
   });
 });

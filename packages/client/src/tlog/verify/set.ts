@@ -54,7 +54,7 @@ export function verifyTLogSET(
     // Extract the SET from the tlog entry
     const signature = entry.inclusionPromise.signedEntryTimestamp;
 
-    return crypto.verifyBlob(data, publicKey, signature);
+    return crypto.verify(data, publicKey, signature);
   });
 }
 

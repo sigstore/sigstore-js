@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import * as enc from './encoding';
+import { encoding as enc } from '@sigstore/core';
 
 type JWTSubject = {
   iss: string;
