@@ -12,7 +12,7 @@ repository.
 
 ## Prerequisites
 
-- Node.js version >= 14.17.0
+- Node.js version >= 16.14.0
 
 ## Installation
 
