@@ -1,0 +1,102 @@
+/*
+Copyright 2023 The Sigstore Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+export const certificates = {
+  root: `-----BEGIN CERTIFICATE-----
+  MIIBzTCCAVOgAwIBAgIUYcwp7HLy4oRYoMMwt+jUA1f6/p4wCgYIKoZIzj0EAwMw
+  JjETMBEGA1UECgwKZm9vYmFyLmRldjEPMA0GA1UEAwwGZm9vYmFyMB4XDTkwMDEw
+  MTAwMDAwMFoXDTQwMDEwMTAwMDAwMFowJjETMBEGA1UECgwKZm9vYmFyLmRldjEP
+  MA0GA1UEAwwGZm9vYmFyMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE93Ne0YYOCj7I
+  JGEn/SdtPXhEQLMBoF8VQd8jzg+RtR0JB4SqRw4YiU6Ms8P+pywl5uXA4dXK65Xq
+  yXBAnvqoIIOD/F6rqc0oPecI2Q+qNC+WfhAPrABTe2HD/fiUm7pOo0IwQDAdBgNV
+  HQ4EFgQUWjVEZ39pYrDjAokrPUcF7TE3g+owDwYDVR0TAQH/BAUwAwEB/zAOBgNV
+  HQ8BAf8EBAMCAQYwCgYIKoZIzj0EAwMDaAAwZQIwfHXFzEIfSuFpY4Np3iCQVe20
+  UXDUsZd8kBfoC4nSR2tmzLXfakRE4lJrDpApZSddAjEAmEp+i93OpjdcppPVklbJ
+  0d4oLqCCEiykfCaKGoPe6eT/l9Ip1Ufe3fth/Qf5ZDwS
+  -----END CERTIFICATE-----`,
+
+  intermediate: `-----BEGIN CERTIFICATE-----
+  MIIB8jCCAXigAwIBAgIUGgXM883oo5AKvnltwUHySW/eaQQwCgYIKoZIzj0EAwMw
+  JjETMBEGA1UECgwKZm9vYmFyLmRldjEPMA0GA1UEAwwGZm9vYmFyMB4XDTkwMDEw
+  MTAwMDAwMFoXDTQwMDEwMTAwMDAwMFowMzETMBEGA1UECgwKZm9vYmFyLmRldjEc
+  MBoGA1UEAwwTZm9vYmFyLWludGVybWVkaWF0ZTB2MBAGByqGSM49AgEGBSuBBAAi
+  A2IABL7slLvHIJ7hFDckvhNxssGcKhz9uektKJxpjOJbpJRzYrurKTXqvwp+rw0H
+  5La/gVPeSa52rsi4f/v3SJhlmrdnLLqFv5DHmL9tOjX8QZ64ExkZS/LD3Gnm4YND
+  4grDbKNaMFgwHQYDVR0OBBYEFJEun/IAIfi7kOhDUcOk1mmr/WZrMA4GA1UdDwEB
+  /wQEAwIBBjASBgNVHRMBAf8ECDAGAQH/AgEAMBMGA1UdJQQMMAoGCCsGAQUFBwMD
+  MAoGCCqGSM49BAMDA2gAMGUCMQC3LKOXUS9w1c/FHuxVCY2dMm/KbuqPbyVqFqSH
+  9GqkMdc1QEfca45ETBluST16L60CMBDWMMldIHz3rpBaqqHiXu5lOEW+5HtxX3ku
+  HeHIOtAOwCsfuUt6xcwEtS+G7wtTog==
+  -----END CERTIFICATE-----`,
+
+  leaf: `-----BEGIN CERTIFICATE-----
+  MIIB8TCCAXegAwIBAgIUBHcWnSa4N1K+z/dRDitfwGT6RUowCgYIKoZIzj0EAwMw
+  MzETMBEGA1UECgwKZm9vYmFyLmRldjEcMBoGA1UEAwwTZm9vYmFyLWludGVybWVk
+  aWF0ZTAeFw05MDAxMDEwMDAwMDBaFw00MDAxMDEwMDAwMDBaMAAwWTATBgcqhkjO
+  PQIBBggqhkjOPQMBBwNCAARSG+kx7P0C96xegjJgg81uJrJf/G+yYLRKucwP3AMP
+  Q1xFB+/8wdUqeTLZPI7AsmcGtvbT/Vr5GRPNT1NUSlFVo4GbMIGYMB0GA1UdDgQW
+  BBTXA23F2RNNOlWky1b9MQ1AX3NfQzAfBgNVHSMEGDAWgBSRLp/yACH4u5DoQ1HD
+  pNZpq/1mazAOBgNVHQ8BAf8EBAMCB4AwEwYDVR0lBAwwCgYIKwYBBQUHAwMwMQYD
+  VR0RBCowKIYRaHR0cDovL2Zvb2Jhci5kZXagEwYKKwYBBAGDvzABB6AFDANGT08w
+  CgYIKoZIzj0EAwMDaAAwZQIwWi7Kx/jf8O3riw+dLxK2p4+JPbH92aFrq3WozDex
+  iXb1ZTM3FhaFFrM15gMKWlVhAjEAig8qoM7nW0cPq0x029VvJPjm4knz7ZvmnY3d
+  VwmStvcPrB+2+tmxDfK1BKl1v5/Z
+  -----END CERTIFICATE-----`,
+
+  // Leaf cert which was signed by another leaf certificate.
+  invalidleaf: `-----BEGIN CERTIFICATE-----
+  MIIBijCCAS+gAwIBAgIUay2QH/yn7biKcZIG3ngAAJ1UIDswCgYIKoZIzj0EAwMw
+  ADAeFw05MDAxMDEwMDAwMDBaFw00MDAxMDEwMDAwMDBaMAAwWTATBgcqhkjOPQIB
+  BggqhkjOPQMBBwNCAATQS7/83FBWZHvsR6pqC9S13E7+cXeyACaTaeZ/q7QT9KLM
+  Z4V3B5HIZpCF8uYbSG570bxDZPNLasDgH4YaN0rdo4GGMIGDMB0GA1UdDgQWBBTl
+  VbnUsc5wOUOk6dm9VKhDo4+T7TAfBgNVHSMEGDAWgBTXA23F2RNNOlWky1b9MQ1A
+  X3NfQzAOBgNVHQ8BAf8EBAMCB4AwEwYDVR0lBAwwCgYIKwYBBQUHAwMwHAYDVR0R
+  BBUwE4YRaHR0cDovL2Zvb2Jhci5kZXYwCgYIKoZIzj0EAwMDSQAwRgIhAK4F+zVs
+  ihy1Jz7xHResesgWpDn8ymbk36z5Iu0XZPx2AiEAiK9Rmcl6BqdI6UCfDeXdCPaL
+  X+LFBrV+0VdjR5jl17g=
+  -----END CERTIFICATE-----`,
+
+  // Unauthorized intermediate cert which was signed by 'intermediate'
+  // above. This cert is not authorized due to the fact that the
+  // issuing cert has a pathlen:0 constraint.
+  invalidint: `-----BEGIN CERTIFICATE-----
+  MIICCzCCAZGgAwIBAgIUGdCThOLeJHfzGnsFYQzqrDPxQqAwCgYIKoZIzj0EAwMw
+  MzETMBEGA1UECgwKZm9vYmFyLmRldjEcMBoGA1UEAwwTZm9vYmFyLWludGVybWVk
+  aWF0ZTAeFw05MDAxMDEwMDAwMDBaFw00MDAxMDEwMDAwMDBaMDsxEzARBgNVBAoM
+  CmZvb2Jhci5kZXYxJDAiBgNVBAMMG2Zvb2Jhci1pbnZhbGlkLWludGVybWVkaWF0
+  ZTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABNBLv/zcUFZke+xHqmoL1LXcTv5x
+  d7IAJpNp5n+rtBP0osxnhXcHkchmkIXy5htIbnvRvENk80tqwOAfhho3St2jezB5
+  MB0GA1UdDgQWBBTlVbnUsc5wOUOk6dm9VKhDo4+T7TAfBgNVHSMEGDAWgBSRLp/y
+  ACH4u5DoQ1HDpNZpq/1mazAOBgNVHQ8BAf8EBAMCAQYwEgYDVR0TAQH/BAgwBgEB
+  /wIBADATBgNVHSUEDDAKBggrBgEFBQcDAzAKBggqhkjOPQQDAwNoADBlAjEA/XMQ
+  omRjxkN7dApOGQ9rD1yF9oBNDKrWI4Pe90pkMpkn5/jPoMnqABPDkakBYJh5AjAu
+  yD/zS+yrv7qbzB5Jumi/T9El3fYz7mpW8INtwHg/d0BrO9Mkt/mkTjiEjeX6AoI=
+  -----END CERTIFICATE-----`,
+
+  // Leaf which was issued by the invalid intermediate cert above and
+  // violates the pathlen:0 constraint of the true intermediate.
+  deepleaf: `-----BEGIN CERTIFICATE-----
+  MIIB2TCCAX+gAwIBAgIUdE9ALIE7nFHMkrZV51ZMmLlGFrQwCgYIKoZIzj0EAwMw
+  OzETMBEGA1UECgwKZm9vYmFyLmRldjEkMCIGA1UEAwwbZm9vYmFyLWludmFsaWQt
+  aW50ZXJtZWRpYXRlMB4XDTkwMDEwMTAwMDAwMFoXDTQwMDEwMTAwMDAwMFowADBZ
+  MBMGByqGSM49AgEGCCqGSM49AwEHA0IABFIb6THs/QL3rF6CMmCDzW4msl/8b7Jg
+  tEq5zA/cAw9DXEUH7/zB1Sp5Mtk8jsCyZwa29tP9WvkZE81PU1RKUVWjgZswgZgw
+  HQYDVR0OBBYEFNcDbcXZE006VaTLVv0xDUBfc19DMB8GA1UdIwQYMBaAFOVVudSx
+  znA5Q6Tp2b1UqEOjj5PtMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEF
+  BQcDAzAxBgNVHREEKjAohhFodHRwOi8vZm9vYmFyLmRldqATBgorBgEEAYO/MAEH
+  oAUMA0ZPTzAKBggqhkjOPQQDAwNIADBFAiEA4Mo94nfLm+Tppp4s2TT/fgc3bJnD
+  STIQAJ48P98hceMCIHwwDrjqaQJNUNV3BwlEMc1DYkHo2p4IZf6zXi+Aasih
+  -----END CERTIFICATE-----`,
+};

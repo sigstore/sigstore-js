@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Sigstore Authors.
+Copyright 2022 The Sigstore Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,11 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-export { ASN1Obj } from './asn1';
-export * as crypto from './crypto';
-export * as dsse from './dsse';
-export * as encoding from './encoding';
-export * as json from './json';
-export * as pem from './pem';
-export { ByteStream } from './stream';
-export { EXTENSION_OID_SCT, X509Certificate, X509SCTExtension } from './x509';
+const base = require('../../jest.config.base');
+
+module.exports = {
+  ...base,
+  displayName: 'verify',
+  setupFilesAfterEnv: ['@sigstore/jest/all'],
+  testPathIgnorePatterns: [
+    '<rootDir>/dist/',
+    '<rootDir>/src/__tests__/__fixtures__',
+  ],
+  coveragePathIgnorePatterns: ['__fixtures__'],
+};
