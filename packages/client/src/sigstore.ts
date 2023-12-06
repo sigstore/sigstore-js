@@ -19,8 +19,13 @@ import {
   bundleToJSON,
 } from '@sigstore/bundle';
 import * as tuf from '@sigstore/tuf';
+import {
+  Verifier,
+  VerifierOptions,
+  toSignedEntity,
+  toTrustMaterial,
+} from '@sigstore/verify';
 import * as config from './config';
-import { Verifier } from './verify';
 
 export async function sign(
   payload: Buffer,
@@ -84,13 +89,24 @@ export async function createVerifier(
     retry: options.retry ?? config.DEFAULT_RETRY,
     timeout: options.timeout ?? config.DEFAULT_TIMEOUT,
   });
-  const verifier = new Verifier(trustedRoot, options.keySelector);
-  const verifyOpts = config.artifactVerificationOptions(options);
+
+  const keyFinder = options.keySelector
+    ? config.createKeyFinder(options.keySelector)
+    : undefined;
+  const trustMaterial = toTrustMaterial(trustedRoot, keyFinder);
+
+  const verifierOptions: VerifierOptions = {
+    ctlogThreshold: options.ctLogThreshold,
+    tlogThreshold: options.tlogThreshold,
+  };
+  const verifier = new Verifier(trustMaterial, verifierOptions);
 
   return {
     verify: (bundle: SerializedBundle, payload?: Buffer): void => {
       const deserializedBundle = bundleFromJSON(bundle);
-      return verifier.verify(deserializedBundle, verifyOpts, payload);
+      const signedEntity = toSignedEntity(deserializedBundle, payload);
+      verifier.verify(signedEntity);
+      return;
     },
   };
 }

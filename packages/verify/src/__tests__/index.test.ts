@@ -15,17 +15,22 @@ limitations under the License.
 */
 import { fromPartial } from '@total-typescript/shoehorn';
 import {
+  KeyFinderFunc,
+  PolicyError,
   SignedEntity,
   Signer,
   TrustMaterial,
+  VerificationError,
   Verifier,
   VerifierOptions,
   toSignedEntity,
   toTrustMaterial,
 } from '..';
 
-it('exports Verifier', () => {
+it('exports classes', () => {
   expect(Verifier).toBeDefined();
+  expect(VerificationError).toBeDefined();
+  expect(PolicyError).toBeDefined();
 });
 
 it('exports functions', () => {
@@ -45,4 +50,7 @@ it('exports types', async () => {
 
   const trustMaterial: TrustMaterial = fromPartial({});
   expect(trustMaterial).toBeDefined();
+
+  const keyFinderFunc: KeyFinderFunc = fromPartial({});
+  expect(keyFinderFunc).toBeDefined();
 });

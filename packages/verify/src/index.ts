@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 export { toSignedEntity } from './bundle';
-export { TrustMaterial, toTrustMaterial } from './trust';
+export { PolicyError, VerificationError } from './error';
+export { KeyFinderFunc, TrustMaterial, toTrustMaterial } from './trust';
 export { Verifier, VerifierOptions } from './verifier';
 
 export type { SignedEntity, Signer } from './shared.types';

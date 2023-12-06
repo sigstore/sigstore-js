@@ -45,3 +45,7 @@ type VerificationErrorCode =
   | 'TIMESTAMP_ERROR';
 
 export class VerificationError extends BaseError<VerificationErrorCode> {}
+
+type PolicyErrorCode = 'UNTRUSTED_SIGNER_ERROR';
+
+export class PolicyError extends BaseError<PolicyErrorCode> {}

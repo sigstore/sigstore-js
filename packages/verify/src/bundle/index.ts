@@ -32,6 +32,7 @@ export function toSignedEntity(
     signature: signatureContent(bundle, artifact),
     key: key(bundle),
     tlogEntries: bundle.verificationMaterial.tlogEntries,
+    // TODO: Also include TSA timestamps
     timestamps: bundle.verificationMaterial.tlogEntries.map(
       (entry: TransparencyLogEntry) => ({
         $case: 'transparency-log',
