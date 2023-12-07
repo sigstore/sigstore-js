@@ -18,7 +18,8 @@ import { crypto } from '@sigstore/core';
 import { PublicKeyDetails } from '@sigstore/protobuf-specs';
 import { fromPartial } from '@total-typescript/shoehorn';
 import { toSignedEntity } from '../bundle';
-import { VerificationError } from '../error';
+import { PolicyError, VerificationError } from '../error';
+import { CertificateIdentity } from '../shared.types';
 import { TrustMaterial, toTrustMaterial } from '../trust';
 import { Verifier } from '../verifier';
 import bundles from './__fixtures__/bundles/v01';
@@ -71,6 +72,40 @@ describe('Verifier', () => {
 
       it('returns without error', () => {
         subject.verify(signedEntity);
+      });
+    });
+
+    describe('when the a matching policy is specified', () => {
+      const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
+      const signedEntity = toSignedEntity(bundle, bundles.signature.artifact);
+      const policy = {
+        subjectAlternativeName: Buffer.from(
+          'YnJpYW5AZGVoYW1lci5jb20=',
+          'base64'
+        ).toString(),
+        extensions: {
+          issuer: 'https://github.com/login/oauth',
+        },
+      } satisfies CertificateIdentity;
+
+      it('returns without error', () => {
+        subject.verify(signedEntity, policy);
+      });
+    });
+
+    describe('when the a non-matching policy is specified', () => {
+      const bundle = bundleFromJSON(bundles.signature.valid.withPublicKey);
+      const signedEntity = toSignedEntity(bundle, bundles.signature.artifact);
+      const policy = {
+        subjectAlternativeName: 'foo@bar.com',
+        extensions: {},
+      } satisfies CertificateIdentity;
+
+      it('throws an error', () => {
+        expect(() => subject.verify(signedEntity, policy)).toThrowWithCode(
+          PolicyError,
+          'UNTRUSTED_SIGNER_ERROR'
+        );
       });
     });
 
