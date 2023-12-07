@@ -35,13 +35,24 @@ describe('toDER', () => {
 });
 
 describe('fromDER', () => {
-  const cert =
-    '-----BEGIN CERTIFICATE-----\nMIICoTCCAiagAwIBAgIUDnU0n6QHoPRvPj6b2Ee38VOD4TswCgYIKoZIzj0EAwMw\ncm1l\n-----END CERTIFICATE-----\n';
+  describe('when a DER-encoded object is provided', () => {
+    const cert =
+      '-----BEGIN CERTIFICATE-----\nMIICoTCCAiagAwIBAgIUDnU0n6QHoPRvPj6b2Ee38VOD4TswCgYIKoZIzj0EAwMw\ncm1l\n-----END CERTIFICATE-----\n';
 
-  const der = toDER(cert);
+    const der = toDER(cert);
 
-  it('returns a PEM-encoded certificate', () => {
-    const pem = fromDER(der);
-    expect(pem).toEqual(cert);
+    it('returns a PEM-encoded certificate', () => {
+      const pem = fromDER(der);
+      expect(pem).toEqual(cert);
+    });
+  });
+
+  describe('when an empty buffer is provided', () => {
+    it('returns just the PEM headers', () => {
+      const pem = fromDER(Buffer.from(''));
+      expect(pem).toEqual(
+        '-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----\n'
+      );
+    });
   });
 });
