@@ -13,12 +13,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { ASN1Obj, X509Certificate, crypto, json, pem } from '..';
+import * as core from '..';
 
-it('exports objects', () => {
-  expect(ASN1Obj).toBeDefined();
-  expect(X509Certificate).toBeDefined();
-  expect(crypto).toBeDefined();
-  expect(json).toBeDefined();
-  expect(pem).toBeDefined();
+it('exports classes', () => {
+  expect(core.ASN1Obj).toBeInstanceOf(Function);
+  expect(core.ByteStream).toBeInstanceOf(Function);
+  expect(core.X509Certificate).toBeInstanceOf(Function);
+  expect(core.X509SCTExtension).toBeInstanceOf(Function);
+});
+
+it('exports modules', () => {
+  expect(core.crypto).toBeDefined();
+  expect(core.dsse).toBeDefined();
+  expect(core.encoding).toBeDefined();
+  expect(core.json).toBeDefined();
+  expect(core.pem).toBeDefined();
+});
+
+it('exports constants', () => {
+  expect(core.EXTENSION_OID_SCT).toBeDefined();
 });

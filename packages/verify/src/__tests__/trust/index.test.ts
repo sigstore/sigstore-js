@@ -75,4 +75,17 @@ describe('toTrustMaterial', () => {
       );
     });
   });
+
+  describe('when provided with a key finder function', () => {
+    const key = {
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      publicKey: 'fake-key' as any,
+      validFor: () => true,
+    };
+
+    it('uses the provided function', () => {
+      const result = toTrustMaterial(trustedRoot, () => key);
+      expect(result.publicKey('FOO')).toEqual(key);
+    });
+  });
 });
