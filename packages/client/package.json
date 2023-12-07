@@ -38,7 +38,8 @@
     "@sigstore/core": "^0.1.0",
     "@sigstore/protobuf-specs": "^0.2.1",
     "@sigstore/sign": "^2.1.0",
-    "@sigstore/tuf": "^2.2.0"
+    "@sigstore/tuf": "^2.2.0",
+    "@sigstore/verify": "^0.0.0"
   },
   "engines": {
     "node": "^16.14.0 || >=18.0.0"

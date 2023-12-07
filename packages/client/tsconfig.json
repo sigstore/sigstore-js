@@ -17,6 +17,7 @@
     { "path": "../sign" },
     { "path": "../tuf" },
     { "path": "../rekor-types" },
-    { "path": "../jest" }
+    { "path": "../jest" },
+    { "path": "../verify" }
   ]
 }

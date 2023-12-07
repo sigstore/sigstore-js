@@ -16,13 +16,12 @@ limitations under the License.
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import type { SerializedBundle } from '@sigstore/bundle';
 import { mockFulcio, mockRekor, mockTSA } from '@sigstore/mock';
-import { TrustedRoot } from '@sigstore/protobuf-specs';
+import { VerificationError } from '@sigstore/verify';
 import { fromPartial } from '@total-typescript/shoehorn';
 import mocktuf, { Target } from '@tufjs/repo-mock';
-import { PolicyError, VerificationError } from '../error';
 import { attest, createVerifier, sign, verify } from '../sigstore';
-import bundles from './__fixtures__/bundles/v01';
-import bundlesV02 from './__fixtures__/bundles/v02';
+import * as invalidBundles from './__fixtures__/bundles/invalid';
+import * as validBundles from './__fixtures__/bundles/valid';
 import { trustedRoot } from './__fixtures__/trust';
 
 import type { SignOptions, VerifyOptions } from '../config';
@@ -87,7 +86,7 @@ describe('signAttestation', () => {
     await mockTSA({ baseURL: tsaURL });
   });
 
-  it('constructs the Signer with the correct options', async () => {
+  it('returns the signed bundle', async () => {
     const options: SignOptions = {
       fulcioURL,
       rekorURL,
@@ -119,6 +118,12 @@ describe('#verify', () => {
   let tufRepo: ReturnType<typeof mocktuf> | undefined;
   let tufOptions: VerifyOptions | undefined;
 
+  const trustedRootJSON = JSON.stringify(trustedRoot);
+  const target: Target = {
+    name: 'trusted_root.json',
+    content: Buffer.from(trustedRootJSON),
+  };
+
   beforeEach(() => {
     tufRepo = mocktuf(target, { metadataPathPrefix: '' });
     tufOptions = {
@@ -129,98 +134,35 @@ describe('#verify', () => {
 
   afterEach(() => tufRepo?.teardown());
 
-  const trustedRootJSON = JSON.stringify(TrustedRoot.toJSON(trustedRoot));
-  const target: Target = {
-    name: 'trusted_root.json',
-    content: Buffer.from(trustedRootJSON),
-  };
-
-  describe('when everything in the bundle is valid', () => {
-    const bundle = bundles.dsse.valid.withSigningCert;
+  describe('when the bundle is a valid v0.1 DSSE bundle with signing certificate', () => {
+    const bundle: SerializedBundle = fromPartial(
+      validBundles.v1.dsse.withSigningCert
+    );
 
     it('does not throw an error', async () => {
       await expect(verify(bundle, tufOptions)).resolves.toBe(undefined);
     });
   });
 
-  describe('when there is a signature mismatch', () => {
-    const bundle = bundles.signature.valid.withSigningCert;
-    const artifact = Buffer.from('');
-    it('throws an error', async () => {
-      await expect(verify(bundle, artifact, tufOptions)).rejects.toThrowError(
-        VerificationError
-      );
-    });
-  });
-
-  describe('when the bundle was signed by a trusted identity', () => {
-    const bundle = bundles.signature.valid.withSigningCert;
-    const artifact = bundles.signature.artifact;
-
+  describe('when the bundle is a valid v0.1 DSSE bundle with public key', () => {
+    const bundle: SerializedBundle = fromPartial(
+      validBundles.v1.dsse.withPublicKey
+    );
     const options: VerifyOptions = {
-      certificateIssuer: 'https://github.com/login/oauth',
-      certificateIdentityEmail: Buffer.from(
-        'YnJpYW5AZGVoYW1lci5jb20=',
-        'base64'
-      ).toString('ascii'),
-      certificateOIDs: {
-        '1.3.6.1.4.1.57264.1.1': 'https://github.com/login/oauth',
-      },
       ...tufOptions,
+      keySelector: (hint: string) => validBundles.publicKeys[hint],
     };
 
     it('does not throw an error', async () => {
-      await expect(verify(bundle, artifact, options)).resolves.toBeUndefined();
+      await expect(verify(bundle, options)).resolves.toBe(undefined);
     });
   });
 
-  describe('when an issuer is specified w/o a SAN identity', () => {
-    const bundle = bundles.signature.valid.withSigningCert;
-    const artifact = bundles.signature.artifact;
-
-    const options: VerifyOptions = {
-      certificateIssuer: 'https://github.com/login/oauth',
-      ...tufOptions,
-    };
-
-    it('throws an error', async () => {
-      await expect(verify(bundle, artifact, options)).rejects.toThrowError(
-        PolicyError
-      );
-    });
-  });
-
-  describe('when the bundle was signed by an untrusted identity', () => {
-    const bundle = bundles.signature.valid.withSigningCert;
-    const artifact = bundles.signature.artifact;
-
-    const options: VerifyOptions = {
-      certificateIssuer: 'https://github.com/login/oauth',
-      certificateIdentityURI: 'https://foo.bar/',
-      ...tufOptions,
-    };
-
-    it('throws an error', async () => {
-      await expect(verify(bundle, artifact, options)).rejects.toThrowError(
-        PolicyError
-      );
-    });
-  });
-
-  describe('when tlog timestamp is outside the validity period of the certificate', () => {
-    const bundle = bundles.signature.invalid.expiredCert;
-    const artifact = bundles.signature.artifact;
-
-    it('throws an error', async () => {
-      await expect(verify(bundle, artifact, tufOptions)).rejects.toThrowError(
-        VerificationError
-      );
-    });
-  });
-
-  describe('when the bundle is a v0.2 bundle', () => {
-    const bundle = bundlesV02.signature.valid.withSigningCert;
-    const artifact = bundlesV02.signature.artifact;
+  describe('when the bundle is a valid v0.1 message signature bundle with signing certificate', () => {
+    const bundle: SerializedBundle = fromPartial(
+      validBundles.v1.messageSignature.withSigningCert
+    );
+    const artifact = validBundles.artifact;
 
     it('does not throw an error', async () => {
       await expect(verify(bundle, artifact, tufOptions)).resolves.toBe(
@@ -229,12 +171,53 @@ describe('#verify', () => {
     });
   });
 
+  describe('when the bundle is a valid v0.2 message signature bundle with signing certificate', () => {
+    const bundle: SerializedBundle = fromPartial(
+      validBundles.v2.messageSignature.withSigningCert
+    );
+    const artifact = validBundles.artifact;
+
+    it('does not throw an error', async () => {
+      await expect(verify(bundle, artifact, tufOptions)).resolves.toBe(
+        undefined
+      );
+    });
+  });
+
+  describe('when there is a signature mismatch', () => {
+    const bundle: SerializedBundle = fromPartial(
+      validBundles.v1.messageSignature.withSigningCert
+    );
+    const artifact = Buffer.from('');
+
+    it('throws an error', async () => {
+      await expect(
+        verify(bundle, artifact, tufOptions)
+      ).rejects.toThrowWithCode(VerificationError, 'SIGNATURE_ERROR');
+    });
+  });
+
+  describe('when tlog timestamp is outside the validity period of the certificate', () => {
+    const bundle: SerializedBundle = fromPartial(
+      invalidBundles.v1.messageSignature.invalidExpiredCert
+    );
+    const artifact = validBundles.artifact;
+
+    it('throws an error', async () => {
+      await expect(
+        verify(bundle, artifact, tufOptions)
+      ).rejects.toThrowWithCode(VerificationError, 'CERTIFICATE_ERROR');
+    });
+  });
+
   describe('when the bundle is newer then v0.2', () => {
     // Check a theoretical v0.3 bundle that is the same shape as a v0.2 bundle
-    const bundle = { ...bundlesV02.signature.valid.withSigningCert };
+    const bundle: SerializedBundle = fromPartial({
+      ...validBundles.v2.messageSignature.withSigningCert,
+    });
     bundle.mediaType = 'application/vnd.dev.sigstore.bundle+json;version=0.3';
 
-    const artifact = bundlesV02.signature.artifact;
+    const artifact = validBundles.artifact;
 
     it('does not throw an error', async () => {
       await expect(verify(bundle, artifact, tufOptions)).resolves.toBe(
@@ -248,7 +231,7 @@ describe('#createVerifier', () => {
   let tufRepo: ReturnType<typeof mocktuf> | undefined;
   let tufOptions: VerifyOptions | undefined;
 
-  const trustedRootJSON = JSON.stringify(TrustedRoot.toJSON(trustedRoot));
+  const trustedRootJSON = JSON.stringify(trustedRoot);
   const target: Target = {
     name: 'trusted_root.json',
     content: Buffer.from(trustedRootJSON),
@@ -264,14 +247,14 @@ describe('#createVerifier', () => {
 
   afterEach(() => tufRepo?.teardown());
 
-  it('returns a object', async () => {
+  it('returns an object', async () => {
     const verifier = await createVerifier(tufOptions!);
     expect(verifier).toBeInstanceOf(Object);
   });
 
   describe('when the bundle is valid', () => {
     const bundle: SerializedBundle = fromPartial(
-      bundles.dsse.valid.withSigningCert
+      validBundles.v1.dsse.withSigningCert
     );
 
     it('does not throw an error when invoked', async () => {
@@ -282,14 +265,14 @@ describe('#createVerifier', () => {
 
   describe('when the bundle is invalid', () => {
     const bundle: SerializedBundle = fromPartial(
-      bundles.dsse.invalid.badSignature
+      invalidBundles.v1.dsse.invalidBadSignature
     );
 
     it('throws an error when invoked', async () => {
       const verifier = await createVerifier(tufOptions!);
       expect(() => {
         verifier.verify(bundle);
-      }).toThrowError(VerificationError);
+      }).toThrowWithCode(VerificationError, 'TLOG_BODY_ERROR');
     });
   });
 });

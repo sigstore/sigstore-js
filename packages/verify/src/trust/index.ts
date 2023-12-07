@@ -36,21 +36,24 @@ export { filterCertAuthorities, filterTLogAuthorities } from './filter';
 
 export type {
   CertAuthority,
+  KeyFinderFunc,
   TLogAuthority,
   TrustMaterial,
 } from './trust.types';
 
 export function toTrustMaterial(
   root: TrustedRoot,
-  keys?: Record<string, PublicKey>
+  keys?: Record<string, PublicKey> | KeyFinderFunc
 ): TrustMaterial {
+  const keyFinder = typeof keys === 'function' ? keys : keyLocator(keys);
+
   return {
     certificateAuthorities:
       root.certificateAuthorities.map(createCertAuthority),
     timestampAuthorities: root.timestampAuthorities.map(createCertAuthority),
     tlogs: root.tlogs.map(createTLogAuthority),
     ctlogs: root.ctlogs.map(createTLogAuthority),
-    publicKey: keyLocator(keys),
+    publicKey: keyFinder,
   };
 }
 

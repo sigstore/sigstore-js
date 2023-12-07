@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { crypto } from '@sigstore/core';
 import {
   BundleBuilder,
   BundleBuilderOptions,
@@ -26,10 +27,18 @@ import {
   TSAWitness,
   Witness,
 } from '@sigstore/sign';
-import * as sigstore from './types/sigstore';
+import { KeyFinderFunc, VerificationError } from '@sigstore/verify';
 
-import type { FetchOptions, Retry } from './types/fetch';
-import type { KeySelector } from './verify';
+import type { MakeFetchHappenOptions } from 'make-fetch-happen';
+
+type Retry = MakeFetchHappenOptions['retry'];
+
+type FetchOptions = {
+  retry?: Retry;
+  timeout?: number | undefined;
+};
+
+type KeySelector = (hint: string) => string | Buffer | undefined;
 
 export type SignOptions = {
   fulcioURL?: string;
@@ -56,7 +65,7 @@ export type VerifyOptions = {
 export const DEFAULT_RETRY: Retry = { retries: 2 };
 export const DEFAULT_TIMEOUT = 5000;
 
-export type BundleType = 'messageSignature' | 'dsseEnvelope';
+type BundleType = 'messageSignature' | 'dsseEnvelope';
 
 export function createBundleBuilder(
   bundleType: 'messageSignature',
@@ -83,6 +92,26 @@ export function createBundleBuilder(
   }
 }
 
+// Translates the public KeySelector type into the KeyFinderFunc type needed by
+// the verifier.
+export function createKeyFinder(keySelector: KeySelector): KeyFinderFunc {
+  return (hint: string) => {
+    const key = keySelector(hint);
+
+    if (!key) {
+      throw new VerificationError({
+        code: 'PUBLIC_KEY_ERROR',
+        message: `key not found: ${hint}`,
+      });
+    }
+
+    return {
+      publicKey: crypto.createPublicKey(key),
+      validFor: () => true,
+    };
+  };
+}
+
 // Instantiate the FulcioSigner based on the supplied options.
 function initSigner(options: SignOptions): Signer {
   return new FulcioSigner({
@@ -100,6 +129,7 @@ function initIdentityProvider(options: SignOptions): IdentityProvider {
   const token = options.identityToken;
 
   if (token) {
+    /* istanbul ignore next */
     return { getToken: () => Promise.resolve(token) };
   } else {
     return new CIContextProvider('sigstore');
@@ -146,68 +176,4 @@ function isTSAEnabled(
   options: SignOptions
 ): options is SignOptions & { tsaServerURL: string } {
   return options.tsaServerURL !== undefined;
-}
-
-// Assembles the AtifactVerificationOptions from the supplied VerifyOptions.
-export function artifactVerificationOptions(
-  options: VerifyOptions
-): sigstore.RequiredArtifactVerificationOptions {
-  // The trusted signers are only used if the options contain a certificate
-  // issuer
-  let signers: sigstore.RequiredArtifactVerificationOptions['signers'];
-  if (options.certificateIssuer) {
-    let san: sigstore.SubjectAlternativeName | undefined = undefined;
-    if (options.certificateIdentityEmail) {
-      san = {
-        type: sigstore.SubjectAlternativeNameType.EMAIL,
-        identity: {
-          $case: 'value',
-          value: options.certificateIdentityEmail,
-        },
-      };
-    } else if (options.certificateIdentityURI) {
-      san = {
-        type: sigstore.SubjectAlternativeNameType.URI,
-        identity: {
-          $case: 'value',
-          value: options.certificateIdentityURI,
-        },
-      };
-    }
-
-    const oids = Object.entries(
-      options.certificateOIDs || /* istanbul ignore next */ {}
-    ).map<sigstore.ObjectIdentifierValuePair>(([oid, value]) => ({
-      oid: { id: oid.split('.').map((s) => parseInt(s, 10)) },
-      value: Buffer.from(value),
-    }));
-
-    signers = {
-      $case: 'certificateIdentities',
-      certificateIdentities: {
-        identities: [
-          {
-            issuer: options.certificateIssuer,
-            san: san,
-            oids: oids,
-          },
-        ],
-      },
-    };
-  }
-
-  // Construct the artifact verification options w/ defaults
-  return {
-    ctlogOptions: {
-      disable: options.ctLogThreshold === 0,
-      threshold: options.ctLogThreshold ?? 1,
-      detachedSct: false,
-    },
-    tlogOptions: {
-      disable: options.tlogThreshold === 0,
-      threshold: options.tlogThreshold ?? 1,
-      performOnlineVerification: false,
-    },
-    signers,
-  };
 }

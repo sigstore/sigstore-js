@@ -20,7 +20,7 @@ export {
   InternalError,
 } from '@sigstore/sign';
 export { TUFError } from '@sigstore/tuf';
-export { PolicyError, VerificationError } from './error';
+export { PolicyError, VerificationError } from '@sigstore/verify';
 export { attest, createVerifier, sign, verify } from './sigstore';
 
 export type { SerializedBundle as Bundle } from '@sigstore/bundle';
