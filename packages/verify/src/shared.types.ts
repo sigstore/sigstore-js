@@ -17,12 +17,12 @@ import type { TransparencyLogEntry } from '@sigstore/bundle';
 import type { X509Certificate, crypto } from '@sigstore/core';
 
 export type CertificateExtensions = {
-  issuer: string;
+  issuer?: string;
 };
 
 export type CertificateIdentity = {
   subjectAlternativeName?: string;
-  extensions: Partial<CertificateExtensions>;
+  extensions: CertificateExtensions;
 };
 
 export type Signer = {
