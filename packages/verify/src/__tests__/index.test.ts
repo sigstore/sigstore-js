@@ -21,6 +21,7 @@ import {
   Signer,
   TrustMaterial,
   VerificationError,
+  VerificationPolicy,
   Verifier,
   VerifierOptions,
   toSignedEntity,
@@ -53,4 +54,7 @@ it('exports types', async () => {
 
   const keyFinderFunc: KeyFinderFunc = fromPartial({});
   expect(keyFinderFunc).toBeDefined();
+
+  const verificationPolicy: VerificationPolicy = fromPartial({});
+  expect(verificationPolicy).toBeDefined();
 });

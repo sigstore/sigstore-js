@@ -14,13 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { isDeepStrictEqual } from 'util';
-import { PolicyError, VerificationError } from './error';
+import { VerificationError } from './error';
 import { verifyCertificate, verifyPublicKey } from './key';
 import { verifyExtensions, verifySubjectAlternativeName } from './policy';
 import { verifyTLogTimestamp, verifyTSATimestamp } from './timestamp';
 import { verifyTLogBody } from './tlog';
 
-import type { CertificateIdentity, SignedEntity, Signer } from './shared.types';
+import type {
+  CertificateIdentity,
+  SignedEntity,
+  Signer,
+  VerificationPolicy,
+} from './shared.types';
 import type { TrustMaterial } from './trust';
 
 export type VerifierOptions = {
@@ -42,17 +47,14 @@ export class Verifier {
     };
   }
 
-  public verify(
-    entity: SignedEntity,
-    policy?: Required<CertificateIdentity>
-  ): Signer {
+  public verify(entity: SignedEntity, policy?: VerificationPolicy): Signer {
     const timestamps = this.verifyTimestamps(entity);
     const signer = this.verifySigningKey(entity, timestamps);
     this.verifyTLogs(entity);
     this.verifySignature(entity, signer);
 
     if (policy) {
-      this.verifyPolicy(signer, policy);
+      this.verifyPolicy(policy, signer.identity || {});
     }
 
     return signer;
@@ -155,22 +157,22 @@ export class Verifier {
     }
   }
 
-  private verifyPolicy(signer: Signer, policy: Required<CertificateIdentity>) {
-    if (!signer.identity) {
-      throw new PolicyError({
-        code: 'UNTRUSTED_SIGNER_ERROR',
-        message: 'no signer identity',
-      });
+  private verifyPolicy(
+    policy: VerificationPolicy,
+    identity: CertificateIdentity
+  ) {
+    // Check the subject alternative name of the signer matches the policy
+    if (policy.subjectAlternativeName) {
+      verifySubjectAlternativeName(
+        policy.subjectAlternativeName,
+        identity.subjectAlternativeName
+      );
     }
 
-    // Check the subject alternative name of the signer matches the policy
-    verifySubjectAlternativeName(
-      policy.subjectAlternativeName,
-      signer.identity.subjectAlternativeName
-    );
-
     // Check that the extensions of the signer match the policy
-    verifyExtensions(policy.extensions, signer.identity.extensions);
+    if (policy.extensions) {
+      verifyExtensions(policy.extensions, identity.extensions);
+    }
   }
 }
 

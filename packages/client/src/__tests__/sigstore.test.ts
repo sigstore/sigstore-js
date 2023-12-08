@@ -129,6 +129,7 @@ describe('#verify', () => {
     tufOptions = {
       tufMirrorURL: tufRepo.baseURL,
       tufCachePath: tufRepo.cachePath,
+      certificateIssuer: 'https://github.com/login/oauth',
     };
   });
 

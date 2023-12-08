@@ -18,7 +18,11 @@ import {
   MessageSignatureBundleBuilder,
 } from '@sigstore/sign';
 import { VerificationError } from '@sigstore/verify';
-import { createBundleBuilder, createKeyFinder } from '../config';
+import {
+  createBundleBuilder,
+  createKeyFinder,
+  createVerificationPolicy,
+} from '../config';
 import { publicKeys } from './__fixtures__/bundles/valid';
 
 describe('createBundleBuilder', () => {
@@ -88,6 +92,46 @@ describe('createKeyFinder', () => {
         VerificationError,
         'PUBLIC_KEY_ERROR'
       );
+    });
+  });
+});
+
+describe('createVerificationPolicy', () => {
+  describe('when the options specify a certificateIdentityEmail', () => {
+    const options = { certificateIdentityEmail: 'foo@bar.com' };
+
+    it('returns a verification policy', () => {
+      const policy = createVerificationPolicy(options);
+      expect(policy).toBeDefined();
+      expect(policy.subjectAlternativeName).toEqual(
+        options.certificateIdentityEmail
+      );
+      expect(policy.extensions).toBeUndefined();
+    });
+  });
+
+  describe('when the options specify a certificateIdentityURI', () => {
+    const options = { certificateIdentityURI: 'https://foo.bar.com' };
+
+    it('returns a verification policy', () => {
+      const policy = createVerificationPolicy(options);
+      expect(policy).toBeDefined();
+      expect(policy.subjectAlternativeName).toEqual(
+        options.certificateIdentityURI
+      );
+      expect(policy.extensions).toBeUndefined();
+    });
+  });
+
+  describe('when the options specify a certificateIssuer', () => {
+    const options = { certificateIssuer: 'https://bar.foo.com' };
+
+    it('returns a verification policy', () => {
+      const policy = createVerificationPolicy(options);
+      expect(policy).toBeDefined();
+      expect(policy.extensions).toBeDefined();
+      expect(policy.extensions?.issuer).toEqual(options.certificateIssuer);
+      expect(policy.subjectAlternativeName).toBeUndefined();
     });
   });
 });

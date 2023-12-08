@@ -18,4 +18,4 @@ export { PolicyError, VerificationError } from './error';
 export { KeyFinderFunc, TrustMaterial, toTrustMaterial } from './trust';
 export { Verifier, VerifierOptions } from './verifier';
 
-export type { SignedEntity, Signer } from './shared.types';
+export type { SignedEntity, Signer, VerificationPolicy } from './shared.types';

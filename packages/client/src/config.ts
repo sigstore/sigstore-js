@@ -27,7 +27,11 @@ import {
   TSAWitness,
   Witness,
 } from '@sigstore/sign';
-import { KeyFinderFunc, VerificationError } from '@sigstore/verify';
+import {
+  KeyFinderFunc,
+  VerificationError,
+  VerificationPolicy,
+} from '@sigstore/verify';
 
 import type { MakeFetchHappenOptions } from 'make-fetch-happen';
 
@@ -110,6 +114,24 @@ export function createKeyFinder(keySelector: KeySelector): KeyFinderFunc {
       validFor: () => true,
     };
   };
+}
+
+export function createVerificationPolicy(
+  options: VerifyOptions
+): VerificationPolicy {
+  const policy: VerificationPolicy = {};
+
+  const san =
+    options.certificateIdentityEmail || options.certificateIdentityURI;
+  if (san) {
+    policy.subjectAlternativeName = san;
+  }
+
+  if (options.certificateIssuer) {
+    policy.extensions = { issuer: options.certificateIssuer };
+  }
+
+  return policy;
 }
 
 // Instantiate the FulcioSigner based on the supplied options.

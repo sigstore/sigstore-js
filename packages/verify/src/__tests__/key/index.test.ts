@@ -135,7 +135,7 @@ describe('verifyCertificate', () => {
       expect(result.signer).toBeDefined();
       expect(result.signer.identity).toBeDefined();
       expect(result.signer.identity?.subjectAlternativeName).toBeDefined();
-      expect(result.signer.identity?.extensions.issuer).toEqual(
+      expect(result.signer.identity?.extensions?.issuer).toEqual(
         'https://github.com/login/oauth'
       );
       expect(result.signer.key).toBeDefined();

@@ -15,16 +15,14 @@ export function verifySubjectAlternativeName(
 
 export function verifyExtensions(
   policyExtensions: CertificateExtensions,
-  signerExtensions: CertificateExtensions
+  signerExtensions: CertificateExtensions = {}
 ): void {
-  if (policyExtensions.issuer) {
-    const policyIssuer = policyExtensions.issuer;
-    const signerIssuer = signerExtensions.issuer;
-
-    if (signerIssuer === undefined || signerIssuer !== policyIssuer) {
+  let key: keyof typeof policyExtensions;
+  for (key in policyExtensions) {
+    if (signerExtensions[key] !== policyExtensions[key]) {
       throw new PolicyError({
         code: 'UNTRUSTED_SIGNER_ERROR',
-        message: `invalid certificate issuer - expected ${policyIssuer}, got ${signerIssuer}`,
+        message: `invalid certificate extension - expected ${key}=${policyExtensions[key]}, got ${key}=${signerExtensions[key]}`,
       });
     }
   }
