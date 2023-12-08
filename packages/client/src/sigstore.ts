@@ -100,12 +100,13 @@ export async function createVerifier(
     tlogThreshold: options.tlogThreshold,
   };
   const verifier = new Verifier(trustMaterial, verifierOptions);
+  const policy = config.createVerificationPolicy(options);
 
   return {
     verify: (bundle: SerializedBundle, payload?: Buffer): void => {
       const deserializedBundle = bundleFromJSON(bundle);
       const signedEntity = toSignedEntity(deserializedBundle, payload);
-      verifier.verify(signedEntity);
+      verifier.verify(signedEntity, policy);
       return;
     },
   };

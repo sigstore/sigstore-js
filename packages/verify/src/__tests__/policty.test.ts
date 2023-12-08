@@ -30,6 +30,14 @@ describe('verifyExtensions', () => {
   describe('when the signer extensions are undefined', () => {
     it('throws an error', () => {
       expect(() =>
+        verifyExtensions({ issuer: 'foo' }, undefined)
+      ).toThrowWithCode(PolicyError, 'UNTRUSTED_SIGNER_ERROR');
+    });
+  });
+
+  describe('when the signer extension values are undefined', () => {
+    it('throws an error', () => {
+      expect(() =>
         verifyExtensions({ issuer: 'foo' }, { issuer: undefined })
       ).toThrowWithCode(PolicyError, 'UNTRUSTED_SIGNER_ERROR');
     });

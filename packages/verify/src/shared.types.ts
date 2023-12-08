@@ -16,14 +16,17 @@ limitations under the License.
 import type { TransparencyLogEntry } from '@sigstore/bundle';
 import type { X509Certificate, crypto } from '@sigstore/core';
 
+export type CertificateExtensionName = 'issuer';
 export type CertificateExtensions = {
-  issuer?: string;
+  [key in CertificateExtensionName]?: string;
 };
 
 export type CertificateIdentity = {
   subjectAlternativeName?: string;
-  extensions: CertificateExtensions;
+  extensions?: CertificateExtensions;
 };
+
+export type VerificationPolicy = CertificateIdentity;
 
 export type Signer = {
   key: crypto.KeyObject;
