@@ -122,7 +122,7 @@ describe('verifyCertificate', () => {
     });
   });
 
-  describe('when everything is valid', () => {
+  describe('when everything is valid (legacy cert)', () => {
     const trustMaterial = fromPartial<TrustMaterial>({
       certificateAuthorities: [certAuthority],
       ctlogs: [ctlogAuthority],
@@ -137,6 +137,32 @@ describe('verifyCertificate', () => {
       expect(result.signer.identity?.subjectAlternativeName).toBeDefined();
       expect(result.signer.identity?.extensions?.issuer).toEqual(
         'https://github.com/login/oauth'
+      );
+      expect(result.signer.key).toBeDefined();
+    });
+  });
+
+  describe('when everything is valid (new-style cert)', () => {
+    const signingCert =
+      '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';
+
+    const leaf = X509Certificate.parse(signingCert);
+
+    const timestamps = [new Date('2023-08-29T15:45:00.000Z')];
+    const trustMaterial = fromPartial<TrustMaterial>({
+      certificateAuthorities: [certAuthority],
+      ctlogs: [ctlogAuthority],
+    });
+
+    it('returns the verifier', () => {
+      const result = verifyCertificate(leaf, timestamps, trustMaterial);
+      expect(result.scts).toHaveLength(1);
+      expect(result.scts[0]).toEqual(ctlogAuthority.logID);
+      expect(result.signer).toBeDefined();
+      expect(result.signer.identity).toBeDefined();
+      expect(result.signer.identity?.subjectAlternativeName).toBeDefined();
+      expect(result.signer.identity?.extensions?.issuer).toEqual(
+        'https://token.actions.githubusercontent.com'
       );
       expect(result.signer.key).toBeDefined();
     });
