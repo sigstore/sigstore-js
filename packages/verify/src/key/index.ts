@@ -21,7 +21,8 @@ import { VerifiedSCTProvider, verifySCTs } from './sct';
 import type { CertificateIdentity, Signer } from '../shared.types';
 import type { TrustMaterial } from '../trust';
 
-const OID_FULCIO_ISSUER = '1.3.6.1.4.1.57264.1.1';
+const OID_FULCIO_ISSUER_V1 = '1.3.6.1.4.1.57264.1.1';
+const OID_FULCIO_ISSUER_V2 = '1.3.6.1.4.1.57264.1.8';
 
 export type CertificateVerificationResult = {
   signer: Signer;
@@ -77,10 +78,17 @@ export function verifyCertificate(
 }
 
 function getSigner(cert: X509Certificate): Signer {
+  let issuer: string | undefined;
+  const issuerExtension = cert.extension(OID_FULCIO_ISSUER_V2);
+
+  if (issuerExtension) {
+    issuer = issuerExtension.valueObj.subs?.[0]?.value.toString('ascii');
+  } else {
+    issuer = cert.extension(OID_FULCIO_ISSUER_V1)?.value.toString('ascii');
+  }
+
   const identity: CertificateIdentity = {
-    extensions: {
-      issuer: cert.extension(OID_FULCIO_ISSUER)?.value.toString('ascii'),
-    },
+    extensions: { issuer },
     subjectAlternativeName: cert.subjectAltName,
   };
 
