@@ -24,6 +24,7 @@ const OID_SHA256_ALGO_ID = '2.16.840.1.101.3.4.2.1';
 describe('TSA', () => {
   const keyPair = generateKeyPair('prime256v1');
   const clock = new Date();
+
   describe('rootCertificate', () => {
     it('returns the root certificate', async () => {
       const tsa = await initializeTSA(keyPair, clock);
@@ -34,6 +35,23 @@ describe('TSA', () => {
       const cert = pkijs.Certificate.fromBER(root);
       expect(cert.issuer.typesAndValues[0].value.valueBlock.value).toBe('tsa');
       expect(cert.issuer.typesAndValues[1].value.valueBlock.value).toBe(
+        'sigstore.mock'
+      );
+    });
+  });
+
+  describe('intCertificate', () => {
+    it('returns the intermediate certificate', async () => {
+      const tsa = await initializeTSA(keyPair, clock);
+      const der = tsa.intCertificate;
+
+      expect(der).toBeDefined();
+
+      const cert = pkijs.Certificate.fromBER(der);
+      expect(cert.subject.typesAndValues[0].value.valueBlock.value).toBe(
+        'tsa signing'
+      );
+      expect(cert.subject.typesAndValues[1].value.valueBlock.value).toBe(
         'sigstore.mock'
       );
     });

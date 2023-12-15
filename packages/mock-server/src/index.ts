@@ -133,15 +133,17 @@ function assembleTrustedRoot({
 }): TrustedRoot {
   return {
     mediaType: 'application/vnd.dev.sigstore.trustedroot+json;version=0.1',
-    certificateAuthorities: [certificateAuthority(ca.rootCertificate, url)],
+    certificateAuthorities: [certificateAuthority([ca.rootCertificate], url)],
     ctlogs: [transparencyLogInstance(ctlog.publicKey, url)],
     tlogs: [transparencyLogInstance(tlog.publicKey, url)],
-    timestampAuthorities: [certificateAuthority(tsa.rootCertificate, url)],
+    timestampAuthorities: [
+      certificateAuthority([tsa.rootCertificate, tsa.intCertificate], url),
+    ],
   };
 }
 
 function certificateAuthority(
-  certificate: Buffer,
+  certificates: Buffer[],
   url: string
 ): CertificateAuthority {
   return {
@@ -151,7 +153,9 @@ function certificateAuthority(
     },
     uri: url,
     certChain: {
-      certificates: [{ rawBytes: certificate }],
+      certificates: certificates.map((certificate) => ({
+        rawBytes: certificate,
+      })),
     },
     validFor: { start: new Date() },
   };
