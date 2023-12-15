@@ -14,14 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { Envelope, Bundle as ProtoBundle } from '@sigstore/protobuf-specs';
-import { assertBundle } from './validate';
+import { BUNDLE_V01_MEDIA_TYPE, Bundle } from './bundle';
+import { assertBundle, assertBundleLatest, assertBundleV01 } from './validate';
 
-import type { Bundle } from './bundle';
 import type { OneOf } from './utility';
 
 export const bundleFromJSON = (obj: unknown): Bundle => {
   const bundle = ProtoBundle.fromJSON(obj);
   assertBundle(bundle);
+
+  if (bundle.mediaType === BUNDLE_V01_MEDIA_TYPE) {
+    assertBundleV01(bundle);
+  } else {
+    assertBundleLatest(bundle);
+  }
+
   return bundle;
 };
 

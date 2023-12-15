@@ -369,42 +369,90 @@ describe('bundleToJSON', () => {
 });
 
 describe('bundleFromJSON', () => {
-  const bundle: Bundle = {
-    mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.1',
-    verificationMaterial: {
+  describe('when the bundle is a v0.1 bundle', () => {
+    const bundle: Bundle = {
+      mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.1',
+      verificationMaterial: {
+        content: {
+          $case: 'x509CertificateChain',
+          x509CertificateChain: {
+            certificates: [{ rawBytes: Buffer.from('FOO') }],
+          },
+        },
+        tlogEntries: [
+          {
+            logIndex: '123',
+            logId: { keyId: Buffer.from('123') },
+            kindVersion: { kind: 'intoto', version: '0.1.0' },
+            canonicalizedBody: Buffer.from(''),
+            integratedTime: '0',
+            inclusionPromise: { signedEntryTimestamp: Buffer.from('') },
+            inclusionProof: undefined,
+          },
+        ],
+        timestampVerificationData: undefined,
+      },
       content: {
-        $case: 'x509CertificateChain',
-        x509CertificateChain: {
-          certificates: [{ rawBytes: Buffer.from('FOO') }],
+        $case: 'dsseEnvelope',
+        dsseEnvelope: {
+          payload: Buffer.from('ABC'),
+          payloadType: 'application/json',
+          signatures: [{ sig: Buffer.from('BAR'), keyid: '' }],
         },
       },
-      tlogEntries: [
-        {
-          logIndex: '123',
-          logId: { keyId: Buffer.from('123') },
-          kindVersion: { kind: 'intoto', version: '0.1.0' },
-          canonicalizedBody: Buffer.from(''),
-          integratedTime: '0',
-          inclusionPromise: { signedEntryTimestamp: Buffer.from('') },
-          inclusionProof: undefined,
-        },
-      ],
-      timestampVerificationData: undefined,
-    },
-    content: {
-      $case: 'dsseEnvelope',
-      dsseEnvelope: {
-        payload: Buffer.from('ABC'),
-        payloadType: 'application/json',
-        signatures: [{ sig: Buffer.from('BAR'), keyid: '' }],
-      },
-    },
-  };
+    };
 
-  it('matches the deserialized form of the Bundle', () => {
-    const json = bundleToJSON(bundle);
-    const deserializedBundle = bundleFromJSON(json);
-    expect(deserializedBundle).toEqual(bundle);
+    it('matches the deserialized form of the Bundle', () => {
+      const json = bundleToJSON(bundle);
+      const deserializedBundle = bundleFromJSON(json);
+      expect(deserializedBundle).toEqual(bundle);
+    });
+  });
+
+  describe('when the bundle is a v0.2 bundle', () => {
+    const bundle: Bundle = {
+      mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.2',
+      verificationMaterial: {
+        content: {
+          $case: 'x509CertificateChain',
+          x509CertificateChain: {
+            certificates: [{ rawBytes: Buffer.from('FOO') }],
+          },
+        },
+        tlogEntries: [
+          {
+            logIndex: '123',
+            logId: { keyId: Buffer.from('123') },
+            kindVersion: { kind: 'intoto', version: '0.1.0' },
+            canonicalizedBody: Buffer.from(''),
+            integratedTime: '0',
+            inclusionPromise: undefined,
+            inclusionProof: {
+              checkpoint: { envelope: '' },
+              hashes: [],
+              logIndex: '',
+              rootHash: Buffer.from(''),
+              treeSize: '',
+            },
+          },
+        ],
+        timestampVerificationData: undefined,
+      },
+      content: {
+        $case: 'dsseEnvelope',
+        dsseEnvelope: {
+          payload: Buffer.from('ABC'),
+          payloadType: 'application/json',
+          signatures: [{ sig: Buffer.from('BAR'), keyid: '' }],
+        },
+      },
+    };
+
+    it('matches the deserialized form of the Bundle', () => {
+      const json = bundleToJSON(bundle);
+      const deserializedBundle = bundleFromJSON(json);
+      expect(deserializedBundle).toEqual(bundle);
+    });
   });
 });
 
