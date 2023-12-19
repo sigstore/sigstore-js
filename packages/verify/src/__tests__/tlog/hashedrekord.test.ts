@@ -17,13 +17,15 @@ import { bundleFromJSON } from '@sigstore/bundle';
 import { signatureContent } from '../../bundle';
 import { VerificationError } from '../../error';
 import { verifyHashedRekordTLogBody } from '../../tlog/hashedrekord';
-import bundles from '../__fixtures__/bundles/v01';
+import * as bundles from '../__fixtures__/bundles';
 
 import type { ProposedHashedRekordEntry } from '@sigstore/rekor-types';
 
 describe('verifyHashedRekordTLogBody', () => {
   describe('when everything is valid', () => {
-    const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
+    const bundle = bundleFromJSON(
+      bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+    );
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const body: ProposedHashedRekordEntry = JSON.parse(
       tlogEntry.canonicalizedBody.toString('utf8')
@@ -36,7 +38,9 @@ describe('verifyHashedRekordTLogBody', () => {
   });
 
   describe('when the apiVersion is unsupported', () => {
-    const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
+    const bundle = bundleFromJSON(
+      bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+    );
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const body: ProposedHashedRekordEntry = JSON.parse(
       tlogEntry.canonicalizedBody.toString('utf8')
@@ -57,7 +61,9 @@ describe('verifyHashedRekordTLogBody', () => {
   });
 
   describe('when the tlog entry body is missing the signature', () => {
-    const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
+    const bundle = bundleFromJSON(
+      bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+    );
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const body: ProposedHashedRekordEntry = JSON.parse(
       tlogEntry.canonicalizedBody.toString('utf8')
@@ -77,7 +83,9 @@ describe('verifyHashedRekordTLogBody', () => {
   });
 
   describe('when the tlog entry body is missing the hash', () => {
-    const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
+    const bundle = bundleFromJSON(
+      bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+    );
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const body: ProposedHashedRekordEntry = JSON.parse(
       tlogEntry.canonicalizedBody.toString('utf8')
@@ -98,13 +106,17 @@ describe('verifyHashedRekordTLogBody', () => {
 
   describe('when the signature does NOT match the value in the tlog entry', () => {
     const bundle = bundleFromJSON(
-      bundles.signature.invalid.tlogIncorrectSigInBody
+      bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
     );
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const body: ProposedHashedRekordEntry = JSON.parse(
       tlogEntry.canonicalizedBody.toString('utf8')
     );
     const content = signatureContent(bundle);
+
+    beforeEach(() => {
+      body.spec.signature.content = Buffer.from('oops').toString('base64');
+    });
 
     it('throws an error', () => {
       expect(() => verifyHashedRekordTLogBody(body, content)).toThrowWithCode(
@@ -116,13 +128,17 @@ describe('verifyHashedRekordTLogBody', () => {
 
   describe('when the digest does NOT match the value in the tlog entry', () => {
     const bundle = bundleFromJSON(
-      bundles.signature.invalid.tlogIncorrectDigestInBody
+      bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
     );
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const body: ProposedHashedRekordEntry = JSON.parse(
       tlogEntry.canonicalizedBody.toString('utf8')
     );
     const content = signatureContent(bundle);
+
+    beforeEach(() => {
+      body.spec.data.hash!.value = Buffer.from('oops').toString('base64');
+    });
 
     it('throws an error', () => {
       expect(() => verifyHashedRekordTLogBody(body, content)).toThrowWithCode(

@@ -13,17 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { bundleFromJSON } from '@sigstore/bundle';
+import { BundleWithDsseEnvelope, bundleFromJSON } from '@sigstore/bundle';
 import { signatureContent } from '../../bundle';
 import { VerificationError } from '../../error';
 import { verifyDSSETLogBody } from '../../tlog/dsse';
-import bundles from '../__fixtures__/bundles/v01';
+import * as bundles from '../__fixtures__/bundles';
 
 import type { ProposedDSSEEntry } from '@sigstore/rekor-types';
 
 describe('verifyDSSETLogBody', () => {
   describe('when everything is valid', () => {
-    const bundle = bundleFromJSON(bundles.dsse.valid.withDSSETLogEntry);
+    const bundle = bundleFromJSON(bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_DSSE);
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const body: ProposedDSSEEntry = JSON.parse(
       tlogEntry.canonicalizedBody.toString('utf8')
@@ -36,7 +36,7 @@ describe('verifyDSSETLogBody', () => {
   });
 
   describe('when the apiVersion is unsupported', () => {
-    const bundle = bundleFromJSON(bundles.dsse.invalid.badSignatureTLogDSSE);
+    const bundle = bundleFromJSON(bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_DSSE);
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const body: ProposedDSSEEntry = JSON.parse(
       tlogEntry.canonicalizedBody.toString('utf8')
@@ -57,7 +57,7 @@ describe('verifyDSSETLogBody', () => {
   });
 
   describe('when the tlog entry body is missing the payload hash', () => {
-    const bundle = bundleFromJSON(bundles.dsse.valid.withDSSETLogEntry);
+    const bundle = bundleFromJSON(bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_DSSE);
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const body: ProposedDSSEEntry = JSON.parse(
       tlogEntry.canonicalizedBody.toString('utf8')
@@ -77,12 +77,17 @@ describe('verifyDSSETLogBody', () => {
   });
 
   describe('when the payload hash does NOT match the value in the dsse entry', () => {
-    const bundle = bundleFromJSON(bundles.dsse.invalid.badSignatureTLogDSSE);
+    const bundle = bundleFromJSON(bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_DSSE);
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const body: ProposedDSSEEntry = JSON.parse(
       tlogEntry.canonicalizedBody.toString('utf8')
     );
     const content = signatureContent(bundle);
+
+    beforeEach(() => {
+      (bundle as BundleWithDsseEnvelope).content.dsseEnvelope.payload =
+        Buffer.from('oops');
+    });
 
     it('throws an error', () => {
       expect(() => verifyDSSETLogBody(body, content)).toThrowWithCode(
@@ -93,14 +98,17 @@ describe('verifyDSSETLogBody', () => {
   });
 
   describe('when the signature does NOT match the value in the dsse entry', () => {
-    const bundle = bundleFromJSON(
-      bundles.dsse.invalid.tlogDSSEIncorrectSigInBody
-    );
+    const bundle = bundleFromJSON(bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_DSSE);
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const body: ProposedDSSEEntry = JSON.parse(
       tlogEntry.canonicalizedBody.toString('utf8')
     );
     const content = signatureContent(bundle);
+
+    beforeEach(() => {
+      body.spec.signatures![0].signature =
+        Buffer.from('oops').toString('base64');
+    });
 
     it('throws an error', () => {
       expect(() => verifyDSSETLogBody(body, content)).toThrowWithCode(
@@ -111,14 +119,16 @@ describe('verifyDSSETLogBody', () => {
   });
 
   describe('when the signature count does NOT match the dsse entry', () => {
-    const bundle = bundleFromJSON(
-      bundles.dsse.invalid.tlogDSSETooManySigsInBody
-    );
+    const bundle = bundleFromJSON(bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_DSSE);
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const body: ProposedDSSEEntry = JSON.parse(
       tlogEntry.canonicalizedBody.toString('utf8')
     );
     const content = signatureContent(bundle);
+
+    beforeEach(() => {
+      body.spec.signatures!.push(body.spec.signatures![0]);
+    });
 
     it('throws an error', () => {
       expect(() => verifyDSSETLogBody(body, content)).toThrowWithCode(
