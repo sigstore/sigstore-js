@@ -1,4 +1,7 @@
 import { Args, Command, Flags } from '@oclif/core';
+import { bundleFromJSON } from '@sigstore/bundle';
+import { TrustedRoot } from '@sigstore/protobuf-specs';
+import { Verifier, toSignedEntity, toTrustMaterial } from '@sigstore/verify';
 import fs from 'fs/promises';
 import * as sigstore from 'sigstore';
 
@@ -17,6 +20,10 @@ export default class VerifyBundle extends Command {
       description: 'the expected OIDC issuer for the signing certificate',
       required: true,
     }),
+    'trusted-root': Flags.string({
+      description: 'path to trusted root',
+      required: false,
+    }),
   };
 
   static override args = {
@@ -34,12 +41,31 @@ export default class VerifyBundle extends Command {
       .readFile(flags.bundle)
       .then((data) => JSON.parse(data.toString()));
     const artifact = await fs.readFile(args.file);
+    const trustedRootPath = flags['trusted-root'];
 
-    const options: Parameters<typeof sigstore.verify>[2] = {
-      certificateIdentityURI: flags['certificate-identity'],
-      certificateIssuer: flags['certificate-oidc-issuer'],
-    };
+    if (!trustedRootPath) {
+      const options: Parameters<typeof sigstore.verify>[2] = {
+        certificateIdentityURI: flags['certificate-identity'],
+        certificateIssuer: flags['certificate-oidc-issuer'],
+      };
 
-    sigstore.verify(bundle, artifact, options);
+      sigstore.verify(bundle, artifact, options);
+    } else {
+      // Need to assemble the Verifier manually to pass in the trusted root
+      const trustedRoot = await fs
+        .readFile(trustedRootPath)
+        .then((data) => JSON.parse(data.toString()));
+      const trustMaterial = toTrustMaterial(TrustedRoot.fromJSON(trustedRoot));
+      const signedEntity = toSignedEntity(bundleFromJSON(bundle), artifact);
+      const policy = {
+        subjectAlternativeName: flags['certificate-identity'],
+        extensions: {
+          issuer: flags['certificate-oidc-issuer'],
+        },
+      };
+
+      const verifier = new Verifier(trustMaterial);
+      verifier.verify(signedEntity, policy);
+    }
   }
 }
