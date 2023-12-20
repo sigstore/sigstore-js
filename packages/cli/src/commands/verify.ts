@@ -23,7 +23,7 @@ export default class Verify extends Command {
     }),
     'certificate-issuer': Flags.string({
       description:
-        "Value that must appear in the signing certificate's issuer extension (OID 1.3.6.1.4.1.57264.1.1). Not verified if no value is supplied",
+        "Value that must appear in the signing certificate's issuer extension (OID 1.3.6.1.4.1.57264.1.1 or 1.3.6.1.4.1.57264.1.8). Not verified if no value is supplied",
     }),
     'certificate-identity-email': Flags.string({
       description:
