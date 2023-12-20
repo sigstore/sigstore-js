@@ -61,3 +61,46 @@ export async function createRootCertificate(
     keyPair,
   };
 }
+
+export async function createIntermediateCertificate(
+  subject: string,
+  issuer: string,
+  keyPair: CryptoKeyPair,
+  signAlgo: EcdsaParams
+): Promise<CertWithKey> {
+  const crypto = new Crypto();
+
+  const tbs: x509.X509CertificateCreateParams = {
+    serialNumber: '02',
+    subject,
+    issuer,
+    notBefore: new Date(),
+    notAfter: new Date(Date.now() + 365 * MS_PER_DAY),
+    signingAlgorithm: signAlgo,
+    publicKey: keyPair.publicKey,
+    signingKey: keyPair.privateKey,
+    extensions: [
+      new x509.BasicConstraintsExtension(false, undefined, true),
+      new x509.KeyUsagesExtension(x509.KeyUsageFlags.digitalSignature, true),
+      new x509.ExtendedKeyUsageExtension(
+        [x509.ExtendedKeyUsage.timeStamping],
+        true
+      ),
+      await x509.SubjectKeyIdentifierExtension.create(
+        keyPair.publicKey,
+        false,
+        crypto
+      ),
+      await x509.AuthorityKeyIdentifierExtension.create(
+        keyPair.publicKey,
+        false,
+        crypto
+      ),
+    ],
+  };
+
+  return {
+    cert: await x509.X509CertificateGenerator.create(tbs, crypto),
+    keyPair,
+  };
+}

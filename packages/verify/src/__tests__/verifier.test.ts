@@ -22,7 +22,7 @@ import { PolicyError, VerificationError } from '../error';
 import { CertificateIdentity } from '../shared.types';
 import { TrustMaterial, toTrustMaterial } from '../trust';
 import { Verifier } from '../verifier';
-import bundles from './__fixtures__/bundles/v01';
+import * as bundles from './__fixtures__/bundles';
 import { trustedRoot } from './__fixtures__/trust';
 
 describe('Verifier', () => {
@@ -36,7 +36,7 @@ describe('Verifier', () => {
   });
 
   describe('#verify', () => {
-    const publicKey = crypto.createPublicKey(bundles.signature.publicKey);
+    const publicKey = crypto.createPublicKey(bundles.PUBLIC_KEY);
 
     const keys = {
       '9a76331edc1cfd3933040996615b1c06adbe6f9b4f11df4106dcceb66e3bdb1b': {
@@ -49,8 +49,10 @@ describe('Verifier', () => {
     const subject = new Verifier(trustMaterial);
 
     describe('when the certificate-signed message signature bundle is valid', () => {
-      const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
-      const signedEntity = toSignedEntity(bundle, bundles.signature.artifact);
+      const bundle = bundleFromJSON(
+        bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+      );
+      const signedEntity = toSignedEntity(bundle, bundles.ARTIFACT);
 
       it('returns without error', () => {
         subject.verify(signedEntity);
@@ -58,8 +60,10 @@ describe('Verifier', () => {
     });
 
     describe('when the key-signed message signature bundle is valid', () => {
-      const bundle = bundleFromJSON(bundles.signature.valid.withPublicKey);
-      const signedEntity = toSignedEntity(bundle, bundles.signature.artifact);
+      const bundle = bundleFromJSON(
+        bundles.V1.MESSAGE_SIGNATURE.WITH_PUBLIC_KEY
+      );
+      const signedEntity = toSignedEntity(bundle, bundles.ARTIFACT);
 
       it('returns without error', () => {
         subject.verify(signedEntity);
@@ -67,7 +71,9 @@ describe('Verifier', () => {
     });
 
     describe('when the certificate-signed DSSE bundle is valid', () => {
-      const bundle = bundleFromJSON(bundles.dsse.valid.withSigningCert);
+      const bundle = bundleFromJSON(
+        bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_DSSE
+      );
       const signedEntity = toSignedEntity(bundle);
 
       it('returns without error', () => {
@@ -76,8 +82,10 @@ describe('Verifier', () => {
     });
 
     describe('when the a matching policy is specified', () => {
-      const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
-      const signedEntity = toSignedEntity(bundle, bundles.signature.artifact);
+      const bundle = bundleFromJSON(
+        bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+      );
+      const signedEntity = toSignedEntity(bundle, bundles.ARTIFACT);
       const policy = {
         subjectAlternativeName: Buffer.from(
           'YnJpYW5AZGVoYW1lci5jb20=',
@@ -94,8 +102,10 @@ describe('Verifier', () => {
     });
 
     describe('when the a non-matching policy is specified', () => {
-      const bundle = bundleFromJSON(bundles.signature.valid.withPublicKey);
-      const signedEntity = toSignedEntity(bundle, bundles.signature.artifact);
+      const bundle = bundleFromJSON(
+        bundles.V1.MESSAGE_SIGNATURE.WITH_PUBLIC_KEY
+      );
+      const signedEntity = toSignedEntity(bundle, bundles.ARTIFACT);
       const policy = {
         subjectAlternativeName: 'foo@bar.com',
         extensions: {},
@@ -110,8 +120,16 @@ describe('Verifier', () => {
     });
 
     describe('when the bundle contains duplicate TLog entries', () => {
-      const bundle = bundleFromJSON(bundles.signature.invalid.duplicateTLog);
-      const signedEntity = toSignedEntity(bundle, bundles.signature.artifact);
+      const bundle = bundleFromJSON(
+        bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+      );
+
+      // Add a duplicate tlog entry
+      bundle.verificationMaterial.tlogEntries.push({
+        ...bundle.verificationMaterial.tlogEntries[0],
+      });
+
+      const signedEntity = toSignedEntity(bundle, bundles.ARTIFACT);
 
       it('throws an error', () => {
         expect(() => subject.verify(signedEntity)).toThrowWithCode(
@@ -123,8 +141,10 @@ describe('Verifier', () => {
 
     describe('when the tlog timestamp threshold is not met', () => {
       const subject = new Verifier(trustMaterial, { tlogThreshold: 2 });
-      const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
-      const signedEntity = toSignedEntity(bundle, bundles.signature.artifact);
+      const bundle = bundleFromJSON(
+        bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+      );
+      const signedEntity = toSignedEntity(bundle, bundles.ARTIFACT);
 
       it('throws an error', () => {
         expect(() => subject.verify(signedEntity)).toThrowWithCode(
@@ -136,8 +156,10 @@ describe('Verifier', () => {
 
     describe('when the tsa timestamp threshold is not met', () => {
       const subject = new Verifier(trustMaterial, { tsaThreshold: 2 });
-      const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
-      const signedEntity = toSignedEntity(bundle, bundles.signature.artifact);
+      const bundle = bundleFromJSON(
+        bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+      );
+      const signedEntity = toSignedEntity(bundle, bundles.ARTIFACT);
 
       it('throws an error', () => {
         expect(() => subject.verify(signedEntity)).toThrowWithCode(
@@ -149,8 +171,10 @@ describe('Verifier', () => {
 
     describe('when the ctlog threshold is not met', () => {
       const subject = new Verifier(trustMaterial, { ctlogThreshold: 2 });
-      const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
-      const signedEntity = toSignedEntity(bundle, bundles.signature.artifact);
+      const bundle = bundleFromJSON(
+        bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+      );
+      const signedEntity = toSignedEntity(bundle, bundles.ARTIFACT);
 
       it('throws an error', () => {
         expect(() => subject.verify(signedEntity)).toThrowWithCode(
@@ -161,7 +185,9 @@ describe('Verifier', () => {
     });
 
     describe('when the bundle signature cannot be verified', () => {
-      const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
+      const bundle = bundleFromJSON(
+        bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+      );
       const signedEntity = toSignedEntity(
         bundle,
         Buffer.from('not the artifact')

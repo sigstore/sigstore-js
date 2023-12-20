@@ -17,11 +17,11 @@ import { bundleFromJSON } from '@sigstore/bundle';
 import { X509Certificate } from '@sigstore/core';
 import assert from 'assert';
 import { toSignedEntity } from '../../bundle';
-import bundles from '../__fixtures__/bundles/v01';
+import * as bundles from '../__fixtures__/bundles';
 
 describe('toSignedEntity', () => {
   describe('when the bundle is a dsseEnvelope', () => {
-    const bundle = bundleFromJSON(bundles.dsse.valid.withSigningCert);
+    const bundle = bundleFromJSON(bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_DSSE);
 
     it('returns a SignedEntity', () => {
       const entity = toSignedEntity(bundle);
@@ -38,7 +38,7 @@ describe('toSignedEntity', () => {
   });
 
   describe('when the bundle is a messageSignature', () => {
-    const bundle = bundleFromJSON(bundles.signature.valid.withPublicKey);
+    const bundle = bundleFromJSON(bundles.V1.MESSAGE_SIGNATURE.WITH_PUBLIC_KEY);
 
     it('returns a SignedEntity', () => {
       const entity = toSignedEntity(bundle);
