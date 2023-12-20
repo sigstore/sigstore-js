@@ -17,22 +17,19 @@ import { X509Certificate, crypto } from '@sigstore/core';
 import { fromPartial } from '@total-typescript/shoehorn';
 import { VerificationError } from '../../error';
 import { verifyCertificate, verifyPublicKey } from '../../key';
-import bundles from '../__fixtures__/bundles/v01';
 
 import type { CertAuthority, TLogAuthority, TrustMaterial } from '../../trust';
 
 describe('verifyCertificate', () => {
-  const bundle = bundles.signature.valid.withSigningCert;
+  // Fulcio-issued signing certificate
+  const certBytes = Buffer.from(
+    'MIICoDCCAiagAwIBAgIUevae+nLQ8mg6OyOB43MKJ10F2CEwCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjIxMTA5MDEzMzA5WhcNMjIxMTA5MDE0MzA5WjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9DbYBIMQLtWb6J5gtL69jgRwwEfdtQtKvvG4+o3ZzlOroJplpXaVgF6wBDob++rNG9/AzSaBmApkEwI52XBjWqOCAUUwggFBMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUVIIFc08z6uV9Y96S+v5oDbbmHEYwHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGKBgorBgEEAdZ5AgQCBHwEegB4AHYA3T0wasbHETJjGR4cmWc3AqJKXrjePK3/h4pygC8p7o4AAAGEWgUGQwAABAMARzBFAiEAlKycMBC2q+QM+mct60RNENxpURHes6vgOBWdx71XcXgCIAtnMzw/cBw5h0hrYJ8b1PJjoxn3k1N2TdgofqvMhbSTMAoGCCqGSM49BAMDA2gAMGUCMQC2KLFYSiD/+S1WEsyf9czf52w+E577Hi77r8pGUM1rQ/Bzg1aGvQs0/kAg3S/JSDgCMEdN5dIS0tRm1SOMbOFcW+1yzR+OiCVJ7DVFwUdI3D/7ERxtN9e/LJ6uaRnR/Sanrw==',
+    'base64'
+  );
 
-  const bundleCert =
-    bundle.verificationMaterial.x509CertificateChain.certificates[0];
-  const leaf = X509Certificate.parse(bundleCert.rawBytes);
+  const leaf = X509Certificate.parse(certBytes);
 
-  const timestamps = [
-    new Date(
-      Number(bundle.verificationMaterial.tlogEntries[0].integratedTime) * 1000
-    ),
-  ];
+  const timestamps = [new Date('2022-11-09T01:33:10.000Z')];
 
   // Certificates for public-good Fulcio
   const rootCert =
@@ -169,10 +166,12 @@ describe('verifyCertificate', () => {
   });
 
   describe('when a public key is supplied', () => {
-    const bundle = bundles.signature.valid.withPublicKey;
-    const key = bundles.signature.publicKey;
+    const key = `-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9DbYBIMQLtWb6J5gtL69jgRwwEfd
+tQtKvvG4+o3ZzlOroJplpXaVgF6wBDob++rNG9/AzSaBmApkEwI52XBjWg==
+-----END PUBLIC KEY-----`;
 
-    const hint = bundle.verificationMaterial.publicKey.hint;
+    const hint = 'foo';
     const timestamps = [new Date()];
 
     describe('when the public key is not valid for the timestamp', () => {

@@ -17,11 +17,13 @@ import { bundleFromJSON } from '@sigstore/bundle';
 import { signatureContent } from '../../bundle';
 import { VerificationError } from '../../error';
 import { verifyTLogBody } from '../../tlog';
-import bundles from '../__fixtures__/bundles/v01';
+import * as bundles from '../__fixtures__/bundles';
 
 describe('verifyTLogBody', () => {
   describe('when the tlog entry matches (hashedrekord)', () => {
-    const bundle = bundleFromJSON(bundles.signature.valid.withSigningCert);
+    const bundle = bundleFromJSON(
+      bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+    );
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const content = signatureContent(bundle);
 
@@ -31,7 +33,9 @@ describe('verifyTLogBody', () => {
   });
 
   describe('when the tlog entry matches (intoto)', () => {
-    const bundle = bundleFromJSON(bundles.dsse.valid.withSigningCert);
+    const bundle = bundleFromJSON(
+      bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_INTOTO
+    );
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const content = signatureContent(bundle);
 
@@ -41,7 +45,7 @@ describe('verifyTLogBody', () => {
   });
 
   describe('when the tlog entry matches (dsse)', () => {
-    const bundle = bundleFromJSON(bundles.dsse.valid.withDSSETLogEntry);
+    const bundle = bundleFromJSON(bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_DSSE);
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const content = signatureContent(bundle);
 
@@ -51,9 +55,13 @@ describe('verifyTLogBody', () => {
   });
 
   describe('when there is a version mismatch between the tlog entry and the body', () => {
-    const bundle = bundleFromJSON(bundles.dsse.invalid.tlogVersionMismatch);
+    const bundle = bundleFromJSON(bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_DSSE);
     const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
     const content = signatureContent(bundle);
+
+    beforeEach(() => {
+      tlogEntry.kindVersion.version = '0.0.X';
+    });
 
     it('throws an error', () => {
       expect(() => verifyTLogBody(tlogEntry, content)).toThrowWithCode(
