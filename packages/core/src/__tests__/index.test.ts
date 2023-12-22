@@ -18,6 +18,7 @@ import * as core from '..';
 it('exports classes', () => {
   expect(core.ASN1Obj).toBeInstanceOf(Function);
   expect(core.ByteStream).toBeInstanceOf(Function);
+  expect(core.RFC3161Timestamp).toBeInstanceOf(Function);
   expect(core.X509Certificate).toBeInstanceOf(Function);
   expect(core.X509SCTExtension).toBeInstanceOf(Function);
 });

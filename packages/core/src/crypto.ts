@@ -26,6 +26,15 @@ export function createPublicKey(key: string | Buffer): crypto.KeyObject {
   }
 }
 
+export function digest(algorithm: string, ...data: BinaryLike[]): Buffer {
+  const hash = crypto.createHash(algorithm);
+  for (const d of data) {
+    hash.update(d);
+  }
+  return hash.digest();
+}
+
+// TODO: deprecate this in favor of digest()
 export function hash(...data: BinaryLike[]): Buffer {
   const hash = crypto.createHash(SHA256_ALGORITHM);
   for (const d of data) {

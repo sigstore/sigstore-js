@@ -15,6 +15,7 @@ limitations under the License.
 */
 import { ASN1Obj } from '../asn1';
 import * as crypto from '../crypto';
+import { ECDSA_SIGNATURE_ALGOS } from '../oid';
 import * as pem from '../pem';
 import {
   X509AuthorityKeyIDExtension,
@@ -32,13 +33,6 @@ const EXTENSION_OID_SUBJECT_ALT_NAME = '2.5.29.17';
 const EXTENSION_OID_BASIC_CONSTRAINTS = '2.5.29.19';
 const EXTENSION_OID_AUTHORITY_KEY_ID = '2.5.29.35';
 export const EXTENSION_OID_SCT = '1.3.6.1.4.1.11129.2.4.2';
-
-const ECDSA_SIGNATURE_ALGOS: Record<string, string> = {
-  '1.2.840.10045.4.3.1': 'sha224',
-  '1.2.840.10045.4.3.2': 'sha256',
-  '1.2.840.10045.4.3.3': 'sha384',
-  '1.2.840.10045.4.3.4': 'sha512',
-};
 
 export class X509Certificate {
   public root: ASN1Obj;
@@ -61,6 +55,10 @@ export class X509Certificate {
     // version number is the first element of the version context specific tag
     const ver = this.versionObj.subs[0].toInteger();
     return `v${(ver + BigInt(1)).toString()}`;
+  }
+
+  get serialNumber(): Buffer {
+    return this.serialNumberObj.value;
   }
 
   get notBefore(): Date {
@@ -217,6 +215,12 @@ export class X509Certificate {
   private get versionObj(): ASN1Obj {
     // version is the first element of the tbsCertificate sequence
     return this.tbsCertificateObj.subs[0];
+  }
+
+  // https://www.rfc-editor.org/rfc/rfc5280#section-4.1.2.2
+  private get serialNumberObj(): ASN1Obj {
+    // serialNumber is the second element of the tbsCertificate sequence
+    return this.tbsCertificateObj.subs[1];
   }
 
   // https://www.rfc-editor.org/rfc/rfc5280#section-4.1.2.4

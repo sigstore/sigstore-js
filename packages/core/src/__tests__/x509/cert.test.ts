@@ -23,6 +23,9 @@ describe('X509Certificate', () => {
         const cert = X509Certificate.parse(certificates.root);
 
         expect(cert.version).toBe('v3');
+        expect(cert.serialNumber).toEqual(
+          Buffer.from('61CC29EC72F2E28458A0C330B7E8D40357FAFE9E', 'hex')
+        );
         expect(cert.notBefore).toBeInstanceOf(Date);
         expect(cert.notBefore.toISOString()).toBe('1990-01-01T00:00:00.000Z');
         expect(cert.notAfter).toBeInstanceOf(Date);
