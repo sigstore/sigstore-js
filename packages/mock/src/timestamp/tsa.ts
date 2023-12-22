@@ -164,13 +164,11 @@ class TSAImpl implements TSA {
   ): Promise<pkijs.SignedData> {
     const encapContent = new pkijs.EncapsulatedContentInfo({
       eContentType: OID_TSTINFO_CONTENT_TYPE,
-      eContent: new asn1js.OctetString({
-        valueHex: tstInfo.toSchema().toBER(false),
-        // The isConstructed flag makes the encoding of the
-        // EncapsulatedContentInfo look more like what the real TSA returns,
-        // however, it results in a reponse that is not parseable by openssl.
-        // idBlock: { isConstructed: true },
-      }),
+    });
+    // Avoid passing eContent to the constructor to circumvent the logic which
+    // splits the eContent into chunks and introduces a new OCTET STRING
+    encapContent.eContent = new asn1js.OctetString({
+      valueHex: tstInfo.toSchema().toBER(false),
     });
 
     const tstInfoDigest = await this.crypto.digest(
