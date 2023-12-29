@@ -103,6 +103,21 @@ describe('x509BasicConstraintsExtension', () => {
         expect(subject.isCA).toBe(true);
       });
     });
+
+    describe('when the extension contains no value for the CA', () => {
+      // Extension w/ NO isCA value specified
+      const basicConstraintsExtension = Buffer.from(
+        '300C0603551D130101FF04023000',
+        'hex'
+      );
+      const subject = new X509BasicConstraintsExtension(
+        ASN1Obj.parseBuffer(basicConstraintsExtension)
+      );
+
+      it('returns false', () => {
+        expect(subject.isCA).toBe(false);
+      });
+    });
   });
 
   describe('#pathLenConstraint', () => {
