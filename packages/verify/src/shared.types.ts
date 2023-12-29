@@ -57,6 +57,7 @@ export type VerificationKey =
     };
 
 export type SignatureContent = {
+  signature: Buffer;
   compareSignature(signature: Buffer): boolean;
   compareDigest(digest: Buffer): boolean;
   verifySignature(key: crypto.KeyObject): boolean;
