@@ -56,7 +56,7 @@ describe('parseTime', () => {
 
     describe('when year is less than 50', () => {
       it('parses the date', () => {
-        expect(parseTime(Buffer.from('180212121110Z'), true)).toEqual(
+        expect(parseTime(Buffer.from('180212121110.099Z'), true)).toEqual(
           new Date('2018-02-12T12:11:10Z')
         );
       });
@@ -66,6 +66,14 @@ describe('parseTime', () => {
   describe('with long year', () => {
     it('parses the date', () => {
       expect(parseTime(Buffer.from('19180212121110Z'), false)).toEqual(
+        new Date('1918-02-12T12:11:10Z')
+      );
+    });
+  });
+
+  describe('with long year and milliseconds', () => {
+    it('parses the date', () => {
+      expect(parseTime(Buffer.from('19180212121110.099Z'), false)).toEqual(
         new Date('1918-02-12T12:11:10Z')
       );
     });
