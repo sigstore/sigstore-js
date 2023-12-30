@@ -49,6 +49,11 @@ describe('Verifier', () => {
     const subject = new Verifier(trustMaterial);
 
     describe('when the certificate-signed message signature bundle is valid', () => {
+      const subject = new Verifier(trustMaterial, {
+        ctlogThreshold: 1,
+        tlogThreshold: 1,
+        tsaThreshold: 1,
+      });
       const bundle = bundleFromJSON(
         bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
       );

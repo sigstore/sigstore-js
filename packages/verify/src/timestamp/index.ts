@@ -13,12 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import type { RFC3161Timestamp } from '@sigstore/core';
-import assert from 'assert';
+import { RFC3161Timestamp } from '@sigstore/core';
 import { VerificationError } from '../error';
 import { verifyCheckpoint } from './checkpoint';
 import { verifyMerkleInclusion } from './merkle';
 import { verifyTLogSET } from './set';
+import { verifyRFC3161Timestamp } from './tsa';
 
 import type {
   TLogEntryWithInclusionPromise,
@@ -37,14 +37,15 @@ export type TimestampVerificationResult = {
 
 export function verifyTSATimestamp(
   timestamp: RFC3161Timestamp,
+  data: Buffer,
   timestampAuthorities: CertAuthority[]
 ): TimestampVerificationResult {
-  // TODO: Insert TSA verification logic here.
-  assert(timestampAuthorities);
+  verifyRFC3161Timestamp(timestamp, data, timestampAuthorities);
+
   return {
-    logID: timestamp.signerSerialNumber,
-    timestamp: timestamp.tstInfo.genTime,
     type: 'timestamp-authority',
+    logID: timestamp.signerSerialNumber,
+    timestamp: timestamp.signingTime,
   };
 }
 
