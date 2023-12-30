@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import type { TransparencyLogEntry } from '@sigstore/bundle';
-import type { X509Certificate, crypto } from '@sigstore/core';
+import type { RFC3161Timestamp, X509Certificate, crypto } from '@sigstore/core';
 
 export type CertificateExtensionName = 'issuer';
 export type CertificateExtensions = {
@@ -32,9 +32,6 @@ export type Signer = {
   key: crypto.KeyObject;
   identity?: CertificateIdentity;
 };
-
-// TODO: Implement this!
-export type RFC3161Timestamp = object;
 
 export type Timestamp =
   | {

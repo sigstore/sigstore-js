@@ -101,7 +101,31 @@ const trustedRootJSON = {
       },
     },
   ],
-  timestampAuthorities: [],
+  timestampAuthorities: [
+    {
+      subject: {
+        organization: '',
+        commonName: '',
+      },
+      uri: 'http://localhost:8080',
+      certChain: {
+        certificates: [
+          {
+            rawBytes:
+              'MIIBuzCCAWGgAwIBAgIBAjAKBggqhkjOPQQDAzAmMQwwCgYDVQQDEwN0c2ExFjAUBgNVBAoTDXNpZ3N0b3JlLm1vY2swHhcNMjIwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjAuMRQwEgYDVQQDEwt0c2Egc2lnbmluZzEWMBQGA1UEChMNc2lnc3RvcmUubW9jazBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABGCOIXjk6za2Ttu3pRRPMp363TzIpLbUZG3vrySkOdBum38EN1soS6UcMMKIXpQwJvMUcyeep2LCGt1R4r1b6ZijeDB2MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMBYGA1UdJQEB/wQMMAoGCCsGAQUFBwMIMB0GA1UdDgQWBBQ/FFxk7FUxt/oE8lDZEF0s7kasuDAfBgNVHSMEGDAWgBQ/FFxk7FUxt/oE8lDZEF0s7kasuDAKBggqhkjOPQQDAwNIADBFAiEArRcIu8babXmdnuGaW6qlH/kEg4GFvbme1VT0tc3o1I4CIHpMdIm3GVBdc2ac0NmQRo3EDXJIdsFdcAAKbG0vFEwZ',
+          },
+          {
+            rawBytes:
+              'MIIBnTCCAUSgAwIBAgIBATAKBggqhkjOPQQDAzAmMQwwCgYDVQQDEwN0c2ExFjAUBgNVBAoTDXNpZ3N0b3JlLm1vY2swHhcNMjIwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjAmMQwwCgYDVQQDEwN0c2ExFjAUBgNVBAoTDXNpZ3N0b3JlLm1vY2swWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARgjiF45Os2tk7bt6UUTzKd+t08yKS21GRt768kpDnQbpt/BDdbKEulHDDCiF6UMCbzFHMnnqdiwhrdUeK9W+mYo2MwYTAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUPxRcZOxVMbf6BPJQ2RBdLO5GrLgwHwYDVR0jBBgwFoAUPxRcZOxVMbf6BPJQ2RBdLO5GrLgwCgYIKoZIzj0EAwMDRwAwRAIgeIGv1zfVElTGrpX6rofi6blEa70mVQXyoKxkXf49+E8CIBtsrSwDbmGUMhjAF5kxaLThEsBCZHRKi+BKcZ4sJlBE',
+          },
+        ],
+      },
+      validFor: {
+        start: undefined,
+        end: undefined,
+      },
+    },
+  ],
 };
 
 export const trustedRoot = TrustedRoot.fromJSON(trustedRootJSON);

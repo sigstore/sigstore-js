@@ -13,14 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { Bundle, TransparencyLogEntry } from '@sigstore/bundle';
-import { X509Certificate } from '@sigstore/core';
+import { Bundle } from '@sigstore/bundle';
+import { RFC3161Timestamp, X509Certificate } from '@sigstore/core';
 import { DSSESignatureContent } from './dsse';
 import { MessageSignatureContent } from './message';
 
 import type {
   SignatureContent,
   SignedEntity,
+  Timestamp,
   VerificationKey,
 } from '../shared.types';
 
@@ -28,17 +29,29 @@ export function toSignedEntity(
   bundle: Bundle,
   artifact?: Buffer
 ): SignedEntity {
+  const { tlogEntries, timestampVerificationData } =
+    bundle.verificationMaterial;
+  const timestamps: Timestamp[] = [];
+
+  for (const entry of tlogEntries) {
+    timestamps.push({
+      $case: 'transparency-log',
+      tlogEntry: entry,
+    });
+  }
+
+  for (const ts of timestampVerificationData?.rfc3161Timestamps ?? []) {
+    timestamps.push({
+      $case: 'timestamp-authority',
+      timestamp: RFC3161Timestamp.parse(ts.signedTimestamp),
+    });
+  }
+
   return {
     signature: signatureContent(bundle, artifact),
     key: key(bundle),
-    tlogEntries: bundle.verificationMaterial.tlogEntries,
-    // TODO: Also include TSA timestamps
-    timestamps: bundle.verificationMaterial.tlogEntries.map(
-      (entry: TransparencyLogEntry) => ({
-        $case: 'transparency-log',
-        tlogEntry: entry,
-      })
-    ),
+    tlogEntries,
+    timestamps,
   };
 }
 

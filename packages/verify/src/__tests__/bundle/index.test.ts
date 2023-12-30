@@ -33,6 +33,27 @@ describe('toSignedEntity', () => {
 
       expect(entity.signature).toBeDefined();
       expect(entity.tlogEntries).toHaveLength(1);
+      expect(entity.timestamps).toHaveLength(2);
+    });
+  });
+
+  describe('when the bundle has no RFC3161 timestamps', () => {
+    const bundle = bundleFromJSON(bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_DSSE);
+
+    beforeEach(() => {
+      bundle.verificationMaterial.timestampVerificationData = undefined;
+    });
+
+    it('returns a SignedEntity', () => {
+      const entity = toSignedEntity(bundle);
+
+      expect(entity).toBeDefined();
+
+      assert(entity.key.$case === 'certificate');
+      expect(entity.key.certificate).toBeInstanceOf(X509Certificate);
+
+      expect(entity.signature).toBeDefined();
+      expect(entity.tlogEntries).toHaveLength(1);
       expect(entity.timestamps).toHaveLength(1);
     });
   });
@@ -50,7 +71,7 @@ describe('toSignedEntity', () => {
 
       expect(entity.signature).toBeDefined();
       expect(entity.tlogEntries).toHaveLength(1);
-      expect(entity.timestamps).toHaveLength(1);
+      expect(entity.timestamps).toHaveLength(2);
     });
   });
 });

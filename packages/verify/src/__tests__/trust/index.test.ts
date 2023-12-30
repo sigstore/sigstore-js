@@ -22,7 +22,7 @@ describe('toTrustMaterial', () => {
     const result = toTrustMaterial(trustedRoot);
     expect(result).toBeDefined();
     expect(result.certificateAuthorities).toHaveLength(2);
-    expect(result.timestampAuthorities).toHaveLength(0);
+    expect(result.timestampAuthorities).toHaveLength(1);
     expect(result.tlogs).toHaveLength(1);
     expect(result.ctlogs).toHaveLength(2);
 
