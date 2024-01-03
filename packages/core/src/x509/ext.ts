@@ -52,7 +52,7 @@ export class X509Extension {
 // https://www.rfc-editor.org/rfc/rfc5280#section-4.2.1.9
 export class X509BasicConstraintsExtension extends X509Extension {
   get isCA(): boolean {
-    return this.sequence.subs[0].toBoolean();
+    return this.sequence.subs[0]?.toBoolean() ?? false;
   }
 
   get pathLenConstraint(): bigint | undefined {
