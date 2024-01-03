@@ -19,6 +19,7 @@ import { ECDSA_SIGNATURE_ALGOS, SHA2_HASH_ALGOS } from '../oid';
 import { RFC3161TimestampVerificationError } from './error';
 import { TSTInfo } from './tstinfo';
 
+const OID_PKCS9_CONTENT_TYPE_SIGNED_DATA = '1.2.840.113549.1.7.2';
 const OID_PKCS9_CONTENT_TYPE_TSTINFO = '1.2.840.113549.1.9.16.1.4';
 const OID_PKCS9_MESSAGE_DIGEST_KEY = '1.2.840.113549.1.9.4';
 
@@ -36,6 +37,10 @@ export class RFC3161Timestamp {
 
   get status(): bigint {
     return this.pkiStatusInfoObj.subs[0].toInteger();
+  }
+
+  get contentType(): string {
+    return this.contentTypeObj.toOID();
   }
 
   get eContentType(): string {
@@ -74,6 +79,17 @@ export class RFC3161Timestamp {
   }
 
   public verify(data: Buffer, publicKey: crypto.KeyObject): void {
+    if (!this.timeStampTokenObj) {
+      throw new RFC3161TimestampVerificationError('timeStampToken is missing');
+    }
+
+    // Check for expected ContentInfo content type
+    if (this.contentType !== OID_PKCS9_CONTENT_TYPE_SIGNED_DATA) {
+      throw new RFC3161TimestampVerificationError(
+        `incorrect content type: ${this.contentType}`
+      );
+    }
+
     // Check for expected encapsulated content type
     if (this.eContentType !== OID_PKCS9_CONTENT_TYPE_TSTINFO) {
       throw new RFC3161TimestampVerificationError(
@@ -136,6 +152,10 @@ export class RFC3161Timestamp {
     return this.root.subs[1];
   }
 
+  // https://datatracker.ietf.org/doc/html/rfc5652#section-3
+  private get contentTypeObj(): ASN1Obj {
+    return this.timeStampTokenObj.subs[0];
+  }
   // https://www.rfc-editor.org/rfc/rfc5652#section-3
   private get signedDataObj(): ASN1Obj {
     const obj = this.timeStampTokenObj.subs.find((sub) =>

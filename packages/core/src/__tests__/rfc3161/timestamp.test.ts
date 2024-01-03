@@ -83,7 +83,7 @@ describe('RFC3161Timestamp', () => {
       });
     });
 
-    describe('when the artifact does NOT the one which was signed', () => {
+    describe('when the artifact does NOT match the one which was signed', () => {
       const subject = RFC3161Timestamp.parse(ts);
       const key = createPublicKey(publicKey);
       const data = Buffer.from('oops');
@@ -102,6 +102,28 @@ describe('RFC3161Timestamp', () => {
         '-----BEGIN PUBLIC KEY-----\n' +
           'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9DbYBIMQLtWb6J5gtL69jgRwwEfd\n' +
           'tQtKvvG4+o3ZzlOroJplpXaVgF6wBDob++rNG9/AzSaBmApkEwI52XBjWg==\n' +
+          '-----END PUBLIC KEY-----\n'
+      );
+
+      it('throws an error', () => {
+        expect(() => subject.verify(data, key)).toThrow(
+          RFC3161TimestampVerificationError
+        );
+      });
+    });
+
+    describe('when the content type is NOT signedData', () => {
+      const data = artifact;
+      const subject = RFC3161Timestamp.parse(
+        Buffer.from(
+          'MIICHDADAgEAMIICEwYJKoZIhvcNAQcDoIICBDCCAgACAQMxDzANBglghkgBZQMEAgEFADB0BgsqhkiG9w0BCRABBKBlBGMwYQIBAQYJKwYBBAGDvzACMC8wCwYJYIZIAWUDBAIBBCCFP/k3YqBt2/cixOvp3dZtj2Pdrql/Uhw+zCDafJdgIAIE3q2+7xgPMjAzMDAxMDEwMDAwMDBaMAMCAQECBEmWAtKgADGCAXAwggFsAgEBMCswJjEMMAoGA1UEAxMDdHNhMRYwFAYDVQQKEw1zaWdzdG9yZS5tb2NrAgECMA0GCWCGSAFlAwQCAQUAoIHVMBoGCSqGSIb3DQEJAzENBgsqhkiG9w0BCRABBDAcBgkqhkiG9w0BCQUxDxcNMzAwMTAxMDAwMDAwWjAvBgkqhkiG9w0BCQQxIgQg9EVaiVg5rwrcg1wj/j99tIJrWKYn60AIthUWerryKLcwaAYLKoZIhvcNAQkQAi8xWTBXMFUwUwQgvgCzJyhCRVJAO8TE9bSZaZbQEA7BBdhR2jom19ZI/icwLzAqpCgwJjEMMAoGA1UEAxMDdHNhMRYwFAYDVQQKEw1zaWdzdG9yZS5tb2NrAgECMAoGCCqGSM49BAMCBEcwRQIhAN7VR7nM4ppVskxDo5PiWGiIaPB6Cf76vRohGAmU5uo7AiAWlZC7auQlm8xTwpBkgJDd0dXsTesTfeMoREFKXdDzMw==',
+          'base64'
+        )
+      );
+      const key = createPublicKey(
+        '-----BEGIN PUBLIC KEY-----\n' +
+          'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhVfmhwUnwzdna6vDGCIqWmBy44j+\n' +
+          'RT/YrDe5a0NeFf8njTyxcML4pp2VsI6clbXCTqCcoTDTy1pgow3QJXFdsw==\n' +
           '-----END PUBLIC KEY-----\n'
       );
 
@@ -134,6 +156,19 @@ describe('RFC3161Timestamp', () => {
       });
     });
 
+    describe('when the timestamp token is missing', () => {
+      const data = artifact;
+      const key = createPublicKey(publicKey);
+      const subject = RFC3161Timestamp.parse(
+        Buffer.from('30053003020100', 'hex')
+      );
+      it('throws an error', () => {
+        expect(() => subject.verify(data, key)).toThrow(
+          RFC3161TimestampVerificationError
+        );
+      });
+    });
+
     describe('when the signed message does NOT match the tstInfo', () => {
       const data = artifact;
       const subject = RFC3161Timestamp.parse(
@@ -148,6 +183,7 @@ describe('RFC3161Timestamp', () => {
           'u3T+xRv5VpDSfvYJPT46EMpov8AJkR1G4rs0iV1csuammXKF+BQzvLh/qQ==\n' +
           '-----END PUBLIC KEY-----\n'
       );
+
       it('throws an error', () => {
         expect(() => subject.verify(data, key)).toThrow(
           RFC3161TimestampVerificationError

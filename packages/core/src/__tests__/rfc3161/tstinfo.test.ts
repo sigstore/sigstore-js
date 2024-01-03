@@ -61,7 +61,7 @@ describe('TSTInfo', () => {
     describe('when the messageImprintHashedMessage does NOT match the artifact', () => {
       const artifact = Buffer.from('oops');
 
-      it('does not throw an error', () => {
+      it('throws an error', () => {
         expect(() => subject.verify(artifact)).toThrow(
           RFC3161TimestampVerificationError
         );
