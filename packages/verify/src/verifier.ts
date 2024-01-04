@@ -63,13 +63,13 @@ export class Verifier {
   // Checks that all of the timestamps in the entity are valid and returns them
   private verifyTimestamps(entity: SignedEntity): Date[] {
     let tlogCount = 0;
-    let tsaCount = 0;
+    const tsaCount = 0;
 
     const timestamps = entity.timestamps.map((timestamp) => {
       switch (timestamp.$case) {
-        /* istanbul ignore next - implement this*/
         case 'timestamp-authority':
-          tsaCount++;
+          // TODO: uncomment this when we are actually verifying timestamps
+          // tsaCount++;
           return verifyTSATimestamp(
             timestamp.timestamp,
             this.trustMaterial.timestampAuthorities

@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import type { RFC3161Timestamp } from '@sigstore/core';
 import assert from 'assert';
 import { VerificationError } from '../error';
 import { verifyCheckpoint } from './checkpoint';
@@ -24,7 +25,6 @@ import type {
   TLogEntryWithInclusionProof,
   TransparencyLogEntry,
 } from '@sigstore/bundle';
-import type { RFC3161Timestamp } from '../shared.types';
 import type { CertAuthority, TLogAuthority } from '../trust';
 
 export type TimestampType = 'transparency-log' | 'timestamp-authority';
@@ -35,17 +35,17 @@ export type TimestampVerificationResult = {
   timestamp: Date;
 };
 
-/* istanbul ignore next */
 export function verifyTSATimestamp(
   timestamp: RFC3161Timestamp,
   timestampAuthorities: CertAuthority[]
 ): TimestampVerificationResult {
-  assert(timestamp);
+  // TODO: Insert TSA verification logic here.
   assert(timestampAuthorities);
-  throw new VerificationError({
-    code: 'NOT_IMPLEMENTED_ERROR',
-    message: 'timestamp-authority not implemented',
-  });
+  return {
+    logID: timestamp.signerSerialNumber,
+    timestamp: timestamp.tstInfo.genTime,
+    type: 'timestamp-authority',
+  };
 }
 
 export function verifyTLogTimestamp(
