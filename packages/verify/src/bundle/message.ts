@@ -19,7 +19,7 @@ import type { MessageSignature } from '@sigstore/bundle';
 import type { SignatureContent } from '../shared.types';
 
 export class MessageSignatureContent implements SignatureContent {
-  private readonly signature: Buffer;
+  public readonly signature: Buffer;
   private readonly messageDigest: Buffer;
   private readonly artifact: Buffer;
 
