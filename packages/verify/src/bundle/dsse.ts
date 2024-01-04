@@ -37,7 +37,7 @@ export class DSSESignatureContent implements SignatureContent {
     return crypto.verify(this.preAuthEncoding, key, this.signature);
   }
 
-  private get signature(): Buffer {
+  public get signature(): Buffer {
     return this.env.signatures.length > 0
       ? this.env.signatures[0].sig
       : Buffer.from('');
