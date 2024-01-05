@@ -58,7 +58,7 @@ interface CertificateChainVerifierOptions {
   untrustedCert: X509Certificate;
 }
 
-class CertificateChainVerifier {
+export class CertificateChainVerifier {
   private untrustedCert: X509Certificate;
   private trustedCerts: X509Certificate[];
   private localCerts: X509Certificate[];
