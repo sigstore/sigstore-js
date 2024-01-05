@@ -137,7 +137,7 @@ function assembleTrustedRoot({
     ctlogs: [transparencyLogInstance(ctlog.publicKey, url)],
     tlogs: [transparencyLogInstance(tlog.publicKey, url)],
     timestampAuthorities: [
-      certificateAuthority([tsa.rootCertificate, tsa.intCertificate], url),
+      certificateAuthority([tsa.intCertificate, tsa.rootCertificate], url),
     ],
   };
 }
