@@ -10,8 +10,7 @@
     "test": "jest"
   },
   "files": [
-    "dist",
-    "store"
+    "dist"
   ],
   "author": "bdehamer@github.com",
   "license": "Apache-2.0",

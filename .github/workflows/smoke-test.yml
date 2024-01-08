@@ -74,9 +74,6 @@ jobs:
     - name: Retrieve TUF trusted root
       run: |
         wget "${SIGSTORE_URL}/1.root.json"
-    - name: Initialize local TUF cache
-      run: |
-        ./packages/cli/bin/run init --mirror ${SIGSTORE_URL} --root ./1.root.json --force
     - name: Create artifact to sign
       run: |
         echo -n "hello world" > artifact
@@ -91,7 +88,10 @@ jobs:
           artifact
     - name: Verify bundle
       run: |
-        ./packages/cli/bin/run verify bundle.json
+        ./packages/cli/bin/run verify \
+          --tuf-mirror-url ${SIGSTORE_URL} \
+          --tuf-root-path ./1.root.json \
+          bundle.json
     - name: Archive bundle
       if: success() || failure()
       uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 # v3

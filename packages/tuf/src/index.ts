@@ -24,7 +24,6 @@ import {
 
 export const DEFAULT_MIRROR_URL = 'https://tuf-repo-cdn.sigstore.dev';
 const DEFAULT_CACHE_DIR = 'sigstore-js';
-const DEFAULT_TUF_ROOT_PATH = '../store/public-good-instance-root.json';
 const DEFAULT_RETRY: Retry = { retries: 2 };
 const DEFAULT_TIMEOUT = 5000;
 
@@ -54,7 +53,7 @@ function createClient(options: TUFOptions) {
   /* istanbul ignore next */
   return new TUFClient({
     cachePath: options.cachePath || appDataPath(DEFAULT_CACHE_DIR),
-    rootPath: options.rootPath || require.resolve(DEFAULT_TUF_ROOT_PATH),
+    rootPath: options.rootPath,
     mirrorURL: options.mirrorURL || DEFAULT_MIRROR_URL,
     retry: options.retry ?? DEFAULT_RETRY,
     timeout: options.timeout ?? DEFAULT_TIMEOUT,

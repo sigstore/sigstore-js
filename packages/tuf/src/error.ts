@@ -15,6 +15,7 @@ limitations under the License.
 */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type TUFErrorCode =
+  | 'TUF_INIT_CACHE_ERROR'
   | 'TUF_FIND_TARGET_ERROR'
   | 'TUF_REFRESH_METADATA_ERROR'
   | 'TUF_DOWNLOAD_TARGET_ERROR'
