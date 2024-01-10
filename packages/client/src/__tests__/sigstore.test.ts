@@ -24,6 +24,7 @@ import * as invalidBundles from './__fixtures__/bundles/invalid';
 import * as validBundles from './__fixtures__/bundles/valid';
 import { trustedRoot } from './__fixtures__/trust';
 
+import path from 'path';
 import type { SignOptions, VerifyOptions } from '../config';
 
 const fulcioURL = 'https://fulcio.example.com';
@@ -129,6 +130,7 @@ describe('#verify', () => {
     tufOptions = {
       tufMirrorURL: tufRepo.baseURL,
       tufCachePath: tufRepo.cachePath,
+      tufRootPath: path.join(tufRepo.cachePath, 'root.json'),
       certificateIssuer: 'https://github.com/login/oauth',
     };
   });
@@ -243,6 +245,7 @@ describe('#createVerifier', () => {
     tufOptions = {
       tufMirrorURL: tufRepo.baseURL,
       tufCachePath: tufRepo.cachePath,
+      tufRootPath: path.join(tufRepo.cachePath, 'root.json'),
     };
   });
 

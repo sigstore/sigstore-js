@@ -20,24 +20,44 @@ import os from 'os';
 import path from 'path';
 import { TUFClient, TUFOptions } from '../client';
 import { TUFError } from '../error';
+import { REPO_SEEDS } from '../store';
 
 describe('TUFClient', () => {
-  const rootPath = require.resolve(
-    '../../store/public-good-instance-root.json'
-  );
-
   describe('constructor', () => {
-    const cacheDir = path.join(os.tmpdir(), 'tuf-client-test');
-    const mirrorURL = 'https://example.com';
+    let rootSeedDir: string;
+    let rootPath: string;
+
+    const repoName = 'example.com';
+    const mirrorURL = `https://${repoName}`;
+    const cacheRoot = path.join(os.tmpdir(), 'tuf-client-test');
+    const cacheDir = path.join(cacheRoot, repoName);
     const force = false;
-    afterEach(() => fs.rmSync(cacheDir, { recursive: true }));
+
+    beforeEach(() => {
+      rootSeedDir = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'tuf-client-test-seed')
+      );
+
+      rootPath = path.join(rootSeedDir, 'root-seed.json');
+      fs.writeFileSync(
+        rootPath,
+        Buffer.from(
+          REPO_SEEDS['https://tuf-repo-cdn.sigstore.dev']['root.json'],
+          'base64'
+        )
+      );
+    });
+
+    afterEach(() => {
+      fs.rmSync(cacheRoot, { recursive: true });
+      fs.rmSync(rootSeedDir, { recursive: true });
+    });
 
     describe('when the cache directory does not exist', () => {
       it('creates the cache directory', () => {
-        new TUFClient({ cachePath: cacheDir, mirrorURL, rootPath, force });
+        new TUFClient({ cachePath: cacheRoot, mirrorURL, rootPath, force });
         expect(fs.existsSync(cacheDir)).toEqual(true);
         expect(fs.existsSync(path.join(cacheDir, 'root.json'))).toEqual(true);
-        expect(fs.existsSync(path.join(cacheDir, 'remote.json'))).toEqual(true);
       });
     });
 
@@ -45,10 +65,6 @@ describe('TUFClient', () => {
       beforeEach(() => {
         fs.mkdirSync(cacheDir, { recursive: true });
         fs.copyFileSync(rootPath, path.join(cacheDir, 'root.json'));
-        fs.writeFileSync(
-          path.join(cacheDir, 'remote.json'),
-          JSON.stringify({ mirror: mirrorURL })
-        );
       });
 
       it('loads config from the existing directory without error', () => {
@@ -59,45 +75,47 @@ describe('TUFClient', () => {
       });
     });
 
+    describe('when no explicit root.json is provided', () => {
+      describe('when the mirror URL does NOT match one of the embedded roots', () => {
+        const mirrorURL = 'https://oops.net';
+        it('throws an error', () => {
+          expect(
+            () => new TUFClient({ cachePath: cacheDir, mirrorURL, force })
+          ).toThrowWithCode(TUFError, 'TUF_INIT_CACHE_ERROR');
+        });
+      });
+
+      describe('when the mirror URL matches one of the embedded roots', () => {
+        const mirrorURL = 'https://tuf-repo-cdn.sigstore.dev';
+        it('loads the embedded root.json', () => {
+          expect(
+            () => new TUFClient({ cachePath: cacheDir, mirrorURL, force })
+          ).not.toThrow();
+        });
+      });
+    });
+
     describe('when forcing re-initialization of an existing directory', () => {
-      const oldMirrorURL = mirrorURL;
-      const newMirrorURL = 'https://new.org';
       const force = true;
 
       beforeEach(() => {
         fs.mkdirSync(cacheDir, { recursive: true });
-        fs.copyFileSync(rootPath, path.join(cacheDir, 'root.json'));
-        fs.writeFileSync(
-          path.join(cacheDir, 'remote.json'),
-          JSON.stringify({ mirror: oldMirrorURL })
-        );
+        fs.writeFileSync(path.join(cacheDir, 'root.json'), 'oops');
       });
 
       it('initializes the client without error', () => {
         expect(
           () =>
-            new TUFClient({
-              cachePath: cacheDir,
-              mirrorURL: newMirrorURL,
-              rootPath,
-              force,
-            })
+            new TUFClient({ cachePath: cacheRoot, mirrorURL, rootPath, force })
         ).not.toThrow();
       });
 
       it('overwrites the existing values', () => {
-        new TUFClient({
-          cachePath: cacheDir,
-          mirrorURL: newMirrorURL,
-          rootPath,
-          force,
-        });
+        new TUFClient({ cachePath: cacheRoot, mirrorURL, rootPath, force });
 
-        const remote = fs.readFileSync(
-          path.join(cacheDir, 'remote.json'),
-          'utf-8'
-        );
-        expect(JSON.parse(remote)).toEqual({ mirror: newMirrorURL });
+        const root = fs.readFileSync(path.join(cacheDir, 'root.json'), 'utf-8');
+        expect(root).toBeDefined();
+        expect(root).not.toEqual('oops');
       });
     });
   });
@@ -117,7 +135,7 @@ describe('TUFClient', () => {
         mirrorURL: tufRepo.baseURL,
         cachePath: tufRepo.cachePath,
         retry: false,
-        rootPath,
+        rootPath: path.join(tufRepo.cachePath, 'root.json'),
         force: false,
       };
     });

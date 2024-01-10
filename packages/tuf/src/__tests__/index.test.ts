@@ -17,6 +17,7 @@ limitations under the License.
 import { TrustedRoot } from '@sigstore/protobuf-specs';
 import mocktuf, { Target } from '@tufjs/repo-mock';
 import fs from 'fs';
+import path from 'path';
 import { TUF, TUFError, TUFOptions, getTrustedRoot, initTUF } from '..';
 import { TUFClient } from '../client';
 
@@ -73,7 +74,7 @@ describe('getTrustedRoot', () => {
       mirrorURL: tufRepo.baseURL,
       cachePath: tufRepo.cachePath,
       retry: false,
-      rootPath: 'n/a',
+      rootPath: path.join(tufRepo.cachePath, 'root.json'),
     };
   });
 
@@ -96,13 +97,13 @@ describe('initTUF', () => {
       mirrorURL: tufRepo.baseURL,
       cachePath: tufRepo.cachePath,
       retry: false,
-      rootPath: 'n/a',
+      rootPath: path.join(tufRepo.cachePath, 'root.json'),
     };
   });
 
   afterEach(() => tufRepo?.teardown());
 
-  it('returns a TUFCLient', async () => {
+  it('returns a TUFClient', async () => {
     const tuf = await initTUF(options);
     expect(tuf).toBeInstanceOf(TUFClient);
   });
@@ -110,13 +111,12 @@ describe('initTUF', () => {
   it('sets-up the local TUF cache', async () => {
     await initTUF(options);
 
-    const cachePath = tufRepo!.cachePath;
+    const cachePath = path.join(
+      tufRepo!.cachePath,
+      new URL(options!.mirrorURL!).host
+    );
     expect(fs.existsSync(cachePath)).toBe(true);
-    expect(fs.existsSync(`${cachePath}/remote.json`)).toBe(true);
     expect(fs.existsSync(`${cachePath}/root.json`)).toBe(true);
-    expect(fs.existsSync(`${cachePath}/snapshot.json`)).toBe(true);
-    expect(fs.existsSync(`${cachePath}/timestamp.json`)).toBe(true);
-    expect(fs.existsSync(`${cachePath}/targets.json`)).toBe(true);
     expect(fs.existsSync(`${cachePath}/targets`)).toBe(true);
   });
 });

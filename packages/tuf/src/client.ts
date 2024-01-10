@@ -16,11 +16,15 @@ limitations under the License.
 import fs from 'fs';
 import path from 'path';
 import { Config, Updater } from 'tuf-js';
+import { TUFError } from '.';
+import { REPO_SEEDS } from './store';
 import { readTarget } from './target';
 
 import type { MakeFetchHappenOptions } from 'make-fetch-happen';
 
 export type Retry = MakeFetchHappenOptions['retry'];
+
+const TARGETS_DIR_NAME = 'targets';
 
 type FetchOptions = {
   retry?: Retry;
@@ -30,7 +34,7 @@ type FetchOptions = {
 export type TUFOptions = {
   cachePath: string;
   mirrorURL: string;
-  rootPath: string;
+  rootPath?: string;
   force: boolean;
 } & FetchOptions;
 
@@ -38,17 +42,25 @@ export interface TUF {
   getTarget(targetName: string): Promise<string>;
 }
 
-interface RemoteConfig {
-  mirror: string;
-}
-
 export class TUFClient implements TUF {
   private updater: Updater;
 
   constructor(options: TUFOptions) {
-    initTufCache(options);
-    const remote = initRemoteConfig(options);
-    this.updater = initClient(options.cachePath, remote, options);
+    const url = new URL(options.mirrorURL);
+    const repoName = encodeURIComponent(
+      url.host + url.pathname.replace(/\/$/, '')
+    );
+    const cachePath = path.join(options.cachePath, repoName);
+
+    initTufCache(cachePath);
+    seedCache({
+      cachePath,
+      mirrorURL: options.mirrorURL,
+      tufRootPath: options.rootPath,
+      force: options.force,
+    });
+
+    this.updater = initClient(options.mirrorURL, cachePath, options);
   }
 
   public async refresh(): Promise<void> {
@@ -65,13 +77,8 @@ export class TUFClient implements TUF {
 // created. If the targets directory does not exist, it will be created.
 // If the root.json file does not exist, it will be copied from the
 // rootPath argument.
-function initTufCache({
-  cachePath,
-  rootPath: tufRootPath,
-  force,
-}: TUFOptions): string {
-  const targetsPath = path.join(cachePath, 'targets');
-  const cachedRootPath = path.join(cachePath, 'root.json');
+function initTufCache(cachePath: string): void {
+  const targetsPath = path.join(cachePath, TARGETS_DIR_NAME);
 
   if (!fs.existsSync(cachePath)) {
     fs.mkdirSync(cachePath, { recursive: true });
@@ -80,60 +87,70 @@ function initTufCache({
   if (!fs.existsSync(targetsPath)) {
     fs.mkdirSync(targetsPath);
   }
-
-  // If the root.json file does not exist (or we're forcing re-initialization),
-  // copy it from the rootPath argument
-  if (!fs.existsSync(cachedRootPath) || force) {
-    fs.copyFileSync(tufRootPath, cachedRootPath);
-  }
-
-  return cachePath;
 }
 
-// Initializes the remote.json file, which contains the URL of the TUF
-// repository. If the file does not exist, it will be created. If the file
-// exists, it will be parsed and returned.
-function initRemoteConfig({
+// Populates the TUF cache with the initial root.json file. If the root.json
+// file does not exist (or we're forcing re-initialization), copy it from either
+// the rootPath argument or from one of the repo seeds.
+function seedCache({
   cachePath,
   mirrorURL,
+  tufRootPath,
   force,
-}: TUFOptions): RemoteConfig {
-  let remoteConfig: RemoteConfig | undefined;
-  const remoteConfigPath = path.join(cachePath, 'remote.json');
+}: {
+  cachePath: string;
+  mirrorURL: string;
+  tufRootPath?: string;
+  force: boolean;
+}): void {
+  const cachedRootPath = path.join(cachePath, 'root.json');
 
-  // If the remote config file exists, read it and parse it (skip if force is
-  // true)
-  if (!force && fs.existsSync(remoteConfigPath)) {
-    const data = fs.readFileSync(remoteConfigPath, 'utf-8');
-    remoteConfig = JSON.parse(data);
+  // If the root.json file does not exist (or we're forcing re-initialization),
+  // populate it either from the supplied rootPath or from one of the repo seeds.
+  if (!fs.existsSync(cachedRootPath) || force) {
+    if (tufRootPath) {
+      fs.copyFileSync(tufRootPath, cachedRootPath);
+    } else {
+      const repoSeed = REPO_SEEDS[mirrorURL];
+
+      if (!repoSeed) {
+        throw new TUFError({
+          code: 'TUF_INIT_CACHE_ERROR',
+          message: `No root.json found for mirror: ${mirrorURL}`,
+        });
+      }
+
+      fs.writeFileSync(
+        cachedRootPath,
+        Buffer.from(repoSeed['root.json'], 'base64')
+      );
+
+      // Copy any seed targets into the cache
+      Object.entries(repoSeed.targets).forEach(([targetName, target]) => {
+        fs.writeFileSync(
+          path.join(cachePath, TARGETS_DIR_NAME, targetName),
+          Buffer.from(target, 'base64')
+        );
+      });
+    }
   }
-
-  // If the remote config file does not exist (or we're forcing initialization),
-  // create it
-  if (!remoteConfig || force) {
-    remoteConfig = { mirror: mirrorURL };
-    fs.writeFileSync(remoteConfigPath, JSON.stringify(remoteConfig));
-  }
-
-  return remoteConfig;
 }
 
 function initClient(
+  mirrorURL: string,
   cachePath: string,
-  remote: RemoteConfig,
   options: FetchOptions
 ): Updater {
-  const baseURL = remote.mirror;
   const config: Partial<Config> = {
     fetchTimeout: options.timeout,
     fetchRetry: options.retry,
   };
 
   return new Updater({
-    metadataBaseUrl: baseURL,
-    targetBaseUrl: `${baseURL}/targets`,
+    metadataBaseUrl: mirrorURL,
+    targetBaseUrl: `${mirrorURL}/targets`,
     metadataDir: cachePath,
-    targetDir: path.join(cachePath, 'targets'),
+    targetDir: path.join(cachePath, TARGETS_DIR_NAME),
     config,
   });
 }
