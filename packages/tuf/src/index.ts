@@ -29,7 +29,10 @@ const DEFAULT_TIMEOUT = 5000;
 
 const TRUSTED_ROOT_TARGET = 'trusted_root.json';
 
-export type TUFOptions = Partial<RequiredTUFOptions>;
+export type TUFOptions = Partial<RequiredTUFOptions> & {
+  // Deprecated, use forceInit instead
+  force?: boolean;
+};
 
 export async function getTrustedRoot(
   /* istanbul ignore next */
@@ -57,7 +60,8 @@ function createClient(options: TUFOptions) {
     mirrorURL: options.mirrorURL || DEFAULT_MIRROR_URL,
     retry: options.retry ?? DEFAULT_RETRY,
     timeout: options.timeout ?? DEFAULT_TIMEOUT,
-    force: options.force ?? false,
+    forceCache: options.forceCache ?? false,
+    forceInit: options.forceInit ?? options.force ?? false,
   });
 }
 
