@@ -35,7 +35,8 @@ export type TUFOptions = {
   cachePath: string;
   mirrorURL: string;
   rootPath?: string;
-  force: boolean;
+  forceCache: boolean;
+  forceInit: boolean;
 } & FetchOptions;
 
 export interface TUF {
@@ -57,10 +58,16 @@ export class TUFClient implements TUF {
       cachePath,
       mirrorURL: options.mirrorURL,
       tufRootPath: options.rootPath,
-      force: options.force,
+      forceInit: options.forceInit,
     });
 
-    this.updater = initClient(options.mirrorURL, cachePath, options);
+    this.updater = initClient({
+      mirrorURL: options.mirrorURL,
+      cachePath,
+      forceCache: options.forceCache,
+      retry: options.retry,
+      timeout: options.timeout,
+    });
   }
 
   public async refresh(): Promise<void> {
@@ -96,18 +103,18 @@ function seedCache({
   cachePath,
   mirrorURL,
   tufRootPath,
-  force,
+  forceInit,
 }: {
   cachePath: string;
   mirrorURL: string;
   tufRootPath?: string;
-  force: boolean;
+  forceInit: boolean;
 }): void {
   const cachedRootPath = path.join(cachePath, 'root.json');
 
   // If the root.json file does not exist (or we're forcing re-initialization),
   // populate it either from the supplied rootPath or from one of the repo seeds.
-  if (!fs.existsSync(cachedRootPath) || force) {
+  if (!fs.existsSync(cachedRootPath) || forceInit) {
     if (tufRootPath) {
       fs.copyFileSync(tufRootPath, cachedRootPath);
     } else {
@@ -137,9 +144,11 @@ function seedCache({
 }
 
 function initClient(
-  mirrorURL: string,
-  cachePath: string,
-  options: FetchOptions
+  options: {
+    mirrorURL: string;
+    cachePath: string;
+    forceCache: boolean;
+  } & FetchOptions
 ): Updater {
   const config: Partial<Config> = {
     fetchTimeout: options.timeout,
@@ -147,10 +156,11 @@ function initClient(
   };
 
   return new Updater({
-    metadataBaseUrl: mirrorURL,
-    targetBaseUrl: `${mirrorURL}/targets`,
-    metadataDir: cachePath,
-    targetDir: path.join(cachePath, TARGETS_DIR_NAME),
+    metadataBaseUrl: options.mirrorURL,
+    targetBaseUrl: `${options.mirrorURL}/targets`,
+    metadataDir: options.cachePath,
+    targetDir: path.join(options.cachePath, TARGETS_DIR_NAME),
+    forceCache: options.forceCache,
     config,
   });
 }

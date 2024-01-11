@@ -41,7 +41,9 @@ process.
   - `mirrorURL` `<string>`: Base URL for the Sigstore TUF repository. Defaults to `'https://tuf-repo-cdn.sigstore.dev'`
   - `cachePath` `<string>`: Absolute path to the directory to be used for caching downloaded TUF metadata and targets. Defaults to a directory named "sigstore-js" within the platform-specific application data directory.
   - `rootPath` `<string>`: Path to the initial trust root for the TUF repository. Defaults to the [embedded root](./store/public-good-instance-root.json).
-  - `force` `boolean`: Force re-initialization of the TUF cache even if it already exists. Defaults to `false`.
+  - `forceInit` `boolean`: Force re-initialization of the TUF cache even if it already exists. Defaults to `false`.
+  - `forceCache` `boolean`: Prevents any downloads from the remote TUF repository as long as all cached metadata files are un-expired. Defaults to `false`.
+  - `force` `boolean`: Same as `forceInit` (deprecated).
 
 The `TUF` client object returned from `initTUF` has a single `getTarget`
 function which takes the name of a target in the Sigstore TUF repository
@@ -58,7 +60,9 @@ verification materials for the Sigstore public-good instance.
   - `mirrorURL` `<string>`: Base URL for the Sigstore TUF repository. Defaults to `'https://tuf-repo-cdn.sigstore.dev'`
   - `cachePath` `<string>`: Absolute path to the directory to be used for caching downloaded TUF metadata and targets. Defaults to a directory named "sigstore-js" within the platform-specific application data directory.
   - `rootPath` `<string>`: Path to the initial trust root for the TUF repository. Defaults to the [embedded root](./store/public-good-instance-root.json).
-  - `force` `boolean`: Force re-initialization of the TUF cache even if it already exists. Defaults to `false`.
+  - `forceInit` `boolean`: Force re-initialization of the TUF cache even if it already exists. Defaults to `false`.
+  - `forceCache` `boolean`: Prevents any downloads from the remote TUF repository as long as all cached metadata files are un-expired. Defaults to `false`.
+  - `force` `boolean`: Same as `forceInit` (deprecated).
 
 [1]: https://theupdateframework.io/
 [2]: https://sigstore-tuf-root.storage.googleapis.com/

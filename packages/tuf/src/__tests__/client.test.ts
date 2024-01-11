@@ -31,7 +31,8 @@ describe('TUFClient', () => {
     const mirrorURL = `https://${repoName}`;
     const cacheRoot = path.join(os.tmpdir(), 'tuf-client-test');
     const cacheDir = path.join(cacheRoot, repoName);
-    const force = false;
+    const forceCache = false;
+    const forceInit = false;
 
     beforeEach(() => {
       rootSeedDir = fs.mkdtempSync(
@@ -55,7 +56,13 @@ describe('TUFClient', () => {
 
     describe('when the cache directory does not exist', () => {
       it('creates the cache directory', () => {
-        new TUFClient({ cachePath: cacheRoot, mirrorURL, rootPath, force });
+        new TUFClient({
+          cachePath: cacheRoot,
+          mirrorURL,
+          rootPath,
+          forceCache,
+          forceInit,
+        });
         expect(fs.existsSync(cacheDir)).toEqual(true);
         expect(fs.existsSync(path.join(cacheDir, 'root.json'))).toEqual(true);
       });
@@ -70,7 +77,13 @@ describe('TUFClient', () => {
       it('loads config from the existing directory without error', () => {
         expect(
           () =>
-            new TUFClient({ cachePath: cacheDir, mirrorURL, rootPath, force })
+            new TUFClient({
+              cachePath: cacheDir,
+              mirrorURL,
+              rootPath,
+              forceCache,
+              forceInit,
+            })
         ).not.toThrow();
       });
     });
@@ -80,7 +93,13 @@ describe('TUFClient', () => {
         const mirrorURL = 'https://oops.net';
         it('throws an error', () => {
           expect(
-            () => new TUFClient({ cachePath: cacheDir, mirrorURL, force })
+            () =>
+              new TUFClient({
+                cachePath: cacheDir,
+                mirrorURL,
+                forceCache,
+                forceInit,
+              })
           ).toThrowWithCode(TUFError, 'TUF_INIT_CACHE_ERROR');
         });
       });
@@ -89,14 +108,20 @@ describe('TUFClient', () => {
         const mirrorURL = 'https://tuf-repo-cdn.sigstore.dev';
         it('loads the embedded root.json', () => {
           expect(
-            () => new TUFClient({ cachePath: cacheDir, mirrorURL, force })
+            () =>
+              new TUFClient({
+                cachePath: cacheDir,
+                mirrorURL,
+                forceCache,
+                forceInit,
+              })
           ).not.toThrow();
         });
       });
     });
 
     describe('when forcing re-initialization of an existing directory', () => {
-      const force = true;
+      const forceInit = true;
 
       beforeEach(() => {
         fs.mkdirSync(cacheDir, { recursive: true });
@@ -106,12 +131,24 @@ describe('TUFClient', () => {
       it('initializes the client without error', () => {
         expect(
           () =>
-            new TUFClient({ cachePath: cacheRoot, mirrorURL, rootPath, force })
+            new TUFClient({
+              cachePath: cacheRoot,
+              mirrorURL,
+              rootPath,
+              forceCache,
+              forceInit,
+            })
         ).not.toThrow();
       });
 
       it('overwrites the existing values', () => {
-        new TUFClient({ cachePath: cacheRoot, mirrorURL, rootPath, force });
+        new TUFClient({
+          cachePath: cacheRoot,
+          mirrorURL,
+          rootPath,
+          forceCache,
+          forceInit,
+        });
 
         const root = fs.readFileSync(path.join(cacheDir, 'root.json'), 'utf-8');
         expect(root).toBeDefined();
@@ -136,7 +173,8 @@ describe('TUFClient', () => {
         cachePath: tufRepo.cachePath,
         retry: false,
         rootPath: path.join(tufRepo.cachePath, 'root.json'),
-        force: false,
+        forceCache: false,
+        forceInit: false,
       };
     });
 
