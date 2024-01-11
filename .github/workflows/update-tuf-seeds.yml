@@ -20,3 +20,9 @@ jobs:
           npx @tufjs/cli download --metadata-base-url ${TUF_MIRROR} --cache-path ${{ runner.temp }}/tuf --unsafe-root-download --target-name registry.npmjs.org/keys.json
       - name: ls
         run: tree ${{ runner.temp }}
+      - name: make new
+        run: |
+          jq -n -c \
+            --arg root "$(cat ${{ runner.temp }}/tuf/root.json | base64)" \
+            --arg trusted_root "$(cat ${{ runner.temp }}/tuf/targets/trusted_root.json | base64)" \
+            '{"foo":{"root.json":$root,"targets":{"trusted_root.json":$trusted_root}}}'
