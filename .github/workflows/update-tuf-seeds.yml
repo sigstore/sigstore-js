@@ -14,10 +14,9 @@ jobs:
       DEBUG: "tuf:*"
       TUF_MIRROR: https://tuf-repo-cdn.sigstore.dev
     steps:
-      - name: Init TUF cache
-        run: npx @sigstore/cli init --mirror ${TUF_MIRROR}
       - name: Get Targets
         run: |
-          npx @tufjs/cli download --metadata-base-url ${TUF_MIRROR} --cache-path /home/runner/.local/share/sigstore-js --target-name trusted_root.json
+          npx @tufjs/cli download --metadata-base-url ${TUF_MIRROR} --cache-path ${{ runner.temp }}/tuf --unsafe-root-download --target-name trusted_root.json
+          npx @tufjs/cli download --metadata-base-url ${TUF_MIRROR} --cache-path ${{ runner.temp }}/tuf --unsafe-root-download --target-name registry.npmjs.org/keys.json
       - name: ls
-        run: tree ~/.local/share
+        run: tree ${{ runner.temp }}
