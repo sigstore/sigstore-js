@@ -21,8 +21,16 @@ jobs:
       - name: ls
         run: tree ${{ runner.temp }}
       - name: make new
+        env:
+          TUF_CACHE: ${{ runner.temp }}/tuf
+          TARGET_TRUSTED_ROOT: trusted_root.json
+          TARGET_NPM_KEYS: registry.npmjs.org%2Fkeys.json
         run: |
           jq -n -c \
-            --arg root "$(cat ${{ runner.temp }}/tuf/root.json | base64)" \
-            --arg trusted_root "$(cat ${{ runner.temp }}/tuf/targets/trusted_root.json | base64)" \
-            '{"foo":{"root.json":$root,"targets":{"trusted_root.json":$trusted_root}}}'
+            --arg mirror "$TUF_MIRROR" \
+            --arg root "$(cat ${TUF_CACHE}/root.json | base64)" \
+            --arg trusted_root_key "$TARGET_TRUSTED_ROOT" \
+            --arg trusted_root_value "$(cat ${TUF_CACHE}/targets/${TARGET_TRUSTED_ROOT} | base64)" \
+            --arg npm_keys_key "$TARGET_NPM_KEYS" \
+            --arg npm_keys_value "$(cat ${TUF_CACHE}/targets/${TARGET_NPM_KEYS} | base64)" \
+            '{($mirror):{"root.json":$root,"targets":{($trusted_root_key):$trusted_root_value,($npm_keys_key):$npm_keys_value}}}'
