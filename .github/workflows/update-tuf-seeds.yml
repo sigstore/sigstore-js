@@ -14,13 +14,6 @@ jobs:
       DEBUG: "tuf:*"
       TUF_MIRROR: https://tuf-repo-cdn.sigstore.dev
     steps:
-      - name: Checkout source
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3
-      - name: Setup node
-        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v3
-        with:
-          node-version: 18
-          cache: npm
       - name: Init TUF cache
         run: npx @sigstore/cli init --mirror ${TUF_MIRROR}
       - name: ls
