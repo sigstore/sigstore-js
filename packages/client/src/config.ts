@@ -64,6 +64,7 @@ export type VerifyOptions = {
   tufMirrorURL?: string;
   tufRootPath?: string;
   tufCachePath?: string;
+  tufForceCache?: boolean;
 } & FetchOptions;
 
 export const DEFAULT_RETRY: Retry = { retries: 2 };
