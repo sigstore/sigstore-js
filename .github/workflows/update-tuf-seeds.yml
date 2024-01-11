@@ -26,6 +26,6 @@ jobs:
       - name: Build sigstore-js
         run: npm run build
       - name: Init TUF cache
-        run: sigstore init --cache-path ${{ runner.temp }}/tuf --mirror ${TUF_MIRROR}
+        run: npx sigstore init --cache-path ${{ runner.temp }}/tuf --mirror ${TUF_MIRROR}
       - name: ls
         run: tree ${{ runner.temp }}
