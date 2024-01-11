@@ -86,6 +86,7 @@ export async function createVerifier(
     mirrorURL: options.tufMirrorURL,
     rootPath: options.tufRootPath,
     cachePath: options.tufCachePath,
+    forceCache: options.tufForceCache,
     retry: options.retry ?? config.DEFAULT_RETRY,
     timeout: options.timeout ?? config.DEFAULT_TIMEOUT,
   });
