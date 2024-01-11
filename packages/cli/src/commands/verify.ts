@@ -47,6 +47,12 @@ export default class Verify extends Command {
       description:
         'Absolute path to the directory to be used for caching downloaded TUF metadata and targets',
     }),
+    'tuf-force-cache': Flags.boolean({
+      description:
+        'Whether to give precedence to cached, un-expired TUF metadata and targets over remote versions',
+      default: false,
+      required: false,
+    }),
     'blob-file': Flags.file({
       description:
         'File containing data to verify. Only required if bundle was not signed using attest',
@@ -80,6 +86,7 @@ export default class Verify extends Command {
       tufMirrorURL: flags['tuf-mirror-url'],
       tufRootPath: flags['tuf-root-path'],
       tufCachePath: flags['tuf-cache-path'],
+      tufForceCache: flags['tuf-force-cache'],
     };
 
     const bundle = await fs

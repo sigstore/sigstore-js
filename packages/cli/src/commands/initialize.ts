@@ -16,6 +16,10 @@ export default class Initialize extends Command {
       description:
         'path to the initial trusted root. Defaults to the embedded root.',
     }),
+    'cache-path': Flags.directory({
+      description:
+        'Absolute path to the directory to be used for caching downloaded TUF metadata and targets',
+    }),
     force: Flags.boolean({
       description: 'force initialization even if the cache already exists',
       default: false,
@@ -28,6 +32,7 @@ export default class Initialize extends Command {
     await initTUF({
       mirrorURL: flags.mirror,
       rootPath: flags.root,
+      cachePath: flags['cache-path'],
       force: flags.force,
     });
   }
