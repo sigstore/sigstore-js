@@ -1,0 +1,31 @@
+name: Update TUF Seeds
+
+on:
+  workflow_dispatch:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  update-tuf-seeds:
+    runs-on: ubuntu-latest
+    env:
+      DEBUG: "tuf:*"
+      TUF_MIRROR: https://tuf-repo-cdn.sigstore.dev
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3
+      - name: Setup node
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v3
+        with:
+          node-version: 18
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build sigstore-js
+        run: npm run build
+      - name: Init TUF cache
+        run: sigstore init --cache-path ${{ runner.temp }}/tuf --mirror ${TUF_MIRROR}
+      - name: ls
+        run: tree ${{ runner.temp }}
