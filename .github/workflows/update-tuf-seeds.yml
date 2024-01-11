@@ -16,5 +16,8 @@ jobs:
     steps:
       - name: Init TUF cache
         run: npx @sigstore/cli init --mirror ${TUF_MIRROR}
+      - name: Get Targets
+        run: |
+          npx @tufjs/cli download --metadata-base-url ${TUF_MIRROR} --cache-path /home/runner/.local/share/sigstore-js --target-name trusted_root.json
       - name: ls
         run: tree ~/.local/share
