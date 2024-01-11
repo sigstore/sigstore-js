@@ -1,0 +1,108 @@
+name: Update TUF Seeds
+
+on:
+  # run every monday
+  schedule:
+    - cron:  '0 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update-tuf-seeds:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      DEBUG: "tuf:*"
+      TUF_MIRROR: https://tuf-repo-cdn.sigstore.dev
+      TUF_CACHE: /home/runner/work/_temp/tuf
+      TUF_ROOT: /home/runner/work/_temp/root.json
+      TARGET_TRUSTED_ROOT: trusted_root.json
+      TARGET_NPM_KEYS: registry.npmjs.org%2Fkeys.json
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3
+      - name: Extract current TUF root.json
+        run: |
+          cat packages/tuf/seeds.json \
+            | jq -r '."${{ env.TUF_MIRROR }}"."root.json"' \
+            | base64 -d \
+            > $TUF_ROOT
+      - name: Get Targets
+        run: |
+          npx @tufjs/cli download \
+            --metadata-base-url ${TUF_MIRROR} \
+            --cache-path ${TUF_CACHE} \
+            --root ${TUF_ROOT} \
+            --target-name ${TARGET_TRUSTED_ROOT} > /dev/null
+          npx @tufjs/cli download \
+            --metadata-base-url ${TUF_MIRROR} \
+            --cache-path ${TUF_CACHE} \
+            --root ${TUF_ROOT} \
+            --target-name ${TARGET_NPM_KEYS/"%2F"/"/"} > /dev/null
+      - name: Assemble TUF Seeds
+        run: |
+          jq -n -c \
+            --arg root "$(cat ${TUF_CACHE}/root.json | base64 -w 0)" \
+            --arg trusted_root_value "$(cat ${TUF_CACHE}/targets/${TARGET_TRUSTED_ROOT} | base64 -w 0)" \
+            --arg npm_keys_value "$(cat ${TUF_CACHE}/targets/${TARGET_NPM_KEYS} | base64 -w 0)" \
+            '{"${{ env.TUF_MIRROR }}":{"root.json":$root,"targets":{"${{ env.TARGET_TRUSTED_ROOT }}":$trusted_root_value,"${{ env.TARGET_NPM_KEYS }}":$npm_keys_value}}}' \
+            > packages/tuf/seeds.json
+      - name: Check for changes
+        id: git-check
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "CHANGED=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Add Changeset
+        if: steps.git-check.outputs.CHANGED == 'true'
+        run: |
+          cat << EOF > .changeset/${{ github.run_id }}-${{ github.run_attempt}}.md
+          ---
+          "@sigstore/tuf": patch
+          ---
+
+          Update TUF seed files
+          EOF
+      - name: Commit Changes
+        if: steps.git-check.outputs.CHANGED == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          BRANCH_NAME=tuf-root-update-$(date +%Y-%m-%d)
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          git checkout -b $BRANCH_NAME
+          git push --set-upstream origin $BRANCH_NAME
+          git add -A
+          git commit -m "Update TUF seed files"
+          git push
+      - name: Create Pull Request
+        if: steps.git-check.outputs.CHANGED == 'true'
+        env:
+          PR_BODY: ${{ runner.temp }}/pr-body.md
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat << EOF > ${PR_BODY}
+          Updates the TUF seeds with the latest root metadata and target values.
+
+          ### \`${TUF_MIRROR}\`
+          **Root Metadata**
+          \`\`\`
+          $(cat ${TUF_CACHE}/root.json)
+          \`\`\`
+
+          **Target: \`${TARGET_TRUSTED_ROOT}\`**
+          \`\`\`
+          $(cat ${TUF_CACHE}/targets/${TARGET_TRUSTED_ROOT})
+          \`\`\`
+
+          **Target: \`${TARGET_NPM_KEYS}\`**
+          \`\`\`
+          $(cat ${TUF_CACHE}/targets/${TARGET_NPM_KEYS})
+          \`\`\`
+          EOF
+
+          gh pr create --base main --body-file ${PR_BODY} --title "Update TUF seed files"
