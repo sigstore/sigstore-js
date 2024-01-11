@@ -21,11 +21,7 @@ jobs:
         with:
           node-version: 18
           cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Build sigstore-js
-        run: npm run build
       - name: Init TUF cache
-        run: npx sigstore init --cache-path ${{ runner.temp }}/tuf --mirror ${TUF_MIRROR}
+        run: npx @sigstore/cli init --mirror ${TUF_MIRROR}
       - name: ls
-        run: tree ${{ runner.temp }}
+        run: tree ~/.local/share
