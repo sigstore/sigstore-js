@@ -17,14 +17,21 @@ import fs from 'fs';
 import path from 'path';
 import { Config, Updater } from 'tuf-js';
 import { TUFError } from '.';
-import { REPO_SEEDS } from './store';
 import { readTarget } from './target';
 
 import type { MakeFetchHappenOptions } from 'make-fetch-happen';
 
 export type Retry = MakeFetchHappenOptions['retry'];
 
+const TUF_SEEDS_PATH = require.resolve('../seeds.json');
 const TARGETS_DIR_NAME = 'targets';
+
+type RepoSeed = {
+  'root.json': string;
+  targets: Record<string, string>;
+};
+
+type RepoSeeds = Record<string, RepoSeed>;
 
 type FetchOptions = {
   retry?: Retry;
@@ -118,7 +125,11 @@ function seedCache({
     if (tufRootPath) {
       fs.copyFileSync(tufRootPath, cachedRootPath);
     } else {
-      const repoSeed = REPO_SEEDS[mirrorURL];
+      // Load the embedded repo seeds
+      const seeds: RepoSeeds = JSON.parse(
+        fs.readFileSync(TUF_SEEDS_PATH).toString('utf-8')
+      );
+      const repoSeed = seeds[mirrorURL];
 
       if (!repoSeed) {
         throw new TUFError({
