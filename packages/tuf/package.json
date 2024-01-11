@@ -10,7 +10,8 @@
     "test": "jest"
   },
   "files": [
-    "dist"
+    "dist",
+    "seeds.json"
   ],
   "author": "bdehamer@github.com",
   "license": "Apache-2.0",

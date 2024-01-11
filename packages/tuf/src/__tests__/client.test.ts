@@ -20,10 +20,12 @@ import os from 'os';
 import path from 'path';
 import { TUFClient, TUFOptions } from '../client';
 import { TUFError } from '../error';
-import { REPO_SEEDS } from '../store';
 
 describe('TUFClient', () => {
   describe('constructor', () => {
+    const repoSeeds = JSON.parse(
+      fs.readFileSync(require.resolve('../../seeds.json')).toString('utf-8')
+    );
     let rootSeedDir: string;
     let rootPath: string;
 
@@ -43,7 +45,7 @@ describe('TUFClient', () => {
       fs.writeFileSync(
         rootPath,
         Buffer.from(
-          REPO_SEEDS['https://tuf-repo-cdn.sigstore.dev']['root.json'],
+          repoSeeds['https://tuf-repo-cdn.sigstore.dev']['root.json'],
           'base64'
         )
       );
