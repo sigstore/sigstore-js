@@ -1,5 +1,19 @@
 # @sigstore/sign
 
+## 2.2.1
+
+### Patch Changes
+
+- 34c3856: Integrate `@sigstore/core` package
+- Updated dependencies [6cdf7ef]
+- Updated dependencies [6869511]
+- Updated dependencies [6a6bfbc]
+- Updated dependencies [57bec90]
+- Updated dependencies [34c3856]
+- Updated dependencies [922a1be]
+  - @sigstore/core@0.2.0
+  - @sigstore/bundle@2.1.1
+
 ## 2.2.0
 
 ### Minor Changes

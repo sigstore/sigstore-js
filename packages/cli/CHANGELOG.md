@@ -1,5 +1,22 @@
 # @sigstore/cli
 
+## 0.6.0
+
+### Minor Changes
+
+- c949aa7: Add most verify options to `sigstore verify` subcommand
+- 4089730: Add `tuf-force-cache` flag to `verify` command
+- 4089730: Add `cache-path` flag to `initialize` command
+
+### Patch Changes
+
+- bfa5eeb: Bump openid-client from 5.6.2 to 5.6.4
+- 9318c9c: Bump openid-client from 5.6.1 to 5.6.2
+- Updated dependencies [4089730]
+- Updated dependencies [af76b1d]
+- Updated dependencies [34c3856]
+  - sigstore@2.2.0
+
 ## 0.5.0
 
 ### Minor Changes

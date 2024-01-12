@@ -1,5 +1,39 @@
 # sigstore
 
+## 2.2.0
+
+### Minor Changes
+
+- 4089730: Add `tufForceCache` flag to `VerifyOptions` type
+
+### Patch Changes
+
+- af76b1d: Integrate `@sigstore/verify` package
+- 34c3856: Integrate `@sigstore/core` package
+- Updated dependencies [ca658dc]
+- Updated dependencies [bf1d432]
+- Updated dependencies [6cdf7ef]
+- Updated dependencies [6869511]
+- Updated dependencies [6a6bfbc]
+- Updated dependencies [57bec90]
+- Updated dependencies [08b7957]
+- Updated dependencies [34c3856]
+- Updated dependencies [f603e11]
+- Updated dependencies [29a25e5]
+- Updated dependencies [afb08f6]
+- Updated dependencies [45903bc]
+- Updated dependencies [4471a4d]
+- Updated dependencies [6f9c662]
+- Updated dependencies [922a1be]
+- Updated dependencies [34c3856]
+- Updated dependencies [e5f1875]
+- Updated dependencies [da83e69]
+  - @sigstore/tuf@2.3.0
+  - @sigstore/verify@0.1.0
+  - @sigstore/core@0.2.0
+  - @sigstore/bundle@2.1.1
+  - @sigstore/sign@2.2.1
+
 ## 2.1.0
 
 ### Minor Changes

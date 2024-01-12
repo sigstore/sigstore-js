@@ -1,5 +1,18 @@
 # @sigstore/core
 
+## 0.2.0
+
+### Minor Changes
+
+- 6869511: Add support for parsing RFC3161 signed timestamps
+- 34c3856: add `encoding` and `dsse` utility modules
+
+### Patch Changes
+
+- 6cdf7ef: Bug fix for parsing ASN.1 date/time values which include milliseconds
+- 6a6bfbc: Add more checks to the `RFC3161Timestamp.verify` method
+- 922a1be: Ensure the `isCA` value for the `X509BasicConstraintsExtension` defaults to `false` if no other value is present
+
 ## 0.1.0
 
 ### Minor Changes

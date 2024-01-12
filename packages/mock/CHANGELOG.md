@@ -1,5 +1,15 @@
 # @sigstore/mock
 
+## 0.6.3
+
+### Patch Changes
+
+- 123389f: Introduce intermediate certificate for issuing RFC3161 timestamps
+- 8cbcd04: Bump @peculiar/x509 from 1.9.5 to 1.9.6
+- 2dd55a0: Remove extra level of OCTET STRING nesting in mocked RFC3161 timestamp response
+- 9318c9c: Bump jose from 5.1.3 to 5.2.0
+- 123389f: Fix encoding for TSA-issued timestamps
+
 ## 0.6.2
 
 ### Patch Changes
