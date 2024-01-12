@@ -47,13 +47,10 @@ jobs:
       - name: Assemble TUF Seeds
         run: |
           jq -n -c \
-            --arg mirror "$TUF_MIRROR" \
             --arg root "$(cat ${TUF_CACHE}/root.json | base64 -w 0)" \
-            --arg trusted_root "$TARGET_TRUSTED_ROOT" \
             --arg trusted_root_value "$(cat ${TUF_CACHE}/targets/${TARGET_TRUSTED_ROOT} | base64 -w 0)" \
-            --arg npm_keys "$TARGET_NPM_KEYS" \
             --arg npm_keys_value "$(cat ${TUF_CACHE}/targets/${TARGET_NPM_KEYS} | base64 -w 0)" \
-            '{($mirror):{"root.json":$root,"targets":{($trusted_root):$trusted_root_value,($npm_keys):$npm_keys_value}}}' \
+            '{"${{ env.TUF_MIRROR }}":{"root.json":$root,"targets":{"${{ env.TARGET_TRUSTED_ROOT }}":$trusted_root_value,"${{ env.TARGET_NPM_KEYS }}":$npm_keys_value}}}' \
             > packages/tuf/seeds.json
       - name: Check for changes
         id: git-check
@@ -82,7 +79,7 @@ jobs:
           cat << EOF > "$PR_BODY"
           Updates the TUF seeds with the latest root metadata and target values.
 
-          ### ${TUF_MIRROR}
+          ### \`{TUF_MIRROR}\`
           **Root Metadata**
           \`\`\`
           $(cat ${TUF_CACHE}/root.json)
