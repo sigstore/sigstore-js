@@ -14,13 +14,13 @@ jobs:
       DEBUG: "tuf:*"
       TUF_MIRROR: https://tuf-repo-cdn.sigstore.dev
     steps:
+      - name: Checkout source
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3
       - name: Get Targets
         run: |
           npx @tufjs/cli download --metadata-base-url ${TUF_MIRROR} --cache-path ${{ runner.temp }}/tuf --unsafe-root-download --target-name trusted_root.json
           npx @tufjs/cli download --metadata-base-url ${TUF_MIRROR} --cache-path ${{ runner.temp }}/tuf --unsafe-root-download --target-name registry.npmjs.org/keys.json
-      - name: ls
-        run: tree ${{ runner.temp }}
-      - name: make new
+      - name: Assemble TUF Seeds
         env:
           TUF_CACHE: ${{ runner.temp }}/tuf
           TARGET_TRUSTED_ROOT: trusted_root.json
@@ -33,4 +33,8 @@ jobs:
             --arg trusted_root_value "$(cat ${TUF_CACHE}/targets/${TARGET_TRUSTED_ROOT} | base64)" \
             --arg npm_keys_key "$TARGET_NPM_KEYS" \
             --arg npm_keys_value "$(cat ${TUF_CACHE}/targets/${TARGET_NPM_KEYS} | base64)" \
-            '{($mirror):{"root.json":$root,"targets":{($trusted_root_key):$trusted_root_value,($npm_keys_key):$npm_keys_value}}}'
+            '{($mirror):{"root.json":$root,"targets":{($trusted_root_key):$trusted_root_value,($npm_keys_key):$npm_keys_value}}}' \
+            > packages/tuf/seeds.json
+      - name: Status
+        run: |
+          git status
