@@ -28,13 +28,15 @@ jobs:
         run: |
           jq -n -c \
             --arg mirror "$TUF_MIRROR" \
-            --arg root "$(cat ${TUF_CACHE}/root.json | base64)" \
+            --arg root "$(cat ${TUF_CACHE}/root.json | base64 -w 0)" \
             --arg trusted_root_key "$TARGET_TRUSTED_ROOT" \
-            --arg trusted_root_value "$(cat ${TUF_CACHE}/targets/${TARGET_TRUSTED_ROOT} | base64)" \
+            --arg trusted_root_value "$(cat ${TUF_CACHE}/targets/${TARGET_TRUSTED_ROOT} | base64 -w 0)" \
             --arg npm_keys_key "$TARGET_NPM_KEYS" \
-            --arg npm_keys_value "$(cat ${TUF_CACHE}/targets/${TARGET_NPM_KEYS} | base64)" \
+            --arg npm_keys_value "$(cat ${TUF_CACHE}/targets/${TARGET_NPM_KEYS} | base64 -w 0)" \
             '{($mirror):{"root.json":$root,"targets":{($trusted_root_key):$trusted_root_value,($npm_keys_key):$npm_keys_value}}}' \
             > packages/tuf/seeds.json
       - name: Status
         run: |
           git status
+          cat packages/tuf/seeds.json
+          man base64
