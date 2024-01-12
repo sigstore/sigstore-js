@@ -21,6 +21,13 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3
+      - name: Extract current TUF root.json
+        run: |
+          cat packages/tuf/seeds.json \
+          | jq -r --arg mirror ${TUF_MIRROR} '."${{ env.TUF_MIRROR }}"."root.json"'
+          cat packages/tuf/seeds.json \
+            | jq -r --arg mirror "$TUF_MIRROR" '."($mirror)"."root.json"' \
+            | base64 -d 
       - name: Get Targets
         env:
           TUF_CACHE: ${{ runner.temp }}/tuf
