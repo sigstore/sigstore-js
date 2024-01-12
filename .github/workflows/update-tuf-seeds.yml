@@ -21,20 +21,29 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3
+      - name: Extract current TUF root.json
+        env:
+          TUF_ROOT: ${{ runner.temp }}/root.json
+        run: |
+          cat packages/tuf/seeds.json \
+            | jq -r --arg mirror ${TUF_MIRROR} '."${{ env.TUF_MIRROR }}"."root.json"' \
+            | base64 -d \
+            > $TUF_ROOT
       - name: Get Targets
         env:
           TUF_CACHE: ${{ runner.temp }}/tuf
+          TUF_ROOT: ${{ runner.temp }}/root.json
         run: |
           npx @tufjs/cli download \
             --metadata-base-url ${TUF_MIRROR} \
             --cache-path ${TUF_CACHE} \
-            --unsafe-root-download \
-            --target-name ${TARGET_TRUSTED_ROOT}
+            --root ${TUF_ROOT} \
+            --target-name ${TARGET_TRUSTED_ROOT} > /dev/null
           npx @tufjs/cli download \
             --metadata-base-url ${TUF_MIRROR} \
             --cache-path ${TUF_CACHE} \
-            --unsafe-root-download \
-            --target-name ${TARGET_NPM_KEYS}
+            --root ${TUF_ROOT} \
+            --target-name ${TARGET_NPM_KEYS} > /dev/null
       - name: Assemble TUF Seeds
         env:
           TUF_CACHE: ${{ runner.temp }}/tuf
