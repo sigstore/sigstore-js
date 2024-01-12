@@ -19,7 +19,7 @@ jobs:
       TUF_CACHE: /home/runner/work/_temp/tuf
       TUF_ROOT: /home/runner/work/_temp/root.json
       TARGET_TRUSTED_ROOT: trusted_root.json
-      TARGET_NPM_KEYS: registry.npmjs.org/keys.json
+      TARGET_NPM_KEYS: registry.npmjs.org%2Fkeys.json
     steps:
       - name: Checkout source
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3
@@ -40,10 +40,8 @@ jobs:
             --metadata-base-url ${TUF_MIRROR} \
             --cache-path ${TUF_CACHE} \
             --root ${TUF_ROOT} \
-            --target-name ${TARGET_NPM_KEYS} > /dev/null
+            --target-name ${TARGET_NPM_KEYS/"%2F"/"/"} > /dev/null
       - name: Assemble TUF Seeds
-        env:
-          TARGET_NPM_KEYS: registry.npmjs.org%2Fkeys.json
         run: |
           jq -n -c \
             --arg mirror "$TUF_MIRROR" \
@@ -58,7 +56,7 @@ jobs:
         id: git-check
         run: |
           if [ -n "$(git status --porcelain)" ]; then
-            echo "XCHANGED=true" >> "$GITHUB_OUTPUT"
+            echo "CHANGED=true" >> "$GITHUB_OUTPUT"
           fi
       - name: Commit files and push changes
         if: steps.git-check.outputs.CHANGED == 'true'
@@ -74,10 +72,28 @@ jobs:
           git push
       - name: Create Pull Request
         if: steps.git-check.outputs.CHANGED == 'true'
-        uses: repo-sync/pull-request@7e79a9f5dc3ad0ce53138f01df2fad14a04831c5 # v2.12.1
-        with:
-          destination_branch: "main"
-          source_branch: ${{ env.BRANCH_NAME }}
-          pr_title: "Update TUF seed files ${{ env.BRANCH_NAME }}"
-          pr_body: "Updates TUF seeds files from the remote TUF repository"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          PR_BODY: ${{ runner.temp }}/pr-body.md
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat << EOF > "$PR_BODY"
+          Updates the TUF seeds with the latest root metadata and target values.
+
+          ## ${MIRROR_URL}
+          *Root metadata*
+          \`\`\`
+          $(cat ${TUF_CACHE}/root.json)
+          \`\`\`
+
+          *Target: ${TARGET_TRUSTED_ROOT}*
+          \`\`\`
+          $(cat ${TUF_CACHE}/targets/${TARGET_TRUSTED_ROOT})
+          \`\`\`
+
+          *Target: ${TARGET_NPM_KEYS}*
+          \`\`\`
+          $(cat ${TUF_CACHE}/targets/${TARGET_NPM_KEYS})
+          \`\`\`
+          EOF
+
+          gh pr create --base main --body-file $PR_BODY -t "Update TUF seed files"
