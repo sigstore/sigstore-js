@@ -16,23 +16,20 @@ jobs:
     env:
       DEBUG: "tuf:*"
       TUF_MIRROR: https://tuf-repo-cdn.sigstore.dev
+      TUF_CACHE: /home/runner/work/_temp/tuf
+      TUF_ROOT: /home/runner/work/_temp/root.json
       TARGET_TRUSTED_ROOT: trusted_root.json
       TARGET_NPM_KEYS: registry.npmjs.org/keys.json
     steps:
       - name: Checkout source
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3
       - name: Extract current TUF root.json
-        env:
-          TUF_ROOT: ${{ runner.temp }}/root.json
         run: |
           cat packages/tuf/seeds.json \
-            | jq -r --arg mirror ${TUF_MIRROR} '."${{ env.TUF_MIRROR }}"."root.json"' \
+            | jq -r '."${{ env.TUF_MIRROR }}"."root.json"' \
             | base64 -d \
             > $TUF_ROOT
       - name: Get Targets
-        env:
-          TUF_CACHE: ${{ runner.temp }}/tuf
-          TUF_ROOT: ${{ runner.temp }}/root.json
         run: |
           npx @tufjs/cli download \
             --metadata-base-url ${TUF_MIRROR} \
@@ -46,7 +43,6 @@ jobs:
             --target-name ${TARGET_NPM_KEYS} > /dev/null
       - name: Assemble TUF Seeds
         env:
-          TUF_CACHE: ${{ runner.temp }}/tuf
           TARGET_NPM_KEYS: registry.npmjs.org%2Fkeys.json
         run: |
           jq -n -c \
@@ -62,12 +58,12 @@ jobs:
         id: git-check
         run: |
           if [ -n "$(git status --porcelain)" ]; then
-            echo "::set-output name=changed::true"
+            echo "CHANGED=true" >> "$GITHUB_OUTPUT"
           else
-            echo "::set-output name=changed::false"
+            echo "CHANGED=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Commit files and push changes
-        if: steps.git-check.outputs.changed == 'true'
+        if: steps.git-check.outputs.CHANGED == 'true'
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
@@ -76,10 +72,10 @@ jobs:
           git checkout -b $BRANCH_NAME
           git push --set-upstream origin $BRANCH_NAME
           git add -A
-          git commit -m "Update TUF root files"
+          git commit -m "Update TUF seed files"
           git push
       - name: Create Pull Request
-        if: steps.git-check.outputs.changed == 'true'
+        if: steps.git-check.outputs.CHANGED == 'true'
         uses: repo-sync/pull-request@7e79a9f5dc3ad0ce53138f01df2fad14a04831c5 # v2.12.1
         with:
           destination_branch: "main"
