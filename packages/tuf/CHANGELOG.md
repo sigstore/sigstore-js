@@ -1,5 +1,17 @@
 # @sigstore/tuf
 
+## 2.3.0
+
+### Minor Changes
+
+- f603e11: Expose `forceCache` option for TUF client
+- 4471a4d: Add support for caching metadata from multiple TUF repositories
+
+### Patch Changes
+
+- ca658dc: Update TUF seed files
+- da83e69: Move TUF seeds into JSON file
+
 ## 2.2.0
 
 ### Minor Changes

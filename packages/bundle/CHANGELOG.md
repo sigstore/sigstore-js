@@ -1,5 +1,11 @@
 # @sigstore/bundle
 
+## 2.1.1
+
+### Patch Changes
+
+- 57bec90: Update `bundleFromJSON` to perform full bundle validation
+
 ## 2.1.0
 
 ### Minor Changes
