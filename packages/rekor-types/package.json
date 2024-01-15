@@ -28,8 +28,8 @@
     "provenance": true
   },
   "devDependencies": {
-    "json-schema-to-typescript": "^13.1.1",
-    "openapi-typescript-codegen": "^0.26.0"
+    "json-schema-to-typescript": "^13.1.2",
+    "openapi-typescript-codegen": "^0.27.0"
   },
   "engines": {
     "node": "^16.14.0 || >=18.0.0"
