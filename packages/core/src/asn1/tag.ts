@@ -15,7 +15,7 @@ limitations under the License.
 */
 import { ASN1ParseError } from './error';
 
-export const UNIVERSAL_TAG = {
+const UNIVERSAL_TAG = {
   BOOLEAN: 0x01,
   INTEGER: 0x02,
   BIT_STRING: 0x03,
