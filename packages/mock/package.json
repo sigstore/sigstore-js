@@ -37,7 +37,7 @@
     "bytestreamjs": "^2.0.1",
     "canonicalize": "^2.0.0",
     "jose": "^5.2.0",
-    "nock": "^13.4.0",
+    "nock": "^13.5.0",
     "pkijs": "^3.0.15",
     "pvutils": "^1.1.3"
   },
