@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout source
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
     - name: Setup node
-      uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v3
+      uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
       with:
         node-version: 16
         cache: npm
@@ -56,14 +56,14 @@ jobs:
         shell: ${{ matrix.platform.shell }}
     steps:
     - name: Checkout source
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
     - name: Setup node
-      uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v3
+      uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
       with:
         node-version: ${{ matrix.node-version }}
         cache: npm
     - name: Manage Jest cache
-      uses: actions/cache@v3
+      uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3.3.3
       with:
         path: ${{ matrix.platform.jest-cache }}
         key: ${{ hashFiles('**/package-lock.json') }}
