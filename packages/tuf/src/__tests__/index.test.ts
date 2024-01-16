@@ -18,8 +18,15 @@ import { TrustedRoot } from '@sigstore/protobuf-specs';
 import mocktuf, { Target } from '@tufjs/repo-mock';
 import fs from 'fs';
 import path from 'path';
-import { TUF, TUFError, TUFOptions, getTrustedRoot, initTUF } from '..';
 import { TUFClient } from '../client';
+import {
+  DEFAULT_MIRROR_URL,
+  TUF,
+  TUFError,
+  TUFOptions,
+  getTrustedRoot,
+  initTUF,
+} from '../index';
 
 describe('public interface', () => {
   it('exports types', () => {
@@ -48,6 +55,10 @@ describe('public interface', () => {
   it('exports funcs', () => {
     expect(getTrustedRoot).toBeInstanceOf(Function);
     expect(initTUF).toBeInstanceOf(Function);
+  });
+
+  it('exports constants', () => {
+    expect(DEFAULT_MIRROR_URL).toBeDefined();
   });
 });
 

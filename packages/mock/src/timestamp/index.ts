@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 /*
 Copyright 2023 The Sigstore Authors.
 

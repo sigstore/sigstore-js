@@ -1,5 +1,7 @@
 module.exports = {
-  preset: 'ts-jest',
+  transform: {
+    '^.+\\.ts$': '@swc/jest',
+  },
   coverageThreshold: {
     global: {
       branches: 100,
