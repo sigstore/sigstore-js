@@ -30,7 +30,7 @@
     "make-fetch-happen": "^13.0.0"
   },
   "dependencies": {
-    "@peculiar/webcrypto": "^1.4.3",
+    "@peculiar/webcrypto": "^1.4.5",
     "@peculiar/x509": "^1.9.6",
     "@sigstore/protobuf-specs": "^0.2.1",
     "asn1js": "^3.0.5",
