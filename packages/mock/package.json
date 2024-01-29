@@ -30,14 +30,14 @@
     "make-fetch-happen": "^13.0.0"
   },
   "dependencies": {
-    "@peculiar/webcrypto": "^1.4.3",
+    "@peculiar/webcrypto": "^1.4.5",
     "@peculiar/x509": "^1.9.6",
     "@sigstore/protobuf-specs": "^0.2.1",
     "asn1js": "^3.0.5",
     "bytestreamjs": "^2.0.1",
     "canonicalize": "^2.0.0",
     "jose": "^5.2.0",
-    "nock": "^13.5.0",
+    "nock": "^13.5.1",
     "pkijs": "^3.0.15",
     "pvutils": "^1.1.3"
   },
