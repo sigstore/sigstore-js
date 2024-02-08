@@ -134,7 +134,7 @@ describe('verifyCheckpoint', () => {
       {
         inclusionProof: {
           checkpoint: {
-            envelope: '\nA\nB\nC\n\n— rekor.sigstore.dev wNI9ajBFAiEAu\n',
+            envelope: '\n1\nB\nC\n\n— rekor.sigstore.dev wNI9ajBFAiEAu\n',
           },
         },
       }
@@ -163,7 +163,7 @@ describe('verifyCheckpoint', () => {
 
   describe('when the entry checkpoint has a bad signature', () => {
     const badSignatureCheckpoint =
-      'rekor.sigstore.dev - 2605736670972794746\n21428036\nrxnoKyFZlJ7/R6bMh/d3lcqwKqAy5CL1LcNBJP17kgQ=\nTimestamp: 1688058656037355364\n\n— rekor.sigstore.dev wNI9ajBFAiEAuDk7uu5Ae8Own\n';
+      'rekor.sigstore.dev - 2605736670972794746\n21428036\nrxnoKyFZlJ7/R6bMh/d3lcqwKqAy5CL1LcNBJP17kgQ=\n\n— rekor.sigstore.dev wNI9ajBFAiEAuDk7uu5Ae8Own\n';
 
     const entryWithBadCheckpointSig: TLogEntryWithInclusionProof = fromPartial({
       inclusionProof: {
@@ -232,6 +232,46 @@ describe('verifyCheckpoint', () => {
         VerificationError,
         'TLOG_INCLUSION_PROOF_ERROR'
       );
+    });
+  });
+
+  describe('when there is a valid checkpoint with no timestamp', () => {
+    // Using a real checkpoint from Rekor staging instance (log index 22781754)
+    // At the time this test was added, only the staging instance was generating
+    // checkpoints w/o the timestamp field.
+    const keyBytes = Buffer.from(
+      'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEDODRU688UYGuy54mNUlaEBiQdTE9nYLr0lg6RXowI/QV/RE1azBn4Eg5/2uTOMbhB1/gfcHzijzFi9Tk+g1Prg==',
+      'base64'
+    );
+    const keyID = crypto.hash(keyBytes);
+
+    const tlogInstance: TLogAuthority = {
+      publicKey: crypto.createPublicKey(keyBytes),
+      logID: keyID,
+      validFor: { start: new Date('2000-01-01'), end: new Date('2100-01-01') },
+    };
+
+    const tlogs = [tlogInstance];
+
+    const checkpoint =
+      'rekor.sigstage.dev - 8050909264565447525\n23003647\nWBwYpazawqUG5iErvDptvf7mpt84WIpmm+zfshgHhJs=\n\n— rekor.sigstage.dev 0y8wozBGAiEA2kq45YWfHHiDCJHH2+m9l+TVMtPBpOVu+VtVaj62V2MCIQDflbM2N7M/JTIV/spr9qYUI3gf4bO0qqSeiEWJ5xLgPA==\n';
+
+    const inclusionProof: TLogEntryWithInclusionProof['inclusionProof'] =
+      fromPartial({
+        checkpoint: { envelope: checkpoint },
+        rootHash: Buffer.from(
+          'WBwYpazawqUG5iErvDptvf7mpt84WIpmm+zfshgHhJs=',
+          'base64'
+        ),
+      });
+
+    const entry: TLogEntryWithInclusionProof = fromPartial({
+      inclusionProof: inclusionProof,
+      integratedTime: '1707034118',
+    });
+
+    it('does NOT throw an error', () => {
+      expect(verifyCheckpoint(entry, tlogs)).toBeUndefined();
     });
   });
 });

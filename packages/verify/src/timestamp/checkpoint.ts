@@ -188,9 +188,9 @@ class LogCheckpoint {
   }
 
   static fromString(note: string): LogCheckpoint {
-    const lines = note.trim().split('\n');
+    const lines = note.trimEnd().split('\n');
 
-    if (lines.length < 4) {
+    if (lines.length < 3) {
       throw new VerificationError({
         code: 'TLOG_INCLUSION_PROOF_ERROR',
         message: 'too few lines in checkpoint header',
