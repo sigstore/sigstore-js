@@ -1,5 +1,11 @@
 # @sigstore/core
 
+## 1.0.0
+
+### Major Changes
+
+- 7d90262: Promote to 1.0.0
+
 ## 0.2.0
 
 ### Minor Changes

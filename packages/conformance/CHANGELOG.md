@@ -1,5 +1,14 @@
 # @sigstore/conformance
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [7d90262]
+- Updated dependencies [f05be96]
+  - @sigstore/verify@1.0.0
+  - sigstore@2.2.1
+
 ## 0.2.0
 
 ### Minor Changes

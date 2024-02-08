@@ -1,5 +1,16 @@
 # sigstore
 
+## 2.2.1
+
+### Patch Changes
+
+- Updated dependencies [7d90262]
+- Updated dependencies [7d90262]
+- Updated dependencies [f05be96]
+  - @sigstore/verify@1.0.0
+  - @sigstore/core@1.0.0
+  - @sigstore/sign@2.2.2
+
 ## 2.2.0
 
 ### Minor Changes

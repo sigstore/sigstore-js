@@ -1,5 +1,21 @@
 # @sigstore/mock
 
+## 0.6.4
+
+### Patch Changes
+
+- 43cf328: Bump dependencies:
+
+  - @peculiar/x509 from 1.9.6 to 1.9.7
+  - jose from 5.2.0 to 5.2.1
+
+- 8237a21: Bump dependencies:
+
+  - nock from 13.5.0 to 13.5.1
+  - @peculiar/webcrypto from 1.4.3 to 1.4.5
+
+- b2e6bed: Bump nock from 13.4.0 to 13.5.0
+
 ## 0.6.3
 
 ### Patch Changes
