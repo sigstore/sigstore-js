@@ -1,5 +1,17 @@
 # @sigstore/verify
 
+## 1.0.0
+
+### Major Changes
+
+- 7d90262: Promote to 1.0.0
+
+### Patch Changes
+
+- f05be96: Update Rekor verification to handle checkpoint values which do no include timestamps (https://github.com/sigstore/rekor/pull/1888)
+- Updated dependencies [7d90262]
+  - @sigstore/core@1.0.0
+
 ## 0.1.0
 
 ### Minor Changes

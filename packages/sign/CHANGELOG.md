@@ -1,5 +1,12 @@
 # @sigstore/sign
 
+## 2.2.2
+
+### Patch Changes
+
+- Updated dependencies [7d90262]
+  - @sigstore/core@1.0.0
+
 ## 2.2.1
 
 ### Patch Changes
