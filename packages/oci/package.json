@@ -1,6 +1,6 @@
 {
   "name": "@sigstore/oci",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "OCI artifact support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
