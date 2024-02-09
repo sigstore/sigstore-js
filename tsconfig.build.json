@@ -6,6 +6,7 @@
     { "path": "packages/client" },
     { "path": "packages/core" },
     { "path": "packages/conformance" },
+    { "path": "packages/oci" },
     { "path": "packages/mock" },
     { "path": "packages/mock-server" },
     { "path": "packages/rekor-types" },
