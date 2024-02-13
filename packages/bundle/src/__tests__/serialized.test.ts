@@ -243,6 +243,141 @@ describe('bundleToJSON', () => {
       expect(signature?.keyid).toEqual(expectedSignature.keyid);
       expect(signature?.sig).toEqual(expectedSignature.sig.toString('base64'));
     });
+
+    it('matches the snapshot', () => {
+      expect(bundleToJSON(dsseBundle)).toMatchSnapshot();
+    });
+  });
+
+  describe('SerializedDSSEBundle (v0.3)', () => {
+    const dsseEnvelope: Envelope = {
+      payload: Buffer.from('payload'),
+      payloadType: 'application/vnd.in-toto+json',
+      signatures: [
+        {
+          keyid: 'keyid',
+          sig: Buffer.from('signature'),
+        },
+      ],
+    };
+
+    const dsseBundle: Bundle = {
+      mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.3',
+      content: {
+        $case: 'dsseEnvelope',
+        dsseEnvelope,
+      },
+      verificationMaterial: {
+        content: {
+          $case: 'certificate',
+          certificate: { rawBytes: Buffer.from('certificate') },
+        },
+        tlogEntries,
+        timestampVerificationData,
+      },
+    };
+
+    it('matches the serialized form of the Bundle', () => {
+      const json = bundleToJSON(dsseBundle);
+
+      expect(json.mediaType).toEqual(dsseBundle.mediaType);
+      expect(json.verificationMaterial).toBeTruthy();
+      expect(json.verificationMaterial?.certificate).toBeTruthy();
+      const cert = json.verificationMaterial?.certificate;
+      expect(cert?.rawBytes).toEqual(
+        Buffer.from(x509CertificateChain.certificates[0].rawBytes).toString(
+          'base64'
+        )
+      );
+
+      expect(json.verificationMaterial?.tlogEntries).toHaveLength(
+        tlogEntries.length
+      );
+
+      const tlogEntry = json.verificationMaterial?.tlogEntries[0];
+      const expectedTlogEntry = tlogEntries[0];
+      expect(tlogEntry).toBeTruthy();
+      expect(tlogEntry?.logId).toBeTruthy();
+      expect(tlogEntry?.logId.keyId).toEqual(
+        (expectedTlogEntry.logId?.keyId as Buffer).toString('base64')
+      );
+      expect(tlogEntry?.logIndex).toEqual(expectedTlogEntry.logIndex);
+      expect(tlogEntry?.kindVersion).toBeTruthy();
+      expect(tlogEntry?.kindVersion?.kind).toEqual(
+        expectedTlogEntry.kindVersion?.kind
+      );
+      expect(tlogEntry?.kindVersion?.version).toEqual(
+        expectedTlogEntry.kindVersion?.version
+      );
+      expect(tlogEntry?.canonicalizedBody).toEqual(
+        expectedTlogEntry.canonicalizedBody.toString('base64')
+      );
+      expect(tlogEntry?.integratedTime).toEqual(
+        expectedTlogEntry.integratedTime
+      );
+      expect(tlogEntry?.inclusionPromise).toBeTruthy();
+      expect(tlogEntry?.inclusionPromise?.signedEntryTimestamp).toEqual(
+        (
+          expectedTlogEntry.inclusionPromise?.signedEntryTimestamp as Buffer
+        ).toString('base64')
+      );
+      expect(tlogEntry?.inclusionProof).toBeTruthy();
+      expect(tlogEntry?.inclusionProof?.logIndex).toEqual(
+        expectedTlogEntry.inclusionProof?.logIndex
+      );
+      expect(tlogEntry?.inclusionProof?.rootHash).toEqual(
+        (expectedTlogEntry.inclusionProof?.rootHash as Buffer).toString(
+          'base64'
+        )
+      );
+      expect(tlogEntry?.inclusionProof?.treeSize).toEqual(
+        expectedTlogEntry.inclusionProof?.treeSize
+      );
+      expect(tlogEntry?.inclusionProof?.hashes).toHaveLength(
+        expectedTlogEntry.inclusionProof?.hashes?.length as number
+      );
+      const hash = tlogEntry?.inclusionProof?.hashes[0];
+      const expectedHash = expectedTlogEntry.inclusionProof?.hashes?.[0];
+      expect(hash).toEqual((expectedHash as Buffer).toString('base64'));
+      expect(tlogEntry?.inclusionProof?.checkpoint).toBeTruthy();
+      expect(tlogEntry?.inclusionProof?.checkpoint.envelope).toEqual(
+        expectedTlogEntry.inclusionProof?.checkpoint?.envelope
+      );
+
+      expect(json.verificationMaterial?.timestampVerificationData).toBeTruthy();
+      expect(
+        json.verificationMaterial?.timestampVerificationData?.rfc3161Timestamps
+      ).toHaveLength(
+        timestampVerificationData?.rfc3161Timestamps?.length as number
+      );
+      const rfc3161Timestamp =
+        json.verificationMaterial?.timestampVerificationData
+          ?.rfc3161Timestamps[0];
+      const expectedRfc3161Timestamp =
+        timestampVerificationData?.rfc3161Timestamps?.[0];
+      expect(rfc3161Timestamp).toBeTruthy();
+      expect(rfc3161Timestamp?.signedTimestamp).toEqual(
+        (expectedRfc3161Timestamp?.signedTimestamp as Buffer).toString('base64')
+      );
+
+      expect(json.dsseEnvelope).toBeTruthy();
+      expect(json.dsseEnvelope?.payload).toEqual(
+        dsseEnvelope.payload.toString('base64')
+      );
+      expect(json.dsseEnvelope?.payloadType).toEqual(dsseEnvelope.payloadType);
+      expect(json.dsseEnvelope?.signatures).toHaveLength(
+        dsseEnvelope.signatures.length
+      );
+      const signature = json.dsseEnvelope?.signatures[0];
+      const expectedSignature = dsseEnvelope.signatures[0];
+      expect(signature).toBeTruthy();
+      expect(signature?.keyid).toEqual(expectedSignature.keyid);
+      expect(signature?.sig).toEqual(expectedSignature.sig.toString('base64'));
+    });
+
+    it('matches the snapshot', () => {
+      expect(bundleToJSON(dsseBundle)).toMatchSnapshot();
+    });
   });
 
   describe('SerializedMessageSignatureBundle', () => {
@@ -365,6 +500,10 @@ describe('bundleToJSON', () => {
         (messageSignature.signature as Buffer).toString('base64')
       );
     });
+
+    it('matches the snapshot', () => {
+      expect(bundleToJSON(messageSignatureBundle)).toMatchSnapshot();
+    });
   });
 });
 
@@ -418,6 +557,50 @@ describe('bundleFromJSON', () => {
           x509CertificateChain: {
             certificates: [{ rawBytes: Buffer.from('FOO') }],
           },
+        },
+        tlogEntries: [
+          {
+            logIndex: '123',
+            logId: { keyId: Buffer.from('123') },
+            kindVersion: { kind: 'intoto', version: '0.1.0' },
+            canonicalizedBody: Buffer.from(''),
+            integratedTime: '0',
+            inclusionPromise: undefined,
+            inclusionProof: {
+              checkpoint: { envelope: '' },
+              hashes: [],
+              logIndex: '',
+              rootHash: Buffer.from(''),
+              treeSize: '',
+            },
+          },
+        ],
+        timestampVerificationData: undefined,
+      },
+      content: {
+        $case: 'dsseEnvelope',
+        dsseEnvelope: {
+          payload: Buffer.from('ABC'),
+          payloadType: 'application/json',
+          signatures: [{ sig: Buffer.from('BAR'), keyid: '' }],
+        },
+      },
+    };
+
+    it('matches the deserialized form of the Bundle', () => {
+      const json = bundleToJSON(bundle);
+      const deserializedBundle = bundleFromJSON(json);
+      expect(deserializedBundle).toEqual(bundle);
+    });
+  });
+
+  describe('when the bundle is a v0.3 bundle', () => {
+    const bundle: Bundle = {
+      mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.3',
+      verificationMaterial: {
+        content: {
+          $case: 'certificate',
+          certificate: { rawBytes: Buffer.from('FOO') },
         },
         tlogEntries: [
           {

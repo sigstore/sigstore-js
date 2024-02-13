@@ -27,7 +27,7 @@
     "provenance": true
   },
   "dependencies": {
-    "@sigstore/protobuf-specs": "^0.2.1"
+    "@sigstore/protobuf-specs": "^0.3.0"
   },
   "engines": {
     "node": "^16.14.0 || >=18.0.0"

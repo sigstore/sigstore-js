@@ -20,6 +20,7 @@ import {
   assertBundle,
   assertBundleLatest,
   assertBundleV01,
+  assertBundleV02,
   isBundleV01,
 } from '../validate';
 
@@ -531,13 +532,15 @@ describe('assertBundleV01', () => {
     });
 
     it('throws an error', () => {
-      expect.assertions(2);
+      expect.assertions(4);
       try {
         assertBundleV01(bundle);
       } catch (e) {
         assert(e instanceof ValidationError);
-        expect(e.fields).toHaveLength(1);
+        expect(e.fields).toHaveLength(3);
         expect(e.fields).toContain('mediaType');
+        expect(e.fields).toContain('verificationMaterial');
+        expect(e.fields).toContain('content');
       }
     });
   });
@@ -623,7 +626,7 @@ describe('assertBundleV01', () => {
   });
 });
 
-describe('assertBundleLatest', () => {
+describe('assertBundleV02', () => {
   describe('when the tlogEntry is missing the inclusionProof', () => {
     const bundle: Bundle = fromPartial({
       mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.2',
@@ -657,7 +660,7 @@ describe('assertBundleLatest', () => {
     it('throws an error', () => {
       expect.assertions(2);
       try {
-        assertBundleLatest(bundle);
+        assertBundleV02(bundle);
       } catch (e) {
         assert(e instanceof ValidationError);
         expect(e.fields).toHaveLength(1);
@@ -707,7 +710,7 @@ describe('assertBundleLatest', () => {
     it('throws an error', () => {
       expect.assertions(2);
       try {
-        assertBundleLatest(bundle);
+        assertBundleV02(bundle);
       } catch (e) {
         assert(e instanceof ValidationError);
         expect(e.fields).toHaveLength(1);
@@ -727,6 +730,115 @@ describe('assertBundleLatest', () => {
           x509CertificateChain: {
             certificates: [{ rawBytes: Buffer.from('FOO') }],
           },
+        },
+        tlogEntries: [
+          {
+            logIndex: '123',
+            logId: { keyId: Buffer.from('123') },
+            kindVersion: { kind: 'intoto', version: '0.1.0' },
+            canonicalizedBody: Buffer.from(''),
+            integratedTime: '0',
+            inclusionPromise: undefined,
+            inclusionProof: {
+              checkpoint: { envelope: '' },
+              logIndex: '123',
+              treeSize: '123',
+              rootHash: Buffer.from(''),
+              hashes: [Buffer.from('')],
+            },
+          },
+        ],
+      },
+      content: {
+        $case: 'dsseEnvelope',
+        dsseEnvelope: {
+          payload: Buffer.from('ABC'),
+          payloadType: 'application/json',
+          signatures: [{ sig: Buffer.from('BAR'), keyid: '' }],
+        },
+      },
+    });
+
+    it('does NOT throw an error', () => {
+      expect(() => assertBundleV02(bundle)).not.toThrow();
+    });
+  });
+});
+
+describe('assertBundleLatest', () => {
+  describe('when verification material is a certificate chain', () => {
+    const bundle: Bundle = fromPartial({
+      mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.3',
+      verificationMaterial: {
+        content: {
+          $case: 'x509CertificateChain',
+          x509CertificateChain: {
+            certificates: [{ rawBytes: Buffer.from('FOO') }],
+          },
+        },
+        tlogEntries: [],
+      },
+      content: {
+        $case: 'messageSignature',
+        messageSignature: {
+          messageDigest: { digest: Buffer.from('ABC') },
+          signature: Buffer.from('ABC'),
+        },
+      },
+    });
+
+    it('throws an error', () => {
+      expect.assertions(2);
+      try {
+        assertBundleLatest(bundle);
+      } catch (e) {
+        assert(e instanceof ValidationError);
+        expect(e.fields).toHaveLength(1);
+        expect(e.fields).toContain('verificationMaterial.content.$case');
+      }
+    });
+  });
+
+  describe('when verification certificate is missing', () => {
+    const bundle: Bundle = fromPartial({
+      mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.3',
+      verificationMaterial: {
+        content: {
+          $case: 'certificate',
+          certificate: { rawBytes: Buffer.from('') },
+        },
+        tlogEntries: [],
+      },
+      content: {
+        $case: 'messageSignature',
+        messageSignature: {
+          messageDigest: { digest: Buffer.from('ABC') },
+          signature: Buffer.from('ABC'),
+        },
+      },
+    });
+
+    it('throws an error', () => {
+      expect.assertions(2);
+      try {
+        assertBundleLatest(bundle);
+      } catch (e) {
+        assert(e instanceof ValidationError);
+        expect(e.fields).toHaveLength(1);
+        expect(e.fields).toContain(
+          'verificationMaterial.content.certificate.rawBytes'
+        );
+      }
+    });
+  });
+
+  describe('when everything is valid', () => {
+    const bundle: Bundle = fromPartial({
+      mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.3',
+      verificationMaterial: {
+        content: {
+          $case: 'certificate',
+          certificate: { rawBytes: Buffer.from('FOO') },
         },
         tlogEntries: [
           {

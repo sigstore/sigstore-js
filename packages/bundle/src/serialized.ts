@@ -14,19 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { Envelope, Bundle as ProtoBundle } from '@sigstore/protobuf-specs';
-import { BUNDLE_V01_MEDIA_TYPE, Bundle } from './bundle';
-import { assertBundle, assertBundleLatest, assertBundleV01 } from './validate';
+import { BUNDLE_V01_MEDIA_TYPE, BUNDLE_V02_MEDIA_TYPE, Bundle } from './bundle';
+import {
+  assertBundleLatest,
+  assertBundleV01,
+  assertBundleV02,
+} from './validate';
 
 import type { OneOf } from './utility';
 
 export const bundleFromJSON = (obj: unknown): Bundle => {
   const bundle = ProtoBundle.fromJSON(obj);
-  assertBundle(bundle);
-
-  if (bundle.mediaType === BUNDLE_V01_MEDIA_TYPE) {
-    assertBundleV01(bundle);
-  } else {
-    assertBundleLatest(bundle);
+  switch (bundle.mediaType) {
+    case BUNDLE_V01_MEDIA_TYPE:
+      assertBundleV01(bundle);
+      break;
+    case BUNDLE_V02_MEDIA_TYPE:
+      assertBundleV02(bundle);
+      break;
+    default:
+      assertBundleLatest(bundle);
+      break;
   }
 
   return bundle;
@@ -106,6 +114,7 @@ export type SerializedBundle = {
     | OneOf<{
         x509CertificateChain: { certificates: { rawBytes: string }[] };
         publicKey: { hint: string };
+        certificate: { rawBytes: string };
       }>
     | undefined
   ) & {

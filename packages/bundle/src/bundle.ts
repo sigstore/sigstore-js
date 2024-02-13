@@ -28,6 +28,9 @@ export const BUNDLE_V01_MEDIA_TYPE =
 export const BUNDLE_V02_MEDIA_TYPE =
   'application/vnd.dev.sigstore.bundle+json;version=0.2';
 
+export const BUNDLE_V03_MEDIA_TYPE =
+  'application/vnd.dev.sigstore.bundle+json;version=0.3';
+
 // Extract types that are not explicitly defined in the protobuf specs.
 type DsseEnvelopeContent = Extract<
   ProtoBundle['content'],

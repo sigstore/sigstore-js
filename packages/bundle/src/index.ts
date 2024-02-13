@@ -17,6 +17,7 @@ export { toDSSEBundle, toMessageSignatureBundle } from './build';
 export {
   BUNDLE_V01_MEDIA_TYPE,
   BUNDLE_V02_MEDIA_TYPE,
+  BUNDLE_V03_MEDIA_TYPE,
   isBundleWithCertificateChain,
   isBundleWithDsseEnvelope,
   isBundleWithMessageSignature,
@@ -33,6 +34,7 @@ export {
   assertBundle,
   assertBundleLatest,
   assertBundleV01,
+  assertBundleV02,
   isBundleV01,
 } from './validate';
 

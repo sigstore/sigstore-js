@@ -85,5 +85,12 @@ function key(bundle: Bundle): VerificationKey {
             .certificates[0].rawBytes
         ),
       };
+    case 'certificate':
+      return {
+        $case: 'certificate',
+        certificate: X509Certificate.parse(
+          bundle.verificationMaterial.content.certificate.rawBytes
+        ),
+      };
   }
 }
