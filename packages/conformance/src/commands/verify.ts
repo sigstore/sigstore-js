@@ -69,6 +69,7 @@ function toBundle(
       x509CertificateChain: {
         certificates: [{ rawBytes: certBytes.toString('base64') }],
       },
+      certificate: undefined,
       publicKey: undefined,
       tlogEntries: [],
       timestampVerificationData: undefined,

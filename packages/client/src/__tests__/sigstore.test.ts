@@ -187,6 +187,19 @@ describe('#verify', () => {
     });
   });
 
+  describe('when the bundle is a valid v0.3 message signature bundle with signing certificate', () => {
+    const bundle: SerializedBundle = fromPartial(
+      validBundles.v3.messageSignature.withSigningCert
+    );
+    const artifact = validBundles.artifact;
+
+    it('does not throw an error', async () => {
+      await expect(verify(bundle, artifact, tufOptions)).resolves.toBe(
+        undefined
+      );
+    });
+  });
+
   describe('when there is a signature mismatch', () => {
     const bundle: SerializedBundle = fromPartial(
       validBundles.v1.messageSignature.withSigningCert
@@ -213,12 +226,12 @@ describe('#verify', () => {
     });
   });
 
-  describe('when the bundle is newer then v0.2', () => {
-    // Check a theoretical v0.3 bundle that is the same shape as a v0.2 bundle
+  describe('when the bundle is newer then v0.3', () => {
+    // Check a theoretical v0.4 bundle that is the same shape as a v0.3 bundle
     const bundle: SerializedBundle = fromPartial({
-      ...validBundles.v2.messageSignature.withSigningCert,
+      ...validBundles.v3.messageSignature.withSigningCert,
     });
-    bundle.mediaType = 'application/vnd.dev.sigstore.bundle+json;version=0.3';
+    bundle.mediaType = 'application/vnd.dev.sigstore.bundle+json;version=0.4';
 
     const artifact = validBundles.artifact;
 

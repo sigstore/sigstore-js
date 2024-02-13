@@ -34,7 +34,7 @@
   "dependencies": {
     "@sigstore/bundle": "^2.1.1",
     "@sigstore/core": "^1.0.0",
-    "@sigstore/protobuf-specs": "^0.2.1",
+    "@sigstore/protobuf-specs": "^0.3.0",
     "make-fetch-happen": "^13.0.0"
   },
   "engines": {

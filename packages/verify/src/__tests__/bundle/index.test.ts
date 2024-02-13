@@ -74,4 +74,23 @@ describe('toSignedEntity', () => {
       expect(entity.timestamps).toHaveLength(2);
     });
   });
+
+  describe('when the bundle is v03', () => {
+    const bundle = bundleFromJSON(
+      bundles.V3.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+    );
+
+    it('returns a SignedEntity', () => {
+      const entity = toSignedEntity(bundle);
+
+      expect(entity).toBeDefined();
+
+      assert(entity.key.$case === 'certificate');
+      expect(entity.key.certificate).toBeInstanceOf(X509Certificate);
+
+      expect(entity.signature).toBeDefined();
+      expect(entity.tlogEntries).toHaveLength(0);
+      expect(entity.timestamps).toHaveLength(1);
+    });
+  });
 });
