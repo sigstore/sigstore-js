@@ -17,6 +17,7 @@ import { fromPartial } from '@total-typescript/shoehorn';
 import {
   BUNDLE_V01_MEDIA_TYPE,
   BUNDLE_V02_MEDIA_TYPE,
+  BUNDLE_V03_MEDIA_TYPE,
   Bundle,
   BundleLatest,
   BundleV01,
@@ -43,6 +44,7 @@ import {
   assertBundle,
   assertBundleLatest,
   assertBundleV01,
+  assertBundleV02,
   bundleFromJSON,
   bundleToJSON,
   envelopeFromJSON,
@@ -148,6 +150,7 @@ describe('public interface', () => {
     expect(assertBundle).toBeDefined();
     expect(assertBundleLatest).toBeDefined();
     expect(assertBundleV01).toBeDefined();
+    expect(assertBundleV02).toBeDefined();
   });
 
   it('exports serialization functions', () => {
@@ -160,6 +163,7 @@ describe('public interface', () => {
   it('exports constants', () => {
     expect(BUNDLE_V01_MEDIA_TYPE).toBeDefined();
     expect(BUNDLE_V02_MEDIA_TYPE).toBeDefined();
+    expect(BUNDLE_V03_MEDIA_TYPE).toBeDefined();
   });
 
   it('exports errors', () => {

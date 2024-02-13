@@ -1,0 +1,170 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`bundleToJSON SerializedDSSEBundle (v0.3) matches the snapshot 1`] = `
+{
+  "dsseEnvelope": {
+    "payload": "cGF5bG9hZA==",
+    "payloadType": "application/vnd.in-toto+json",
+    "signatures": [
+      {
+        "keyid": "keyid",
+        "sig": "c2lnbmF0dXJl",
+      },
+    ],
+  },
+  "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.3",
+  "verificationMaterial": {
+    "certificate": {
+      "rawBytes": "Y2VydGlmaWNhdGU=",
+    },
+    "timestampVerificationData": {
+      "rfc3161Timestamps": [
+        {
+          "signedTimestamp": "c2lnbmVkVGltZXN0YW1w",
+        },
+      ],
+    },
+    "tlogEntries": [
+      {
+        "canonicalizedBody": "Ym9keQ==",
+        "inclusionPromise": {
+          "signedEntryTimestamp": "aW5jbHVzaW9uUHJvbWlzZQ==",
+        },
+        "inclusionProof": {
+          "checkpoint": {
+            "envelope": "checkpoint",
+          },
+          "hashes": [
+            "aGFzaA==",
+          ],
+          "logIndex": "0",
+          "rootHash": "cm9vdEhhc2g=",
+          "treeSize": "0",
+        },
+        "integratedTime": "2021-01-01T00:00:00Z",
+        "kindVersion": {
+          "kind": "kind",
+          "version": "version",
+        },
+        "logId": {
+          "keyId": "bG9nSWQ=",
+        },
+        "logIndex": "0",
+      },
+    ],
+  },
+}
+`;
+
+exports[`bundleToJSON SerializedDSSEBundle matches the snapshot 1`] = `
+{
+  "dsseEnvelope": {
+    "payload": "cGF5bG9hZA==",
+    "payloadType": "application/vnd.in-toto+json",
+    "signatures": [
+      {
+        "keyid": "keyid",
+        "sig": "c2lnbmF0dXJl",
+      },
+    ],
+  },
+  "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.1",
+  "verificationMaterial": {
+    "timestampVerificationData": {
+      "rfc3161Timestamps": [
+        {
+          "signedTimestamp": "c2lnbmVkVGltZXN0YW1w",
+        },
+      ],
+    },
+    "tlogEntries": [
+      {
+        "canonicalizedBody": "Ym9keQ==",
+        "inclusionPromise": {
+          "signedEntryTimestamp": "aW5jbHVzaW9uUHJvbWlzZQ==",
+        },
+        "inclusionProof": {
+          "checkpoint": {
+            "envelope": "checkpoint",
+          },
+          "hashes": [
+            "aGFzaA==",
+          ],
+          "logIndex": "0",
+          "rootHash": "cm9vdEhhc2g=",
+          "treeSize": "0",
+        },
+        "integratedTime": "2021-01-01T00:00:00Z",
+        "kindVersion": {
+          "kind": "kind",
+          "version": "version",
+        },
+        "logId": {
+          "keyId": "bG9nSWQ=",
+        },
+        "logIndex": "0",
+      },
+    ],
+    "x509CertificateChain": {
+      "certificates": [
+        {
+          "rawBytes": "Y2VydGlmaWNhdGU=",
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`bundleToJSON SerializedMessageSignatureBundle matches the snapshot 1`] = `
+{
+  "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.1",
+  "messageSignature": {
+    "messageDigest": {
+      "algorithm": "SHA2_256",
+      "digest": "ZGlnZXN0",
+    },
+    "signature": "c2lnbmF0dXJl",
+  },
+  "verificationMaterial": {
+    "publicKey": {
+      "hint": "pki-hint",
+    },
+    "timestampVerificationData": {
+      "rfc3161Timestamps": [
+        {
+          "signedTimestamp": "c2lnbmVkVGltZXN0YW1w",
+        },
+      ],
+    },
+    "tlogEntries": [
+      {
+        "canonicalizedBody": "Ym9keQ==",
+        "inclusionPromise": {
+          "signedEntryTimestamp": "aW5jbHVzaW9uUHJvbWlzZQ==",
+        },
+        "inclusionProof": {
+          "checkpoint": {
+            "envelope": "checkpoint",
+          },
+          "hashes": [
+            "aGFzaA==",
+          ],
+          "logIndex": "0",
+          "rootHash": "cm9vdEhhc2g=",
+          "treeSize": "0",
+        },
+        "integratedTime": "2021-01-01T00:00:00Z",
+        "kindVersion": {
+          "kind": "kind",
+          "version": "version",
+        },
+        "logId": {
+          "keyId": "bG9nSWQ=",
+        },
+        "logIndex": "0",
+      },
+    ],
+  },
+}
+`;

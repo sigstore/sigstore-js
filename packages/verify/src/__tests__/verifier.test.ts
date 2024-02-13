@@ -86,6 +86,22 @@ describe('Verifier', () => {
       });
     });
 
+    describe('when the certificate-signed message signature v3 bundle is valid', () => {
+      const subject = new Verifier(trustMaterial, {
+        ctlogThreshold: 1,
+        tlogThreshold: 0,
+        tsaThreshold: 1,
+      });
+      const bundle = bundleFromJSON(
+        bundles.V3.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+      );
+      const signedEntity = toSignedEntity(bundle, bundles.ARTIFACT);
+
+      it('returns without error', () => {
+        subject.verify(signedEntity);
+      });
+    });
+
     describe('when the a matching policy is specified', () => {
       const bundle = bundleFromJSON(
         bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT

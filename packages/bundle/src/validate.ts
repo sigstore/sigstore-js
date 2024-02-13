@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { BUNDLE_V01_MEDIA_TYPE } from './bundle';
 import { ValidationError } from './error';
 
 import type { Bundle as ProtoBundle } from '@sigstore/protobuf-specs';
@@ -24,6 +23,58 @@ import type { Bundle, BundleLatest, BundleV01 } from './bundle';
 // rather a check that the bundle is in a valid state to be processed by the
 // rest of the code.
 export function assertBundle(b: ProtoBundle): asserts b is Bundle {
+  const invalidValues = validateBundleBase(b);
+
+  if (invalidValues.length > 0) {
+    throw new ValidationError('invalid bundle', invalidValues);
+  }
+}
+
+// Asserts that the given bundle conforms to the v0.1 bundle format.
+export function assertBundleV01(b: ProtoBundle): asserts b is BundleV01 {
+  const invalidValues: string[] = [];
+  invalidValues.push(...validateBundleBase(b));
+  invalidValues.push(...validateInclusionPromise(b));
+
+  if (invalidValues.length > 0) {
+    throw new ValidationError('invalid v0.1 bundle', invalidValues);
+  }
+}
+
+// Type guard to determine if Bundle is a v0.1 bundle.
+export function isBundleV01(b: Bundle): b is BundleV01 {
+  try {
+    assertBundleV01(b);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Asserts that the given bundle conforms to the v0.2 bundle format.
+export function assertBundleV02(b: ProtoBundle): asserts b is BundleLatest {
+  const invalidValues: string[] = [];
+  invalidValues.push(...validateBundleBase(b));
+  invalidValues.push(...validateInclusionProof(b));
+
+  if (invalidValues.length > 0) {
+    throw new ValidationError('invalid v0.2 bundle', invalidValues);
+  }
+}
+
+// Asserts that the given bundle conforms to the newest (0.3) bundle format.
+export function assertBundleLatest(b: ProtoBundle): asserts b is BundleLatest {
+  const invalidValues: string[] = [];
+  invalidValues.push(...validateBundleBase(b));
+  invalidValues.push(...validateInclusionProof(b));
+  invalidValues.push(...validateNoCertificateChain(b));
+
+  if (invalidValues.length > 0) {
+    throw new ValidationError('invalid bundle', invalidValues);
+  }
+}
+
+function validateBundleBase(b: ProtoBundle): string[] {
   const invalidValues: string[] = [];
 
   // Media type validation
@@ -97,6 +148,15 @@ export function assertBundle(b: ProtoBundle): asserts b is Bundle {
             }
           );
           break;
+        case 'certificate':
+          if (
+            b.verificationMaterial.content.certificate.rawBytes.length === 0
+          ) {
+            invalidValues.push(
+              'verificationMaterial.content.certificate.rawBytes'
+            );
+          }
+          break;
       }
     }
 
@@ -119,18 +179,12 @@ export function assertBundle(b: ProtoBundle): asserts b is Bundle {
     }
   }
 
-  if (invalidValues.length > 0) {
-    throw new ValidationError('invalid bundle', invalidValues);
-  }
+  return invalidValues;
 }
 
-// Asserts that the given bundle conforms to the v0.1 bundle format.
-export function assertBundleV01(b: Bundle): asserts b is BundleV01 {
+// Necessary for V01 bundles
+function validateInclusionPromise(b: ProtoBundle): string[] {
   const invalidValues: string[] = [];
-
-  if (b.mediaType && b.mediaType !== BUNDLE_V01_MEDIA_TYPE) {
-    invalidValues.push('mediaType');
-  }
 
   if (
     b.verificationMaterial &&
@@ -145,23 +199,11 @@ export function assertBundleV01(b: Bundle): asserts b is BundleV01 {
     });
   }
 
-  if (invalidValues.length > 0) {
-    throw new ValidationError('invalid v0.1 bundle', invalidValues);
-  }
+  return invalidValues;
 }
 
-// Type guard to determine if Bundle is a v0.1 bundle.
-export function isBundleV01(b: Bundle): b is BundleV01 {
-  try {
-    assertBundleV01(b);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-// Asserts that the given bundle conforms to the newest (0.2) bundle format.
-export function assertBundleLatest(b: ProtoBundle): asserts b is BundleLatest {
+// Necessary for V02 and later bundles
+function validateInclusionProof(b: ProtoBundle): string[] {
   const invalidValues: string[] = [];
 
   if (
@@ -183,7 +225,16 @@ export function assertBundleLatest(b: ProtoBundle): asserts b is BundleLatest {
     });
   }
 
-  if (invalidValues.length > 0) {
-    throw new ValidationError('invalid v0.2 bundle', invalidValues);
+  return invalidValues;
+}
+
+// Necessary for V03 and later bundles
+function validateNoCertificateChain(b: ProtoBundle): string[] {
+  const invalidValues: string[] = [];
+
+  if (b.verificationMaterial?.content?.$case === 'x509CertificateChain') {
+    invalidValues.push('verificationMaterial.content.$case');
   }
+
+  return invalidValues;
 }

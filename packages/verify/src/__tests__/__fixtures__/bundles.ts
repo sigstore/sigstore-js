@@ -187,6 +187,39 @@ export const V1 = {
   },
 };
 
+export const V3 = {
+  MESSAGE_SIGNATURE: {
+    WITH_SIGNING_CERT: {
+      mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.3',
+      verificationMaterial: {
+        certificate: {
+          rawBytes:
+            'MIICoDCCAiagAwIBAgIUevae+nLQ8mg6OyOB43MKJ10F2CEwCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjIxMTA5MDEzMzA5WhcNMjIxMTA5MDE0MzA5WjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9DbYBIMQLtWb6J5gtL69jgRwwEfdtQtKvvG4+o3ZzlOroJplpXaVgF6wBDob++rNG9/AzSaBmApkEwI52XBjWqOCAUUwggFBMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUVIIFc08z6uV9Y96S+v5oDbbmHEYwHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGKBgorBgEEAdZ5AgQCBHwEegB4AHYA3T0wasbHETJjGR4cmWc3AqJKXrjePK3/h4pygC8p7o4AAAGEWgUGQwAABAMARzBFAiEAlKycMBC2q+QM+mct60RNENxpURHes6vgOBWdx71XcXgCIAtnMzw/cBw5h0hrYJ8b1PJjoxn3k1N2TdgofqvMhbSTMAoGCCqGSM49BAMDA2gAMGUCMQC2KLFYSiD/+S1WEsyf9czf52w+E577Hi77r8pGUM1rQ/Bzg1aGvQs0/kAg3S/JSDgCMEdN5dIS0tRm1SOMbOFcW+1yzR+OiCVJ7DVFwUdI3D/7ERxtN9e/LJ6uaRnR/Sanrw==',
+        },
+        publicKey: undefined,
+        tlogEntries: [],
+        timestampVerificationData: {
+          rfc3161Timestamps: [
+            {
+              signedTimestamp:
+                'MIICGzADAgEAMIICEgYJKoZIhvcNAQcCoIICAzCCAf8CAQMxDzANBglghkgBZQMEAgEFADB0BgsqhkiG9w0BCRABBKBlBGMwYQIBAQYJKwYBBAGDvzACMC8wCwYJYIZIAWUDBAIBBCDmiqdzQcICC79XXKmJ6Tio5Y2InXXhHYJiPWa1wH41jwIE3q2+7xgPMjAyMjExMDkwMTMzMTBaMAMCAQECBEmWAtKgADGCAW8wggFrAgEBMCswJjEMMAoGA1UEAxMDdHNhMRYwFAYDVQQKEw1zaWdzdG9yZS5tb2NrAgECMA0GCWCGSAFlAwQCAQUAoIHVMBoGCSqGSIb3DQEJAzENBgsqhkiG9w0BCRABBDAcBgkqhkiG9w0BCQUxDxcNMjIxMTA5MDEzMzEwWjAvBgkqhkiG9w0BCQQxIgQgZx9+Ame0IZus+o96m68edvjYBYiaQv7TwAl1ho90DGUwaAYLKoZIhvcNAQkQAi8xWTBXMFUwUwQg7xanBUbnZqL3LxnHaWKqwHet5zHHqi3CPzwetDjqMeswLzAqpCgwJjEMMAoGA1UEAxMDdHNhMRYwFAYDVQQKEw1zaWdzdG9yZS5tb2NrAgECMAoGCCqGSM49BAMCBEYwRAIgeu0BWwKYClpH2YaA7A4wPkj6atP+m1piVZArHQ7S7YcCIHFZVJbexBdMjBTyNZwaAd12M6Ks0VSm87uT2iGoXFN7',
+            },
+          ],
+        },
+      },
+      messageSignature: {
+        messageDigest: {
+          algorithm: 'SHA2_256',
+          digest: 'aOZWslHmfoNYvvhIOrDVHGYZ8+ehqfDnWDjUH/No9yg=',
+        },
+        signature:
+          'MEQCIHs5aUulq1HpR+fwmSKpLk/oAwq5O9CDNFHhZAKfG5GmAiBwcVnf2obzsCGVlf0AIvbvHr21NXt7tpLBl4+Brh6OKA==',
+      },
+      dsseEnvelope: undefined,
+    },
+  },
+};
+
 // Public key material for verifying the key-signed bundles
 export const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9DbYBIMQLtWb6J5gtL69jgRwwEfd
