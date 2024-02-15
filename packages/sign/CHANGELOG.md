@@ -1,5 +1,14 @@
 # @sigstore/sign
 
+## 2.2.3
+
+### Patch Changes
+
+- 555dd8e: Bump @sigstore/protobuf-specs from 0.2.1 to 0.3.0
+- Updated dependencies [555dd8e]
+- Updated dependencies [555dd8e]
+  - @sigstore/bundle@2.2.0
+
 ## 2.2.2
 
 ### Patch Changes

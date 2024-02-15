@@ -1,5 +1,12 @@
 # @sigstore/tuf
 
+## 2.3.1
+
+### Patch Changes
+
+- 555dd8e: Bump @sigstore/protobuf-specs from 0.2.1 to 0.3.0
+- d40c443: Load TUF seeds via `require` instead of `require.resolve`
+
 ## 2.3.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@sigstore/conformance",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": "true",
   "description": "Sigstore Conformance Test CLI",
   "bin": {
@@ -18,10 +18,10 @@
   },
   "dependencies": {
     "@oclif/core": "^3",
-    "@sigstore/bundle": "^2.1.1",
+    "@sigstore/bundle": "^2.2.0",
     "@sigstore/protobuf-specs": "^0.3.0",
-    "@sigstore/verify": "^1.0.0",
-    "sigstore": "^2.2.1"
+    "@sigstore/verify": "^1.1.0",
+    "sigstore": "^2.2.2"
   },
   "devDependencies": {
     "oclif": "^4",

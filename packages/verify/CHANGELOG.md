@@ -1,5 +1,18 @@
 # @sigstore/verify
 
+## 1.1.0
+
+### Minor Changes
+
+- 555dd8e: Support for verifying v0.3 bundles
+
+### Patch Changes
+
+- 555dd8e: Bump @sigstore/protobuf-specs from 0.2.1 to 0.3.0
+- Updated dependencies [555dd8e]
+- Updated dependencies [555dd8e]
+  - @sigstore/bundle@2.2.0
+
 ## 1.0.0
 
 ### Major Changes

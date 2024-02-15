@@ -1,5 +1,12 @@
 # @sigstore/mock
 
+## 0.6.5
+
+### Patch Changes
+
+- 555dd8e: Bump @sigstore/protobuf-specs from 0.2.1 to 0.3.0
+- 33647fd: Bump jose from 5.2.1 to 5.2.2
+
 ## 0.6.4
 
 ### Patch Changes
