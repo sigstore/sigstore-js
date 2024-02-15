@@ -23,7 +23,6 @@ import type { MakeFetchHappenOptions } from 'make-fetch-happen';
 
 export type Retry = MakeFetchHappenOptions['retry'];
 
-const TUF_SEEDS_PATH = require.resolve('../seeds.json');
 const TARGETS_DIR_NAME = 'targets';
 
 type RepoSeed = {
@@ -125,10 +124,8 @@ function seedCache({
     if (tufRootPath) {
       fs.copyFileSync(tufRootPath, cachedRootPath);
     } else {
-      // Load the embedded repo seeds
-      const seeds: RepoSeeds = JSON.parse(
-        fs.readFileSync(TUF_SEEDS_PATH).toString('utf-8')
-      );
+      /* eslint-disable @typescript-eslint/no-var-requires */
+      const seeds: RepoSeeds = require('../seeds.json');
       const repoSeed = seeds[mirrorURL];
 
       if (!repoSeed) {
