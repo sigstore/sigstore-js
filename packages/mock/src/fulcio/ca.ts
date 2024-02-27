@@ -47,6 +47,7 @@ export interface CertificateRequestOptions {
 interface ExtensionValue {
   oid: string;
   value: string;
+  legacy?: boolean;
 }
 
 // Initialize the mock CA. Starts by generating a root key pair and self-signed
@@ -193,6 +194,9 @@ const extSCTList = (sct: ArrayBuffer): x509.Extension => {
 
 const generateExtensions = (extensions: ExtensionValue[]): x509.Extension[] =>
   extensions.map((extension) => {
-    const value = new asn1js.Utf8String({ value: extension.value });
-    return new x509.Extension(extension.oid, false, value.toBER(false));
+    const value =
+      extension.legacy === true
+        ? Buffer.from(extension.value)
+        : new asn1js.Utf8String({ value: extension.value }).toBER(false);
+    return new x509.Extension(extension.oid, false, value);
   });
