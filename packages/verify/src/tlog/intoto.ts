@@ -53,11 +53,12 @@ function verifyIntoto002TLogBody(
   );
 
   // Ensure that the signature in the bundle's DSSE matches tlog entry
-  if (!content.compareSignature(Buffer.from(tlogSig, 'base64')))
+  if (!content.compareSignature(Buffer.from(tlogSig, 'base64'))) {
     throw new VerificationError({
       code: 'TLOG_BODY_ERROR',
       message: 'tlog entry signature mismatch',
     });
+  }
 
   // Ensure the digest of the bundle's DSSE payload matches the digest in the
   // tlog entry
