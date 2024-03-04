@@ -24,7 +24,8 @@ const CREATE_SIGNING_CERT_PATH = '/api/v2/signingCert';
 const DEFAULT_SUBJECT = 'NO-SUBJECT';
 const DEFAULT_ISSUER = 'https://fake.oidcissuer.com';
 
-const ISSUER_EXT_OID = '1.3.6.1.4.1.57264.1.8';
+const ISSUER_EXT_OID_V1 = '1.3.6.1.4.1.57264.1.1';
+const ISSUER_EXT_OID_V2 = '1.3.6.1.4.1.57264.1.8';
 
 interface FulcioHandlerOptions {
   strict?: boolean;
@@ -59,7 +60,10 @@ function createSigningCertHandler(
       const cert = await ca.issueCertificate({
         publicKey: fromPEM(publicKey),
         subjectAltName: subject,
-        extensions: [{ oid: ISSUER_EXT_OID, value: issuer }],
+        extensions: [
+          { oid: ISSUER_EXT_OID_V1, value: issuer, legacy: true },
+          { oid: ISSUER_EXT_OID_V2, value: issuer },
+        ],
       });
 
       // Format the response
