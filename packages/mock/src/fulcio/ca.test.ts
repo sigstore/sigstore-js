@@ -32,9 +32,15 @@ describe('CA', () => {
     pkijs.setEngine('test', crypto);
   });
 
-  const extension = {
+  const extension1 = {
     oid: '1.3.6.1.4.1.57264.1.20',
     value: 'workflow_dispatch',
+  };
+
+  const extension2 = {
+    oid: '1.3.6.1.4.1.57264.1.18',
+    value: 'workflow_dispatch',
+    legacy: true,
   };
 
   const subjectAltName = 'testsan';
@@ -149,15 +155,39 @@ describe('CA', () => {
         const signingCert = await ca.issueCertificate({
           publicKey: keyBytes,
           subjectAltName: 'test',
-          extensions: [extension],
+          extensions: [extension1],
         });
 
         const cert = pkijs.Certificate.fromBER(signingCert);
 
         expect.assertions(1);
         cert.extensions!.forEach((ext) => {
-          if (ext.extnID === extension.oid) {
-            expect(ext.parsedValue.valueBlock.value).toBe(extension.value);
+          if (ext.extnID === extension1.oid) {
+            expect(ext.parsedValue.valueBlock.value).toBe(extension1.value);
+          }
+        });
+      });
+    });
+
+    describe('when a custom legacy extension is provided', () => {
+      it('issues a cert with the extension', async () => {
+        const ca = await initializeCA(rootKeyPair);
+
+        // Issue a certificate with the key above
+        const signingCert = await ca.issueCertificate({
+          publicKey: keyBytes,
+          subjectAltName: 'test',
+          extensions: [extension2],
+        });
+
+        const cert = pkijs.Certificate.fromBER(signingCert);
+
+        expect.assertions(1);
+        cert.extensions!.forEach((ext) => {
+          if (ext.extnID === extension2.oid) {
+            expect(
+              Buffer.from(ext.extnValue.valueBlock.valueHexView).toString()
+            ).toBe(extension2.value);
           }
         });
       });
