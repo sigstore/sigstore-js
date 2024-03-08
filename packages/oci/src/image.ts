@@ -134,6 +134,22 @@ export class OCIImage {
     return artifactDescriptor;
   }
 
+  async getDigest(tag: string): Promise<string> {
+    try {
+      if (this.#credentials) {
+        await this.#client.signIn(this.#credentials);
+      }
+
+      const imageDescriptor = await this.#client.checkManifest(tag);
+      return imageDescriptor.digest;
+    } catch (err) {
+      throw new OCIError({
+        message: `Error retrieving image digest from container registry`,
+        cause: err,
+      });
+    }
+  }
+
   // Create a referrers index by tag. This is a fallback for registries that do
   // not support the referrers API.
   // https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pushing-manifests-with-subject
