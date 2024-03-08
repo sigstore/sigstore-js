@@ -22,9 +22,14 @@ import {
   Descriptor,
   OCIError,
   attachArtifactToImage,
+  getImageDigest,
   getRegistryCredentials,
 } from '..';
-import { CONTENT_TYPE_OCI_MANIFEST, HEADER_OCI_SUBJECT } from '../constants';
+import {
+  CONTENT_TYPE_OCI_MANIFEST,
+  HEADER_DIGEST,
+  HEADER_OCI_SUBJECT,
+} from '../constants';
 
 describe('attachArtifactToImage', () => {
   const registry = 'my-registry';
@@ -90,6 +95,41 @@ describe('attachArtifactToImage', () => {
   });
 });
 
+describe('getImageDigest', () => {
+  const registry = 'my-registry';
+  const repo = 'my-repo';
+  const imageName = `${registry}/${repo}`;
+  const imageTag = 'latest';
+  const imageDigest = 'sha256:deadbeef';
+
+  describe('when all calls are successful', () => {
+    const username = 'username';
+    const password = 'password';
+    const credentials = { username, password };
+
+    beforeEach(() => {
+      nock(`https://${registry}`)
+        .post(`/v2/${repo}/blobs/uploads/`)
+        .reply(200, {});
+
+      nock(`https://${registry}`)
+        .head(`/v2/${repo}/manifests/${imageTag}`)
+        .reply(200, {}, { [HEADER_DIGEST]: imageDigest });
+    });
+
+    it('should return the artifact digest', async () => {
+      const digest = await getImageDigest({
+        credentials,
+        imageName,
+        imageTag,
+        fetchOpts: { retry: false },
+      });
+
+      expect(digest).toEqual(imageDigest);
+    });
+  });
+});
+
 describe('exports', () => {
   it('exports types', async () => {
     const attachArtifactOptions: AttachArtifactOptions = fromPartial({});
@@ -109,5 +149,6 @@ describe('exports', () => {
   it('exports functions', () => {
     expect(attachArtifactToImage).toBeDefined();
     expect(getRegistryCredentials).toBeDefined();
+    expect(getImageDigest).toBeDefined();
   });
 });
