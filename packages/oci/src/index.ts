@@ -17,6 +17,7 @@ import { Credentials } from './credentials';
 import { AddArtifactOptions, OCIImage } from './image';
 import { parseImageName } from './name';
 
+import type { FetchOptions } from 'make-fetch-happen';
 import type { Descriptor } from './types';
 
 export type { Credentials, Descriptor };
@@ -24,6 +25,13 @@ export type { Credentials, Descriptor };
 export type AttachArtifactOptions = AddArtifactOptions & {
   readonly imageName: string;
   readonly credentials: Credentials;
+};
+
+export type GetImageDigestOptions = {
+  readonly imageName: string;
+  readonly imageTag: string;
+  readonly credentials: Credentials;
+  readonly fetchOpts?: FetchOptions;
 };
 
 export { getRegistryCredentials } from './credentials';
@@ -38,5 +46,15 @@ export const attachArtifactToImage = async (
   const image = parseImageName(opts.imageName);
   return new OCIImage(image, opts.credentials, opts.fetchOpts).addArtifact(
     opts
+  );
+};
+
+// Returns the digest of the given image tag in the remote registry.
+export const getImageDigest = async (
+  opts: GetImageDigestOptions
+): Promise<string> => {
+  const image = parseImageName(opts.imageName);
+  return new OCIImage(image, opts.credentials, opts.fetchOpts).getDigest(
+    opts.imageTag
   );
 };

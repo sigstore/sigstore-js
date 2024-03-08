@@ -21,6 +21,7 @@ import {
   CONTENT_TYPE_OCTET_STREAM,
   HEADER_AUTHENTICATE,
   HEADER_CONTENT_TYPE,
+  HEADER_DIGEST,
   HEADER_OCI_SUBJECT,
 } from '../constants';
 import { Credentials } from '../credentials';
@@ -235,6 +236,45 @@ describe('OCIImage', () => {
             })
           ).rejects.toThrow();
         });
+      });
+    });
+  });
+
+  describe('#getDigest', () => {
+    const subject = new OCIImage(imageName, creds, { retry: false });
+    const registry = imageName.registry;
+    const repo = imageName.path;
+    const tag = 'latest';
+    const challenge = 'Basic realm="registry"';
+    const imageDigest = 'sha256:deadbeef';
+
+    describe('when the tag exists', () => {
+      beforeEach(() => {
+        nock(`https://${registry}`)
+          .post(`/v2/${repo}/blobs/uploads/`)
+          .reply(401, {}, { [HEADER_AUTHENTICATE]: challenge })
+          .head(`/v2/${repo}/manifests/${tag}`)
+          .reply(200, {}, { [HEADER_DIGEST]: imageDigest });
+      });
+
+      it('returns the digest for the tag', async () => {
+        const response = await subject.getDigest(tag);
+
+        expect(response).toEqual(imageDigest);
+      });
+    });
+
+    describe('when the tag does NOT exist', () => {
+      beforeEach(() => {
+        nock(`https://${registry}`)
+          .post(`/v2/${repo}/blobs/uploads/`)
+          .reply(401, {}, { [HEADER_AUTHENTICATE]: challenge })
+          .head(`/v2/${repo}/manifests/${tag}`)
+          .reply(404, {});
+      });
+
+      it('throws an error', async () => {
+        await expect(subject.getDigest(tag)).rejects.toThrow();
       });
     });
   });
