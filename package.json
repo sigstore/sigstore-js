@@ -29,7 +29,7 @@
     "nock": "^13.5.4",
     "prettier": "^3.2.5",
     "shx": "^0.3.3",
-    "typescript": "^5.4.2"
+    "typescript": "^5.3.3"
   },
   "workspaces": [
     "./packages/*"
