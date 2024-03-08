@@ -28,7 +28,7 @@ import type { Descriptor, ImageIndex, ImageManifest } from './types';
 
 const EMPTY_BLOB = Buffer.from('{}');
 
-const DOWNGRADE_REGISTRIES = ['docker.io', 'amazonaws.com'];
+const DOWNGRADE_REGISTRIES = ['amazonaws.com'];
 
 export type AddArtifactOptions = {
   readonly artifact: Buffer;
