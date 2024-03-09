@@ -28,7 +28,7 @@ import type { Descriptor, ImageIndex, ImageManifest } from './types';
 
 const EMPTY_BLOB = Buffer.from('{}');
 
-const DOWNGRADE_REGISTRIES = ['docker.io', 'amazonaws.com'];
+const DOWNGRADE_REGISTRIES = ['amazonaws.com'];
 
 export type AddArtifactOptions = {
   readonly artifact: Buffer;
@@ -90,20 +90,15 @@ export class OCIImage {
 
       /* istanbul ignore if */
       if (this.#downgrade) {
-        delete manifest.subject;
-        delete manifest.artifactType;
-
         // ECR can't handle media types with parameters, so we need to strip the
         // version parameter from the Sigstore bundle media type.
+        manifest.artifactType = manifest.artifactType
+          ? manifest.artifactType.replace(/;.*/, '')
+          : undefined;
         manifest.layers[0].mediaType = manifest.layers[0].mediaType.replace(
           /;.*/,
           ''
         );
-
-        // ECR can't handle the "application/vnd.oci.empty.v1+json" media type
-        // for the config blob defined in OCI 1.1, so we need to use the Docker
-        // V2 API media type
-        manifest.config.mediaType = 'application/vnd.oci.image.config.v1+json';
       }
 
       // Upload artifact manifest
