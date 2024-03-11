@@ -1,5 +1,19 @@
 # @sigstore/cli
 
+## 0.7.0
+
+### Minor Changes
+
+- e4a79f6: Add new `attach` command for pushing attestations to an OCI registry
+
+### Patch Changes
+
+- 823341b: Bump openid-client from 5.6.4 to 5.6.5
+- Updated dependencies [ee3a521]
+- Updated dependencies [d1f0f5a]
+- Updated dependencies [61eeb07]
+  - @sigstore/oci@0.2.0
+
 ## 0.6.0
 
 ### Minor Changes

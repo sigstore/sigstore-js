@@ -1,5 +1,13 @@
 # @sigstore/oci
 
+## 0.2.0
+
+### Minor Changes
+
+- ee3a521: Include `subject` and `artifactType` fields in artifact manifest for AWS ECR
+- d1f0f5a: Remove Docker Hub from list of registries which are not compatible with OCI v1.1.0 image spec
+- 61eeb07: Add new `getImageDigest` function
+
 ## 0.1.0
 
 ### Minor Changes
