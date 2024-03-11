@@ -1,5 +1,17 @@
 # @sigstore/mock
 
+## 0.7.0
+
+### Minor Changes
+
+- c1259bd: Support legacy-style certificate extensions in mock Fulcio service
+
+### Patch Changes
+
+- 385959b: Bump nock from 13.5.3 to 13.5.4
+- 823341b: Bump jose from 5.2.2 to 5.2.3
+- baa713a: Bump nock from 13.5.1 to 13.5.3
+
 ## 0.6.5
 
 ### Patch Changes
