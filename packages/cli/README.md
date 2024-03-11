@@ -9,7 +9,7 @@ $ npm install -g @sigstore/cli
 $ sigstore COMMAND
 running command...
 $ sigstore (--version)
-@sigstore/cli/0.5.0 darwin-arm64 node-v18.12.1
+@sigstore/cli/0.6.0 darwin-arm64 node-v18.12.1
 $ sigstore --help [COMMAND]
 USAGE
   $ sigstore COMMAND
@@ -18,10 +18,36 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
+* [`sigstore attach IMAGE-URI`](#sigstore-attach-image-uri)
 * [`sigstore attest FILE`](#sigstore-attest-file)
-* [`sigstore help [COMMANDS]`](#sigstore-help-commands)
+* [`sigstore help [COMMAND]`](#sigstore-help-command)
 * [`sigstore initialize`](#sigstore-initialize)
 * [`sigstore verify BUNDLE`](#sigstore-verify-bundle)
+
+## `sigstore attach IMAGE-URI`
+
+attach an attestation to a container image
+
+```
+USAGE
+  $ sigstore attach IMAGE-URI --attestation <value> [-u <value> -p <value>]
+
+ARGUMENTS
+  IMAGE-URI  fully qualified URI to the image
+
+FLAGS
+  -p, --password=<value>     password for the registry
+  -u, --username=<value>     username for the registry
+      --attestation=<value>  (required) attestation bundle to attach
+
+DESCRIPTION
+  attach an attestation to a container image
+
+EXAMPLES
+  $ sigstore attach --attestation <file> <name>{:<tag>|@<digest>}
+```
+
+
 
 ## `sigstore attest FILE`
 
@@ -63,16 +89,16 @@ EXAMPLES
 
 
 
-## `sigstore help [COMMANDS]`
+## `sigstore help [COMMAND]`
 
 Display help for sigstore.
 
 ```
 USAGE
-  $ sigstore help [COMMANDS] [-n]
+  $ sigstore help [COMMAND] [-n]
 
 ARGUMENTS
-  COMMANDS  Command to show help for.
+  COMMAND  Command to show help for.
 
 FLAGS
   -n, --nested-commands  Include all nested commands in the output.
