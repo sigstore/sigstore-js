@@ -18,11 +18,14 @@ export type { KeyObject } from 'crypto';
 
 const SHA256_ALGORITHM = 'sha256';
 
-export function createPublicKey(key: string | Buffer): crypto.KeyObject {
+export function createPublicKey(
+  key: string | Buffer,
+  type: 'spki' | 'pkcs1' = 'spki'
+): crypto.KeyObject {
   if (typeof key === 'string') {
     return crypto.createPublicKey(key);
   } else {
-    return crypto.createPublicKey({ key, format: 'der', type: 'spki' });
+    return crypto.createPublicKey({ key, format: 'der', type: type });
   }
 }
 
