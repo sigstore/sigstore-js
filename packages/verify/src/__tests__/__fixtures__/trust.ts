@@ -77,6 +77,22 @@ const trustedRootJSON = {
   ],
   ctlogs: [
     {
+      baseUrl: 'https://ctfe.sigstage.dev/test',
+      hashAlgorithm: 'SHA2_256',
+      publicKey: {
+        rawBytes:
+          'MIICCgKCAgEA27A2MPQXm0I0v7/Ly5BIauDjRZF5Jor9vU+QheoE2UIIsZHcyYq3slHzSSHy2lLj1ZD2d91CtJ492ZXqnBmsr4TwZ9jQ05tW2mGIRI8u2DqN8LpuNYZGz/f9SZrjhQQmUttqWmtu3UoLfKz6NbNXUnoo+NhZFcFRLXJ8VporVhuiAmL7zqT53cXR3yQfFPCUDeGnRksnlhVIAJc3AHZZSHQJ8DEXMhh35TVv2nYhTI3rID7GwjXXw4ocz7RGDD37ky6p39Tl5NB71gT1eSqhZhGHEYHIPXraEBd5+3w9qIuLWlp5Ej/K6Mu4ELioXKCUimCbwy+Cs8UhHFlqcyg4AysOHJwIadXIa8LsY51jnVSGrGOEBZevopmQPNPtyfFY3dmXSS+6Z3RD2Gd6oDnNGJzpSyEk410Ag5uvNDfYzJLCWX9tU8lIxNwdFYmIwpd89HijyRyoGnoJ3entd63cvKfuuix5r+GHyKp1Xm1L5j5AWM6P+z0xigwkiXnt+adexAl1J9wdDxv/pUFEESRF4DG8DFGVtbdH6aR1A5/vD4krO4tC1QYUSeyL5Mvsw8WRqIFHcXtgybtxylljvNcGMV1KXQC8UFDmpGZVDSHx6v3e/BHMrZ7gjoCCfVMZ/cFcQi0W2AIHPYEMH/C95J2r4XbHMRdYXpovpOoT5Ca78gsCAwEAAQ==',
+        keyDetails: 'PKCS1_RSA_PKCS1V5',
+        validFor: {
+          start: '2021-03-14T00:00:00.000Z',
+          end: '2022-07-31T00:00:00.000Z',
+        },
+      },
+      logId: {
+        keyId: 'G3wUKk6ZK6ffHh/FdCRUE2wVekyzHEEIpSG4savnv0w=',
+      },
+    },
+    {
       baseUrl: 'https://ctfe.sigstore.dev/test',
       hashAlgorithm: 'SHA2_256',
       publicKey: {

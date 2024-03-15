@@ -24,7 +24,7 @@ describe('toTrustMaterial', () => {
     expect(result.certificateAuthorities).toHaveLength(2);
     expect(result.timestampAuthorities).toHaveLength(1);
     expect(result.tlogs).toHaveLength(1);
-    expect(result.ctlogs).toHaveLength(2);
+    expect(result.ctlogs).toHaveLength(3);
 
     expect(() => result.publicKey('FOO')).toThrowWithCode(
       VerificationError,

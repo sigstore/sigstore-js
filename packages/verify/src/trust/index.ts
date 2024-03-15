@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { X509Certificate, crypto } from '@sigstore/core';
-
-import type {
-  CertificateAuthority,
-  PublicKey,
-  TransparencyLogInstance,
-  TrustedRoot,
+import {
+  PublicKeyDetails,
+  type CertificateAuthority,
+  type PublicKey,
+  type TransparencyLogInstance,
+  type TrustedRoot,
 } from '@sigstore/protobuf-specs';
 import { VerificationError } from '../error';
 import type {
@@ -60,9 +60,21 @@ export function toTrustMaterial(
 function createTLogAuthority(
   tlogInstance: TransparencyLogInstance
 ): TLogAuthority {
+  const keyDetails = tlogInstance.publicKey!.keyDetails;
+  const keyType =
+    keyDetails === PublicKeyDetails.PKCS1_RSA_PKCS1V5 ||
+    keyDetails === PublicKeyDetails.PKIX_RSA_PKCS1V5 ||
+    keyDetails === PublicKeyDetails.PKIX_RSA_PKCS1V15_2048_SHA256 ||
+    keyDetails === PublicKeyDetails.PKIX_RSA_PKCS1V15_3072_SHA256 ||
+    keyDetails === PublicKeyDetails.PKIX_RSA_PKCS1V15_4096_SHA256
+      ? 'pkcs1'
+      : 'spki';
   return {
     logID: tlogInstance.logId!.keyId,
-    publicKey: crypto.createPublicKey(tlogInstance.publicKey!.rawBytes!),
+    publicKey: crypto.createPublicKey(
+      tlogInstance.publicKey!.rawBytes!,
+      keyType
+    ),
     validFor: {
       start: tlogInstance.publicKey!.validFor?.start || BEGINNING_OF_TIME,
       end: tlogInstance.publicKey!.validFor?.end || END_OF_TIME,
