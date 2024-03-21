@@ -29,3 +29,7 @@ jobs:
       with:
         entrypoint: ${{ github.workspace }}/packages/conformance/bin/run
         xfail: "test_verify_with_trust_root"
+    - uses: sigstore/sigstore-conformance@ee4de0e602873beed74cf9e49d5332529fe69bf6 # v0.0.11
+      with:
+        entrypoint: ${{ github.workspace }}/packages/conformance/bin/run
+        environment: staging

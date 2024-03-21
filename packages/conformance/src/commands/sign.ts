@@ -1,6 +1,7 @@
 import { Args, Command, Flags } from '@oclif/core';
 import fs from 'fs/promises';
 import * as sigstore from 'sigstore';
+import { FULCIO_STAGING_URL, REKOR_STAGING_URL } from '../staging';
 
 export default class Sign extends Command {
   static override flags = {
@@ -15,6 +16,10 @@ export default class Sign extends Command {
     certificate: Flags.string({
       description: 'path to which the certificate will be written',
       required: true,
+    }),
+    staging: Flags.boolean({
+      description: 'whether to use the staging environment',
+      default: false,
     }),
   };
 
@@ -32,6 +37,11 @@ export default class Sign extends Command {
     const options: Parameters<typeof sigstore.sign>[1] = {
       identityToken: flags['identity-token'],
     };
+
+    if (flags['staging']) {
+      options.fulcioURL = FULCIO_STAGING_URL;
+      options.rekorURL = REKOR_STAGING_URL;
+    }
 
     const artifact = await fs.readFile(args.artifact);
     const bundle = await sigstore.sign(artifact, options);

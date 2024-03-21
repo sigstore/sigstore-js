@@ -1,7 +1,10 @@
 import { Args, Command, Flags } from '@oclif/core';
 import crypto, { BinaryLike } from 'crypto';
 import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
 import * as sigstore from 'sigstore';
+import { TUF_STAGING_ROOT, TUF_STAGING_URL } from '../staging';
 
 export default class Verify extends Command {
   static override flags = {
@@ -21,6 +24,10 @@ export default class Verify extends Command {
     'certificate-oidc-issuer': Flags.string({
       description: 'the expected OIDC issuer for the signing certificate',
       required: true,
+    }),
+    staging: Flags.boolean({
+      description: 'whether to use the staging environment',
+      default: false,
     }),
   };
 
@@ -50,6 +57,16 @@ export default class Verify extends Command {
       certificateIssuer: flags['certificate-oidc-issuer'],
       tlogThreshold: 0,
     };
+
+    if (flags['staging']) {
+      // Write the initial root.json to a temporary directory
+      const tmpPath = await fs.mkdtemp(path.join(os.tmpdir(), 'sigstore-'));
+      const rootPath = path.join(tmpPath, 'root.json');
+      await fs.writeFile(rootPath, Buffer.from(TUF_STAGING_ROOT, 'base64'));
+
+      options.tufMirrorURL = TUF_STAGING_URL;
+      options.tufRootPath = rootPath;
+    }
 
     sigstore.verify(bundle, artifact, options);
   }
