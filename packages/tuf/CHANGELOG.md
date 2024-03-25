@@ -1,5 +1,11 @@
 # @sigstore/tuf
 
+## 2.3.2
+
+### Patch Changes
+
+- afa65a3: Update TUF seed files
+
 ## 2.3.1
 
 ### Patch Changes

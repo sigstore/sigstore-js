@@ -1,6 +1,6 @@
 {
   "name": "@sigstore/verify",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Verification of Sigstore signatures",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -28,7 +28,7 @@
   "dependencies": {
     "@sigstore/protobuf-specs": "^0.3.0",
     "@sigstore/bundle": "^2.2.0",
-    "@sigstore/core": "^1.0.0"
+    "@sigstore/core": "^1.1.0"
   },
   "engines": {
     "node": "^16.14.0 || >=18.0.0"

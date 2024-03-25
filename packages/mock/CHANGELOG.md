@@ -1,5 +1,11 @@
 # @sigstore/mock
 
+## 0.7.1
+
+### Patch Changes
+
+- 4b19118: Bump pkijs from 3.0.15 to 3.0.16
+
 ## 0.7.0
 
 ### Minor Changes
