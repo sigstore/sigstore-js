@@ -1,5 +1,13 @@
 # @sigstore/verify
 
+## 1.1.1
+
+### Patch Changes
+
+- 46caed8: Fix bug related to loading RSA keys from the trusted key material
+- Updated dependencies [46caed8]
+  - @sigstore/core@1.1.0
+
 ## 1.1.0
 
 ### Minor Changes

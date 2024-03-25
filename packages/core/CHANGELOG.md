@@ -1,5 +1,11 @@
 # @sigstore/core
 
+## 1.1.0
+
+### Minor Changes
+
+- 46caed8: Update `createPublicKey` to support both "spki" and "pkcs1" key types
+
 ## 1.0.0
 
 ### Major Changes
