@@ -28,8 +28,11 @@ export const BUNDLE_V01_MEDIA_TYPE =
 export const BUNDLE_V02_MEDIA_TYPE =
   'application/vnd.dev.sigstore.bundle+json;version=0.2';
 
-export const BUNDLE_V03_MEDIA_TYPE =
+export const BUNDLE_V03_LEGACY_MEDIA_TYPE =
   'application/vnd.dev.sigstore.bundle+json;version=0.3';
+
+export const BUNDLE_V03_MEDIA_TYPE =
+  'application/vnd.dev.sigstore.bundle.v0.3+json';
 
 // Extract types that are not explicitly defined in the protobuf specs.
 type DsseEnvelopeContent = Extract<
@@ -87,7 +90,7 @@ export type BundleV01 = Bundle & {
   };
 };
 
-// Version 0.2 of the Sigstore bundle format with all required fields populated.
+// Version 0.3 of the Sigstore bundle format with all required fields populated.
 // Ensures inclusion proof is present in each transparency log entry.
 export type BundleLatest = Bundle & {
   verificationMaterial: Bundle['verificationMaterial'] & {
@@ -102,6 +105,12 @@ export type BundleWithCertificateChain = Bundle & {
       VerificationMaterial['content'],
       { $case: 'x509CertificateChain' }
     >;
+  };
+};
+
+export type BundleWithSingleCertificate = Bundle & {
+  verificationMaterial: Bundle['verificationMaterial'] & {
+    content: Extract<VerificationMaterial['content'], { $case: 'certificate' }>;
   };
 };
 

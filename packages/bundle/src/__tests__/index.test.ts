@@ -17,6 +17,7 @@ import { fromPartial } from '@total-typescript/shoehorn';
 import {
   BUNDLE_V01_MEDIA_TYPE,
   BUNDLE_V02_MEDIA_TYPE,
+  BUNDLE_V03_LEGACY_MEDIA_TYPE,
   BUNDLE_V03_MEDIA_TYPE,
   Bundle,
   BundleLatest,
@@ -25,6 +26,7 @@ import {
   BundleWithDsseEnvelope,
   BundleWithMessageSignature,
   BundleWithPublicKey,
+  BundleWithSingleCertificate,
   Envelope,
   InclusionProof,
   MessageSignature,
@@ -73,6 +75,10 @@ describe('public interface', () => {
       {}
     );
     expect(bundleWithCertificateChain).toBeDefined();
+
+    const bundleWithSingleCertificate: BundleWithSingleCertificate =
+      fromPartial({});
+    expect(bundleWithSingleCertificate).toBeDefined();
 
     const bundleWithDsseEnvelope: BundleWithDsseEnvelope = fromPartial({});
     expect(bundleWithDsseEnvelope).toBeDefined();
@@ -163,6 +169,7 @@ describe('public interface', () => {
   it('exports constants', () => {
     expect(BUNDLE_V01_MEDIA_TYPE).toBeDefined();
     expect(BUNDLE_V02_MEDIA_TYPE).toBeDefined();
+    expect(BUNDLE_V03_LEGACY_MEDIA_TYPE).toBeDefined();
     expect(BUNDLE_V03_MEDIA_TYPE).toBeDefined();
   });
 
