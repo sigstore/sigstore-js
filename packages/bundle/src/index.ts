@@ -17,6 +17,7 @@ export { toDSSEBundle, toMessageSignatureBundle } from './build';
 export {
   BUNDLE_V01_MEDIA_TYPE,
   BUNDLE_V02_MEDIA_TYPE,
+  BUNDLE_V03_LEGACY_MEDIA_TYPE,
   BUNDLE_V03_MEDIA_TYPE,
   isBundleWithCertificateChain,
   isBundleWithDsseEnvelope,
@@ -55,6 +56,7 @@ export type {
   BundleWithDsseEnvelope,
   BundleWithMessageSignature,
   BundleWithPublicKey,
+  BundleWithSingleCertificate,
   InclusionProof,
   MessageSignature,
   TLogEntryWithInclusionPromise,

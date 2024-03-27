@@ -80,7 +80,12 @@ function validateBundleBase(b: ProtoBundle): string[] {
   // Media type validation
   if (
     b.mediaType === undefined ||
-    !b.mediaType.startsWith('application/vnd.dev.sigstore.bundle+json;version=')
+    (!b.mediaType.match(
+      /^application\/vnd\.dev\.sigstore\.bundle\+json;version=\d\.\d/
+    ) &&
+      !b.mediaType.match(
+        /^application\/vnd\.dev\.sigstore\.bundle\.v\d\.\d+json/
+      ))
   ) {
     invalidValues.push('mediaType');
   }

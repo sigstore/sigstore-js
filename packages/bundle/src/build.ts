@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { HashAlgorithm } from '@sigstore/protobuf-specs';
-import { BUNDLE_V02_MEDIA_TYPE } from './bundle';
+import { BUNDLE_V02_MEDIA_TYPE, BUNDLE_V03_MEDIA_TYPE } from './bundle';
 
 import type { Envelope, Signature } from '@sigstore/protobuf-specs';
 import type {
@@ -28,6 +28,11 @@ import type {
 type VerificationMaterialOptions = {
   certificate?: Buffer;
   keyHint?: string;
+
+  // When set to true, the bundle verification material will use the
+  // certifciate field instead of the x509CertificateChain field.
+  // When undefied/false, a v0.2 bundle will be created.
+  singleCertificate?: boolean;
 };
 
 type MessageSignatureBundleOptions = {
@@ -46,7 +51,9 @@ export function toMessageSignatureBundle(
   options: MessageSignatureBundleOptions
 ): BundleWithMessageSignature {
   return {
-    mediaType: BUNDLE_V02_MEDIA_TYPE,
+    mediaType: options.singleCertificate
+      ? BUNDLE_V03_MEDIA_TYPE
+      : BUNDLE_V02_MEDIA_TYPE,
     content: {
       $case: 'messageSignature',
       messageSignature: {
@@ -67,7 +74,9 @@ export function toDSSEBundle(
   options: DSSEBundleOptions
 ): BundleWithDsseEnvelope {
   return {
-    mediaType: BUNDLE_V02_MEDIA_TYPE,
+    mediaType: options.singleCertificate
+      ? BUNDLE_V03_MEDIA_TYPE
+      : BUNDLE_V02_MEDIA_TYPE,
     content: {
       $case: 'dsseEnvelope',
       dsseEnvelope: toEnvelope(options),
@@ -107,12 +116,19 @@ function toKeyContent(
   options: VerificationMaterialOptions
 ): Bundle['verificationMaterial']['content'] {
   if (options.certificate) {
-    return {
-      $case: 'x509CertificateChain',
-      x509CertificateChain: {
-        certificates: [{ rawBytes: options.certificate }],
-      },
-    };
+    if (options.singleCertificate) {
+      return {
+        $case: 'certificate',
+        certificate: { rawBytes: options.certificate },
+      };
+    } else {
+      return {
+        $case: 'x509CertificateChain',
+        x509CertificateChain: {
+          certificates: [{ rawBytes: options.certificate }],
+        },
+      };
+    }
   } else {
     return {
       $case: 'publicKey',
