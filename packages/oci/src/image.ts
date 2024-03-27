@@ -28,8 +28,6 @@ import type { Descriptor, ImageIndex, ImageManifest } from './types';
 
 const EMPTY_BLOB = Buffer.from('{}');
 
-const DOWNGRADE_REGISTRIES = ['amazonaws.com'];
-
 export type AddArtifactOptions = {
   readonly artifact: Buffer;
   readonly mediaType: string;
@@ -41,16 +39,10 @@ export type AddArtifactOptions = {
 export class OCIImage {
   readonly #client: RegistryClient;
   readonly #credentials: Credentials;
-  readonly #downgrade: boolean = false;
 
   constructor(image: ImageName, creds: Credentials, opts?: FetchOptions) {
     this.#client = new RegistryClient(image.registry, image.path, opts);
     this.#credentials = creds;
-
-    // If the registry is not OCI-compliant, downgrade to Docker V2 API
-    this.#downgrade = DOWNGRADE_REGISTRIES.some((r) =>
-      image.registry.includes(r)
-    );
   }
 
   async addArtifact(opts: AddArtifactOptions): Promise<Descriptor> {
@@ -87,19 +79,6 @@ export class OCIImage {
         },
         annotations,
       });
-
-      /* istanbul ignore if */
-      if (this.#downgrade) {
-        // ECR can't handle media types with parameters, so we need to strip the
-        // version parameter from the Sigstore bundle media type.
-        manifest.artifactType = manifest.artifactType
-          ? manifest.artifactType.replace(/;.*/, '')
-          : undefined;
-        manifest.layers[0].mediaType = manifest.layers[0].mediaType.replace(
-          /;.*/,
-          ''
-        );
-      }
 
       // Upload artifact manifest
       artifactDescriptor = await this.#client.uploadManifest(
