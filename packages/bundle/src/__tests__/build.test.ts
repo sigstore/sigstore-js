@@ -13,10 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { HashAlgorithm } from '@sigstore/protobuf-specs';
-import assert from 'assert';
+import { Bundle } from '@sigstore/protobuf-specs';
 import { toDSSEBundle, toMessageSignatureBundle } from '../build';
-import { BUNDLE_V02_MEDIA_TYPE } from '../bundle';
 
 const signature = Buffer.from('signature');
 const keyHint = 'hint';
@@ -24,34 +22,34 @@ const certificate = Buffer.from('certificate');
 
 describe('toMessageSignatureBundle', () => {
   const digest = Buffer.from('digest');
-  it('returns a valid message signature bundle', () => {
-    const b = toMessageSignatureBundle({
-      digest,
-      signature,
-      certificate,
-      keyHint,
+
+  describe('when the singleCertificate option is undefined', () => {
+    it('returns a valid message signature bundle', () => {
+      const b = toMessageSignatureBundle({
+        digest,
+        signature,
+        certificate,
+        keyHint,
+      });
+
+      expect(b).toBeTruthy();
+      expect(Bundle.toJSON(b)).toMatchSnapshot();
     });
+  });
 
-    expect(b).toBeTruthy();
-    expect(b.mediaType).toEqual(BUNDLE_V02_MEDIA_TYPE);
+  describe('when the singleCertificate option is true', () => {
+    it('returns a valid message signature bundle', () => {
+      const b = toMessageSignatureBundle({
+        digest,
+        signature,
+        certificate,
+        keyHint,
+        singleCertificate: true,
+      });
 
-    assert(b.content?.$case === 'messageSignature');
-    expect(b.content.messageSignature).toBeTruthy();
-    expect(b.content.messageSignature.messageDigest.algorithm).toEqual(
-      HashAlgorithm.SHA2_256
-    );
-    expect(b.content.messageSignature.messageDigest.digest).toEqual(digest);
-    expect(b.content.messageSignature.signature).toEqual(signature);
-
-    expect(b.verificationMaterial).toBeTruthy();
-    assert(b.verificationMaterial.content?.$case === 'x509CertificateChain');
-    expect(
-      b.verificationMaterial.content?.x509CertificateChain.certificates
-    ).toHaveLength(1);
-    expect(
-      b.verificationMaterial.content?.x509CertificateChain.certificates[0]
-        .rawBytes
-    ).toEqual(certificate);
+      expect(b).toBeTruthy();
+      expect(Bundle.toJSON(b)).toMatchSnapshot();
+    });
   });
 });
 
@@ -59,88 +57,93 @@ describe('toDSSEBundle', () => {
   const artifact = Buffer.from('data');
   const artifactType = 'text/plain';
 
-  describe('when a public key w/ hint is provided', () => {
-    it('returns a valid DSSE bundle', () => {
-      const b = toDSSEBundle({
-        artifact,
-        artifactType,
-        signature,
-        keyHint,
+  describe('when the singleCertificate option is undefined/false', () => {
+    describe('when a public key w/ hint is provided', () => {
+      it('returns a valid DSSE bundle', () => {
+        const b = toDSSEBundle({
+          artifact,
+          artifactType,
+          signature,
+          keyHint,
+        });
+
+        expect(b).toBeTruthy();
+        expect(Bundle.toJSON(b)).toMatchSnapshot();
       });
+    });
 
-      expect(b).toBeTruthy();
-      expect(b.mediaType).toEqual(BUNDLE_V02_MEDIA_TYPE);
+    describe('when a public key w/o hint is provided', () => {
+      it('returns a valid DSSE bundle', () => {
+        const b = toDSSEBundle({
+          artifact,
+          artifactType,
+          signature,
+          singleCertificate: false,
+        });
 
-      assert(b.content?.$case === 'dsseEnvelope');
-      expect(b.content.dsseEnvelope).toBeTruthy();
-      expect(b.content.dsseEnvelope.payloadType).toEqual(artifactType);
-      expect(b.content.dsseEnvelope.payload).toEqual(artifact);
-      expect(b.content.dsseEnvelope.signatures).toHaveLength(1);
-      expect(b.content.dsseEnvelope.signatures[0].sig).toEqual(signature);
-      expect(b.content.dsseEnvelope.signatures[0].keyid).toEqual(keyHint);
+        expect(b).toBeTruthy();
+        expect(Bundle.toJSON(b)).toMatchSnapshot();
+      });
+    });
 
-      expect(b.verificationMaterial).toBeTruthy();
-      assert(b.verificationMaterial.content?.$case === 'publicKey');
-      expect(b.verificationMaterial.content?.publicKey).toBeTruthy();
-      expect(b.verificationMaterial.content?.publicKey.hint).toEqual(keyHint);
+    describe('when a certificate chain provided', () => {
+      it('returns a valid DSSE bundle', () => {
+        const b = toDSSEBundle({
+          artifact,
+          artifactType,
+          signature,
+          certificate,
+        });
+
+        expect(b).toBeTruthy();
+        expect(Bundle.toJSON(b)).toMatchSnapshot();
+      });
     });
   });
 
-  describe('when a public key w/o hint is provided', () => {
-    it('returns a valid DSSE bundle', () => {
-      const b = toDSSEBundle({
-        artifact,
-        artifactType,
-        signature,
+  describe('when the singleCertificate option is true', () => {
+    describe('when a public key w/ hint is provided', () => {
+      it('returns a valid DSSE bundle', () => {
+        const b = toDSSEBundle({
+          artifact,
+          artifactType,
+          signature,
+          keyHint,
+          singleCertificate: true,
+        });
+
+        expect(b).toBeTruthy();
+        expect(Bundle.toJSON(b)).toMatchSnapshot();
       });
-
-      expect(b).toBeTruthy();
-      expect(b.mediaType).toEqual(BUNDLE_V02_MEDIA_TYPE);
-
-      assert(b.content?.$case === 'dsseEnvelope');
-      expect(b.content.dsseEnvelope).toBeTruthy();
-      expect(b.content.dsseEnvelope.payloadType).toEqual(artifactType);
-      expect(b.content.dsseEnvelope.payload).toEqual(artifact);
-      expect(b.content.dsseEnvelope.signatures).toHaveLength(1);
-      expect(b.content.dsseEnvelope.signatures[0].sig).toEqual(signature);
-      expect(b.content.dsseEnvelope.signatures[0].keyid).toEqual('');
-
-      expect(b.verificationMaterial).toBeTruthy();
-      assert(b.verificationMaterial.content?.$case === 'publicKey');
-      expect(b.verificationMaterial.content?.publicKey).toBeTruthy();
-      expect(b.verificationMaterial.content?.publicKey.hint).toEqual('');
     });
-  });
 
-  describe('when a certificate chain provided', () => {
-    it('returns a valid DSSE bundle', () => {
-      const b = toDSSEBundle({
-        artifact,
-        artifactType,
-        signature,
-        certificate,
+    describe('when a public key w/o hint is provided', () => {
+      it('returns a valid DSSE bundle', () => {
+        const b = toDSSEBundle({
+          artifact,
+          artifactType,
+          signature,
+          singleCertificate: true,
+        });
+
+        expect(b).toBeTruthy();
+        expect(Bundle.toJSON(b)).toMatchSnapshot();
       });
+    });
 
-      expect(b).toBeTruthy();
-      expect(b.mediaType).toEqual(BUNDLE_V02_MEDIA_TYPE);
+    describe('when a certificate chain provided', () => {
+      it('returns a valid DSSE bundle', () => {
+        const b = toDSSEBundle({
+          artifact,
+          artifactType,
+          signature,
+          certificate,
+          singleCertificate: true,
+        });
 
-      assert(b.content?.$case === 'dsseEnvelope');
-      expect(b.content.dsseEnvelope).toBeTruthy();
-      expect(b.content.dsseEnvelope.payloadType).toEqual(artifactType);
-      expect(b.content.dsseEnvelope.payload).toEqual(artifact);
-      expect(b.content.dsseEnvelope.signatures).toHaveLength(1);
-      expect(b.content.dsseEnvelope.signatures[0].sig).toEqual(signature);
-      expect(b.content.dsseEnvelope.signatures[0].keyid).toEqual('');
-
-      expect(b.verificationMaterial).toBeTruthy();
-      assert(b.verificationMaterial.content?.$case === 'x509CertificateChain');
-      expect(
-        b.verificationMaterial.content?.x509CertificateChain.certificates
-      ).toHaveLength(1);
-      expect(
-        b.verificationMaterial.content?.x509CertificateChain.certificates[0]
-          .rawBytes
-      ).toEqual(certificate);
+        expect(b).toBeTruthy();
+        expect(Bundle.toJSON(b)).toMatchSnapshot();
+      });
     });
   });
 });
