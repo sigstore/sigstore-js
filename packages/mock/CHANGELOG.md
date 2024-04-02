@@ -1,5 +1,11 @@
 # @sigstore/mock
 
+## 0.7.2
+
+### Patch Changes
+
+- f5fcb16: Bump @peculiar/webcrypto from 1.4.5 to 1.4.6
+
 ## 0.7.1
 
 ### Patch Changes

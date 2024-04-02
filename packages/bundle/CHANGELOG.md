@@ -1,5 +1,11 @@
 # @sigstore/bundle
 
+## 2.3.0
+
+### Minor Changes
+
+- 4c48c22: Add support for building v0.3 bundles
+
 ## 2.2.0
 
 ### Minor Changes
