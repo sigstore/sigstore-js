@@ -1,5 +1,12 @@
 # @sigstore/cli
 
+## 0.7.1
+
+### Patch Changes
+
+- Updated dependencies [b16d990]
+  - @sigstore/oci@0.3.0
+
 ## 0.7.0
 
 ### Minor Changes
