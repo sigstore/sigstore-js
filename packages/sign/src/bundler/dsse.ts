@@ -20,10 +20,19 @@ import { toDSSEBundle } from './bundle';
 import type { BundleWithDsseEnvelope } from '@sigstore/bundle';
 import type { Signature } from '../signer';
 
+type DSSEBundleBuilderOptions = BundleBuilderOptions & {
+  // When set to true, the bundle verification material will use the
+  // certifciate field instead of the x509CertificateChain field.
+  // When undefied/false, a v0.2 bundle will be created.
+  singleCertificate?: boolean;
+};
+
 // BundleBuilder implementation for DSSE wrapped attestations
 export class DSSEBundleBuilder extends BaseBundleBuilder<BundleWithDsseEnvelope> {
-  constructor(options: BundleBuilderOptions) {
+  private singleCertificate?: boolean;
+  constructor(options: DSSEBundleBuilderOptions) {
     super(options);
+    this.singleCertificate = options.singleCertificate ?? false;
   }
 
   // DSSE requires the artifact to be pre-encoded with the payload type
@@ -38,7 +47,11 @@ export class DSSEBundleBuilder extends BaseBundleBuilder<BundleWithDsseEnvelope>
     artifact: Artifact,
     signature: Signature
   ): Promise<BundleWithDsseEnvelope> {
-    return toDSSEBundle(artifactDefaults(artifact), signature);
+    return toDSSEBundle(
+      artifactDefaults(artifact),
+      signature,
+      this.singleCertificate
+    );
   }
 }
 
