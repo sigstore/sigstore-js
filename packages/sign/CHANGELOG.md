@@ -1,5 +1,15 @@
 # @sigstore/sign
 
+## 2.3.0
+
+### Minor Changes
+
+- 77e9e17: Updates the `DSSEBundleBuilder` with a new `singleCertificate` option which will trigger the creation of v0.3 Sigstore bundles
+
+### Patch Changes
+
+- c32327a: Bump @sigstore/protobuf-specs from 0.3.0 to 0.3.1
+
 ## 2.2.3
 
 ### Patch Changes
