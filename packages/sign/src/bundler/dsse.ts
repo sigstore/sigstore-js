@@ -22,7 +22,7 @@ import type { Signature } from '../signer';
 
 type DSSEBundleBuilderOptions = BundleBuilderOptions & {
   // When set to true, the bundle verification material will use the
-  // certifciate field instead of the x509CertificateChain field.
+  // certificate field instead of the x509CertificateChain field.
   // When undefied/false, a v0.2 bundle will be created.
   singleCertificate?: boolean;
 };
