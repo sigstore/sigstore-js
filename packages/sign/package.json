@@ -32,7 +32,7 @@
     "@types/make-fetch-happen": "^10.0.4"
   },
   "dependencies": {
-    "@sigstore/bundle": "^2.2.0",
+    "@sigstore/bundle": "^2.3.0",
     "@sigstore/core": "^1.0.0",
     "@sigstore/protobuf-specs": "^0.3.0",
     "make-fetch-happen": "^13.0.0"

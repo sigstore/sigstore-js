@@ -128,5 +128,51 @@ describe('DSSEBundleBuilder', () => {
         );
       });
     });
+
+    describe('when a single-certificate bundle is requested', () => {
+      const subject = new DSSEBundleBuilder({
+        signer: signer,
+        witnesses: [],
+        singleCertificate: true,
+      });
+      const artifact = {
+        data: Buffer.from('artifact'),
+        type: 'text/plain',
+      } satisfies Artifact;
+
+      it('invokes the signer', async () => {
+        await subject.create(artifact);
+
+        const expectedBlob = dsse.preAuthEncoding(artifact.type, artifact.data);
+        expect(signer.sign).toHaveBeenCalledWith(expectedBlob);
+      });
+
+      it('returns a bundle', async () => {
+        const b = await subject.create(artifact);
+
+        expect(b).toBeTruthy();
+        expect(b.mediaType).toEqual(
+          'application/vnd.dev.sigstore.bundle.v0.3+json'
+        );
+
+        expect(b.content.dsseEnvelope).toBeTruthy();
+        expect(b.content.dsseEnvelope.payload).toEqual(artifact.data);
+        expect(b.content.dsseEnvelope.payloadType).toEqual(artifact.type);
+        expect(b.content.dsseEnvelope.signatures).toHaveLength(1);
+        expect(b.content.dsseEnvelope.signatures[0].keyid).toEqual(
+          signature.key.hint
+        );
+        expect(b.content.dsseEnvelope.signatures[0].sig).toEqual(
+          signature.signature
+        );
+
+        expect(b.verificationMaterial).toBeTruthy();
+        assert(b.verificationMaterial.content?.$case === 'publicKey');
+        expect(b.verificationMaterial.content?.publicKey).toBeTruthy();
+        expect(b.verificationMaterial.content?.publicKey.hint).toEqual(
+          signature.key.hint
+        );
+      });
+    });
   });
 });
