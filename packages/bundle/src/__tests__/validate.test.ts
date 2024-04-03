@@ -768,7 +768,7 @@ describe('assertBundleV02', () => {
 describe('assertBundleLatest', () => {
   describe('when verification material is a certificate chain', () => {
     const bundle: Bundle = fromPartial({
-      mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.3',
+      mediaType: 'application/vnd.dev.sigstore.bundle.v0.3+json',
       verificationMaterial: {
         content: {
           $case: 'x509CertificateChain',
@@ -801,7 +801,7 @@ describe('assertBundleLatest', () => {
 
   describe('when verification certificate is missing', () => {
     const bundle: Bundle = fromPartial({
-      mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.3',
+      mediaType: 'application/vnd.dev.sigstore.bundle.v0.3+json',
       verificationMaterial: {
         content: {
           $case: 'certificate',
