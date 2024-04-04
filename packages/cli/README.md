@@ -9,7 +9,7 @@ $ npm install -g @sigstore/cli
 $ sigstore COMMAND
 running command...
 $ sigstore (--version)
-@sigstore/cli/0.6.0 darwin-arm64 node-v18.12.1
+@sigstore/cli/0.7.1 darwin-arm64 node-v20.8.1
 $ sigstore --help [COMMAND]
 USAGE
   $ sigstore COMMAND
@@ -95,10 +95,10 @@ Display help for sigstore.
 
 ```
 USAGE
-  $ sigstore help [COMMAND] [-n]
+  $ sigstore help [COMMAND...] [-n]
 
 ARGUMENTS
-  COMMAND  Command to show help for.
+  COMMAND...  Command to show help for.
 
 FLAGS
   -n, --nested-commands  Include all nested commands in the output.
