@@ -1,5 +1,16 @@
 # @sigstore/verify
 
+## 1.2.0
+
+### Minor Changes
+
+- c38961d: Support for verifying bundles with new v0.3 media type
+
+### Patch Changes
+
+- c38961d: Bump @sigstore/protobuf-specs from 0.3.0 to 0.3.1
+- c38961d: Bump @sigstore/bundle from 2.2.0 to 2.3.1
+
 ## 1.1.1
 
 ### Patch Changes
