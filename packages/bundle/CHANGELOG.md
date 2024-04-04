@@ -1,5 +1,11 @@
 # @sigstore/bundle
 
+## 2.3.1
+
+### Patch Changes
+
+- c5f0f79: Fix bug in regex for matching media types
+
 ## 2.3.0
 
 ### Minor Changes
