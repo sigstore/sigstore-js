@@ -1,5 +1,18 @@
 # sigstore
 
+## 2.3.0
+
+### Minor Changes
+
+- ef7a2e6: Add support for verifying new v0.3 Sigstore bundles
+
+### Patch Changes
+
+- ef7a2e6: Bump @sigstore/protobuf-specs from 0.3.0 to 0.3.1
+- ef7a2e6: Bump @sigstore/bundle from 2.2.0 to 2.3.1
+- ef7a2e6: bump @sigstore/sign from 2.2.3 to 2.3.0
+- ef7a2e6: Bump @sigstore/verify from 1.1.0 to 1.2.0
+
 ## 2.2.2
 
 ### Patch Changes
