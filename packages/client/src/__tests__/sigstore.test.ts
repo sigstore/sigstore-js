@@ -200,6 +200,19 @@ describe('#verify', () => {
     });
   });
 
+  describe('when the bundle is a valid v0.3 dsse bundle with signing certificate', () => {
+    const bundle: SerializedBundle = fromPartial(
+      validBundles.v3.dsse.withSigningCert
+    );
+    const artifact = validBundles.artifact;
+
+    it('does not throw an error', async () => {
+      await expect(verify(bundle, artifact, tufOptions)).resolves.toBe(
+        undefined
+      );
+    });
+  });
+
   describe('when there is a signature mismatch', () => {
     const bundle: SerializedBundle = fromPartial(
       validBundles.v1.messageSignature.withSigningCert

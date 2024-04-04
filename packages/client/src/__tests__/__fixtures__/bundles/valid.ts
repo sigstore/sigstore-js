@@ -273,6 +273,75 @@ export const v3 = {
       },
     },
   },
+  dsse: {
+    // Valid DSSE bundle signed with a Fulcio signing certificate
+    withSigningCert: {
+      mediaType: 'application/vnd.dev.sigstore.bundle.v0.3+json',
+      verificationMaterial: {
+        certificate: {
+          rawBytes:
+            'MIICzzCCAlWgAwIBAgIUfCIjfDLcI7FNPURkvg7/1uVyXNMwCgYIKoZIzj0EAwMwNzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRlcm1lZGlhdGUwHhcNMjQwNDA0MTczNDUyWhcNMjQwNDA0MTc0NDUyWjAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAErZcQXuaOOFrIUVCT7WuCgKFGFEUcIISL1ecFG/KX6UE67Ve2ciATsF0PJMOI/MmkuAHm9efVcbrxGYEXgjvjtKOCAXQwggFwMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUwFVmzGLAZ9prSasJhtY4MdiIUjAwHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4YZD8wHwYDVR0RAQH/BBUwE4ERYnJpYW5AZGVoYW1lci5jb20wLAYKKwYBBAGDvzABAQQeaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMC4GCisGAQQBg78wAQgEIAweaHR0cHM6Ly9naXRodWIuY29tL2xvZ2luL29hdXRoMIGJBgorBgEEAdZ5AgQCBHsEeQB3AHUA3T0wasbHETJjGR4cmWc3AqJKXrjePK3/h4pygC8p7o4AAAGOqi2BtwAABAMARjBEAiB5eS2QRB+/DYzC9QHTlxp8yg5I/6xi9neAj16kd3OuMgIge/Dzf963VD/c3CNt9lAHKjXlhuhKNeLNbljGz7R4r54wCgYIKoZIzj0EAwMDaAAwZQIwNt+C5EG0Tau+qkQkeqrvKe5WGsuozP58atoQMC/stBakkIdCtIYhVizS7WY9j2qnAjEAx8HqpcEXRqfJ72trf4Vk/RU8yHXoeCgaLxtYcMrJIeuUEkKLvfIBXz8CI/SkdaAG',
+        },
+        tlogEntries: [
+          {
+            logIndex: '83460520',
+            logId: {
+              keyId: 'wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0=',
+            },
+            kindVersion: {
+              kind: 'dsse',
+              version: '0.0.1',
+            },
+            integratedTime: '1712252093',
+            inclusionPromise: {
+              signedEntryTimestamp:
+                'MEUCIQCEesb808KXEmfHgUnrPdP1WGF89qSNRHSLzWcpxBBFvAIgMI0R4Q2jqox6uUJLKKFKLxRvN92adWX2a5/rwaOYUOY=',
+            },
+            inclusionProof: {
+              logIndex: '79297089',
+              rootHash: 'e8jy/DnvU4UvVlTvXtMexJXkshXiR+CMeO+3/EGXsCU=',
+              treeSize: '79297090',
+              hashes: [
+                'IhH5Ngz+XTUME/Zu3lQWCO+zx8ZC5okS5ZAlIqBzLhs=',
+                'lueic9MipV3vi+4t+VUY1M9pcUH0OIMUNhSpsd7Zj84=',
+                'ecexYQsyAMTECrs96ngge+iejgaeiIoVYfJymMsYID4=',
+                'xXqY+v3V/zs8d3XIfvzZPnrYVpD34heMkhjcmFWaX+I=',
+                'qY4wmc/56PDkzzyf1pqxTA5VDuJFYXSnloj5Nq9pGvs=',
+                'ln6OrjeUH5kskg/+19TQunxMKAYWVrTdOOj3HIbdR9E=',
+                'PjvuU6plcn8pwgrrRodXVsJ+pF+R78fVh/FvwKHjtLA=',
+                'ELvIXDH8xYeKb7AG/w/L90KG66S+US6/D/p/6e1vKjg=',
+                'c0pd50eGa0j7FP+8SB/iPJRHbpa+b6uqEAQwhtfQ9N4=',
+                'gre0N+oSbbVMkU+GO0g9soM1OIytBaTpFRn9VvHbLM4=',
+                'QqH2tJG3yZqYu+ryvAFamyEKkrCkMrAGl5zI95XSiVI=',
+                '8I6xz/zBxwSCxXK2I7DGgNpZ1Bc7a/SooUF+Gw3QXs0=',
+                'DGCRi89vVUZIVmvK2AFOmeMqEB6n+R96Ze+vjWAZBvw=',
+                '98enzMaC+x5oCMvIZQA5z8vu2apDMCFvE/935NfuPw8=',
+              ],
+              checkpoint: {
+                envelope:
+                  'rekor.sigstore.dev - 2605736670972794746\n79297090\ne8jy/DnvU4UvVlTvXtMexJXkshXiR+CMeO+3/EGXsCU=\n\n— rekor.sigstore.dev wNI9ajBEAiAKFcL++byiCIJ7Qz4vG7pCD/C6catWwrvH+pH6cWjkswIgYSbTlU+rPI4qLqkmB8zGpilEepxEF2U76wwGdBreTLo=\n',
+              },
+            },
+            canonicalizedBody:
+              'eyJhcGlWZXJzaW9uIjoiMC4wLjEiLCJraW5kIjoiZHNzZSIsInNwZWMiOnsiZW52ZWxvcGVIYXNoIjp7ImFsZ29yaXRobSI6InNoYTI1NiIsInZhbHVlIjoiN2JjNWMwNjU4ODYzNDhkOTA3MjllYjYxYzBlMDExOTBlYjk1NmIwNTQ3NWFiNzhkMTJiZTliYTY1NzE3MjFhZSJ9LCJwYXlsb2FkSGFzaCI6eyJhbGdvcml0aG0iOiJzaGEyNTYiLCJ2YWx1ZSI6IjY4ZTY1NmIyNTFlNjdlODM1OGJlZjg0ODNhYjBkNTFjNjYxOWYzZTdhMWE5ZjBlNzU4MzhkNDFmZjM2OGY3MjgifSwic2lnbmF0dXJlcyI6W3sic2lnbmF0dXJlIjoiTUVVQ0lEcFhlb25wOG5yZExKUEY0RnROMXQ5NlBCYlhydVdWTDNKenZnZm43NmJaQWlFQXFWWTZDQjdyNmxya1JRNVdRRGhDSEdxcEgwck5NaDQyM3dSR25sSUM4UDg9IiwidmVyaWZpZXIiOiJMUzB0TFMxQ1JVZEpUaUJEUlZKVVNVWkpRMEZVUlMwdExTMHRDazFKU1VONmVrTkRRV3hYWjBGM1NVSkJaMGxWWmtOSmFtWkVUR05KTjBaT1VGVlNhM1puTnk4eGRWWjVXRTVOZDBObldVbExiMXBKZW1vd1JVRjNUWGNLVG5wRlZrMUNUVWRCTVZWRlEyaE5UV015Ykc1ak0xSjJZMjFWZFZwSFZqSk5ValIzU0VGWlJGWlJVVVJGZUZaNllWZGtlbVJIT1hsYVV6RndZbTVTYkFwamJURnNXa2RzYUdSSFZYZElhR05PVFdwUmQwNUVRVEJOVkdONlRrUlZlVmRvWTA1TmFsRjNUa1JCTUUxVVl6Qk9SRlY1VjJwQlFVMUdhM2RGZDFsSUNrdHZXa2w2YWpCRFFWRlpTVXR2V2tsNmFqQkVRVkZqUkZGblFVVnlXbU5SV0hWaFQwOUdja2xWVmtOVU4xZDFRMmRMUmtkR1JWVmpTVWxUVERGbFkwWUtSeTlMV0RaVlJUWTNWbVV5WTJsQlZITkdNRkJLVFU5SkwwMXRhM1ZCU0cwNVpXWldZMkp5ZUVkWlJWaG5hblpxZEV0UFEwRllVWGRuWjBaM1RVRTBSd3BCTVZWa1JIZEZRaTkzVVVWQmQwbElaMFJCVkVKblRsWklVMVZGUkVSQlMwSm5aM0pDWjBWR1FsRmpSRUY2UVdSQ1owNVdTRkUwUlVablVWVjNSbFp0Q25wSFRFRmFPWEJ5VTJGelNtaDBXVFJOWkdsSlZXcEJkMGgzV1VSV1VqQnFRa0puZDBadlFWVXpPVkJ3ZWpGWmEwVmFZalZ4VG1wd1MwWlhhWGhwTkZrS1drUTRkMGgzV1VSV1VqQlNRVkZJTDBKQ1ZYZEZORVZTV1c1S2NGbFhOVUZhUjFadldWY3hiR05wTldwaU1qQjNURUZaUzB0M1dVSkNRVWRFZG5wQlFncEJVVkZsWVVoU01HTklUVFpNZVRsdVlWaFNiMlJYU1hWWk1qbDBUREo0ZGxveWJIVk1NamxvWkZoU2IwMURORWREYVhOSFFWRlJRbWMzT0hkQlVXZEZDa2xCZDJWaFNGSXdZMGhOTmt4NU9XNWhXRkp2WkZkSmRWa3lPWFJNTW5oMldqSnNkVXd5T1doa1dGSnZUVWxIU2tKbmIzSkNaMFZGUVdSYU5VRm5VVU1LUWtoelJXVlJRak5CU0ZWQk0xUXdkMkZ6WWtoRlZFcHFSMUkwWTIxWFl6TkJjVXBMV0hKcVpWQkxNeTlvTkhCNVowTTRjRGR2TkVGQlFVZFBjV2t5UWdwMGQwRkJRa0ZOUVZKcVFrVkJhVUkxWlZNeVVWSkNLeTlFV1hwRE9WRklWR3g0Y0RoNVp6VkpMelo0YVRsdVpVRnFNVFpyWkROUGRVMW5TV2RsTDBSNkNtWTVOak5XUkM5ak0wTk9kRGxzUVVoTGFsaHNhSFZvUzA1bFRFNWliR3BIZWpkU05ISTFOSGREWjFsSlMyOWFTWHBxTUVWQmQwMUVZVUZCZDFwUlNYY0tUblFyUXpWRlJ6QlVZWFVyY1d0UmEyVnhjblpMWlRWWFIzTjFiM3BRTlRoaGRHOVJUVU12YzNSQ1lXdHJTV1JEZEVsWmFGWnBlbE0zVjFrNWFqSnhiZ3BCYWtWQmVEaEljWEJqUlZoU2NXWktOekowY21ZMFZtc3ZVbFU0ZVVoWWIyVkRaMkZNZUhSWlkwMXlTa2xsZFZWRmEwdE1kbVpKUWxoNk9FTkpMMU5yQ21SaFFVY0tMUzB0TFMxRlRrUWdRMFZTVkVsR1NVTkJWRVV0TFMwdExRbz0ifV19fQ==',
+          },
+        ],
+        timestampVerificationData: {
+          rfc3161Timestamps: [],
+        },
+      },
+      dsseEnvelope: {
+        payload: 'aGVsbG8sIHdvcmxkIQ==',
+        payloadType: 'text/plain',
+        signatures: [
+          {
+            sig: 'MEUCIDpXeonp8nrdLJPF4FtN1t96PBbXruWVL3Jzvgfn76bZAiEAqVY6CB7r6lrkRQ5WQDhCHGqpH0rNMh423wRGnlIC8P8=',
+            keyid: '',
+          },
+        ],
+      },
+    },
+  },
 };
 
 export const artifact = Buffer.from('hello, world!');
