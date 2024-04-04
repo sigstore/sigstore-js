@@ -84,7 +84,7 @@ function validateBundleBase(b: ProtoBundle): string[] {
       /^application\/vnd\.dev\.sigstore\.bundle\+json;version=\d\.\d/
     ) &&
       !b.mediaType.match(
-        /^application\/vnd\.dev\.sigstore\.bundle\.v\d\.\d+json/
+        /^application\/vnd\.dev\.sigstore\.bundle\.v\d\.\d\+json/
       ))
   ) {
     invalidValues.push('mediaType');
