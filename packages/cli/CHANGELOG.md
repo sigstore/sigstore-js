@@ -1,5 +1,12 @@
 # @sigstore/cli
 
+## 0.8.0
+
+### Minor Changes
+
+- 66d28b0: Update `verify` command to verify v0.3 Sigstore bundles
+- 66d28b0: Update `attest` command to generate v0.3 Sigstore bundles
+
 ## 0.7.1
 
 ### Patch Changes
