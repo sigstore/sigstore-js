@@ -7,7 +7,9 @@
   },
   "exclude": ["./dist"],
   "references": [
+    { "path": "../bundle" },
     { "path": "../client" },
-    { "path": "../oci" }
+    { "path": "../oci" },
+    { "path": "../sign" }
   ]
 }

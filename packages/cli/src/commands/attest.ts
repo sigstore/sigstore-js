@@ -1,10 +1,30 @@
 import color from '@oclif/color';
 import { Args, Command, Flags } from '@oclif/core';
+import { SerializedBundle, bundleToJSON } from '@sigstore/bundle';
+import {
+  Bundle,
+  BundleBuilder,
+  CIContextProvider,
+  DEFAULT_REKOR_URL,
+  DSSEBundleBuilder,
+  FulcioSigner,
+  IdentityProvider,
+  RekorWitness,
+  TSAWitness,
+  Witness,
+} from '@sigstore/sign';
 import fs from 'fs/promises';
-import * as sigstore from 'sigstore';
 import { OAuthIdentityProvider } from '../oauth';
 
-import type { IdentityProvider } from 'sigstore';
+const OIDC_AUDIENCE = 'sigstore';
+
+type SignOptions = {
+  fulcioURL: string;
+  identityProvider: IdentityProvider;
+  rekorURL?: string;
+  tsaServerURL?: string;
+  timeout?: number;
+};
 
 export default class Attest extends Command {
   static override description = 'attest the supplied file';
@@ -81,53 +101,52 @@ export default class Attest extends Command {
     }),
   };
 
-  public async run(): Promise<sigstore.Bundle> {
+  public async run(): Promise<SerializedBundle> {
     const { args, flags } = await this.parse(Attest);
-    let identityProvider: IdentityProvider | undefined;
 
     // If we're running in CI, we don't want to try to authenticate with an
     // OAuth provider because we won't be able to interactively authenticate.
-    // Leaving the identity provider undefined will cause the attest function
-    // to use the default identity provider, which will retrieve an OIDC
-    // token from the environment.
-    if (!('CI' in process.env) || process.env.CI === 'false') {
-      identityProvider = new OAuthIdentityProvider({
-        issuer: flags['oidc-issuer'],
-        clientID: flags['oidc-client-id'],
-        clientSecret: flags['oidc-client-secret'],
-        redirectURL: flags['oidc-redirect-url'],
-      });
-    }
+    const identityProvider =
+      'CI' in process.env && process.env.CI !== 'false'
+        ? new CIContextProvider(OIDC_AUDIENCE)
+        : new OAuthIdentityProvider({
+            issuer: flags['oidc-issuer'],
+            clientID: flags['oidc-client-id'],
+            clientSecret: flags['oidc-client-secret'],
+            redirectURL: flags['oidc-redirect-url'],
+          });
 
-    const options: Parameters<typeof sigstore.attest>[2] = {
-      rekorURL: flags['rekor-url'],
+    const options: SignOptions = {
       fulcioURL: flags['fulcio-url'],
       tsaServerURL: flags['tsa-server-url'],
-      tlogUpload: flags['tlog-upload'],
+      rekorURL: flags['tlog-upload'] ? flags['rekor-url'] : undefined,
       identityProvider,
       timeout: flags.timeout * 1000,
     };
 
+    const bundler = initBundleBuilder(options);
+
     const bundle = await fs
       .readFile(args.file)
-      .then((data) => sigstore.attest(data, flags['payload-type'], options));
+      .then((data) => bundler.create({ data, type: flags['payload-type'] }));
 
+    const jsonBundle = bundleToJSON(bundle);
     if (uploadedToTLog(bundle)) {
       this.printRekorEntry(flags['rekor-url'], bundle);
     }
 
     if (flags['output-file']) {
-      await fs.writeFile(flags['output-file'], JSON.stringify(bundle));
+      await fs.writeFile(flags['output-file'], JSON.stringify(jsonBundle));
     } else {
-      this.log(JSON.stringify(bundle));
+      this.log(JSON.stringify(jsonBundle));
     }
 
-    return bundle;
+    return jsonBundle;
   }
 
-  private printRekorEntry(baseURL: string, bundle: sigstore.Bundle) {
+  private printRekorEntry(baseURL: string, bundle: Bundle) {
     const url =
-      baseURL === sigstore.DEFAULT_REKOR_URL
+      baseURL === DEFAULT_REKOR_URL
         ? `https://search.sigstore.dev`
         : `${baseURL}/api/v1/log/entries`;
     const logIndex = bundle.verificationMaterial.tlogEntries[0].logIndex;
@@ -138,6 +157,39 @@ export default class Attest extends Command {
   }
 }
 
-function uploadedToTLog(bundle: sigstore.Bundle): boolean {
+function uploadedToTLog(bundle: Bundle): boolean {
   return bundle.verificationMaterial.tlogEntries.length > 0;
 }
+
+const initBundleBuilder = (opts: SignOptions): BundleBuilder => {
+  const witnesses: Witness[] = [];
+
+  const signer = new FulcioSigner({
+    identityProvider: opts.identityProvider,
+    fulcioBaseURL: opts.fulcioURL,
+    timeout: opts.timeout,
+  });
+
+  if (opts.rekorURL) {
+    witnesses.push(
+      new RekorWitness({
+        rekorBaseURL: opts.rekorURL,
+        entryType: 'intoto',
+        timeout: opts.timeout,
+      })
+    );
+  }
+
+  if (opts.tsaServerURL) {
+    witnesses.push(
+      new TSAWitness({
+        tsaBaseURL: opts.tsaServerURL,
+        timeout: opts.timeout,
+      })
+    );
+  }
+
+  // Build the bundle with the singleCertificate option which will
+  // trigger the creation of v0.3 DSSE bundles
+  return new DSSEBundleBuilder({ signer, witnesses, singleCertificate: true });
+};
