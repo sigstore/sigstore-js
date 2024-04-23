@@ -41,7 +41,7 @@ jobs:
         ./packages/cli/bin/run verify bundle.json
     - name: Archive bundle
       if: success() || failure()
-      uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
+      uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
       with:
         name: bundle.public-good.json
         path: bundle.json
@@ -94,7 +94,7 @@ jobs:
           bundle.json
     - name: Archive bundle
       if: success() || failure()
-      uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
+      uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
       with:
         name: bundle.mock.json
         path: bundle.json
@@ -143,7 +143,7 @@ jobs:
           bundle.json
     - name: Archive bundle
       if: success() || failure()
-      uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
+      uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
       with:
         name: bundle.staging.json
         path: bundle.json
