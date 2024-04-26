@@ -36,6 +36,7 @@ export default class Sign extends Command {
 
     const options: Parameters<typeof sigstore.sign>[1] = {
       identityToken: flags['identity-token'],
+      timeout: 5000,
     };
 
     if (flags['staging']) {

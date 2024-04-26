@@ -32,6 +32,7 @@ export default class SignBundle extends Command {
 
     const options: Parameters<typeof sigstore.sign>[1] = {
       identityToken: flags['identity-token'],
+      timeout: 5000,
     };
 
     if (flags['staging']) {
