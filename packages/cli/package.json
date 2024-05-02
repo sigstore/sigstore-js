@@ -43,7 +43,7 @@
     "sigstore": "^2.3.0"
   },
   "devDependencies": {
-    "make-fetch-happen": "^13.0.0",
+    "make-fetch-happen": "^13.0.1",
     "oclif": "^4",
     "ts-node": "^10.9.2",
     "tslib": "^2.6.1"
