@@ -1,5 +1,11 @@
 # @sigstore/mock
 
+## 0.7.3
+
+### Patch Changes
+
+- 34e4efd: Bump jose from 5.2.3 to 5.2.4
+
 ## 0.7.2
 
 ### Patch Changes

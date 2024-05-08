@@ -1,6 +1,6 @@
 {
   "name": "@sigstore/sign",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Sigstore signing library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@sigstore/jest": "^0.0.0",
-    "@sigstore/mock": "^0.7.0",
+    "@sigstore/mock": "^0.7.3",
     "@sigstore/rekor-types": "^2.0.0",
     "@types/make-fetch-happen": "^10.0.4",
     "@types/promise-retry": "^1.1.6"
