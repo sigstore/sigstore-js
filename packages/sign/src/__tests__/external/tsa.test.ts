@@ -30,9 +30,9 @@ describe('TimestampAuthority', () => {
       hashAlgorithm: 'sha256',
     } satisfies TimestampRequest;
 
-    describe('when the timestamp request is valid', () => {
-      const timestamp = Buffer.from('timestamp');
+    const timestamp = Buffer.from('timestamp');
 
+    describe('when the timestamp request is valid', () => {
       beforeEach(() => {
         nock(baseURL)
           .matchHeader('Content-Type', 'application/json')
@@ -61,6 +61,27 @@ describe('TimestampAuthority', () => {
         await expect(subject.createTimestamp(timestampRequest)).rejects.toThrow(
           '(400) Error generating timestamp response'
         );
+      });
+    });
+
+    describe('when the timestamp request succeeds after retry', () => {
+      let scope: nock.Scope;
+      beforeEach(() => {
+        scope = nock(baseURL)
+          .post('/api/v1/timestamp')
+          .replyWithError({ code: 'ECONNRESET' })
+          .post('/api/v1/timestamp')
+          .reply(200, timestamp);
+      });
+
+      it('returns the timestamp', async () => {
+        const subject = new TimestampAuthority({
+          baseURL,
+          retry: { retries: 1, factor: 0, minTimeout: 1, maxTimeout: 1 },
+        });
+        const result = await subject.createTimestamp(timestampRequest);
+        expect(result).toEqual(timestamp);
+        expect(scope.isDone()).toBe(true);
       });
     });
   });

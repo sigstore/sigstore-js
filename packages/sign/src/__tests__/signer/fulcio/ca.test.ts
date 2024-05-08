@@ -125,5 +125,36 @@ tbn02XdfIl+ZhQqUZv88dgDB86bfKyoOokA7fagAEOulkquhKKoOxdOySQ==
         );
       });
     });
+
+    describe('when Fulcio returns a valid response after retry', () => {
+      let scope: nock.Scope;
+
+      beforeEach(() => {
+        scope = nock(fulcioBaseURL)
+          .post('/api/v2/signingCert')
+          .reply(429, {})
+          .post('/api/v2/signingCert')
+          .reply(201, {
+            signedCertificateEmbeddedSct: {
+              chain: { certificates: certChain },
+            },
+          });
+      });
+
+      it('returns the certificate chain', async () => {
+        const subject = new CAClient({
+          fulcioBaseURL,
+          retry: { retries: 1, factor: 0, minTimeout: 1, maxTimeout: 1 },
+        });
+        const result = await subject.createSigningCertificate(
+          identityToken,
+          publicKey,
+          challenge
+        );
+
+        expect(result).toEqual([leafCertificate, rootCertificate]);
+        expect(scope.isDone()).toBe(true);
+      });
+    });
   });
 });

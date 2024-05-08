@@ -66,5 +66,28 @@ describe('TSAClient', () => {
         ).rejects.toThrowWithCode(InternalError, 'TSA_CREATE_TIMESTAMP_ERROR');
       });
     });
+
+    describe('when TSA successfully returns a timestamp after retry', () => {
+      let scope: nock.Scope;
+      beforeEach(async () => {
+        scope = nock(baseURL)
+          .matchHeader('Content-Type', 'application/json')
+          .post('/api/v1/timestamp', request)
+          .reply(500, {});
+        await mockTSA({ baseURL });
+      });
+
+      it('returns the timestamp', async () => {
+        const subject = new TSAClient({
+          tsaBaseURL: baseURL,
+          retry: { retries: 1, factor: 0, minTimeout: 1, maxTimeout: 1 },
+        });
+        const timestamp = await subject.createTimestamp(signature);
+
+        expect(timestamp).toBeDefined();
+        expect(timestamp.byteLength).toBeGreaterThan(0);
+        expect(scope.isDone()).toBe(true);
+      });
+    });
   });
 });
