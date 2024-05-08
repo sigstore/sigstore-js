@@ -21,7 +21,7 @@
     "@oclif/color": "^1.0.13",
     "@oclif/core": "^3",
     "@sigstore/mock": "^0.7.0",
-    "@tufjs/repo-mock": "^2.0.0",
+    "@tufjs/repo-mock": "^2.0.1",
     "express": "4.19.2"
   },
   "devDependencies": {
