@@ -1,5 +1,11 @@
 # @sigstore/oci
 
+## 0.3.1
+
+### Patch Changes
+
+- 9d300e8: Bump make-fetch-happen from 13.0.0 to 13.0.1
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,5 +1,12 @@
 # @sigstore/sign
 
+## 2.3.1
+
+### Patch Changes
+
+- 9d300e8: Bump make-fetch-happen from 13.0.0 to 13.0.1
+- 88e91c7: Fix bug preventing failed API requests from being retried
+
 ## 2.3.0
 
 ### Minor Changes

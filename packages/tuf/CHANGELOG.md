@@ -1,5 +1,11 @@
 # @sigstore/tuf
 
+## 2.3.3
+
+### Patch Changes
+
+- 9d300e8: Bump tuf-js from 2.2.0 to 2.2.1
+
 ## 2.3.2
 
 ### Patch Changes
