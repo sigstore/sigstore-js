@@ -28,7 +28,7 @@ describe('TLogClient', () => {
   });
 
   describe('createEntry', () => {
-    const subject = new TLogClient({ rekorBaseURL });
+    const subject = new TLogClient({ rekorBaseURL, retry: false });
 
     const digest = Buffer.from('digest').toString('hex');
     const signature = Buffer.from('signature').toString('base64');
@@ -160,6 +160,36 @@ describe('TLogClient', () => {
             ).rejects.toThrowWithCode(InternalError, 'TLOG_FETCH_ENTRY_ERROR');
           });
         });
+      });
+    });
+
+    describe('when Rekor returns a valid response after retry', () => {
+      let scope: nock.Scope;
+
+      beforeEach(() => {
+        scope = nock(rekorBaseURL)
+          .post('/api/v1/log/entries')
+          .reply(500, { message: 'oops' })
+          .post('/api/v1/log/entries')
+          .reply(201, rekorEntry);
+      });
+
+      it('returns a tlog entry', async () => {
+        const subject = new TLogClient({
+          rekorBaseURL,
+          retry: { retries: 1, factor: 0, minTimeout: 1, maxTimeout: 1 },
+        });
+        const entry = await subject.createEntry(proposedEntry);
+
+        expect(entry.uuid).toEqual(uuid);
+        expect(entry.logID).toEqual(rekorEntry[uuid].logID);
+        expect(entry.logIndex).toEqual(rekorEntry[uuid].logIndex);
+        expect(entry.integratedTime).toEqual(rekorEntry[uuid].integratedTime);
+        expect(entry?.verification?.signedEntryTimestamp).toEqual(
+          rekorEntry[uuid].verification.signedEntryTimestamp
+        );
+        expect(entry.body).toEqual(rekorEntry[uuid].body);
+        expect(scope.isDone()).toBe(true);
       });
     });
   });

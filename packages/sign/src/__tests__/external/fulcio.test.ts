@@ -24,6 +24,15 @@ import {
 describe('Fulcio', () => {
   const baseURL = 'http://localhost:8000';
   const subject = new Fulcio({ baseURL });
+  const certificateResponse: SigningCertificateResponse = {
+    signedCertificateEmbeddedSct: {
+      chain: {
+        certificates: [
+          `-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----`,
+        ],
+      },
+    },
+  };
 
   it('should create an instance', () => {
     expect(subject).toBeTruthy();
@@ -46,16 +55,6 @@ describe('Fulcio', () => {
     } satisfies SigningCertificateRequest;
 
     describe('when the certificate request is valid', () => {
-      const certificateResponse: SigningCertificateResponse = {
-        signedCertificateEmbeddedSct: {
-          chain: {
-            certificates: [
-              `-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----`,
-            ],
-          },
-        },
-      };
-
       beforeEach(() => {
         nock(baseURL)
           .matchHeader('Content-Type', 'application/json')
@@ -84,6 +83,28 @@ describe('Fulcio', () => {
         await expect(
           subject.createSigningCertificate(certRequest)
         ).rejects.toThrow('(400) Invalid certificate request');
+      });
+    });
+
+    describe('when the certificate request succeeds after retry', () => {
+      let scope: nock.Scope;
+
+      beforeEach(() => {
+        scope = nock(baseURL)
+          .post('/api/v2/signingCert')
+          .reply(500)
+          .post('/api/v2/signingCert')
+          .reply(200, certificateResponse);
+      });
+
+      it('returns the signing certificate', async () => {
+        const subject = new Fulcio({
+          baseURL,
+          retry: { retries: 1, factor: 0, minTimeout: 1, maxTimeout: 1 },
+        });
+        const result = await subject.createSigningCertificate(certRequest);
+        expect(result).toEqual(certificateResponse);
+        expect(scope.isDone()).toBe(true);
       });
     });
   });

@@ -13,9 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import fetch, { FetchInterface } from 'make-fetch-happen';
-import { ua } from '../util';
-import { checkStatus } from './error';
+import { fetchWithRetry } from './fetch';
 
 import type { FetchOptions } from '../types/fetch';
 
@@ -32,29 +30,24 @@ export type TimestampAuthorityOptions = {
 } & FetchOptions;
 
 export class TimestampAuthority {
-  private fetch: FetchInterface;
-  private baseUrl: string;
+  private options: TimestampAuthorityOptions;
 
   constructor(options: TimestampAuthorityOptions) {
-    this.fetch = fetch.defaults({
-      retry: options.retry,
-      timeout: options.timeout,
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': ua.getUserAgent(),
-      },
-    });
-    this.baseUrl = options.baseURL;
+    this.options = options;
   }
 
   public async createTimestamp(request: TimestampRequest): Promise<Buffer> {
-    const url = `${this.baseUrl}/api/v1/timestamp`;
+    const { baseURL, timeout, retry } = this.options;
+    const url = `${baseURL}/api/v1/timestamp`;
 
-    const response = await this.fetch(url, {
-      method: 'POST',
+    const response = await fetchWithRetry(url, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(request),
+      timeout,
+      retry,
     });
-    await checkStatus(response);
 
     return response.buffer();
   }

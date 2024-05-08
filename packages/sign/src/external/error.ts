@@ -13,10 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import fetch from 'make-fetch-happen';
-
-// Convoluted way of getting at the Response type used by make-fetch-happen
-type Response = Awaited<ReturnType<typeof fetch>>;
 
 export class HTTPError extends Error {
   public statusCode: number;
@@ -36,30 +32,3 @@ export class HTTPError extends Error {
     this.location = location;
   }
 }
-
-export const checkStatus = async (response: Response): Promise<Response> => {
-  if (response.ok) {
-    return response;
-  } else {
-    let message = response.statusText;
-    const location = response.headers?.get('Location') || undefined;
-    const contentType = response.headers?.get('Content-Type');
-
-    // If response type is JSON, try to parse the body for a message
-    if (contentType?.includes('application/json')) {
-      try {
-        await response.json().then((body) => {
-          message = body.message;
-        });
-      } catch (e) {
-        // ignore
-      }
-    }
-
-    throw new HTTPError({
-      status: response.status,
-      message: message,
-      location: location,
-    });
-  }
-};

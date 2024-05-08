@@ -13,9 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import fetch, { FetchInterface } from 'make-fetch-happen';
-import { ua } from '../util';
-import { checkStatus } from './error';
+import { fetchWithRetry } from './fetch';
 
 import type { FetchOptions } from '../types/fetch';
 
@@ -52,33 +50,27 @@ export interface SigningCertificateResponse {
  * Fulcio API client.
  */
 export class Fulcio {
-  private fetch: FetchInterface;
-  private baseUrl: string;
+  private options: FulcioOptions;
 
   constructor(options: FulcioOptions) {
-    this.fetch = fetch.defaults({
-      retry: options.retry,
-      timeout: options.timeout,
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': ua.getUserAgent(),
-      },
-    });
-    this.baseUrl = options.baseURL;
+    this.options = options;
   }
 
   public async createSigningCertificate(
     request: SigningCertificateRequest
   ): Promise<SigningCertificateResponse> {
-    const url = `${this.baseUrl}/api/v2/signingCert`;
+    const { baseURL, retry, timeout } = this.options;
+    const url = `${baseURL}/api/v2/signingCert`;
 
-    const response = await this.fetch(url, {
-      method: 'POST',
+    const response = await fetchWithRetry(url, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(request),
+      timeout,
+      retry,
     });
-    await checkStatus(response);
 
-    const data = await response.json();
-    return data;
+    return response.json();
   }
 }

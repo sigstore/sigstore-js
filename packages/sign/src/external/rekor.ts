@@ -13,9 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import fetch, { FetchInterface } from 'make-fetch-happen';
-import { ua } from '../util';
-import { checkStatus } from './error';
+import { fetchWithRetry } from './fetch';
 
 import type {
   LogEntry,
@@ -23,8 +21,6 @@ import type {
   ProposedEntry,
   ProposedHashedRekordEntry,
   ProposedIntotoEntry,
-  SearchIndex,
-  SearchLogQuery,
 } from '@sigstore/rekor-types';
 import type { FetchOptions } from '../types/fetch';
 
@@ -33,8 +29,6 @@ export type {
   ProposedEntry,
   ProposedHashedRekordEntry,
   ProposedIntotoEntry,
-  SearchIndex,
-  SearchLogQuery,
 };
 
 // The LogEntry type from @sigstore/rekor-types is a Record type
@@ -55,20 +49,10 @@ export type RekorOptions = {
  * Rekor API client.
  */
 export class Rekor {
-  private fetch: FetchInterface;
+  private options: RekorOptions;
 
-  private baseUrl: string;
   constructor(options: RekorOptions) {
-    this.fetch = fetch.defaults({
-      retry: options.retry,
-      timeout: options.timeout,
-      headers: {
-        Accept: 'application/json',
-        'User-Agent': ua.getUserAgent(),
-      },
-    });
-
-    this.baseUrl = options.baseURL;
+    this.options = options;
   }
 
   /**
@@ -77,14 +61,18 @@ export class Rekor {
    * @returns {Promise<Entry>} The created entry
    */
   public async createEntry(propsedEntry: ProposedEntry): Promise<Entry> {
-    const url = `${this.baseUrl}/api/v1/log/entries`;
+    const { baseURL, timeout, retry } = this.options;
+    const url = `${baseURL}/api/v1/log/entries`;
 
-    const response = await this.fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetchWithRetry(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
       body: JSON.stringify(propsedEntry),
+      timeout,
+      retry,
     });
-    await checkStatus(response);
 
     const data = await response.json();
     return entryFromResponse(data);
@@ -96,52 +84,20 @@ export class Rekor {
    * @returns {Promise<Entry>} The retrieved entry
    */
   public async getEntry(uuid: string): Promise<Entry> {
-    const url = `${this.baseUrl}/api/v1/log/entries/${uuid}`;
+    const { baseURL, timeout, retry } = this.options;
+    const url = `${baseURL}/api/v1/log/entries/${uuid}`;
 
-    const response = await this.fetch(url);
-    await checkStatus(response);
+    const response = await fetchWithRetry(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      timeout,
+      retry,
+    });
 
     const data: LogEntry = await response.json();
     return entryFromResponse(data);
-  }
-
-  /**
-   * Search the Rekor log index for entries matching the given query.
-   * @param opts {SearchIndex} Options to search the Rekor log
-   * @returns {Promise<string[]>} UUIDs of matching entries
-   */
-  public async searchIndex(opts: SearchIndex): Promise<string[]> {
-    const url = `${this.baseUrl}/api/v1/index/retrieve`;
-
-    const response = await this.fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(opts),
-      headers: { 'Content-Type': 'application/json' },
-    });
-    await checkStatus(response);
-
-    const data = await response.json();
-    return data;
-  }
-
-  /**
-   * Search the Rekor logs for matching the given query.
-   * @param opts {SearchLogQuery} Query to search the Rekor log
-   * @returns {Promise<Entry[]>} List of matching entries
-   */
-  public async searchLog(opts: SearchLogQuery): Promise<Entry[]> {
-    const url = `${this.baseUrl}/api/v1/log/entries/retrieve`;
-
-    const response = await this.fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(opts),
-      headers: { 'Content-Type': 'application/json' },
-    });
-    await checkStatus(response);
-
-    const rawData: LogEntry[] = await response.json();
-    const data = rawData.map((d) => entryFromResponse(d));
-    return data;
   }
 }
 
