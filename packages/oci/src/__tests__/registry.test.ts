@@ -289,6 +289,30 @@ describe('RegistryClient', () => {
         await expect(subject.uploadBlob(blob)).rejects.toThrow(/expected 201/);
       });
     });
+
+    describe('when the upload returns an unexpected status code but succeeds on retry', () => {
+      let scope: nock.Scope;
+      beforeEach(() => {
+        scope = nock(registryURL)
+          .head(`/v2/${repoName}/blobs/${digest}`)
+          .reply(500)
+          .head(`/v2/${repoName}/blobs/${digest}`)
+          .reply(200, undefined, {
+            'Content-Length': blob.length.toString(),
+          });
+      });
+
+      it('returns the blob digest', async () => {
+        const subject = new RegistryClient(registryName, repoName, {
+          retry: { retries: 1, minTimeout: 0, factor: 0 },
+        });
+        const response = await subject.uploadBlob(blob);
+        expect(response.mediaType).toEqual(CONTENT_TYPE_OCTET_STREAM);
+        expect(response.digest).toEqual(digest);
+        expect(response.size).toEqual(blob.length);
+        expect(scope.isDone()).toBe(true);
+      });
+    });
   });
 
   describe('checkManifest', () => {

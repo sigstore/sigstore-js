@@ -17,7 +17,7 @@ import { Credentials } from './credentials';
 import { AddArtifactOptions, OCIImage } from './image';
 import { parseImageName } from './name';
 
-import type { FetchOptions } from 'make-fetch-happen';
+import type { RegistryFetchOptions as FetchOptions } from './registry';
 import type { Descriptor } from './types';
 
 export type { Credentials, Descriptor };
