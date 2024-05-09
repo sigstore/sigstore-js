@@ -21,9 +21,12 @@ import {
 import { Credentials } from './credentials';
 import { HTTPError, OCIError } from './error';
 import { ImageName } from './name';
-import { RegistryClient, UploadManifestResponse } from './registry';
+import {
+  RegistryFetchOptions as FetchOptions,
+  RegistryClient,
+  UploadManifestResponse,
+} from './registry';
 
-import type { FetchOptions } from 'make-fetch-happen';
 import type { Descriptor, ImageIndex, ImageManifest } from './types';
 
 const EMPTY_BLOB = Buffer.from('{}');

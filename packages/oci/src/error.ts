@@ -13,10 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import fetch from 'make-fetch-happen';
-
-// Convoluted way of getting at the Response type used by make-fetch-happen
-type Response = Awaited<ReturnType<typeof fetch>>;
+import type { Response } from './fetch';
 
 export class HTTPError extends Error {
   readonly statusCode: number;

@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import fetch, { FetchInterface, FetchOptions } from 'make-fetch-happen';
 import crypto from 'node:crypto';
 import {
   CONTENT_TYPE_OCI_INDEX,
@@ -33,6 +32,7 @@ import {
 } from './constants';
 import { Credentials, toBasicAuth } from './credentials';
 import { ensureStatus } from './error';
+import fetch, { FetchInterface, FetchOptions } from './fetch';
 
 import type { Descriptor } from './types';
 
@@ -55,12 +55,21 @@ export type GetManifestResponse = Descriptor & {
   readonly etag?: string;
 };
 
+export type RegistryFetchOptions = Pick<
+  FetchOptions,
+  'proxy' | 'noProxy' | 'retry' | 'timeout'
+>;
+
 export class RegistryClient {
   readonly #baseURL: string;
   readonly #repository: string;
   #fetch: FetchInterface;
 
-  constructor(registry: string, repository: string, opts?: FetchOptions) {
+  constructor(
+    registry: string,
+    repository: string,
+    opts?: RegistryFetchOptions
+  ) {
     this.#repository = repository;
     this.#fetch = fetch.defaults(opts);
 
