@@ -1,5 +1,11 @@
 # @sigstore/oci
 
+## 0.3.2
+
+### Patch Changes
+
+- 9605da8: Fix bug preventing failed API requests from being retried
+
 ## 0.3.1
 
 ### Patch Changes
