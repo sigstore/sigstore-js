@@ -277,5 +277,30 @@ describe('OCIImage', () => {
         await expect(subject.getDigest(tag)).rejects.toThrow();
       });
     });
+
+    describe('when the registry is docker', () => {
+      let scope: nock.Scope;
+      const registry = 'docker.io';
+      const imageName: ImageName = {
+        registry,
+        path: 'path',
+      };
+
+      beforeEach(() => {
+        scope = nock(`https://registry-1.docker.io`)
+          .post(`/v2/${repo}/blobs/uploads/`)
+          .reply(401, {}, { [HEADER_AUTHENTICATE]: challenge })
+          .head(`/v2/${repo}/manifests/${tag}`)
+          .reply(200, {}, { [HEADER_DIGEST]: imageDigest });
+      });
+
+      it('returns the digest for the tag (from registry1-docker.io)', async () => {
+        const subject = new OCIImage(imageName, creds, { retry: false });
+        const response = await subject.getDigest(tag);
+
+        expect(response).toEqual(imageDigest);
+        expect(scope.isDone()).toBe(true);
+      });
+    });
   });
 });

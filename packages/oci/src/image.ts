@@ -29,6 +29,7 @@ import {
 
 import type { Descriptor, ImageIndex, ImageManifest } from './types';
 
+const DOCKER_DEFAULT_REGISTRY = 'registry-1.docker.io';
 const EMPTY_BLOB = Buffer.from('{}');
 
 export type AddArtifactOptions = {
@@ -44,7 +45,11 @@ export class OCIImage {
   readonly #credentials: Credentials;
 
   constructor(image: ImageName, creds: Credentials, opts?: FetchOptions) {
-    this.#client = new RegistryClient(image.registry, image.path, opts);
+    this.#client = new RegistryClient(
+      canonicalizeRegistryName(image.registry),
+      image.path,
+      opts
+    );
     this.#credentials = creds;
   }
 
@@ -206,4 +211,12 @@ const newIndex = (): ImageIndex => ({
 // https://github.com/opencontainers/distribution-spec/blob/main/spec.md#referrers-tag-schema
 const digestToTag = (digest: string): string => {
   return digest.replace(':', '-');
+};
+
+// Canonicalize the registry name to match the format used by the registry
+// client. This is used primarily to handle the special case of the Docker Hub
+// registry.
+// https://github.com/moby/moby/blob/v24.0.2/registry/config.go#L25-L48
+const canonicalizeRegistryName = (registry: string): string => {
+  return registry.endsWith('docker.io') ? DOCKER_DEFAULT_REGISTRY : registry;
 };
