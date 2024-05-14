@@ -19,7 +19,7 @@
   "dependencies": {
     "@oclif/core": "^3",
     "@sigstore/bundle": "^2.2.0",
-    "@sigstore/protobuf-specs": "^0.3.0",
+    "@sigstore/protobuf-specs": "^0.3.2",
     "@sigstore/verify": "^1.1.0",
     "sigstore": "^2.2.2"
   },
