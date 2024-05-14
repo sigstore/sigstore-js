@@ -15,6 +15,8 @@ limitations under the License.
 */
 import crypto from 'node:crypto';
 import {
+  CONTENT_TYPE_DOCKER_MANIFEST,
+  CONTENT_TYPE_DOCKER_MANIFEST_LIST,
   CONTENT_TYPE_OCI_INDEX,
   CONTENT_TYPE_OCI_MANIFEST,
   CONTENT_TYPE_OCTET_STREAM,
@@ -35,6 +37,13 @@ import { ensureStatus } from './error';
 import fetch, { FetchInterface, FetchOptions } from './fetch';
 
 import type { Descriptor } from './types';
+
+const ALL_MANIFEST_MEDIA_TYPES = [
+  CONTENT_TYPE_OCI_INDEX,
+  CONTENT_TYPE_OCI_MANIFEST,
+  CONTENT_TYPE_DOCKER_MANIFEST,
+  CONTENT_TYPE_DOCKER_MANIFEST_LIST,
+].join(',');
 
 export type UploadBlobResponse = Descriptor;
 
@@ -195,9 +204,7 @@ export class RegistryClient {
       `${this.#baseURL}/v2/${this.#repository}/manifests/${reference}`,
       {
         method: 'HEAD',
-        headers: {
-          [HEADER_ACCEPT]: `${CONTENT_TYPE_OCI_MANIFEST},${CONTENT_TYPE_OCI_INDEX}`,
-        },
+        headers: { [HEADER_ACCEPT]: ALL_MANIFEST_MEDIA_TYPES },
       }
     ).then(ensureStatus(200));
 
@@ -218,9 +225,7 @@ export class RegistryClient {
     const response = await this.#fetch(
       `${this.#baseURL}/v2/${this.#repository}/manifests/${reference}`,
       {
-        headers: {
-          [HEADER_ACCEPT]: `${CONTENT_TYPE_OCI_MANIFEST},${CONTENT_TYPE_OCI_INDEX}`,
-        },
+        headers: { [HEADER_ACCEPT]: ALL_MANIFEST_MEDIA_TYPES },
       }
     ).then(ensureStatus(200));
 
