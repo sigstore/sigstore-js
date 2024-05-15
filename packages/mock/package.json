@@ -32,7 +32,7 @@
   "dependencies": {
     "@peculiar/webcrypto": "^1.4.6",
     "@peculiar/x509": "^1.9.7",
-    "@sigstore/protobuf-specs": "^0.3.0",
+    "@sigstore/protobuf-specs": "^0.3.2",
     "asn1js": "^3.0.5",
     "bytestreamjs": "^2.0.1",
     "canonicalize": "^2.0.0",
