@@ -60,6 +60,7 @@ function trustTLog(tlog: TLog): TransparencyLogInstance {
         start: new Date(),
       },
     },
+    checkpointKeyId: undefined,
   };
 }
 
@@ -76,5 +77,6 @@ function trustCTLog(ctlog: CTLog): TransparencyLogInstance {
         start: new Date(),
       },
     },
+    checkpointKeyId: undefined,
   };
 }
