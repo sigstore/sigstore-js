@@ -176,6 +176,7 @@ function transparencyLogInstance(
       keyDetails: PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
       validFor: { start: new Date() },
     },
+    checkpointKeyId: undefined,
   };
 }
 
