@@ -1,5 +1,15 @@
 # @sigstore/conformance
 
+## 0.2.3
+
+### Patch Changes
+
+- cf0c3ef: Bump @sigstore/protobuf-specs from 0.3.0 to 0.3.2
+- Updated dependencies [cf0c3ef]
+  - @sigstore/bundle@2.3.2
+  - sigstore@2.3.1
+  - @sigstore/verify@1.2.1
+
 ## 0.2.2
 
 ### Patch Changes

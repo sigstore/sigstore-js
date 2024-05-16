@@ -1,5 +1,11 @@
 # @sigstore/tuf
 
+## 2.3.4
+
+### Patch Changes
+
+- cf0c3ef: Bump @sigstore/protobuf-specs from 0.3.0 to 0.3.2
+
 ## 2.3.3
 
 ### Patch Changes
