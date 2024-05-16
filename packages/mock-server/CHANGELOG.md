@@ -1,5 +1,13 @@
 # @sigstore/mock-server
 
+## 0.1.2
+
+### Patch Changes
+
+- cf0c3ef: Bump @sigstore/protobuf-specs from 0.3.0 to 0.3.2
+- Updated dependencies [cf0c3ef]
+  - @sigstore/mock@0.7.4
+
 ## 0.1.1
 
 ### Patch Changes

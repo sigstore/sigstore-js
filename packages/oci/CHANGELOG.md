@@ -1,5 +1,12 @@
 # @sigstore/oci
 
+## 0.3.3
+
+### Patch Changes
+
+- fa50bae: Fix accept header when retrieving image manifest
+- 70f4782: Support variants of the Docker Hub registry name
+
 ## 0.3.2
 
 ### Patch Changes

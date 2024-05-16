@@ -1,5 +1,11 @@
 # @sigstore/mock
 
+## 0.7.4
+
+### Patch Changes
+
+- cf0c3ef: Bump @sigstore/protobuf-specs from 0.3.0 to 0.3.2
+
 ## 0.7.3
 
 ### Patch Changes
