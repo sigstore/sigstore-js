@@ -17,8 +17,12 @@ import nock from 'nock';
 import assert from 'node:assert';
 import crypto from 'node:crypto';
 import {
+  CONTENT_TYPE_DOCKER_MANIFEST,
+  CONTENT_TYPE_DOCKER_MANIFEST_LIST,
+  CONTENT_TYPE_OCI_INDEX,
   CONTENT_TYPE_OCI_MANIFEST,
   CONTENT_TYPE_OCTET_STREAM,
+  HEADER_ACCEPT,
   HEADER_API_VERSION,
   HEADER_CONTENT_LENGTH,
   HEADER_CONTENT_TYPE,
@@ -324,6 +328,15 @@ describe('RegistryClient', () => {
       beforeEach(() => {
         nock(registryURL)
           .head(`/v2/${repoName}/manifests/${reference}`)
+          .matchHeader(
+            HEADER_ACCEPT,
+            [
+              CONTENT_TYPE_OCI_INDEX,
+              CONTENT_TYPE_OCI_MANIFEST,
+              CONTENT_TYPE_DOCKER_MANIFEST,
+              CONTENT_TYPE_DOCKER_MANIFEST_LIST,
+            ].join(',')
+          )
           .reply(200, undefined, {
             [HEADER_CONTENT_TYPE]: CONTENT_TYPE_OCI_MANIFEST,
             [HEADER_DIGEST]: digest,
@@ -340,6 +353,7 @@ describe('RegistryClient', () => {
       });
     });
   });
+
   describe('getManifest', () => {
     describe('when the manifest exists', () => {
       const manifest = { foo: 'bar' };
@@ -347,6 +361,15 @@ describe('RegistryClient', () => {
       beforeEach(() => {
         nock(registryURL)
           .get(`/v2/${repoName}/manifests/latest`)
+          .matchHeader(
+            HEADER_ACCEPT,
+            [
+              CONTENT_TYPE_OCI_INDEX,
+              CONTENT_TYPE_OCI_MANIFEST,
+              CONTENT_TYPE_DOCKER_MANIFEST,
+              CONTENT_TYPE_DOCKER_MANIFEST_LIST,
+            ].join(',')
+          )
           .reply(200, manifest, {
             [HEADER_CONTENT_TYPE]: 'application/json',
           });

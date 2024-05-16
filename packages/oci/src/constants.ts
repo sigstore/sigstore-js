@@ -16,6 +16,10 @@ limitations under the License.
 export const CONTENT_TYPE_OCI_INDEX = 'application/vnd.oci.image.index.v1+json';
 export const CONTENT_TYPE_OCI_MANIFEST =
   'application/vnd.oci.image.manifest.v1+json';
+export const CONTENT_TYPE_DOCKER_MANIFEST =
+  'application/vnd.docker.distribution.manifest.v2+json';
+export const CONTENT_TYPE_DOCKER_MANIFEST_LIST =
+  'application/vnd.docker.distribution.manifest.list.v2+json';
 export const CONTENT_TYPE_OCTET_STREAM = 'application/octet-stream';
 export const CONTENT_TYPE_EMPTY_DESCRIPTOR =
   'application/vnd.oci.empty.v1+json';
