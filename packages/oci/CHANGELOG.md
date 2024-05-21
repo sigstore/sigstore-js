@@ -1,5 +1,11 @@
 # @sigstore/oci
 
+## 0.3.4
+
+### Patch Changes
+
+- b0db256: Fix missing await in addArtifact
+
 ## 0.3.3
 
 ### Patch Changes
