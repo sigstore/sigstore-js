@@ -174,7 +174,7 @@ export class OCIImage {
       // Add the artifact to the index
       referrerManifest.manifests.push(opts.artifact);
 
-      this.#client.uploadManifest(JSON.stringify(referrerManifest), {
+      await this.#client.uploadManifest(JSON.stringify(referrerManifest), {
         mediaType: CONTENT_TYPE_OCI_INDEX,
         reference: referrerTag,
         etag,
