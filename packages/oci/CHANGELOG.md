@@ -1,5 +1,11 @@
 # @sigstore/oci
 
+## 0.3.5
+
+### Patch Changes
+
+- 2f409eb: Fix bug when detecting support for the referrers API
+
 ## 0.3.4
 
 ### Patch Changes

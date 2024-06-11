@@ -1,5 +1,21 @@
 # @sigstore/mock
 
+## 0.7.5
+
+### Patch Changes
+
+- 7296bf4: Bump dependencies:
+
+  - @peculiar/webcrypto from 1.4.6 to 1.5.0
+  - @peculiar/x509 from 1.10.0 to 1.11.0
+  - jose from 5.3.0 to 5.4.0
+  - pkijs from 3.0.16 to 3.1.0
+
+- 5eb4a07: Bump dependencies:
+
+  - @peculiar/x509 from 1.9.7 to 1.10.0
+  - jose from 5.2.4 to 5.3.0
+
 ## 0.7.4
 
 ### Patch Changes
