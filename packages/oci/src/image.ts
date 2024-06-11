@@ -93,10 +93,15 @@ export class OCIImage {
         JSON.stringify(manifest)
       );
 
+      // Check to see if registry supports the referrers API. For most
+      // registries the presence of a subjectDigest response header when
+      // uploading the artifact manifest indicates that the referrers API IS
+      // supported -- however, this is not a guarantee (AWS ECR does NOT support
+      // the referrers API but still reports a subjectDigest).
+      const referrersSupported = await this.#client.pingReferrers();
+
       // Manually update the referrers list if the referrers API is not supported.
-      // The lack of a subjectDigest indicates that the referrers API is not
-      // supported.
-      if (artifactDescriptor.subjectDigest === undefined) {
+      if (!referrersSupported) {
         await this.#createReferrersIndexByTag({
           artifact: {
             ...artifactDescriptor,

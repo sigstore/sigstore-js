@@ -27,6 +27,7 @@ import {
 import { Credentials } from '../credentials';
 import { OCIImage } from '../image';
 import { ImageName } from '../name';
+import { ZERO_DIGEST } from '../registry';
 import { ImageIndex } from '../types';
 
 describe('OCIImage', () => {
@@ -93,6 +94,10 @@ describe('OCIImage', () => {
           .reply(201, undefined, {
             [HEADER_OCI_SUBJECT]: artifactManifestDigest,
           });
+
+        nock(`https://${registry}`)
+          .get(`/v2/${repo}/referrers/${ZERO_DIGEST}`)
+          .reply(200);
       });
 
       it('adds an artifact', async () => {
@@ -126,7 +131,9 @@ describe('OCIImage', () => {
           })
           .put(`/v2/${repo}/blobs/uploads/123?digest=${artifactDigest}`)
           .matchHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_OCTET_STREAM)
-          .reply(201);
+          .reply(201)
+          .get(`/v2/${repo}/referrers/${ZERO_DIGEST}`)
+          .reply(404);
 
         nock(`https://${registry}`)
           .filteringPath(/sha256:[0-9a-f]{64}/, artifactManifestDigest)
