@@ -45,6 +45,9 @@ const ALL_MANIFEST_MEDIA_TYPES = [
   CONTENT_TYPE_DOCKER_MANIFEST_LIST,
 ].join(',');
 
+export const ZERO_DIGEST =
+  'sha256:0000000000000000000000000000000000000000000000000000000000000000';
+
 export type UploadBlobResponse = Descriptor;
 
 export type UploadManifestOptions = {
@@ -269,6 +272,15 @@ export class RegistryClient {
       size: manifest.length,
       subjectDigest,
     };
+  }
+
+  // Returns true if the registry supports the referrers API
+  async pingReferrers(): Promise<boolean> {
+    const response = await this.#fetch(
+      `${this.#baseURL}/v2/${this.#repository}/referrers/${ZERO_DIGEST}`
+    );
+
+    return response.status === 200;
   }
 
   async #fetchDistributionToken(

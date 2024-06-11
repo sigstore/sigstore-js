@@ -30,6 +30,7 @@ import {
   HEADER_DIGEST,
   HEADER_OCI_SUBJECT,
 } from '../constants';
+import { ZERO_DIGEST } from '../registry';
 
 describe('attachArtifactToImage', () => {
   const registry = 'my-registry';
@@ -77,6 +78,10 @@ describe('attachArtifactToImage', () => {
         .reply(201, undefined, {
           [HEADER_OCI_SUBJECT]: artifactManifestDigest,
         });
+
+      nock(`https://${registry}`)
+        .get(`/v2/${repo}/referrers/${ZERO_DIGEST}`)
+        .reply(200, {});
     });
 
     it('should return the artifact digest', async () => {
