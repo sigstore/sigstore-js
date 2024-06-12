@@ -1,5 +1,11 @@
 # @sigstore/oci
 
+## 0.3.6
+
+### Patch Changes
+
+- 1c918fc: Remove extraneous field from referrers index
+
 ## 0.3.5
 
 ### Patch Changes
