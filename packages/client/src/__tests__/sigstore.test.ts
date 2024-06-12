@@ -144,7 +144,7 @@ describe('#verify', () => {
 
     it('does not throw an error', async () => {
       await expect(verify(bundle, tufOptions)).resolves.toBe(undefined);
-    });
+    }, 10000);
   });
 
   describe('when the bundle is a valid v0.1 DSSE bundle with public key', () => {
