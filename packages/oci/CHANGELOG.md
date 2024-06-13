@@ -1,5 +1,11 @@
 # @sigstore/oci
 
+## 0.3.7
+
+### Patch Changes
+
+- cee8b59: Bugfix when detecting support for the referrers API with OCI registries
+
 ## 0.3.6
 
 ### Patch Changes
