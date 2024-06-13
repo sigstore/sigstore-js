@@ -101,7 +101,7 @@ export class OCIImage {
       const referrersSupported = await this.#client.pingReferrers();
 
       // Manually update the referrers list if the referrers API is not supported.
-      if (!referrersSupported) {
+      if (!artifactDescriptor.subjectDigest || !referrersSupported) {
         // Strip subjectDigest from the artifact descriptor (in case it was returned)
         /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
         const { subjectDigest, ...descriptor } = artifactDescriptor;
