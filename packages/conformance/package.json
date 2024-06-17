@@ -17,7 +17,7 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "@oclif/core": "^3",
+    "@oclif/core": "^4",
     "@sigstore/bundle": "^2.3.2",
     "@sigstore/protobuf-specs": "^0.3.2",
     "@sigstore/verify": "^1.2.1",
