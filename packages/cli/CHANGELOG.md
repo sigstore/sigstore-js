@@ -1,5 +1,11 @@
 # @sigstore/cli
 
+## 0.8.1
+
+### Patch Changes
+
+- f277121: Bump `@oclif/core` from 3.26.6 to 4.0.6
+
 ## 0.8.0
 
 ### Minor Changes
