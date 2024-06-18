@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@oclif/color": "^1.0.13",
-    "@oclif/core": "^3",
+    "@oclif/core": "^4",
     "@sigstore/mock": "^0.7.4",
     "@tufjs/repo-mock": "^2.0.1",
     "express": "4.19.2"
@@ -31,8 +31,10 @@
   },
   "oclif": {
     "bin": "server",
-    "default": ".",
-    "commands": "./dist"
+    "commands": {
+      "strategy": "single",
+      "target": "./dist/index.js"
+    }
   },
   "engines": {
     "node": ">=18.0.0"
