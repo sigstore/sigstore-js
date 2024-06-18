@@ -1,6 +1,6 @@
 {
   "name": "@sigstore/mock-server",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": "true",
   "description": "Sigstore Mock Server",
   "bin": {
