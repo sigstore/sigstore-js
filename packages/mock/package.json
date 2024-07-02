@@ -36,7 +36,7 @@
     "asn1js": "^3.0.5",
     "bytestreamjs": "^2.0.1",
     "canonicalize": "^2.0.0",
-    "jose": "^5.4.0",
+    "jose": "^5.6.2",
     "nock": "^13.5.4",
     "pkijs": "^3.1.0",
     "pvutils": "^1.1.3"
