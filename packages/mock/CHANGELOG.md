@@ -1,5 +1,16 @@
 # @sigstore/mock
 
+## 0.7.6
+
+### Patch Changes
+
+- 271993f: Bump dependencies:
+
+  - jose from 5.6.2 to 5.6.3
+  - pkijs from 3.1.0 to 3.2.1
+
+- 6f9376a: Bump jose from 5.4.0 to 5.6.2
+
 ## 0.7.5
 
 ### Patch Changes

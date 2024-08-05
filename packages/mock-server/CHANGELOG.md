@@ -1,5 +1,14 @@
 # @sigstore/mock-server
 
+## 0.1.3
+
+### Patch Changes
+
+- f277121: Bump `@oclif/core` from 3.26.6 to 4.0.6
+- Updated dependencies [271993f]
+- Updated dependencies [6f9376a]
+  - @sigstore/mock@0.7.6
+
 ## 0.1.2
 
 ### Patch Changes
