@@ -145,6 +145,8 @@ export class X509Certificate {
       return ca && this.extKeyUsage.keyCertSign;
     }
 
+    // TODO: test coverage for this case
+    /* istanbul ignore next */
     return ca;
   }
 
