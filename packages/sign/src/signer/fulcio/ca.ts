@@ -56,8 +56,7 @@ export class CAClient implements CA {
       const cert = resp.signedCertificateEmbeddedSct
         ? resp.signedCertificateEmbeddedSct
         : resp.signedCertificateDetachedSct;
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    
       return cert!.chain.certificates;
     } catch (err) {
       internalError(

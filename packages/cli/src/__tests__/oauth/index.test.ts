@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import * as jose from 'jose';
+ import * as jose from 'jose';
 import fetch from 'make-fetch-happen';
 import nock from 'nock';
 import open from 'open';

@@ -532,7 +532,8 @@ describe('x509SCTExtension', () => {
 
       it('throws an error', () => {
         expect(() => {
-          subject.signedCertificateTimestamps;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _ = subject.signedCertificateTimestamps;
         }).toThrow(/length does not match/);
       });
     });

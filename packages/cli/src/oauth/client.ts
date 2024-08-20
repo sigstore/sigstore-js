@@ -63,7 +63,6 @@ class OAuthClient {
           state: this.state,
           nonce: this.nonce,
         })
-        /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
         .then((tokenSet) => tokenSet.id_token!)
     );
   }

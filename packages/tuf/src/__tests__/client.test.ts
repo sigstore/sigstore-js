@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import mocktuf, { Target } from '@tufjs/repo-mock';
 import fs from 'fs';
 import os from 'os';

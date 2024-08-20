@@ -123,8 +123,7 @@ function seedCache({
   if (!fs.existsSync(cachedRootPath) || forceInit) {
     if (tufRootPath) {
       fs.copyFileSync(tufRootPath, cachedRootPath);
-    } else {
-      /* eslint-disable @typescript-eslint/no-var-requires */
+    } else { 
       const seeds: RepoSeeds = require('../seeds.json');
       const repoSeed = seeds[mirrorURL];
 

@@ -43,7 +43,7 @@ describe('canonicalize', () => {
     // values
     {
       numbers: [
-        // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+        // eslint-disable-next-line no-loss-of-precision
         333333333.33333329, 1e30, 4.5, 2e-3, 0.000000000000000000000000001,
       ],
       string: '\u20ac$\u000F\u000aA\'\u0042\u0022\u005c\\"/',

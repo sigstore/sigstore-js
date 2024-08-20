@@ -5,9 +5,11 @@ import type {
   IntotoV002Schema,
 } from './__generated__/intoto';
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 const DSSE_KIND = 'dsse';
 const INTOTO_KIND = 'intoto';
 const HASHEDREKORD_KIND = 'hashedrekord';
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 export type ProposedDSSEEntry = {
   apiVersion: '0.0.1';

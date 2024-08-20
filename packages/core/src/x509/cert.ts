@@ -142,7 +142,7 @@ export class X509Certificate {
 
     // If the KeyUsage extension is present, keyCertSign must be set
     if (this.extKeyUsage) {
-      ca && this.extKeyUsage.keyCertSign;
+      return ca && this.extKeyUsage.keyCertSign;
     }
 
     return ca;
