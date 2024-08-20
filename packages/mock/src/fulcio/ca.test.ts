@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Crypto } from '@peculiar/webcrypto';
 import * as pkijs from 'pkijs';
 import { generateKeyPair } from '../util/key';

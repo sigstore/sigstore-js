@@ -46,7 +46,6 @@ export class CallbackServer {
 
         // Shutdown the server and resolve the callback promise
         // with the request object
-        /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
         this.shutdown().then(() => resolve(url!));
       });
     });

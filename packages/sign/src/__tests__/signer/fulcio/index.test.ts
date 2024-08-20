@@ -165,7 +165,7 @@ describe('KeylessSigner', () => {
         expect(result).toBeTruthy();
         expect(result.signature).toBeTruthy();
         assert(result.key.$case === 'x509Certificate');
-        expect(result.key.certificate).toEqual;
+        expect(result.key.certificate).toEqual(leafCertificate);
       });
     });
 

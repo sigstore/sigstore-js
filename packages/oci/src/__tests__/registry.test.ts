@@ -115,7 +115,6 @@ describe('RegistryClient', () => {
     });
 
     describe('when the registry uses an OAuth2 bearer token', () => {
-      /* eslint-disable-next-line no-shadow */
       const creds = { username: '<token>', password: 'password' };
       const challenge =
         'Bearer realm="https://registry.example.com/oauth2/token";service="service";scope="scope"';
@@ -143,7 +142,7 @@ describe('RegistryClient', () => {
     });
 
     describe('when the registry uses an bearer token returns an error', () => {
-      /* eslint-disable-next-line no-shadow */
+       
       const creds = { username: '<token>', password: 'password' };
       const challenge =
         'Bearer realm="https://registry.example.com/oauth2/token";service="service";scope="scope"';

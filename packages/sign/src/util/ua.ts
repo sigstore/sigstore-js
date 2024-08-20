@@ -18,7 +18,6 @@ import os from 'os';
 // Format User-Agent: <product> / <product-version> (<platform>)
 // source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
 export const getUserAgent = (): string => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const packageVersion = require('../../package.json').version;
   const nodeVersion = process.version;
   const platformName = os.platform();
