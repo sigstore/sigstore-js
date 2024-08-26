@@ -46,7 +46,7 @@
     "make-fetch-happen": "^13.0.1",
     "oclif": "^4",
     "ts-node": "^10.9.2",
-    "tslib": "^2.6.3"
+    "tslib": "^2.7.0"
   },
   "repository": {
     "type": "git",
