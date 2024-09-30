@@ -36,7 +36,7 @@
     "@sigstore/bundle": "^2.3.2",
     "@sigstore/core": "^1.0.0",
     "@sigstore/protobuf-specs": "^0.3.2",
-    "make-fetch-happen": "^13.0.1",
+    "make-fetch-happen": "^14.0.0",
     "proc-log": "^4.2.0",
     "promise-retry": "^2.0.1"
   },
