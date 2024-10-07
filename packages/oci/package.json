@@ -29,7 +29,7 @@
     "@types/make-fetch-happen": "^10.0.4"
   },
   "dependencies": {
-    "make-fetch-happen": "^13.0.1",
+    "make-fetch-happen": "^14.0.1",
     "proc-log": "^4.2.0"
   },
   "engines": {
