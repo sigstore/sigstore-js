@@ -81,12 +81,8 @@ describe('artifact signing', () => {
       expect(bundle.content.dsseEnvelope.payload).toBe(data);
       expect(bundle.content.dsseEnvelope.signatures).toHaveLength(1);
 
-      assert(
-        bundle.verificationMaterial.content.$case === 'x509CertificateChain'
-      );
-      expect(
-        bundle.verificationMaterial.content.x509CertificateChain.certificates
-      ).toHaveLength(1);
+      assert(bundle.verificationMaterial.content.$case === 'certificate');
+      expect(bundle.verificationMaterial.content.certificate).toBeDefined();
 
       expect(bundle.verificationMaterial.tlogEntries).toHaveLength(1);
       expect(bundle.verificationMaterial.tlogEntries[0].kindVersion.kind).toBe(

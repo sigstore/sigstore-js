@@ -93,7 +93,10 @@ export function createBundleBuilder(
     case 'messageSignature':
       return new MessageSignatureBundleBuilder(bundlerOptions);
     case 'dsseEnvelope':
-      return new DSSEBundleBuilder(bundlerOptions);
+      return new DSSEBundleBuilder({
+        ...bundlerOptions,
+        certificateChain: true,
+      });
   }
 }
 
