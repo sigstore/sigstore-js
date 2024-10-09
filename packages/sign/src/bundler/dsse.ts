@@ -24,15 +24,15 @@ type DSSEBundleBuilderOptions = BundleBuilderOptions & {
   // When set to true, the bundle verification material will use the
   // certificate field instead of the x509CertificateChain field.
   // When undefied/false, a v0.2 bundle will be created.
-  singleCertificate?: boolean;
+  certificateChain?: boolean;
 };
 
 // BundleBuilder implementation for DSSE wrapped attestations
 export class DSSEBundleBuilder extends BaseBundleBuilder<BundleWithDsseEnvelope> {
-  private singleCertificate?: boolean;
+  private certificateChain?: boolean;
   constructor(options: DSSEBundleBuilderOptions) {
     super(options);
-    this.singleCertificate = options.singleCertificate ?? false;
+    this.certificateChain = options.certificateChain ?? false;
   }
 
   // DSSE requires the artifact to be pre-encoded with the payload type
@@ -50,7 +50,7 @@ export class DSSEBundleBuilder extends BaseBundleBuilder<BundleWithDsseEnvelope>
     return toDSSEBundle(
       artifactDefaults(artifact),
       signature,
-      this.singleCertificate
+      this.certificateChain
     );
   }
 }

@@ -45,7 +45,7 @@ export function toMessageSignatureBundle(
 export function toDSSEBundle(
   artifact: Required<Artifact>,
   signature: Signature,
-  singleCertificate?: boolean
+  certificateChain?: boolean
 ): sigstore.BundleWithDsseEnvelope {
   return sigstore.toDSSEBundle({
     artifact: artifact.data,
@@ -57,6 +57,6 @@ export function toDSSEBundle(
         : undefined,
     keyHint:
       signature.key.$case === 'publicKey' ? signature.key.hint : undefined,
-    certificateChain: singleCertificate ? false : true,
+    certificateChain,
   });
 }

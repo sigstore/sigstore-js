@@ -84,7 +84,7 @@ describe('toDSSEBundle', () => {
 
       expect(b).toBeTruthy();
       expect(b.mediaType).toEqual(
-        'application/vnd.dev.sigstore.bundle+json;version=0.2'
+        'application/vnd.dev.sigstore.bundle.v0.3+json'
       );
 
       assert(b.content?.$case === 'dsseEnvelope');
@@ -120,7 +120,7 @@ describe('toDSSEBundle', () => {
 
       expect(b).toBeTruthy();
       expect(b.mediaType).toEqual(
-        'application/vnd.dev.sigstore.bundle+json;version=0.2'
+        'application/vnd.dev.sigstore.bundle.v0.3+json'
       );
 
       assert(b.content?.$case === 'dsseEnvelope');
@@ -152,43 +152,6 @@ describe('toDSSEBundle', () => {
 
       expect(b).toBeTruthy();
       expect(b.mediaType).toEqual(
-        'application/vnd.dev.sigstore.bundle+json;version=0.2'
-      );
-
-      assert(b.content?.$case === 'dsseEnvelope');
-      expect(b.content.dsseEnvelope).toBeTruthy();
-      expect(b.content.dsseEnvelope.payloadType).toEqual(artifact.type);
-      expect(b.content.dsseEnvelope.payload).toEqual(artifact.data);
-      expect(b.content.dsseEnvelope.signatures).toHaveLength(1);
-      expect(b.content.dsseEnvelope.signatures[0].sig).toEqual(sigBytes);
-      expect(b.content.dsseEnvelope.signatures[0].keyid).toEqual('');
-
-      expect(b.verificationMaterial).toBeTruthy();
-      assert(b.verificationMaterial.content?.$case === 'x509CertificateChain');
-      expect(
-        b.verificationMaterial.content?.x509CertificateChain.certificates
-      ).toHaveLength(1);
-      expect(
-        b.verificationMaterial.content?.x509CertificateChain.certificates[0]
-          .rawBytes
-      ).toEqual(pem.toDER(certificate));
-    });
-  });
-
-  describe('when the single-certificate representation is requested', () => {
-    const signature = {
-      key: {
-        $case: 'x509Certificate',
-        certificate: certificate,
-      },
-      signature: sigBytes,
-    } satisfies Signature;
-
-    it('returns a valid DSSE bundle', () => {
-      const b = toDSSEBundle(artifact, signature, true);
-
-      expect(b).toBeTruthy();
-      expect(b.mediaType).toEqual(
         'application/vnd.dev.sigstore.bundle.v0.3+json'
       );
 
@@ -205,6 +168,40 @@ describe('toDSSEBundle', () => {
       expect(b.verificationMaterial.content?.certificate.rawBytes).toEqual(
         pem.toDER(certificate)
       );
+    });
+  });
+
+  describe('when the certificate chain representation is requested', () => {
+    const signature = {
+      key: {
+        $case: 'x509Certificate',
+        certificate: certificate,
+      },
+      signature: sigBytes,
+    } satisfies Signature;
+
+    it('returns a valid DSSE bundle', () => {
+      const b = toDSSEBundle(artifact, signature, true);
+
+      expect(b).toBeTruthy();
+      expect(b.mediaType).toEqual(
+        'application/vnd.dev.sigstore.bundle+json;version=0.2'
+      );
+
+      assert(b.content?.$case === 'dsseEnvelope');
+      expect(b.content.dsseEnvelope).toBeTruthy();
+      expect(b.content.dsseEnvelope.payloadType).toEqual(artifact.type);
+      expect(b.content.dsseEnvelope.payload).toEqual(artifact.data);
+      expect(b.content.dsseEnvelope.signatures).toHaveLength(1);
+      expect(b.content.dsseEnvelope.signatures[0].sig).toEqual(sigBytes);
+      expect(b.content.dsseEnvelope.signatures[0].keyid).toEqual('');
+
+      expect(b.verificationMaterial).toBeTruthy();
+      assert(b.verificationMaterial.content?.$case === 'x509CertificateChain');
+      expect(
+        b.verificationMaterial.content?.x509CertificateChain.certificates[0]
+          .rawBytes
+      ).toEqual(pem.toDER(certificate));
     });
   });
 });

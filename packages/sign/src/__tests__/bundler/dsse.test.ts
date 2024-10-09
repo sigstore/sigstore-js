@@ -65,7 +65,7 @@ describe('DSSEBundleBuilder', () => {
 
         expect(b).toBeTruthy();
         expect(b.mediaType).toEqual(
-          'application/vnd.dev.sigstore.bundle+json;version=0.2'
+          'application/vnd.dev.sigstore.bundle.v0.3+json'
         );
 
         expect(b.content.dsseEnvelope).toBeTruthy();
@@ -106,7 +106,7 @@ describe('DSSEBundleBuilder', () => {
 
         expect(b).toBeTruthy();
         expect(b.mediaType).toEqual(
-          'application/vnd.dev.sigstore.bundle+json;version=0.2'
+          'application/vnd.dev.sigstore.bundle.v0.3+json'
         );
 
         expect(b.content.dsseEnvelope).toBeTruthy();
@@ -129,11 +129,11 @@ describe('DSSEBundleBuilder', () => {
       });
     });
 
-    describe('when a single-certificate bundle is requested', () => {
+    describe('when a certificate chain bundle is requested', () => {
       const subject = new DSSEBundleBuilder({
         signer: signer,
         witnesses: [],
-        singleCertificate: true,
+        certificateChain: true,
       });
       const artifact = {
         data: Buffer.from('artifact'),
@@ -152,7 +152,7 @@ describe('DSSEBundleBuilder', () => {
 
         expect(b).toBeTruthy();
         expect(b.mediaType).toEqual(
-          'application/vnd.dev.sigstore.bundle.v0.3+json'
+          'application/vnd.dev.sigstore.bundle+json;version=0.2'
         );
 
         expect(b.content.dsseEnvelope).toBeTruthy();
