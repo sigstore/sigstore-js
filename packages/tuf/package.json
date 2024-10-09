@@ -33,9 +33,9 @@
   },
   "dependencies": {
     "@sigstore/protobuf-specs": "^0.3.2",
-    "tuf-js": "^2.2.1"
+    "tuf-js": "^3.0.0"
   },
   "engines": {
-    "node": "^16.14.0 || >=18.0.0"
+    "node": "^18.17.0 || >=20.5.0"
   }
 }
