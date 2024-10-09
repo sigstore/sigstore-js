@@ -170,6 +170,7 @@ function initWitnesses(options: SignOptions): Witness[] {
     witnesses.push(
       new RekorWitness({
         rekorBaseURL: options.rekorURL,
+        entryType: 'intoto',
         fetchOnConflict: false,
         retry: options.retry ?? DEFAULT_RETRY,
         timeout: options.timeout ?? DEFAULT_TIMEOUT,
