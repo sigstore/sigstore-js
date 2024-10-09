@@ -37,6 +37,7 @@ export function toMessageSignatureBundle(
         : undefined,
     keyHint:
       signature.key.$case === 'publicKey' ? signature.key.hint : undefined,
+    certificateChain: true,
   });
 }
 
@@ -56,6 +57,6 @@ export function toDSSEBundle(
         : undefined,
     keyHint:
       signature.key.$case === 'publicKey' ? signature.key.hint : undefined,
-    singleCertificate,
+    certificateChain: singleCertificate ? false : true,
   });
 }

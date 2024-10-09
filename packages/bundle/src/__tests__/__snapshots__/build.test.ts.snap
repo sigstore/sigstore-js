@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`toDSSEBundle when the singleCertificate option is true when a certificate chain provided returns a valid DSSE bundle 1`] = `
+exports[`toDSSEBundle when the certificateChain option is true when a certificate chain provided returns a valid DSSE bundle 1`] = `
 {
   "dsseEnvelope": {
     "payload": "ZGF0YQ==",
@@ -12,20 +12,24 @@ exports[`toDSSEBundle when the singleCertificate option is true when a certifica
       },
     ],
   },
-  "mediaType": "application/vnd.dev.sigstore.bundle.v0.3+json",
+  "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.2",
   "verificationMaterial": {
-    "certificate": {
-      "rawBytes": "Y2VydGlmaWNhdGU=",
-    },
     "timestampVerificationData": {
       "rfc3161Timestamps": [],
     },
     "tlogEntries": [],
+    "x509CertificateChain": {
+      "certificates": [
+        {
+          "rawBytes": "Y2VydGlmaWNhdGU=",
+        },
+      ],
+    },
   },
 }
 `;
 
-exports[`toDSSEBundle when the singleCertificate option is true when a public key w/ hint is provided returns a valid DSSE bundle 1`] = `
+exports[`toDSSEBundle when the certificateChain option is true when a public key w/ hint is provided returns a valid DSSE bundle 1`] = `
 {
   "dsseEnvelope": {
     "payload": "ZGF0YQ==",
@@ -37,7 +41,7 @@ exports[`toDSSEBundle when the singleCertificate option is true when a public ke
       },
     ],
   },
-  "mediaType": "application/vnd.dev.sigstore.bundle.v0.3+json",
+  "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.2",
   "verificationMaterial": {
     "publicKey": {
       "hint": "hint",
@@ -50,7 +54,7 @@ exports[`toDSSEBundle when the singleCertificate option is true when a public ke
 }
 `;
 
-exports[`toDSSEBundle when the singleCertificate option is true when a public key w/o hint is provided returns a valid DSSE bundle 1`] = `
+exports[`toDSSEBundle when the certificateChain option is true when a public key w/o hint is provided returns a valid DSSE bundle 1`] = `
 {
   "dsseEnvelope": {
     "payload": "ZGF0YQ==",
@@ -62,7 +66,7 @@ exports[`toDSSEBundle when the singleCertificate option is true when a public ke
       },
     ],
   },
-  "mediaType": "application/vnd.dev.sigstore.bundle.v0.3+json",
+  "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.2",
   "verificationMaterial": {
     "publicKey": {
       "hint": "",
@@ -87,19 +91,15 @@ exports[`toDSSEBundle when the singleCertificate option is undefined/false when 
       },
     ],
   },
-  "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.2",
+  "mediaType": "application/vnd.dev.sigstore.bundle.v0.3+json",
   "verificationMaterial": {
+    "certificate": {
+      "rawBytes": "Y2VydGlmaWNhdGU=",
+    },
     "timestampVerificationData": {
       "rfc3161Timestamps": [],
     },
     "tlogEntries": [],
-    "x509CertificateChain": {
-      "certificates": [
-        {
-          "rawBytes": "Y2VydGlmaWNhdGU=",
-        },
-      ],
-    },
   },
 }
 `;
@@ -116,7 +116,7 @@ exports[`toDSSEBundle when the singleCertificate option is undefined/false when 
       },
     ],
   },
-  "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.2",
+  "mediaType": "application/vnd.dev.sigstore.bundle.v0.3+json",
   "verificationMaterial": {
     "publicKey": {
       "hint": "hint",
@@ -141,7 +141,7 @@ exports[`toDSSEBundle when the singleCertificate option is undefined/false when 
       },
     ],
   },
-  "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.2",
+  "mediaType": "application/vnd.dev.sigstore.bundle.v0.3+json",
   "verificationMaterial": {
     "publicKey": {
       "hint": "",
@@ -154,29 +154,7 @@ exports[`toDSSEBundle when the singleCertificate option is undefined/false when 
 }
 `;
 
-exports[`toMessageSignatureBundle when the singleCertificate option is true returns a valid message signature bundle 1`] = `
-{
-  "mediaType": "application/vnd.dev.sigstore.bundle.v0.3+json",
-  "messageSignature": {
-    "messageDigest": {
-      "algorithm": "SHA2_256",
-      "digest": "ZGlnZXN0",
-    },
-    "signature": "c2lnbmF0dXJl",
-  },
-  "verificationMaterial": {
-    "certificate": {
-      "rawBytes": "Y2VydGlmaWNhdGU=",
-    },
-    "timestampVerificationData": {
-      "rfc3161Timestamps": [],
-    },
-    "tlogEntries": [],
-  },
-}
-`;
-
-exports[`toMessageSignatureBundle when the singleCertificate option is undefined returns a valid message signature bundle 1`] = `
+exports[`toMessageSignatureBundle when the certificateChain option is true returns a valid message signature bundle 1`] = `
 {
   "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.2",
   "messageSignature": {
@@ -198,6 +176,28 @@ exports[`toMessageSignatureBundle when the singleCertificate option is undefined
         },
       ],
     },
+  },
+}
+`;
+
+exports[`toMessageSignatureBundle when the singleCertificate option is undefined returns a valid message signature bundle 1`] = `
+{
+  "mediaType": "application/vnd.dev.sigstore.bundle.v0.3+json",
+  "messageSignature": {
+    "messageDigest": {
+      "algorithm": "SHA2_256",
+      "digest": "ZGlnZXN0",
+    },
+    "signature": "c2lnbmF0dXJl",
+  },
+  "verificationMaterial": {
+    "certificate": {
+      "rawBytes": "Y2VydGlmaWNhdGU=",
+    },
+    "timestampVerificationData": {
+      "rfc3161Timestamps": [],
+    },
+    "tlogEntries": [],
   },
 }
 `;

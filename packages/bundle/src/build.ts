@@ -29,10 +29,10 @@ type VerificationMaterialOptions = {
   certificate?: Buffer;
   keyHint?: string;
 
-  // When set to true, the bundle verification material will use the
-  // certifciate field instead of the x509CertificateChain field.
-  // When undefied/false, a v0.2 bundle will be created.
-  singleCertificate?: boolean;
+  // When set to true, the bundle verification material will populate the
+  // x509CertificateChain field and create a v0.2 bundle.
+  // When undefied/false, a v0.3 bundle will be created.
+  certificateChain?: boolean;
 };
 
 type MessageSignatureBundleOptions = {
@@ -51,9 +51,9 @@ export function toMessageSignatureBundle(
   options: MessageSignatureBundleOptions
 ): BundleWithMessageSignature {
   return {
-    mediaType: options.singleCertificate
-      ? BUNDLE_V03_MEDIA_TYPE
-      : BUNDLE_V02_MEDIA_TYPE,
+    mediaType: options.certificateChain
+      ? BUNDLE_V02_MEDIA_TYPE
+      : BUNDLE_V03_MEDIA_TYPE,
     content: {
       $case: 'messageSignature',
       messageSignature: {
@@ -74,9 +74,9 @@ export function toDSSEBundle(
   options: DSSEBundleOptions
 ): BundleWithDsseEnvelope {
   return {
-    mediaType: options.singleCertificate
-      ? BUNDLE_V03_MEDIA_TYPE
-      : BUNDLE_V02_MEDIA_TYPE,
+    mediaType: options.certificateChain
+      ? BUNDLE_V02_MEDIA_TYPE
+      : BUNDLE_V03_MEDIA_TYPE,
     content: {
       $case: 'dsseEnvelope',
       dsseEnvelope: toEnvelope(options),
@@ -116,17 +116,17 @@ function toKeyContent(
   options: VerificationMaterialOptions
 ): Bundle['verificationMaterial']['content'] {
   if (options.certificate) {
-    if (options.singleCertificate) {
-      return {
-        $case: 'certificate',
-        certificate: { rawBytes: options.certificate },
-      };
-    } else {
+    if (options.certificateChain) {
       return {
         $case: 'x509CertificateChain',
         x509CertificateChain: {
           certificates: [{ rawBytes: options.certificate }],
         },
+      };
+    } else {
+      return {
+        $case: 'certificate',
+        certificate: { rawBytes: options.certificate },
       };
     }
   } else {

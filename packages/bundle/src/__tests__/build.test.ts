@@ -37,14 +37,14 @@ describe('toMessageSignatureBundle', () => {
     });
   });
 
-  describe('when the singleCertificate option is true', () => {
+  describe('when the certificateChain option is true', () => {
     it('returns a valid message signature bundle', () => {
       const b = toMessageSignatureBundle({
         digest,
         signature,
         certificate,
         keyHint,
-        singleCertificate: true,
+        certificateChain: true,
       });
 
       expect(b).toBeTruthy();
@@ -101,7 +101,7 @@ describe('toDSSEBundle', () => {
     });
   });
 
-  describe('when the singleCertificate option is true', () => {
+  describe('when the certificateChain option is true', () => {
     describe('when a public key w/ hint is provided', () => {
       it('returns a valid DSSE bundle', () => {
         const b = toDSSEBundle({
@@ -109,7 +109,7 @@ describe('toDSSEBundle', () => {
           artifactType,
           signature,
           keyHint,
-          singleCertificate: true,
+          certificateChain: true,
         });
 
         expect(b).toBeTruthy();
@@ -123,7 +123,7 @@ describe('toDSSEBundle', () => {
           artifact,
           artifactType,
           signature,
-          singleCertificate: true,
+          certificateChain: true,
         });
 
         expect(b).toBeTruthy();
@@ -138,7 +138,7 @@ describe('toDSSEBundle', () => {
           artifactType,
           signature,
           certificate,
-          singleCertificate: true,
+          certificateChain: true,
         });
 
         expect(b).toBeTruthy();
