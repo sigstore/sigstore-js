@@ -47,7 +47,7 @@ describe('DSSESignatureContent', () => {
     });
 
     describe('when the digest matches the payload hash', () => {
-      const expectedDigest = core.hash(env.payload);
+      const expectedDigest = core.digest('sha256', env.payload);
 
       it('returns true', () => {
         expect(subject.compareDigest(expectedDigest)).toBe(true);
