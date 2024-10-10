@@ -1,4 +1,4 @@
-# sigstore &middot; [![npm version](https://img.shields.io/npm/v/sigstore.svg?style=flat)](https://www.npmjs.com/package/sigstore) [![CI Status](https://github.com/sigstore/sigstore-js/workflows/CI/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/ci.yml) [![Smoke Test Status](https://github.com/sigstore/sigstore-js/workflows/smoke-test/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/smoke-test.yml)
+# sigstore &middot; [![npm version](https://img.shields.io/npm/v/sigstore.svg?style=flat)](https://www.npmjs.com/package/sigstore) [![CI Status](https://github.com/sigstore/sigstore-js/workflows/CI/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/ci.yml) [![Smoke test](https://github.com/sigstore/sigstore-js/actions/workflows/smoke-test.yml/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/smoke-test.yml)
 
 A JavaScript library for generating and verifying Sigstore signatures. One of
 the intended uses is to sign and verify npm packages but it can be used to sign
@@ -12,7 +12,7 @@ and verify any file.
 
 ## Prerequisites
 
-- Node.js version >= 16.14.0
+- Node.js version >= 18.17.0
 
 ## Installation
 
@@ -161,6 +161,7 @@ necessary to verify the signature.
   - `tlogUpload` `<boolean>`: Flag indicating whether or not the signature should be recorded on the Rekor transparency log. Defaults to `true`.
   - `identityToken` `<string>`: The OIDC token identifying the signer. If no explicit token is supplied, an attempt will be made to retrieve one from the environment. This config cannot be used with `identityProvider`.
   - `identityProvider` `<IdentityProvider>`: Object which implements `getToken: () => Promise<string>`. The supplied provider will be used to retrieve an OIDC token. If no provider is supplied, an attempt will be made to retrieve an OIDC token from the environment. This config cannot be used with `identityToken`.
+  - `legacyCompatibility` `<boolean>`: Flag indicating whether to enable legacy compatibility mode. When set to `true`, the returned bundle will use the Sigstore v0.2 bundle format. When unset or `false`, the returned bundle will be v0.3 or greater.
 
 ### attest(payload, payloadType[, options])
 
@@ -177,6 +178,7 @@ as well as the verification material necessary to verify the signature.
   - `tlogUpload` `<boolean>`: Flag indicating whether or not the signed statement should be recorded on the Rekor transparency log. Defaults to `true`.
   - `identityToken` `<string>`: The OIDC token identifying the signer. If no explicit token is supplied, an attempt will be made to retrieve one from the environment. This config cannot be used with `identityProvider`.
   - `identityProvider` `<IdentityProvider>`: Object which implements `getToken: () => Promise<string>`. The supplied provider will be used to retrieve an OIDC token. If no provider is supplied, an attempt will be made to retrieve an OIDC token from the environment. This config cannot be used with `identityToken`.
+  - `legacyCompatibility` `<boolean>`: Flag indicating whether to enable legacy compatibility mode. When set to `true`, any record written to the Rekor transparency log will use the "intoto" record type and the returned bundle will use the Sigstore v0.2 bundle format. When unset or `false`, the "dsse" Rekor type will be used and the returned bundle will be v0.3 or greater.
 
 ### verify(bundle[, payload][, options])
 

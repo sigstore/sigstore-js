@@ -76,7 +76,46 @@ describe('sign', () => {
   });
 });
 
-describe('signAttestation', () => {
+describe('signAttestation (legacy)', () => {
+  const payload = Buffer.from('Hello, world!');
+  const payloadType = 'text/plain';
+
+  beforeEach(async () => {
+    await mockFulcio({ baseURL: fulcioURL });
+    await mockRekor({ baseURL: rekorURL });
+    await mockTSA({ baseURL: tsaURL });
+  });
+
+  it('returns the signed bundle', async () => {
+    const options: SignOptions = {
+      fulcioURL,
+      rekorURL,
+      tsaServerURL: tsaURL,
+      identityProvider: idp,
+      legacyCompatibility: true,
+    };
+    const bundle = await attest(payload, payloadType, options);
+    expect(bundle).toBeDefined();
+    expect(bundle.dsseEnvelope?.payloadType).toBe(payloadType);
+    expect(bundle.dsseEnvelope?.payload).toBe(payload.toString('base64'));
+    expect(bundle.dsseEnvelope?.signatures).toHaveLength(1);
+
+    expect(
+      bundle.verificationMaterial.x509CertificateChain?.certificates
+    ).toHaveLength(1);
+
+    expect(bundle.verificationMaterial.tlogEntries).toHaveLength(1);
+    expect(bundle.verificationMaterial.tlogEntries[0].kindVersion?.kind).toBe(
+      'intoto'
+    );
+
+    expect(
+      bundle.verificationMaterial.timestampVerificationData?.rfc3161Timestamps
+    ).toHaveLength(1);
+  });
+});
+
+describe('signAttestation (non-legacy)', () => {
   const payload = Buffer.from('Hello, world!');
   const payloadType = 'text/plain';
 
@@ -99,13 +138,11 @@ describe('signAttestation', () => {
     expect(bundle.dsseEnvelope?.payload).toBe(payload.toString('base64'));
     expect(bundle.dsseEnvelope?.signatures).toHaveLength(1);
 
-    expect(
-      bundle.verificationMaterial.x509CertificateChain?.certificates
-    ).toHaveLength(1);
+    expect(bundle.verificationMaterial.certificate).toBeDefined();
 
     expect(bundle.verificationMaterial.tlogEntries).toHaveLength(1);
     expect(bundle.verificationMaterial.tlogEntries[0].kindVersion?.kind).toBe(
-      'intoto'
+      'dsse'
     );
 
     expect(
