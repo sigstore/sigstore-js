@@ -51,6 +51,7 @@ export type SignOptions = {
   rekorURL?: string;
   tlogUpload?: boolean;
   tsaServerURL?: string;
+  legacyCompatibility?: boolean;
 } & FetchOptions;
 
 export type VerifyOptions = {
@@ -95,7 +96,7 @@ export function createBundleBuilder(
     case 'dsseEnvelope':
       return new DSSEBundleBuilder({
         ...bundlerOptions,
-        certificateChain: true,
+        certificateChain: options.legacyCompatibility,
       });
   }
 }
@@ -170,7 +171,7 @@ function initWitnesses(options: SignOptions): Witness[] {
     witnesses.push(
       new RekorWitness({
         rekorBaseURL: options.rekorURL,
-        entryType: 'intoto',
+        entryType: options.legacyCompatibility ? 'intoto' : 'dsse',
         fetchOnConflict: false,
         retry: options.retry ?? DEFAULT_RETRY,
         timeout: options.timeout ?? DEFAULT_TIMEOUT,
