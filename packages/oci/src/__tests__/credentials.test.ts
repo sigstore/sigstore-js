@@ -15,6 +15,7 @@ limitations under the License.
 */
 import fs from 'fs';
 import os from 'os';
+import child_process, { ExecFileSyncOptions } from 'node:child_process';
 import path from 'path';
 import {
   fromBasicAuth,
@@ -25,7 +26,10 @@ import {
 describe('getRegistryCredentials', () => {
   const registryName = 'my-registry';
   const imageName = `${registryName}/my-image`;
+  const badRegistryName = 'bad-registry';
+  const imageNameBadRegistry = `${badRegistryName}/my-image`;
   let homedirSpy: jest.SpyInstance<string, []> | undefined;
+  let execSpy: jest.SpyInstance<string | Buffer, [file: string, args?: readonly string[] | undefined, options?: ExecFileSyncOptions | undefined]> | undefined;
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'get-reg-creds-'));
   const dockerDir = path.join(tempDir, '.docker');
   fs.mkdirSync(dockerDir, { recursive: true });
@@ -33,10 +37,27 @@ describe('getRegistryCredentials', () => {
   beforeEach(() => {
     homedirSpy = jest.spyOn(os, 'homedir');
     homedirSpy.mockReturnValue(tempDir);
+
+    execSpy = jest.spyOn(child_process, 'execFileSync');
+    execSpy?.mockImplementation((file, args, options) => {
+      if (file!=="docker-credential-fake" || args?.length!=1 || args[0]!=="get"){
+        throw "Invalid arguments";
+      }
+
+      if (options?.input === `${registryName}`) {
+        const credentials = {
+          Username: 'username',
+          Secret: 'password'
+        };
+        return JSON.stringify(credentials);
+      }
+      throw "Invalid registry";
+    });
   });
 
   afterEach(() => {
     homedirSpy?.mockRestore();
+    execSpy?.mockRestore();
   });
 
   afterAll(() => {
@@ -168,7 +189,79 @@ describe('getRegistryCredentials', () => {
       expect(creds).toEqual({ username, password });
     });
   });
+
+  describe('when credHelper exit in error', () => {
+    const dockerConfig = {
+      credHelpers: {
+        [badRegistryName]: "fake"
+      }
+    };
+
+    beforeEach(() => {
+      fs.writeFileSync(
+        path.join(tempDir, '.docker', 'config.json'),
+        JSON.stringify(dockerConfig),
+        {}
+      );
+    });
+
+    it('throws an error', () => {
+      expect(() => getRegistryCredentials(imageNameBadRegistry)).toThrow(
+        /Failed to get credentials from helper fake for registry bad-registry/i
+      );
+    });
+  });
+
+
+  describe('when credHelper exist for the registry', () => {
+    const username = 'username';
+    const password = 'password';
+
+    const dockerConfig = {
+      credHelpers: {
+        [registryName]: "fake"
+      }
+    };
+
+    beforeEach(() => {
+      fs.writeFileSync(
+        path.join(tempDir, '.docker', 'config.json'),
+        JSON.stringify(dockerConfig),
+        {}
+      );
+    });
+
+    it('returns the credentials', () => {
+      const creds = getRegistryCredentials(imageName);
+
+      expect(creds).toEqual({ username, password });
+    });
+  });
+
+  describe('when credsStore exist', () => {
+    const username = 'username';
+    const password = 'password';
+
+    const dockerConfig = {
+      credsStore: "fake"
+    };
+
+    beforeEach(() => {
+      fs.writeFileSync(
+        path.join(tempDir, '.docker', 'config.json'),
+        JSON.stringify(dockerConfig),
+        {}
+      );
+    });
+
+    it('returns the credentials', () => {
+      const creds = getRegistryCredentials(imageName);
+
+      expect(creds).toEqual({ username, password });
+    });
+  });
 });
+
 
 describe('toBasicAuth', () => {
   const creds = { username: 'user', password: 'pass' };

@@ -16,6 +16,7 @@ limitations under the License.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { parseImageName } from './name';
 
 export type Credentials = {
@@ -24,10 +25,71 @@ export type Credentials = {
 };
 
 type DockerConifg = {
-  auths?: { [registry: string]: { auth: string; identitytoken?: string } };
+  credsStore?: string,
+  auths?: { [registry: string]: { auth: string; identitytoken?: string } },
+  credHelpers?: { [registry: string]: string },
 };
 
 // Returns the credentials for a given registry by reading the Docker config
+function credentialFromAuths(dockerConfig: DockerConifg, registry: string) {
+  const credKey =
+    Object.keys(dockerConfig?.auths || {}).find((key) =>
+      key.includes(registry)
+    ) || registry;
+  const creds = dockerConfig?.auths?.[credKey];
+
+  if (!creds) {
+    return null;
+  }
+
+  // Extract username/password from auth string
+  const { username, password } = fromBasicAuth(creds.auth);
+
+  // If the identitytoken is present, use it as the password (primarily for ACR)
+  const pass = creds.identitytoken ? creds.identitytoken : password;
+
+  return { username, password: pass };
+}
+
+function credentialFromCredHelpers(dockerConfig: DockerConifg, registry: string) {
+  // Check if the registry has a credHelper and use it if it does
+  const helper = dockerConfig?.credHelpers?.[registry];
+
+  if (!helper) {
+    return null;
+  }
+
+  return launchHelper(helper, registry);
+}
+
+function credentialFromCredsStore(dockerConfig: DockerConifg, registry: string) {
+  // If the credsStore is set, use it to get the credentials
+  const helper = dockerConfig?.credsStore;
+
+  if (!helper) {
+    return null;
+  }
+
+  return launchHelper(helper, registry);
+}
+
+function launchHelper(helper: string, registry: string) {
+  // Get the credentials from the helper.
+  // Parameter for helper is 'get' and registry is passed as input
+  // The helper should return a JSON object with the keys "Username" and "Secret"
+  try {
+    const output = execFileSync(`docker-credential-${helper}`, ["get"], {
+      input: registry,
+    }).toString();
+
+    const { Username: username, Secret: password } = JSON.parse(output);
+
+    return { username, password };
+  } catch (err) {
+    throw new Error(`Failed to get credentials from helper ${helper} for registry ${registry}: ${err}`);
+  }
+}
+
 // file.
 export const getRegistryCredentials = (imageName: string): Credentials => {
   const { registry } = parseImageName(imageName);
@@ -42,23 +104,19 @@ export const getRegistryCredentials = (imageName: string): Credentials => {
 
   const dockerConfig: DockerConifg = JSON.parse(content);
 
-  const credKey =
-    Object.keys(dockerConfig?.auths || {}).find((key) =>
-      key.includes(registry)
-    ) || registry;
-  const creds = dockerConfig?.auths?.[credKey];
-
-  if (!creds) {
-    throw new Error(`No credentials found for registry ${registry}`);
+  const fromAuths=credentialFromAuths(dockerConfig, registry);
+  if (fromAuths) {
+    return fromAuths;
   }
-
-  // Extract username/password from auth string
-  const { username, password } = fromBasicAuth(creds.auth);
-
-  // If the identitytoken is present, use it as the password (primarily for ACR)
-  const pass = creds.identitytoken ? creds.identitytoken : password;
-
-  return { username, password: pass };
+  const fromCredHelpers=credentialFromCredHelpers(dockerConfig, registry);
+  if (fromCredHelpers) {
+    return fromCredHelpers;
+  }
+  const fromCredsStore=credentialFromCredsStore(dockerConfig, registry);
+  if (fromCredsStore) {
+    return fromCredsStore;
+  }
+  throw new Error(`No credentials found for registry ${registry}`);
 };
 
 // Encode the username and password as base64-encoded basicauth value
