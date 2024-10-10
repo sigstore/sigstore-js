@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 set -ex
 
-# Check-out Rekor repo
-REF=576458cb53269ed54dccf8a43271ee02a785c191
+# Check-out Rekor repo (v1.3.6)
+REF=a6788566cd62facb0fb0450e9d2c2867f551e37c
 REKOR_DIR=/tmp/rekor
 
 rm -rf ${REKOR_DIR}
