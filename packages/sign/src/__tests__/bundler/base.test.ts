@@ -124,7 +124,7 @@ describe('BaseBundleBuilder', () => {
           messageSignature: {
             messageDigest: {
               algorithm: HashAlgorithm.SHA2_256,
-              digest: crypto.hash(artifact.data),
+              digest: crypto.digest('sha256', artifact.data),
             },
             signature: expect.anything(),
           },
@@ -160,7 +160,7 @@ describe('BaseBundleBuilder', () => {
           bundle.content.messageSignature?.messageDigest?.algorithm
         ).toEqual(HashAlgorithm.SHA2_256);
         expect(bundle.content.messageSignature?.messageDigest?.digest).toEqual(
-          crypto.hash(artifact.data)
+          crypto.digest('sha256', artifact.data)
         );
 
         // VerificationMaterial - Content
@@ -216,7 +216,7 @@ describe('BaseBundleBuilder', () => {
           messageSignature: {
             messageDigest: {
               algorithm: HashAlgorithm.SHA2_256,
-              digest: crypto.hash(artifact.data),
+              digest: crypto.digest('sha256', artifact.data),
             },
             signature: expect.anything(),
           },
@@ -252,7 +252,7 @@ describe('BaseBundleBuilder', () => {
           bundle.content.messageSignature?.messageDigest?.algorithm
         ).toEqual(HashAlgorithm.SHA2_256);
         expect(bundle.content.messageSignature?.messageDigest?.digest).toEqual(
-          crypto.hash(artifact.data)
+          crypto.digest('sha256', artifact.data)
         );
 
         // VerificationMaterial - Content

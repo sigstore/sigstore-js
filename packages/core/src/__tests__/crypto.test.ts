@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { bufferEqual, createPublicKey, hash } from '../crypto';
+import { bufferEqual, createPublicKey, digest } from '../crypto';
 
 describe('createPublicKey', () => {
   it('should create a public key from a PEM string', () => {
@@ -39,11 +39,11 @@ rkBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
   });
 });
 
-describe('hash', () => {
+describe('digest', () => {
   it('returns the SHA256 digest of the blob', () => {
     const blob = Buffer.from('hello world');
-    const digest = hash(blob);
-    expect(digest.toString('hex')).toBe(
+    const d = digest('sha256', blob);
+    expect(d.toString('hex')).toBe(
       'b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9'
     );
   });

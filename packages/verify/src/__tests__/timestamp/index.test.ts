@@ -32,7 +32,7 @@ describe('verifyTLogTimestamp', () => {
     'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2G2Y+2tabdTV5BcGiBIx0a9fAFwrkBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==',
     'base64'
   );
-  const keyID = crypto.hash(keyBytes);
+  const keyID = crypto.digest('sha256', keyBytes);
 
   const validTLog: TLogAuthority = {
     logID: keyID,

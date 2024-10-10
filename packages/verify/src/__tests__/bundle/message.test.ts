@@ -23,7 +23,7 @@ import type { MessageSignature } from '@sigstore/bundle';
 describe('MessageSignatureContent', () => {
   const key = crypto.generateKeyPairSync('ec', { namedCurve: 'secp256k1' });
   const message = Buffer.from('message');
-  const messageDigest = core.hash(message);
+  const messageDigest = core.digest('sha256', message);
 
   const messageSignature: MessageSignature = {
     messageDigest: { digest: messageDigest, algorithm: HashAlgorithm.SHA2_256 },
