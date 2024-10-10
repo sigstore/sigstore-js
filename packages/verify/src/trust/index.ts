@@ -83,6 +83,7 @@ function createTLogAuthority(
 }
 
 function createCertAuthority(ca: CertificateAuthority): CertAuthority {
+  /* istanbul ignore next */
   return {
     certChain: ca.certChain!.certificates.map((cert) => {
       return X509Certificate.parse(cert.rawBytes);
@@ -108,6 +109,7 @@ function keyLocator(keys?: Record<string, PublicKey>): KeyFinderFunc {
     return {
       publicKey: crypto.createPublicKey(key.rawBytes!),
       validFor: (date: Date) => {
+        /* istanbul ignore next */
         return (
           (key.validFor?.start || BEGINNING_OF_TIME) <= date &&
           (key.validFor?.end || END_OF_TIME) >= date

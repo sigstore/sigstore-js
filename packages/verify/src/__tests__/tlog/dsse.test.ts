@@ -137,4 +137,24 @@ describe('verifyDSSETLogBody', () => {
       );
     });
   });
+
+  describe('when there are no signatures', () => {
+    const bundle = bundleFromJSON(bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_DSSE);
+    const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
+    const body: ProposedDSSEEntry = JSON.parse(
+      tlogEntry.canonicalizedBody.toString('utf8')
+    );
+    const content = signatureContent(bundle);
+
+    beforeEach(() => {
+      delete body.spec.signatures;
+    });
+
+    it('throws an error', () => {
+      expect(() => verifyDSSETLogBody(body, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
 });

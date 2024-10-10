@@ -57,6 +57,11 @@ describe('exports mock functions', () => {
       await mockFulcio();
       expect(nock.pendingMocks()).toHaveLength(1);
     });
+
+    it('mocks fulcio w/ options', async () => {
+      await mockFulcio({ strict: true });
+      expect(nock.pendingMocks()).toHaveLength(1);
+    });
   });
 
   describe('mockRekor', () => {
@@ -64,11 +69,21 @@ describe('exports mock functions', () => {
       await mockRekor();
       expect(nock.pendingMocks()).toHaveLength(1);
     });
+
+    it('mocks rekor w/ options', async () => {
+      await mockRekor({ strict: true });
+      expect(nock.pendingMocks()).toHaveLength(1);
+    });
   });
 
   describe('mockTSA', () => {
     it('mocks tsa', async () => {
       await mockTSA();
+      expect(nock.pendingMocks()).toHaveLength(1);
+    });
+
+    it('mocks tsa', async () => {
+      await mockTSA({ strict: true });
       expect(nock.pendingMocks()).toHaveLength(1);
     });
   });

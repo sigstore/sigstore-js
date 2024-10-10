@@ -131,6 +131,30 @@ describe('verifyIntotoTLogBody', () => {
     });
   });
 
+  describe('when there are no signatures', () => {
+    const bundle = bundleFromJSON(
+      bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_INTOTO
+    );
+    const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
+    const body: ProposedIntotoEntry = JSON.parse(
+      tlogEntry.canonicalizedBody.toString('utf8')
+    );
+    const content = signatureContent(bundle);
+
+    beforeEach(() => {
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      const env = body.spec.content.envelope as any;
+      delete env.signatures;
+    });
+
+    it('throws an error', () => {
+      expect(() => verifyIntotoTLogBody(body, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
+
   describe('when the tlog entry body is missing the payload hash', () => {
     const bundle = bundleFromJSON(
       bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_INTOTO

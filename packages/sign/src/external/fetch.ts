@@ -80,8 +80,8 @@ export async function fetchWithRetry(
 // is found.
 const errorFromResponse = async (response: Response): Promise<HTTPError> => {
   let message = response.statusText;
-  const location = response.headers?.get(HTTP2_HEADER_LOCATION) || undefined;
-  const contentType = response.headers?.get(HTTP2_HEADER_CONTENT_TYPE);
+  const location = response.headers.get(HTTP2_HEADER_LOCATION) || undefined;
+  const contentType = response.headers.get(HTTP2_HEADER_CONTENT_TYPE);
 
   // If response type is JSON, try to parse the body for a message
   if (contentType?.includes('application/json')) {

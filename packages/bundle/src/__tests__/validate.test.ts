@@ -379,6 +379,7 @@ describe('assertBundle', () => {
             certificates: [{ rawBytes: Buffer.from('FOO') }],
           },
         },
+        tlogEntries: undefined,
       },
       content: {
         $case: 'messageSignature',
@@ -585,6 +586,39 @@ describe('assertBundleV01', () => {
         expect(e.fields).toContain(
           'verificationMaterial.tlogEntries[0].inclusionPromise'
         );
+      }
+    });
+  });
+
+  describe('when the tlogEntries is missing', () => {
+    const bundle: Bundle = fromPartial({
+      mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.1',
+      verificationMaterial: {
+        content: {
+          $case: 'x509CertificateChain',
+          x509CertificateChain: {
+            certificates: [{ rawBytes: Buffer.from('FOO') }],
+          },
+        },
+        tlogEntries: undefined,
+      },
+      content: {
+        $case: 'messageSignature',
+        messageSignature: {
+          messageDigest: { digest: Buffer.from('ABC') },
+          signature: Buffer.from('ABC'),
+        },
+      },
+    });
+
+    it('throws an error', () => {
+      expect.assertions(2);
+      try {
+        assertBundleV01(bundle);
+      } catch (e) {
+        assert(e instanceof ValidationError);
+        expect(e.fields).toHaveLength(1);
+        expect(e.fields).toContain('verificationMaterial.tlogEntries');
       }
     });
   });
@@ -828,6 +862,38 @@ describe('assertBundleLatest', () => {
         expect(e.fields).toContain(
           'verificationMaterial.content.certificate.rawBytes'
         );
+      }
+    });
+  });
+
+  describe('when tlogEntries is missing', () => {
+    const bundle: Bundle = fromPartial({
+      mediaType: 'application/vnd.dev.sigstore.bundle+json;version=0.3',
+      verificationMaterial: {
+        content: {
+          $case: 'certificate',
+          certificate: { rawBytes: Buffer.from('FOO') },
+        },
+        tlogEntries: undefined,
+      },
+      content: {
+        $case: 'dsseEnvelope',
+        dsseEnvelope: {
+          payload: Buffer.from('ABC'),
+          payloadType: 'application/json',
+          signatures: [{ sig: Buffer.from('BAR'), keyid: '' }],
+        },
+      },
+    });
+
+    it('throws an error', () => {
+      expect.assertions(2);
+      try {
+        assertBundleLatest(bundle);
+      } catch (e) {
+        assert(e instanceof ValidationError);
+        expect(e.fields).toHaveLength(1);
+        expect(e.fields).toContain('verificationMaterial.tlogEntries');
       }
     });
   });
