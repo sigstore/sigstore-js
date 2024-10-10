@@ -99,7 +99,9 @@ describe('toProposedEntry', () => {
         expect(entry.spec.content.payloadHash).toBeTruthy();
         expect(entry.spec.content.payloadHash?.algorithm).toBe('sha256');
         expect(entry.spec.content.payloadHash?.value).toBe(
-          crypto.hash(sigBundle.dsseEnvelope.payload).toString('hex')
+          crypto
+            .digest('sha256', sigBundle.dsseEnvelope.payload)
+            .toString('hex')
         );
         expect(entry.spec.content.hash).toBeTruthy();
         expect(entry.spec.content.hash?.algorithm).toBe('sha256');
@@ -148,7 +150,9 @@ describe('toProposedEntry', () => {
         expect(entry.spec.content.payloadHash).toBeTruthy();
         expect(entry.spec.content.payloadHash?.algorithm).toBe('sha256');
         expect(entry.spec.content.payloadHash?.value).toBe(
-          crypto.hash(sigBundle.dsseEnvelope.payload).toString('hex')
+          crypto
+            .digest('sha256', sigBundle.dsseEnvelope.payload)
+            .toString('hex')
         );
         expect(entry.spec.content.hash).toBeTruthy();
         expect(entry.spec.content.hash?.algorithm).toBe('sha256');

@@ -24,6 +24,8 @@ import type {
 } from '../../external/rekor';
 import type { SignatureBundle } from '../witness';
 
+const SHA256_ALGORITHM = 'sha256';
+
 export function toProposedEntry(
   content: SignatureBundle,
   publicKey: string,
@@ -58,7 +60,7 @@ function toProposedHashedRekordEntry(
     spec: {
       data: {
         hash: {
-          algorithm: 'sha256',
+          algorithm: SHA256_ALGORITHM,
           value: hexDigest,
         },
       },
@@ -100,7 +102,9 @@ function toProposedIntotoEntry(
   publicKey: string
 ): ProposedIntotoEntry {
   // Calculate the value for the payloadHash field in the Rekor entry
-  const payloadHash = crypto.hash(envelope.payload).toString('hex');
+  const payloadHash = crypto
+    .digest(SHA256_ALGORITHM, envelope.payload)
+    .toString('hex');
 
   // Calculate the value for the hash field in the Rekor entry
   const envelopeHash = calculateDSSEHash(envelope, publicKey);
@@ -134,8 +138,8 @@ function toProposedIntotoEntry(
     spec: {
       content: {
         envelope: dsse,
-        hash: { algorithm: 'sha256', value: envelopeHash },
-        payloadHash: { algorithm: 'sha256', value: payloadHash },
+        hash: { algorithm: SHA256_ALGORITHM, value: envelopeHash },
+        payloadHash: { algorithm: SHA256_ALGORITHM, value: payloadHash },
       },
     },
   };
@@ -162,5 +166,7 @@ function calculateDSSEHash(envelope: Envelope, publicKey: string): string {
     dsse.signatures[0].keyid = envelope.signatures[0].keyid;
   }
 
-  return crypto.hash(json.canonicalize(dsse)).toString('hex');
+  return crypto
+    .digest(SHA256_ALGORITHM, json.canonicalize(dsse))
+    .toString('hex');
 }

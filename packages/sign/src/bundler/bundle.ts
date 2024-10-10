@@ -26,7 +26,7 @@ export function toMessageSignatureBundle(
   artifact: Artifact,
   signature: Signature
 ): sigstore.BundleWithMessageSignature {
-  const digest = crypto.hash(artifact.data);
+  const digest = crypto.digest('sha256', artifact.data);
 
   return sigstore.toMessageSignatureBundle({
     digest,
