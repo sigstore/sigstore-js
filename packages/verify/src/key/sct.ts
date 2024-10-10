@@ -71,7 +71,7 @@ export function verifySCTs(
   const preCert = new ByteStream();
 
   // Calculate hash of the issuer's public key
-  const issuerId = crypto.hash(issuer.publicKey);
+  const issuerId = crypto.digest('sha256', issuer.publicKey);
   preCert.appendView(issuerId);
 
   // Re-encodes the certificate to DER after removing the SCT extension

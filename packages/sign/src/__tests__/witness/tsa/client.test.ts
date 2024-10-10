@@ -35,7 +35,7 @@ describe('TSAClient', () => {
     const signature = Buffer.from('signature');
 
     const request = {
-      artifactHash: crypto.hash(signature).toString('base64'),
+      artifactHash: crypto.digest('sha256', signature).toString('base64'),
       hashAlgorithm: 'sha256',
     };
 

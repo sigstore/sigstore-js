@@ -26,7 +26,10 @@ export class DSSESignatureContent implements SignatureContent {
   }
 
   public compareDigest(digest: Buffer): boolean {
-    return crypto.bufferEqual(digest, crypto.hash(this.env.payload));
+    return crypto.bufferEqual(
+      digest,
+      crypto.digest('sha256', this.env.payload)
+    );
   }
 
   public compareSignature(signature: Buffer): boolean {

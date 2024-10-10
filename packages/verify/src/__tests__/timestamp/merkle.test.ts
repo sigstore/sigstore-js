@@ -199,7 +199,7 @@ describe('verifyMerkleInclusion', () => {
         hashes: [],
         treeSize: '1',
         logIndex: '0',
-        rootHash: crypto.hash(Buffer.from([0x00]), body),
+        rootHash: crypto.digest('sha256', Buffer.from([0x00]), body),
       },
     });
 
