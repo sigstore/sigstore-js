@@ -30,15 +30,15 @@ export function toProposedEntry(
   content: SignatureBundle,
   publicKey: string,
   // TODO: Remove this parameter once have completely switched to 'dsse' entries
-  entryType: 'dsse' | 'intoto' = 'intoto'
+  entryType: 'dsse' | 'intoto' = 'dsse'
 ): ProposedEntry {
   switch (content.$case) {
     case 'dsseEnvelope':
-      // TODO: Remove this conditional once have completely switched to 'dsse' entries
-      if (entryType === 'dsse') {
-        return toProposedDSSEEntry(content.dsseEnvelope, publicKey);
+      // TODO: Remove this conditional once have completely ditched "intoto" entries
+      if (entryType === 'intoto') {
+        return toProposedIntotoEntry(content.dsseEnvelope, publicKey);
       }
-      return toProposedIntotoEntry(content.dsseEnvelope, publicKey);
+      return toProposedDSSEEntry(content.dsseEnvelope, publicKey);
     case 'messageSignature':
       return toProposedHashedRekordEntry(content.messageSignature, publicKey);
   }
