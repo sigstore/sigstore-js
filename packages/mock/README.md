@@ -19,7 +19,7 @@ services.
 
 ## Prerequisites
 
-- Node.js version >= 16.14.0
+- Node.js version >= 18.17.0
 
 ## Installation
 
