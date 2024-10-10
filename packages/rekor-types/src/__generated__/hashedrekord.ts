@@ -43,9 +43,9 @@ export interface HashedRekorV001Schema {
       /**
        * The hashing function used to compute the hash value
        */
-      algorithm: "sha256";
+      algorithm: "sha256" | "sha384" | "sha512";
       /**
-       * The hash value for the content
+       * The hash value for the content, as represented by a lower case hexadecimal string
        */
       value: string;
     };

@@ -12,12 +12,7 @@ export type DSSESchema = DSSEV001Schema;
 /**
  * Schema for DSSE envelopes
  */
-export type DSSEV001Schema = DSSEV001Schema1 & DSSEV001Schema2;
-export type DSSEV001Schema2 = {
-  [k: string]: unknown;
-};
-
-export interface DSSEV001Schema1 {
+export type DSSEV001Schema = {
   proposedContent?: {
     /**
      * DSSE envelope specified as a stringified JSON object
@@ -83,4 +78,6 @@ export interface DSSEV001Schema1 {
      */
     value: string;
   };
-}
+} & {
+  [k: string]: unknown;
+};
