@@ -9,7 +9,7 @@ $ npm install -g @sigstore/cli
 $ sigstore COMMAND
 running command...
 $ sigstore (--version)
-@sigstore/cli/0.7.1 darwin-arm64 node-v20.8.1
+@sigstore/cli/0.8.0 darwin-arm64 node-v22.3.0
 $ sigstore --help [COMMAND]
 USAGE
   $ sigstore COMMAND
