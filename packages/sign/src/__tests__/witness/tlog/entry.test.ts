@@ -74,42 +74,16 @@ describe('toProposedEntry', () => {
       it('return a valid ProposedEntry entry', () => {
         const entry = toProposedEntry(sigBundle, publicKey);
 
-        assert(entry.apiVersion === '0.0.2');
-        assert(entry.kind === 'intoto');
+        assert(entry.apiVersion === '0.0.1');
+        assert(entry.kind === 'dsse');
         expect(entry.spec).toBeTruthy();
-        expect(entry.spec.content).toBeTruthy();
-        expect(entry.spec.content.envelope).toBeTruthy();
-
-        const e = entry.spec.content.envelope;
-        expect(e?.payloadType).toEqual(sigBundle.dsseEnvelope.payloadType);
-        expect(e?.payload).toEqual(
-          enc.base64Encode(sigBundle.dsseEnvelope.payload.toString('base64'))
+        expect(entry.spec.proposedContent).toBeTruthy();
+        expect(entry.spec.proposedContent?.envelope).toEqual(
+          JSON.stringify(envelopeToJSON(sigBundle.dsseEnvelope))
         );
-        expect(e?.signatures).toHaveLength(1);
-        expect(e?.signatures[0].keyid).toEqual(
-          sigBundle.dsseEnvelope.signatures[0].keyid
-        );
-        expect(e?.signatures[0].sig).toEqual(
-          enc.base64Encode(
-            sigBundle.dsseEnvelope.signatures[0].sig.toString('base64')
-          )
-        );
-        expect(e?.signatures[0].publicKey).toEqual(enc.base64Encode(publicKey));
-
-        expect(entry.spec.content.payloadHash).toBeTruthy();
-        expect(entry.spec.content.payloadHash?.algorithm).toBe('sha256');
-        expect(entry.spec.content.payloadHash?.value).toBe(
-          crypto
-            .digest('sha256', sigBundle.dsseEnvelope.payload)
-            .toString('hex')
-        );
-        expect(entry.spec.content.hash).toBeTruthy();
-        expect(entry.spec.content.hash?.algorithm).toBe('sha256');
-
-        // This hard-coded hash value helps us detect if we've unintentionally
-        // changed the hashing algorithm.
-        expect(entry.spec.content.hash?.value).toBe(
-          '37d47ab456ca63a84f6457be655dd49799542f2e1db5d05160b214fb0b9a7f55'
+        expect(entry.spec.proposedContent?.verifiers).toHaveLength(1);
+        expect(entry.spec.proposedContent?.verifiers[0]).toEqual(
+          enc.base64Encode(publicKey)
         );
       });
     });
@@ -125,7 +99,7 @@ describe('toProposedEntry', () => {
       };
 
       it('return a valid ProposedEntry entry', () => {
-        const entry = toProposedEntry(sigBundle, publicKey);
+        const entry = toProposedEntry(sigBundle, publicKey, 'intoto');
 
         assert(entry.apiVersion === '0.0.2');
         assert(entry.kind === 'intoto');
@@ -178,30 +152,52 @@ describe('toProposedEntry', () => {
         },
       };
 
-      it('return a valid ProposedEntry entry', () => {
-        const entry = toProposedEntry(sigBundle, publicKey);
+      describe('when asking for an intoto entry', () => {
+        it('return a valid ProposedEntry entry', () => {
+          const entry = toProposedEntry(sigBundle, publicKey, 'intoto');
 
-        assert(entry.apiVersion === '0.0.2');
-        assert(entry.kind === 'intoto');
+          assert(entry.apiVersion === '0.0.2');
+          assert(entry.kind === 'intoto');
 
-        // Check to ensure only the first signature is included in the envelope
-        const e = entry.spec.content.envelope;
-        expect(e?.signatures).toHaveLength(1);
-        expect(e?.signatures[0].keyid).toEqual(
-          sigBundle.dsseEnvelope.signatures[0].keyid
-        );
-        expect(e?.signatures[0].sig).toEqual(
-          enc.base64Encode(
-            sigBundle.dsseEnvelope.signatures[0].sig.toString('base64')
-          )
-        );
-        expect(e?.signatures[0].publicKey).toEqual(enc.base64Encode(publicKey));
+          // Check to ensure only the first signature is included in the envelope
+          const e = entry.spec.content.envelope;
+          expect(e?.signatures).toHaveLength(1);
+          expect(e?.signatures[0].keyid).toEqual(
+            sigBundle.dsseEnvelope.signatures[0].keyid
+          );
+          expect(e?.signatures[0].sig).toEqual(
+            enc.base64Encode(
+              sigBundle.dsseEnvelope.signatures[0].sig.toString('base64')
+            )
+          );
+          expect(e?.signatures[0].publicKey).toEqual(
+            enc.base64Encode(publicKey)
+          );
 
-        // This hard-coded hash value helps us detect if we've unintentionally
-        // changed the hashing algorithm.
-        expect(entry.spec.content.hash?.value).toBe(
-          '37d47ab456ca63a84f6457be655dd49799542f2e1db5d05160b214fb0b9a7f55'
-        );
+          // This hard-coded hash value helps us detect if we've unintentionally
+          // changed the hashing algorithm.
+          expect(entry.spec.content.hash?.value).toBe(
+            '37d47ab456ca63a84f6457be655dd49799542f2e1db5d05160b214fb0b9a7f55'
+          );
+        });
+      });
+
+      describe('when asking for a dsse entry', () => {
+        it('return a valid ProposedEntry entry', () => {
+          const entry = toProposedEntry(sigBundle, publicKey, 'dsse');
+
+          assert(entry.apiVersion === '0.0.1');
+          assert(entry.kind === 'dsse');
+
+          expect(entry.spec.proposedContent).toBeTruthy();
+          expect(entry.spec.proposedContent?.envelope).toEqual(
+            JSON.stringify(envelopeToJSON(sigBundle.dsseEnvelope))
+          );
+          expect(entry.spec.proposedContent?.verifiers).toHaveLength(1);
+          expect(entry.spec.proposedContent?.verifiers[0]).toEqual(
+            enc.base64Encode(publicKey)
+          );
+        });
       });
     });
   });
@@ -218,7 +214,7 @@ describe('toProposedEntry', () => {
       };
 
       it('return a valid ProposedEntry entry', () => {
-        const entry = toProposedEntry(sigBundle, publicKey, 'dsse');
+        const entry = toProposedEntry(sigBundle, publicKey);
 
         assert(entry.apiVersion === '0.0.1');
         assert(entry.kind === 'dsse');
