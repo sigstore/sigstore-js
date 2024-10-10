@@ -16,8 +16,6 @@ limitations under the License.
 import crypto, { BinaryLike } from 'crypto';
 export type { KeyObject } from 'crypto';
 
-const SHA256_ALGORITHM = 'sha256';
-
 export function createPublicKey(
   key: string | Buffer,
   type: 'spki' | 'pkcs1' = 'spki'
@@ -31,15 +29,6 @@ export function createPublicKey(
 
 export function digest(algorithm: string, ...data: BinaryLike[]): Buffer {
   const hash = crypto.createHash(algorithm);
-  for (const d of data) {
-    hash.update(d);
-  }
-  return hash.digest();
-}
-
-// TODO: deprecate this in favor of digest()
-export function hash(...data: BinaryLike[]): Buffer {
-  const hash = crypto.createHash(SHA256_ALGORITHM);
   for (const d of data) {
     hash.update(d);
   }

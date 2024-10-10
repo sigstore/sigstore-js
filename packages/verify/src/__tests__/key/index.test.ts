@@ -52,7 +52,7 @@ describe('verifyCertificate', () => {
   };
 
   const ctlogAuthority: TLogAuthority = {
-    logID: crypto.hash(keyBytes),
+    logID: crypto.digest('sha256', keyBytes),
     publicKey: crypto.createPublicKey(keyBytes),
     validFor: { start: new Date(0), end: new Date('2100-01-01') },
   };

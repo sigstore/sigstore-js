@@ -26,7 +26,7 @@ describe('verifyCheckpoint', () => {
     'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2G2Y+2tabdTV5BcGiBIx0a9fAFwrkBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==',
     'base64'
   );
-  const keyID = crypto.hash(keyBytes);
+  const keyID = crypto.digest('sha256', keyBytes);
 
   const tlogInstance: TLogAuthority = {
     publicKey: crypto.createPublicKey(keyBytes),
@@ -243,7 +243,7 @@ describe('verifyCheckpoint', () => {
       'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEDODRU688UYGuy54mNUlaEBiQdTE9nYLr0lg6RXowI/QV/RE1azBn4Eg5/2uTOMbhB1/gfcHzijzFi9Tk+g1Prg==',
       'base64'
     );
-    const keyID = crypto.hash(keyBytes);
+    const keyID = crypto.digest('sha256', keyBytes);
 
     const tlogInstance: TLogAuthority = {
       publicKey: crypto.createPublicKey(keyBytes),

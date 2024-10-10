@@ -77,7 +77,7 @@ describe('MessageSignatureBundleBuilder', () => {
         HashAlgorithm.SHA2_256
       );
       expect(b.content.messageSignature.messageDigest.digest).toEqual(
-        crypto.hash(artifact.data)
+        crypto.digest('sha256', artifact.data)
       );
       expect(b.content.messageSignature.signature).toEqual(sigBytes);
 

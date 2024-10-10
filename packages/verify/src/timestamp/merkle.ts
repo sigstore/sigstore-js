@@ -119,9 +119,9 @@ function bitLength(n: bigint): number {
 // Hashing logic according to RFC6962.
 // https://datatracker.ietf.org/doc/html/rfc6962#section-2
 function hashChildren(left: Buffer, right: Buffer): Buffer {
-  return crypto.hash(RFC6962_NODE_HASH_PREFIX, left, right);
+  return crypto.digest('sha256', RFC6962_NODE_HASH_PREFIX, left, right);
 }
 
 function hashLeaf(leaf: Buffer): Buffer {
-  return crypto.hash(RFC6962_LEAF_HASH_PREFIX, leaf);
+  return crypto.digest('sha256', RFC6962_LEAF_HASH_PREFIX, leaf);
 }

@@ -19,6 +19,8 @@ import { crypto } from '../../util';
 
 import type { FetchOptions } from '../../types/fetch';
 
+const SHA256_ALGORITHM = 'sha256';
+
 export interface TSA {
   createTimestamp: (signature: Buffer) => Promise<Buffer>;
 }
@@ -40,8 +42,10 @@ export class TSAClient implements TSA {
 
   public async createTimestamp(signature: Buffer): Promise<Buffer> {
     const request = {
-      artifactHash: crypto.hash(signature).toString('base64'),
-      hashAlgorithm: 'sha256',
+      artifactHash: crypto
+        .digest(SHA256_ALGORITHM, signature)
+        .toString('base64'),
+      hashAlgorithm: SHA256_ALGORITHM,
     };
 
     try {
