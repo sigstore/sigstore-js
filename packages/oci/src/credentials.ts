@@ -43,10 +43,10 @@ export const getRegistryCredentials = (imageName: string): Credentials => {
   const dockerConfig: DockerConifg = JSON.parse(content);
 
   const credKey =
-    Object.keys(dockerConfig?.auths || {}).find((key) =>
+    Object.keys(dockerConfig.auths || {}).find((key) =>
       key.includes(registry)
     ) || registry;
-  const creds = dockerConfig?.auths?.[credKey];
+  const creds = dockerConfig.auths?.[credKey];
 
   if (!creds) {
     throw new Error(`No credentials found for registry ${registry}`);

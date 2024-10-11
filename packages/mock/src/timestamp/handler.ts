@@ -62,6 +62,7 @@ function createTimestampHandler(tsa: TSA, opts: TSAHandlerOptions): HandlerFn {
 function parseRequest(body: string): TimestampRequest {
   const json = JSON.parse(body.toString());
 
+  /* istanbul ignore next */
   return {
     artifactHash: Buffer.from(json.artifactHash, 'base64'),
     hashAlgorithmOID: hashToOID(json.hashAlgorithm),

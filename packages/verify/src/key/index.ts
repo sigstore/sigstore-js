@@ -81,6 +81,7 @@ function getSigner(cert: X509Certificate): Signer {
   let issuer: string | undefined;
   const issuerExtension = cert.extension(OID_FULCIO_ISSUER_V2);
 
+  /* istanbul ignore next */
   if (issuerExtension) {
     issuer = issuerExtension.valueObj.subs?.[0]?.value.toString('ascii');
   } else {

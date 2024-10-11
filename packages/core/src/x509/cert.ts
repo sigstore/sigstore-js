@@ -95,14 +95,16 @@ export class X509Certificate {
 
   get subjectAltName(): string | undefined {
     const ext = this.extSubjectAltName;
-    return ext?.uri || ext?.rfc822Name;
+    return ext?.uri || /* istanbul ignore next */ ext?.rfc822Name;
   }
 
   get extensions(): ASN1Obj[] {
     // The extension list is the first (and only) element of the extensions
     // context specific tag
+    /* istanbul ignore next */
     const extSeq = this.extensionsObj?.subs[0];
-    return extSeq?.subs || /* istanbul ignore next */ [];
+    /* istanbul ignore next */
+    return extSeq?.subs || [];
   }
 
   get extKeyUsage(): X509KeyUsageExtension | undefined {

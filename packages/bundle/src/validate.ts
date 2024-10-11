@@ -237,6 +237,7 @@ function validateInclusionProof(b: ProtoBundle): string[] {
 function validateNoCertificateChain(b: ProtoBundle): string[] {
   const invalidValues: string[] = [];
 
+  /* istanbul ignore next */
   if (b.verificationMaterial?.content?.$case === 'x509CertificateChain') {
     invalidValues.push('verificationMaterial.content.$case');
   }

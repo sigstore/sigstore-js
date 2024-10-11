@@ -131,6 +131,8 @@ describe('signAttestation (non-legacy)', () => {
       rekorURL,
       tsaServerURL: tsaURL,
       identityProvider: idp,
+      retry: 0,
+      timeout: 0,
     };
     const bundle = await attest(payload, payloadType, options);
     expect(bundle).toBeDefined();
@@ -190,6 +192,8 @@ describe('#verify', () => {
     const options: VerifyOptions = {
       ...tufOptions,
       keySelector: (hint: string) => validBundles.publicKeys[hint],
+      retry: 0,
+      timeout: 0,
     };
 
     it('does not throw an error', async () => {
