@@ -1,5 +1,18 @@
 # @sigstore/tuf
 
+## 3.0.0
+
+### Major Changes
+
+- 52005b2: Bump `tuf-js` from 2.2.1 to 3.0.0
+- 52005b2: Drop support for node 16
+
+### Patch Changes
+
+- 50d3a96: Update TUF seed files
+- d52d739: Bump @tufjs/repo-mock from 2.0.1 to 3.0.0
+- 5a2c116: Bump tuf-js from 3.0.0 to 3.0.1
+
 ## 2.3.4
 
 ### Patch Changes

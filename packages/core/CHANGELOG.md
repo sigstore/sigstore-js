@@ -1,5 +1,12 @@
 # @sigstore/core
 
+## 2.0.0
+
+### Major Changes
+
+- b78615b: Remove `hash` function in core package
+- 2e58489: Drop support for node 16
+
 ## 1.1.0
 
 ### Minor Changes

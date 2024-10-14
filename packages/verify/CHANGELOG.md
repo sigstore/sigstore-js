@@ -1,5 +1,20 @@
 # @sigstore/verify
 
+## 2.0.0
+
+### Major Changes
+
+- f89faed: Drop support for node 16
+
+### Patch Changes
+
+- Updated dependencies [b869728]
+- Updated dependencies [b78615b]
+- Updated dependencies [9df66ee]
+- Updated dependencies [2e58489]
+  - @sigstore/bundle@3.0.0
+  - @sigstore/core@2.0.0
+
 ## 1.2.1
 
 ### Patch Changes

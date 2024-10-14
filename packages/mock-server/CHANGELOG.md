@@ -1,5 +1,33 @@
 # @sigstore/mock-server
 
+## 0.2.0
+
+### Minor Changes
+
+- d5724b4: Bump @tufjs/repo-mock from 2.0.1 to 3.0.0
+
+### Patch Changes
+
+- 5a2c116: Bump dependencies:
+
+  - @tufjs/repo-mock from 3.0.0 to 3.0.1
+  - express from 4.21.0 to 4.21.1
+
+- fcc52dc: Bump express from 4.20.0 to 4.21.0
+- b2045c5: Bump express from 4.19.2 to 4.20.0
+- f277121: Bump `@oclif/core` from 3.26.6 to 4.0.6
+- Updated dependencies [271993f]
+- Updated dependencies [fb80763]
+- Updated dependencies [fcc52dc]
+- Updated dependencies [54674f3]
+- Updated dependencies [5a2c116]
+- Updated dependencies [2b264a9]
+- Updated dependencies [ada9967]
+- Updated dependencies [5ff05d6]
+- Updated dependencies [6f9376a]
+- Updated dependencies [dfe67da]
+  - @sigstore/mock@0.8.0
+
 ## 0.1.2
 
 ### Patch Changes

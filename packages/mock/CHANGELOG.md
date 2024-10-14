@@ -1,5 +1,39 @@
 # @sigstore/mock
 
+## 0.8.0
+
+### Minor Changes
+
+- dfe67da: Drop support for node 16
+
+### Patch Changes
+
+- 271993f: Bump dependencies:
+
+  - jose from 5.6.2 to 5.6.3
+  - pkijs from 3.1.0 to 3.2.1
+
+- fb80763: Bump dependencies:
+
+  - jose from 5.6.3 to 5.7.0
+  - nock from 13.5.4 to 13.5.5
+
+- fcc52dc: Bump jose from 5.8.0 to 5.9.2
+- 54674f3: Bump dependencies:
+
+  - pkijs from 3.2.1 to 3.2.4
+  - @peculiar/x509 from 1.11.0 to 1.12.1
+
+- 5a2c116: Bump jose from 5.9.3 to 5.9.4
+- 2b264a9: Bump @peculiar/x509 from 1.12.2 to 1.12.3
+- ada9967: Bump jose from 5.7.0 to 5.8.0
+- 5ff05d6: Bump dependencies:
+
+  - @peculiar/x509 from 1.12.1 to 1.12.2
+  - jose from 5.9.2 to 5.9.3
+
+- 6f9376a: Bump jose from 5.4.0 to 5.6.2
+
 ## 0.7.5
 
 ### Patch Changes

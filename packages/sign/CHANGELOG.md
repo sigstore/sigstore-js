@@ -1,5 +1,24 @@
 # @sigstore/sign
 
+## 3.0.0
+
+### Major Changes
+
+- f84ca10: Drop support for node 16
+- f84ca10: Bump proc-log from 4.2.0 to 5.0.0
+- 54c1b04: Default `DSSEBundleBuilder` to generating v0.3 bundles
+- f84ca10: Bump make-fetch-happen from 13.0.1 to 14.0.1
+- 64cae89: Default `RekorWitness` to generating "dsse" entries instead of "intoto"
+
+### Patch Changes
+
+- Updated dependencies [b869728]
+- Updated dependencies [b78615b]
+- Updated dependencies [9df66ee]
+- Updated dependencies [2e58489]
+  - @sigstore/bundle@3.0.0
+  - @sigstore/core@2.0.0
+
 ## 2.3.2
 
 ### Patch Changes

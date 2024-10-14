@@ -1,5 +1,13 @@
 # @sigstore/oci
 
+## 0.4.0
+
+### Minor Changes
+
+- 32eaf8a: Bump proc-log from 4.2.0 to 5.0.0
+- 32eaf8a: Bump make-fetch-happen from 13.0.1 to 14.0.1
+- 32eaf8a: Drop support for node 16
+
 ## 0.3.7
 
 ### Patch Changes

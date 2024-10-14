@@ -1,5 +1,35 @@
 # sigstore
 
+## 3.0.0
+
+### Major Changes
+
+- 91c8478: Updates the `sign` and `attest` functions so that they generate v0.3 Sigstore bundles by default. To continue generating v0.2 bundles, use the new `legacyCompatibility` flag.
+- d758abc: Drop support for node 16
+
+### Patch Changes
+
+- Updated dependencies [50d3a96]
+- Updated dependencies [f84ca10]
+- Updated dependencies [f84ca10]
+- Updated dependencies [52005b2]
+- Updated dependencies [54c1b04]
+- Updated dependencies [f84ca10]
+- Updated dependencies [d52d739]
+- Updated dependencies [b869728]
+- Updated dependencies [b78615b]
+- Updated dependencies [52005b2]
+- Updated dependencies [9df66ee]
+- Updated dependencies [2e58489]
+- Updated dependencies [5a2c116]
+- Updated dependencies [f89faed]
+- Updated dependencies [64cae89]
+  - @sigstore/tuf@3.0.0
+  - @sigstore/sign@3.0.0
+  - @sigstore/bundle@3.0.0
+  - @sigstore/core@2.0.0
+  - @sigstore/verify@2.0.0
+
 ## 2.3.1
 
 ### Patch Changes
