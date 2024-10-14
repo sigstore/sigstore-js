@@ -1,5 +1,29 @@
 # @sigstore/cli
 
+## 0.8.1
+
+### Patch Changes
+
+- f277121: Bump `@oclif/core` from 3.26.6 to 4.0.6
+- dbbe196: Set node 18.17.x as the minimum supported version
+- fcc52dc: Bump openid-client from 5.6.5 to 5.7.0
+- Updated dependencies [f84ca10]
+- Updated dependencies [f84ca10]
+- Updated dependencies [32eaf8a]
+- Updated dependencies [54c1b04]
+- Updated dependencies [f84ca10]
+- Updated dependencies [b869728]
+- Updated dependencies [91c8478]
+- Updated dependencies [9df66ee]
+- Updated dependencies [32eaf8a]
+- Updated dependencies [d758abc]
+- Updated dependencies [64cae89]
+- Updated dependencies [32eaf8a]
+  - @sigstore/sign@3.0.0
+  - @sigstore/oci@0.4.0
+  - @sigstore/bundle@3.0.0
+  - sigstore@3.0.0
+
 ## 0.8.0
 
 ### Minor Changes

@@ -1,5 +1,12 @@
 # @sigstore/bundle
 
+## 3.0.0
+
+### Major Changes
+
+- b869728: `toDSSEBundle` and `toMessageSignatureBundle` generate v0.3 bundles by default
+- 9df66ee: Drop support for node 16
+
 ## 2.3.2
 
 ### Patch Changes

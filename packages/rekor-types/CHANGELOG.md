@@ -1,5 +1,15 @@
 # @sigstore/rekor-types
 
+## 3.0.0
+
+### Major Changes
+
+- 7f19dbd: Drop support for node 16
+
+### Patch Changes
+
+- f07f157: Regenerate rekor types from sigstore/rekor v1.3.6
+
 ## 2.0.0
 
 ### Major Changes

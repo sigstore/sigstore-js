@@ -1,5 +1,20 @@
 # @sigstore/conformance
 
+## 0.2.4
+
+### Patch Changes
+
+- b571c3c: Set node 18.17.x as the minimum supported version
+- f277121: Bump `@oclif/core` from 3.26.6 to 4.0.6
+- Updated dependencies [b869728]
+- Updated dependencies [91c8478]
+- Updated dependencies [9df66ee]
+- Updated dependencies [d758abc]
+- Updated dependencies [f89faed]
+  - @sigstore/bundle@3.0.0
+  - sigstore@3.0.0
+  - @sigstore/verify@2.0.0
+
 ## 0.2.3
 
 ### Patch Changes
