@@ -1,4 +1,4 @@
-# sigstore-js &middot; [![CI Status](https://github.com/sigstore/sigstore-js/workflows/CI/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/ci.yml) [![Smoke Test Status](https://github.com/sigstore/sigstore-js/workflows/smoke-test/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/smoke-test.yml)
+# sigstore-js &middot; [![CI Status](https://github.com/sigstore/sigstore-js/workflows/CI/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/ci.yml) [![Smoke test](https://github.com/sigstore/sigstore-js/actions/workflows/smoke-test.yml/badge.svg)](https://github.com/sigstore/sigstore-js/actions/workflows/smoke-test.yml)
 
 JavaScript libraries for interacting with [Sigstore][6] services.
 
