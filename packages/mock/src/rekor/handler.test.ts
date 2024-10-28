@@ -68,6 +68,7 @@ describe('rekorHandler', () => {
 
         const entry = body[uuid];
         expect(entry.body).toBeDefined();
+        expect(typeof entry.body).toBe('string');
         expect(
           JSON.parse(Buffer.from(entry.body, 'base64').toString())
         ).toEqual(proposedEntry);
