@@ -44,7 +44,7 @@ export interface CertificateRequestOptions {
   extensions?: ExtensionValue[];
 }
 
-interface ExtensionValue {
+export interface ExtensionValue {
   oid: string;
   value: string;
   legacy?: boolean;

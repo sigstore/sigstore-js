@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import x509 from '@peculiar/x509';
 import { generateKeyPairSync } from 'crypto';
 import { generateKeyPair } from '../util/key';
 import { CA, initializeCA } from './ca';
@@ -43,6 +44,24 @@ describe('fulcioHandler', () => {
       const claims = {
         sub: 'http://github.com/foo/workflow.yml@refs/heads/main',
         iss: 'http://foo.com',
+        event_name: 'workflow_dispatch',
+        job_workflow_ref:
+          'foo/attest-demo/.github/workflows/oidc.yml@refs/heads/main',
+        job_workflow_sha: 'ba214227977e57973d87219493ad93eeda9c7d6c',
+        ref: 'refs/heads/main',
+        repository: 'foo/attest-demo',
+        repository_id: '792829709',
+        repository_owner: 'foo',
+        repository_owner_id: '398027',
+        repository_visibility: 'public',
+        run_attempt: '3',
+        run_id: '11997537386',
+        runner_environment: 'github-hosted',
+        sha: 'ba214227977e57973d87219493ad93eeda9c7d6c',
+        workflow: 'OIDC',
+        workflow_ref:
+          'foo/attest-demo/.github/workflows/oidc.yml@refs/heads/main',
+        workflow_sha: 'ba214227977e57973d87219493ad93eeda9c7d6c',
       };
       const jwt = jwtify(claims);
 
@@ -80,6 +99,15 @@ describe('fulcioHandler', () => {
         expect(
           certs.signedCertificateEmbeddedSct.chain.certificates
         ).toHaveLength(2);
+
+        const { extensions } = new x509.X509Certificate(
+          certs.signedCertificateEmbeddedSct.chain.certificates[0]
+        );
+        expect(
+          extensions
+            .filter((e) => e.type.startsWith('1.3.6.1.4.1.57264'))
+            .map((e) => e.toString('asn'))
+        ).toMatchSnapshot();
       });
 
       describe('when the CA raises an error', () => {
