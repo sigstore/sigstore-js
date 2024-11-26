@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Crypto } from '@peculiar/webcrypto';
 import x509 from '@peculiar/x509';
 import { generateKeyPairSync } from 'crypto';
 import { generateKeyPair } from '../util/key';
@@ -32,38 +33,38 @@ describe('fulcioHandler', () => {
   });
 
   describe('#fn', () => {
+    const claims = {
+      sub: 'http://github.com/foo/workflow.yml@refs/heads/main',
+      iss: 'http://foo.com',
+      event_name: 'workflow_dispatch',
+      job_workflow_ref:
+        'foo/attest-demo/.github/workflows/oidc.yml@refs/heads/main',
+      job_workflow_sha: 'ba214227977e57973d87219493ad93eeda9c7d6c',
+      ref: 'refs/heads/main',
+      repository: 'foo/attest-demo',
+      repository_id: '792829709',
+      repository_owner: 'foo',
+      repository_owner_id: '398027',
+      repository_visibility: 'public',
+      run_attempt: '3',
+      run_id: '11997537386',
+      runner_environment: 'github-hosted',
+      sha: 'ba214227977e57973d87219493ad93eeda9c7d6c',
+      workflow: 'OIDC',
+      workflow_ref:
+        'foo/attest-demo/.github/workflows/oidc.yml@refs/heads/main',
+      workflow_sha: 'ba214227977e57973d87219493ad93eeda9c7d6c',
+    };
+    const jwt = jwtify(claims);
+
     it('returns a function', async () => {
       const ca = await initializeCA(keyPair);
       const handler = fulcioHandler(ca);
       expect(handler.fn).toBeInstanceOf(Function);
     });
 
-    describe('when invoked', () => {
+    describe('when invoked w/ a public key', () => {
       const { publicKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
-
-      const claims = {
-        sub: 'http://github.com/foo/workflow.yml@refs/heads/main',
-        iss: 'http://foo.com',
-        event_name: 'workflow_dispatch',
-        job_workflow_ref:
-          'foo/attest-demo/.github/workflows/oidc.yml@refs/heads/main',
-        job_workflow_sha: 'ba214227977e57973d87219493ad93eeda9c7d6c',
-        ref: 'refs/heads/main',
-        repository: 'foo/attest-demo',
-        repository_id: '792829709',
-        repository_owner: 'foo',
-        repository_owner_id: '398027',
-        repository_visibility: 'public',
-        run_attempt: '3',
-        run_id: '11997537386',
-        runner_environment: 'github-hosted',
-        sha: 'ba214227977e57973d87219493ad93eeda9c7d6c',
-        workflow: 'OIDC',
-        workflow_ref:
-          'foo/attest-demo/.github/workflows/oidc.yml@refs/heads/main',
-        workflow_sha: 'ba214227977e57973d87219493ad93eeda9c7d6c',
-      };
-      const jwt = jwtify(claims);
 
       const certRequest = {
         credentials: {
@@ -100,8 +101,13 @@ describe('fulcioHandler', () => {
           certs.signedCertificateEmbeddedSct.chain.certificates
         ).toHaveLength(2);
 
-        const { extensions } = new x509.X509Certificate(
+        const { extensions, publicKey } = new x509.X509Certificate(
           certs.signedCertificateEmbeddedSct.chain.certificates[0]
+        );
+
+        // Ensure public key matches input
+        expect(publicKey.toString('pem')).toEqual(
+          certRequest.publicKeyRequest.publicKey.content.trimEnd()
         );
         expect(
           extensions
@@ -123,6 +129,69 @@ describe('fulcioHandler', () => {
           const resp = await fn(JSON.stringify(certRequest));
           expect(resp.statusCode).toBe(400);
         });
+      });
+    });
+
+    describe('when invoked w/ a CSR', () => {
+      it('returns a certificate chain', async () => {
+        const crypto = new Crypto();
+        const kp = await crypto.subtle.generateKey(
+          { name: 'ecdsa', namedCurve: 'P-256' },
+          true,
+          ['sign', 'verify']
+        );
+        const csr = await x509.Pkcs10CertificateRequestGenerator.create(
+          {
+            signingAlgorithm: {
+              name: 'ECDSA',
+              hash: 'SHA-256',
+            },
+            keys: kp,
+          },
+          crypto
+        );
+
+        const certRequest = {
+          credentials: {
+            oidcIdentityToken: jwt,
+          },
+          certificateSigningRequest: csr.toString('pem'),
+        };
+
+        const ca = await initializeCA(keyPair);
+        const { fn } = fulcioHandler(ca);
+
+        // Make a request
+        const resp = await fn(JSON.stringify(certRequest));
+        expect(resp.statusCode).toBe(201);
+
+        // Check the response
+        const certs = JSON.parse(resp.response.toString());
+        expect(certs).toBeDefined();
+        expect(certs.signedCertificateEmbeddedSct).toBeDefined();
+        expect(certs.signedCertificateEmbeddedSct.chain).toBeDefined();
+        expect(
+          certs.signedCertificateEmbeddedSct.chain.certificates
+        ).toBeDefined();
+        expect(
+          certs.signedCertificateEmbeddedSct.chain.certificates
+        ).toHaveLength(2);
+
+        const { extensions, publicKey } = new x509.X509Certificate(
+          certs.signedCertificateEmbeddedSct.chain.certificates[0]
+        );
+
+        // Ensure public key matches the CSR
+        const expectedKey = await crypto.subtle.exportKey('spki', kp.publicKey);
+        expect(publicKey.toString('base64')).toEqual(
+          Buffer.from(expectedKey).toString('base64')
+        );
+
+        expect(
+          extensions
+            .filter((e) => e.type.startsWith('1.3.6.1.4.1.57264'))
+            .map((e) => e.toString('asn'))
+        ).toMatchSnapshot();
       });
     });
   });
