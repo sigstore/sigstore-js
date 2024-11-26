@@ -1,5 +1,14 @@
 # @sigstore/mock-server
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [c2ca121]
+- Updated dependencies [8279f49]
+- Updated dependencies [8ec213e]
+  - @sigstore/mock@0.9.0
+
 ## 0.2.0
 
 ### Minor Changes
