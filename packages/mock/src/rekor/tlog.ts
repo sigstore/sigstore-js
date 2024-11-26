@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
- 
+
 import { LogEntry } from '@sigstore/rekor-types';
 import canonicalize from 'canonicalize';
 import crypto from 'crypto';
@@ -70,7 +70,7 @@ class TLogImpl implements TLog {
 
     return {
       [uuid]: {
-        body: body,
+        body: body.toString('base64'),
         integratedTime: timestamp,
         logID: logID.toString('hex'),
         logIndex: logIndex,
