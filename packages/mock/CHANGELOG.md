@@ -1,5 +1,16 @@
 # @sigstore/mock
 
+## 0.9.0
+
+### Minor Changes
+
+- 8ec213e: Update Fulcio mock with support for CSRs
+
+### Patch Changes
+
+- c2ca121: Update Fulcio mock server to support all GH OIDC claims
+- 8279f49: Fix encoding of body field returned by mock Rekor server
+
 ## 0.8.0
 
 ### Minor Changes
