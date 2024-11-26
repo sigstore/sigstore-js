@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import x509 from '@peculiar/x509';
 import assert from 'assert';
 import { generateKeyPairSync } from 'crypto';
 import * as jose from 'jose';
@@ -101,7 +102,9 @@ function parseBody(
 ): { subject: string; publicKey: string; claims: Record<string, string> } {
   const json = JSON.parse(body.toString());
   const oidc = json.credentials.oidcIdentityToken;
-  const pem = json.publicKeyRequest.publicKey.content;
+  const pem = json.publicKeyRequest
+    ? json.publicKeyRequest.publicKey.content
+    : extractCSRKey(json.certificateSigningRequest);
 
   // Decode the JWT
   const claims = jose.decodeJwt(oidc) as Record<string, string>;
@@ -264,6 +267,11 @@ function extensionFromClaims(claims: Record<string, string>): ExtensionValue[] {
   }
 
   return extensions;
+}
+
+function extractCSRKey(pem: string): string {
+  const csr = new x509.Pkcs10CertificateRequest(pem);
+  return csr.publicKey.toString('pem');
 }
 
 // PEM string to DER-encoded byte buffer conversion

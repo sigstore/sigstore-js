@@ -1,6 +1,89 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`fulcioHandler #fn when invoked returns a certificate chain 1`] = `
+exports[`fulcioHandler #fn when invoked w/ a CSR returns a certificate chain 1`] = `
+Extensions [
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.1
+  OCTET STRING : 687474703a2f2f666f6f2e636f6d",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.8
+  OCTET STRING :
+    UTF8String : 'http://foo.com'",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.2
+  OCTET STRING : 776f726b666c6f775f6469737061746368",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.20
+  OCTET STRING :
+    UTF8String : 'workflow_dispatch'",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.9
+  OCTET STRING :
+    UTF8String : 'https://github.com/foo/attest-demo/.github/workflows/oidc.yml@refs/heads/main'",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.10
+  OCTET STRING :
+    UTF8String : 'ba214227977e57973d87219493ad93eeda9c7d6c'",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.6
+  OCTET STRING : 726566732f68656164732f6d61696e",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.14
+  OCTET STRING :
+    UTF8String : 'refs/heads/main'",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.5
+  OCTET STRING : 666f6f2f6174746573742d64656d6f",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.12
+  OCTET STRING :
+    UTF8String : 'https://github.com/foo/attest-demo'",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.15
+  OCTET STRING :
+    UTF8String : '792829709'",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.16
+  OCTET STRING :
+    UTF8String : 'https://github.com/foo'",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.17
+  OCTET STRING :
+    UTF8String : '398027'",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.22
+  OCTET STRING :
+    UTF8String : 'public'",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.11
+  OCTET STRING :
+    UTF8String : 'github-hosted'",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.3
+  OCTET STRING : 62613231343232373937376535373937336438373231393439336164393365656461396337643663",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.13
+  OCTET STRING :
+    UTF8String : 'ba214227977e57973d87219493ad93eeda9c7d6c'",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.4
+  OCTET STRING : 4f494443",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.18
+  OCTET STRING :
+    UTF8String : 'https://github.com/foo/attest-demo/.github/workflows/oidc.yml@refs/heads/main'",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.19
+  OCTET STRING :
+    UTF8String : 'ba214227977e57973d87219493ad93eeda9c7d6c'",
+  "SEQUENCE :
+  OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.21
+  OCTET STRING :
+    UTF8String : 'https://github.com/foo/attest-demo/actions/runs/11997537386/attempts/3'",
+]
+`;
+
+exports[`fulcioHandler #fn when invoked w/ a public key returns a certificate chain 1`] = `
 Extensions [
   "SEQUENCE :
   OBJECT IDENTIFIER : 1.3.6.1.4.1.57264.1.1
