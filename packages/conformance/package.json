@@ -19,7 +19,9 @@
   "dependencies": {
     "@oclif/core": "^4",
     "@sigstore/bundle": "^3.0.0",
+    "@sigstore/core": "^2.0.0",
     "@sigstore/protobuf-specs": "^0.3.2",
+    "@sigstore/tuf": "^3.0.0",
     "@sigstore/verify": "^2.0.0",
     "elliptic": "^6.6.1",
     "sigstore": "^3.0.0"
