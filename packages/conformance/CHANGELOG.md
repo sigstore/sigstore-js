@@ -1,5 +1,12 @@
 # @sigstore/conformance
 
+## 0.3.0
+
+### Minor Changes
+
+- 0bc4b37: Implement `--trusted-root` flag on `verify` command.
+- cd51310: Support verification by artifact OR artifact digest
+
 ## 0.2.4
 
 ### Patch Changes
