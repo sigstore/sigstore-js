@@ -1,5 +1,11 @@
 # @sigstore/conformance
 
+## 0.4.0
+
+### Minor Changes
+
+- d7b528e: Remove `sign` and `verify` commands from conformance CLI
+
 ## 0.3.0
 
 ### Minor Changes
