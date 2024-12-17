@@ -9,7 +9,6 @@
   "references": [
     { "path": "../bundle" },
     { "path": "../client" },
-    { "path": "../core" },
     { "path": "../tuf" },
     { "path": "../verify" }
   ]
