@@ -1,5 +1,11 @@
 # @sigstore/mock
 
+## 0.10.0
+
+### Minor Changes
+
+- 74cc6c5: Bump @sigstore/protobuf-specs from 0.3.2 to 0.4.0
+
 ## 0.9.0
 
 ### Minor Changes

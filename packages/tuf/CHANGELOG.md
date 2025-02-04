@@ -1,5 +1,15 @@
 # @sigstore/tuf
 
+## 3.1.0
+
+### Minor Changes
+
+- 74cc6c5: Bump @sigstore/protobuf-specs from 0.3.2 to 0.4.0
+
+### Patch Changes
+
+- c9abfaa: Update TUF seed files
+
 ## 3.0.0
 
 ### Major Changes

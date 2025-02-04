@@ -1,5 +1,16 @@
 # @sigstore/sign
 
+## 3.1.0
+
+### Minor Changes
+
+- 74cc6c5: Bump @sigstore/protobuf-specs from 0.3.2 to 0.4.0
+
+### Patch Changes
+
+- Updated dependencies [74cc6c5]
+  - @sigstore/bundle@3.1.0
+
 ## 3.0.0
 
 ### Major Changes
