@@ -7,17 +7,13 @@ exports[`toDSSEBundle when the certificateChain option is true when a certificat
     "payloadType": "text/plain",
     "signatures": [
       {
-        "keyid": "",
         "sig": "c2lnbmF0dXJl",
       },
     ],
   },
   "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.2",
   "verificationMaterial": {
-    "timestampVerificationData": {
-      "rfc3161Timestamps": [],
-    },
-    "tlogEntries": [],
+    "timestampVerificationData": {},
     "x509CertificateChain": {
       "certificates": [
         {
@@ -46,10 +42,7 @@ exports[`toDSSEBundle when the certificateChain option is true when a public key
     "publicKey": {
       "hint": "hint",
     },
-    "timestampVerificationData": {
-      "rfc3161Timestamps": [],
-    },
-    "tlogEntries": [],
+    "timestampVerificationData": {},
   },
 }
 `;
@@ -61,20 +54,14 @@ exports[`toDSSEBundle when the certificateChain option is true when a public key
     "payloadType": "text/plain",
     "signatures": [
       {
-        "keyid": "",
         "sig": "c2lnbmF0dXJl",
       },
     ],
   },
   "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.2",
   "verificationMaterial": {
-    "publicKey": {
-      "hint": "",
-    },
-    "timestampVerificationData": {
-      "rfc3161Timestamps": [],
-    },
-    "tlogEntries": [],
+    "publicKey": {},
+    "timestampVerificationData": {},
   },
 }
 `;
@@ -86,7 +73,6 @@ exports[`toDSSEBundle when the singleCertificate option is undefined/false when 
     "payloadType": "text/plain",
     "signatures": [
       {
-        "keyid": "",
         "sig": "c2lnbmF0dXJl",
       },
     ],
@@ -96,10 +82,7 @@ exports[`toDSSEBundle when the singleCertificate option is undefined/false when 
     "certificate": {
       "rawBytes": "Y2VydGlmaWNhdGU=",
     },
-    "timestampVerificationData": {
-      "rfc3161Timestamps": [],
-    },
-    "tlogEntries": [],
+    "timestampVerificationData": {},
   },
 }
 `;
@@ -121,10 +104,7 @@ exports[`toDSSEBundle when the singleCertificate option is undefined/false when 
     "publicKey": {
       "hint": "hint",
     },
-    "timestampVerificationData": {
-      "rfc3161Timestamps": [],
-    },
-    "tlogEntries": [],
+    "timestampVerificationData": {},
   },
 }
 `;
@@ -136,20 +116,14 @@ exports[`toDSSEBundle when the singleCertificate option is undefined/false when 
     "payloadType": "text/plain",
     "signatures": [
       {
-        "keyid": "",
         "sig": "c2lnbmF0dXJl",
       },
     ],
   },
   "mediaType": "application/vnd.dev.sigstore.bundle.v0.3+json",
   "verificationMaterial": {
-    "publicKey": {
-      "hint": "",
-    },
-    "timestampVerificationData": {
-      "rfc3161Timestamps": [],
-    },
-    "tlogEntries": [],
+    "publicKey": {},
+    "timestampVerificationData": {},
   },
 }
 `;
@@ -165,10 +139,7 @@ exports[`toMessageSignatureBundle when the certificateChain option is true retur
     "signature": "c2lnbmF0dXJl",
   },
   "verificationMaterial": {
-    "timestampVerificationData": {
-      "rfc3161Timestamps": [],
-    },
-    "tlogEntries": [],
+    "timestampVerificationData": {},
     "x509CertificateChain": {
       "certificates": [
         {
@@ -194,10 +165,7 @@ exports[`toMessageSignatureBundle when the singleCertificate option is undefined
     "certificate": {
       "rawBytes": "Y2VydGlmaWNhdGU=",
     },
-    "timestampVerificationData": {
-      "rfc3161Timestamps": [],
-    },
-    "tlogEntries": [],
+    "timestampVerificationData": {},
   },
 }
 `;
