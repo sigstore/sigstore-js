@@ -76,7 +76,7 @@ describe('envelopeFromJSON', () => {
 describe('bundleToJSON', () => {
   const tlogEntries = [
     {
-      logIndex: '0',
+      logIndex: '1',
       logId: {
         keyId: Buffer.from('logId'),
       },
@@ -90,9 +90,9 @@ describe('bundleToJSON', () => {
         signedEntryTimestamp: Buffer.from('inclusionPromise'),
       },
       inclusionProof: {
-        logIndex: '0',
+        logIndex: '2',
         rootHash: Buffer.from('rootHash'),
-        treeSize: '0',
+        treeSize: '3',
         hashes: [Buffer.from('hash')],
         checkpoint: {
           envelope: 'checkpoint',

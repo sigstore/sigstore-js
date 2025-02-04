@@ -37,9 +37,9 @@ exports[`bundleToJSON SerializedDSSEBundle (v0.3) matches the snapshot 1`] = `
           "hashes": [
             "aGFzaA==",
           ],
-          "logIndex": "0",
+          "logIndex": "2",
           "rootHash": "cm9vdEhhc2g=",
-          "treeSize": "0",
+          "treeSize": "3",
         },
         "integratedTime": "2021-01-01T00:00:00Z",
         "kindVersion": {
@@ -49,7 +49,7 @@ exports[`bundleToJSON SerializedDSSEBundle (v0.3) matches the snapshot 1`] = `
         "logId": {
           "keyId": "bG9nSWQ=",
         },
-        "logIndex": "0",
+        "logIndex": "1",
       },
     ],
   },
@@ -90,9 +90,9 @@ exports[`bundleToJSON SerializedDSSEBundle matches the snapshot 1`] = `
           "hashes": [
             "aGFzaA==",
           ],
-          "logIndex": "0",
+          "logIndex": "2",
           "rootHash": "cm9vdEhhc2g=",
-          "treeSize": "0",
+          "treeSize": "3",
         },
         "integratedTime": "2021-01-01T00:00:00Z",
         "kindVersion": {
@@ -102,7 +102,7 @@ exports[`bundleToJSON SerializedDSSEBundle matches the snapshot 1`] = `
         "logId": {
           "keyId": "bG9nSWQ=",
         },
-        "logIndex": "0",
+        "logIndex": "1",
       },
     ],
     "x509CertificateChain": {
@@ -150,9 +150,9 @@ exports[`bundleToJSON SerializedMessageSignatureBundle matches the snapshot 1`] 
           "hashes": [
             "aGFzaA==",
           ],
-          "logIndex": "0",
+          "logIndex": "2",
           "rootHash": "cm9vdEhhc2g=",
-          "treeSize": "0",
+          "treeSize": "3",
         },
         "integratedTime": "2021-01-01T00:00:00Z",
         "kindVersion": {
@@ -162,7 +162,7 @@ exports[`bundleToJSON SerializedMessageSignatureBundle matches the snapshot 1`] 
         "logId": {
           "keyId": "bG9nSWQ=",
         },
-        "logIndex": "0",
+        "logIndex": "1",
       },
     ],
   },
