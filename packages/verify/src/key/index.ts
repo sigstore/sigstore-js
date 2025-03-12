@@ -54,22 +54,14 @@ export function verifyCertificate(
   trustMaterial: TrustMaterial
 ): CertificateVerificationResult {
   // Check that leaf certificate chains to a trusted CA
-  const path = verifyCertificateChain(
-    leaf,
-    trustMaterial.certificateAuthorities
-  );
-
-  // Check that ALL certificates are valid for ALL of the timestamps
-  const validForDate = timestamps.every((timestamp) =>
-    path.every((cert) => cert.validForDate(timestamp))
-  );
-
-  if (!validForDate) {
-    throw new VerificationError({
-      code: 'CERTIFICATE_ERROR',
-      message: 'certificate is not valid or expired at the specified date',
-    });
-  }
+  let path: X509Certificate[] = [];
+  timestamps.forEach((timestamp) => {
+    path = verifyCertificateChain(
+      timestamp,
+      leaf,
+      trustMaterial.certificateAuthorities
+    );
+  });
 
   return {
     scts: verifySCTs(path[0], path[1], trustMaterial.ctlogs),
