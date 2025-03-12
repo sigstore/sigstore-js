@@ -15,19 +15,12 @@ limitations under the License.
 */
 import type { CertAuthority, TLogAuthority } from './trust.types';
 
-type CertAuthorityFilterCriteria = {
-  start: Date;
-  end: Date;
-};
-
 export function filterCertAuthorities(
   certAuthorities: CertAuthority[],
-  criteria: CertAuthorityFilterCriteria
+  timestamp: Date
 ): CertAuthority[] {
   return certAuthorities.filter((ca) => {
-    return (
-      ca.validFor.start <= criteria.start && ca.validFor.end >= criteria.end
-    );
+    return ca.validFor.start <= timestamp && ca.validFor.end >= timestamp;
   });
 }
 

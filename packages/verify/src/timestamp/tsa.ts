@@ -11,10 +11,10 @@ export function verifyRFC3161Timestamp(
   const signingTime = timestamp.signingTime;
 
   // Filter for CAs which were valid at the time of signing
-  timestampAuthorities = filterCertAuthorities(timestampAuthorities, {
-    start: signingTime,
-    end: signingTime,
-  });
+  timestampAuthorities = filterCertAuthorities(
+    timestampAuthorities,
+    signingTime
+  );
 
   // Filter for CAs which match serial and issuer embedded in the timestamp
   timestampAuthorities = filterCAsBySerialAndIssuer(timestampAuthorities, {
@@ -55,23 +55,12 @@ function verifyTimestampForCA(
     new CertificateChainVerifier({
       untrustedCert: leaf,
       trustedCerts: cas,
+      timestamp: signingTime,
     }).verify();
   } catch (e) {
     throw new VerificationError({
       code: 'TIMESTAMP_ERROR',
       message: 'invalid certificate chain',
-    });
-  }
-
-  // Check that all of the CA certs were valid at the time of signing
-  const validAtSigningTime = ca.certChain.every((cert) =>
-    cert.validForDate(signingTime)
-  );
-
-  if (!validAtSigningTime) {
-    throw new VerificationError({
-      code: 'TIMESTAMP_ERROR',
-      message: 'timestamp was signed with an expired certificate',
     });
   }
 

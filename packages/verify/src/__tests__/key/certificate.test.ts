@@ -27,6 +27,7 @@ describe('verifyCertificateChain', () => {
   const invalidLeafCert = X509Certificate.parse(certificates.invalidleaf);
   const invalidIntCert = X509Certificate.parse(certificates.invalidint);
   const deepLeafCert = X509Certificate.parse(certificates.deepleaf);
+  const timestamp = new Date('2023-01-01');
 
   describe('when there are no matching CAs', () => {
     const cas: CertAuthority[] = [
@@ -37,10 +38,9 @@ describe('verifyCertificateChain', () => {
     ];
 
     it('throws an error', () => {
-      expect(() => verifyCertificateChain(rootCert, cas)).toThrowWithCode(
-        VerificationError,
-        'CERTIFICATE_ERROR'
-      );
+      expect(() =>
+        verifyCertificateChain(timestamp, rootCert, cas)
+      ).toThrowWithCode(VerificationError, 'CERTIFICATE_ERROR');
     });
   });
 
@@ -48,10 +48,9 @@ describe('verifyCertificateChain', () => {
     const cas: CertAuthority[] = [];
 
     it('throws an error', () => {
-      expect(() => verifyCertificateChain(rootCert, cas)).toThrowWithCode(
-        VerificationError,
-        'CERTIFICATE_ERROR'
-      );
+      expect(() =>
+        verifyCertificateChain(timestamp, rootCert, cas)
+      ).toThrowWithCode(VerificationError, 'CERTIFICATE_ERROR');
     });
   });
 
@@ -59,10 +58,9 @@ describe('verifyCertificateChain', () => {
     const cas: CertAuthority[] = [];
 
     it('throws an error', () => {
-      expect(() => verifyCertificateChain(leafCert, cas)).toThrowWithCode(
-        VerificationError,
-        'CERTIFICATE_ERROR'
-      );
+      expect(() =>
+        verifyCertificateChain(timestamp, leafCert, cas)
+      ).toThrowWithCode(VerificationError, 'CERTIFICATE_ERROR');
     });
   });
 
@@ -76,7 +74,7 @@ describe('verifyCertificateChain', () => {
 
     it('throws an error', () => {
       expect(() =>
-        verifyCertificateChain(invalidLeafCert, cas)
+        verifyCertificateChain(timestamp, invalidLeafCert, cas)
       ).toThrowWithCode(VerificationError, 'CERTIFICATE_ERROR');
     });
   });
@@ -90,10 +88,9 @@ describe('verifyCertificateChain', () => {
     ];
 
     it('throws an error', () => {
-      expect(() => verifyCertificateChain(deepLeafCert, cas)).toThrowWithCode(
-        VerificationError,
-        'CERTIFICATE_ERROR'
-      );
+      expect(() =>
+        verifyCertificateChain(timestamp, deepLeafCert, cas)
+      ).toThrowWithCode(VerificationError, 'CERTIFICATE_ERROR');
     });
   });
 
@@ -106,11 +103,13 @@ describe('verifyCertificateChain', () => {
     ];
 
     it('does not throw an error', () => {
-      expect(() => verifyCertificateChain(leafCert, cas)).not.toThrowError();
+      expect(() =>
+        verifyCertificateChain(timestamp, leafCert, cas)
+      ).not.toThrow();
     });
 
     it('returns the trusted chain', () => {
-      const trustedChain = verifyCertificateChain(leafCert, cas);
+      const trustedChain = verifyCertificateChain(timestamp, leafCert, cas);
       expect(trustedChain).toBeDefined();
       expect(trustedChain).toHaveLength(3);
 
@@ -128,11 +127,13 @@ describe('verifyCertificateChain', () => {
     ];
 
     it('does not throw an error', () => {
-      expect(() => verifyCertificateChain(rootCert, cas)).not.toThrowError();
+      expect(() =>
+        verifyCertificateChain(timestamp, rootCert, cas)
+      ).not.toThrow();
     });
 
     it('returns the trusted chain', () => {
-      const trustedChain = verifyCertificateChain(rootCert, cas);
+      const trustedChain = verifyCertificateChain(timestamp, rootCert, cas);
       expect(trustedChain).toBeDefined();
       expect(trustedChain).toHaveLength(1);
       expect(trustedChain[0]).toEqual(rootCert);

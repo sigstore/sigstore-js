@@ -20,15 +20,13 @@ import { filterCertAuthorities } from '../trust';
 import { CertAuthority } from '../trust';
 
 export function verifyCertificateChain(
+  timestamp: Date,
   leaf: X509Certificate,
   certificateAuthorities: CertAuthority[]
 ): X509Certificate[] {
   // Filter list of trusted CAs to those which are valid for the given
-  // leaf certificate.
-  const cas = filterCertAuthorities(certificateAuthorities, {
-    start: leaf.notBefore,
-    end: leaf.notAfter,
-  });
+  // timestamp
+  const cas = filterCertAuthorities(certificateAuthorities, timestamp);
 
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   let error: any;
@@ -37,6 +35,7 @@ export function verifyCertificateChain(
       const verifier = new CertificateChainVerifier({
         trustedCerts: ca.certChain,
         untrustedCert: leaf,
+        timestamp,
       });
       return verifier.verify();
     } catch (err) {
@@ -56,12 +55,14 @@ export function verifyCertificateChain(
 interface CertificateChainVerifierOptions {
   trustedCerts: X509Certificate[];
   untrustedCert: X509Certificate;
+  timestamp: Date;
 }
 
 export class CertificateChainVerifier {
   private untrustedCert: X509Certificate;
   private trustedCerts: X509Certificate[];
   private localCerts: X509Certificate[];
+  private timestamp: Date;
 
   constructor(opts: CertificateChainVerifierOptions) {
     this.untrustedCert = opts.untrustedCert;
@@ -70,6 +71,7 @@ export class CertificateChainVerifier {
       ...opts.trustedCerts,
       opts.untrustedCert,
     ]);
+    this.timestamp = opts.timestamp;
   }
 
   public verify(): X509Certificate[] {
@@ -78,6 +80,17 @@ export class CertificateChainVerifier {
 
     // Perform validation checks on each certificate in the path
     this.checkPath(certificatePath);
+
+    const validForDate = certificatePath.every((cert) =>
+      cert.validForDate(this.timestamp)
+    );
+
+    if (!validForDate) {
+      throw new VerificationError({
+        code: 'CERTIFICATE_ERROR',
+        message: 'certificate is not valid or expired at the specified date',
+      });
+    }
 
     // Return verified certificate path
     return certificatePath;
