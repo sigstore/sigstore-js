@@ -18,7 +18,7 @@ jobs:
     - name: Checkout source
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
     - name: Setup node
-      uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+      uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
       with:
         node-version: 22
         cache: npm
@@ -26,7 +26,7 @@ jobs:
       run: npm ci
     - name: Build sigstore-js
       run: npm run build
-    - uses: sigstore/sigstore-conformance@d658ea74a060aeabae78f8a379167f219dc38c38 # v0.0.16
+    - uses: sigstore/sigstore-conformance@640e7dfb715518eeeb492910c6d244cedcc6cfea # v0.0.17
       with:
         entrypoint: ${{ github.workspace }}/packages/conformance/bin/run
 
@@ -37,7 +37,7 @@ jobs:
     - name: Checkout source
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
     - name: Setup node
-      uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+      uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
       with:
         node-version: 22
         cache: npm
@@ -45,7 +45,7 @@ jobs:
       run: npm ci
     - name: Build sigstore-js
       run: npm run build
-    - uses: sigstore/sigstore-conformance@d658ea74a060aeabae78f8a379167f219dc38c38 # v0.0.16
+    - uses: sigstore/sigstore-conformance@640e7dfb715518eeeb492910c6d244cedcc6cfea # v0.0.17
       with:
         entrypoint: ${{ github.workspace }}/packages/conformance/bin/run
         environment: staging
