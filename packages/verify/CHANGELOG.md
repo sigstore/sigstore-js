@@ -1,5 +1,11 @@
 # @sigstore/verify
 
+## 2.1.1
+
+### Patch Changes
+
+- 620c30c: Fix to use verified timestamp when selecting which certificate authority chains should be used from the trusted root to verify Fulcio-issued signing certificates
+
 ## 2.1.0
 
 ### Minor Changes
