@@ -21,10 +21,12 @@ import { parseImageName } from './name';
 export type Credentials = {
   readonly username: string;
   readonly password: string;
+  readonly headers?: { [key: string]: string };
 };
 
 type DockerConifg = {
   auths?: { [registry: string]: { auth: string; identitytoken?: string } };
+  HttpHeaders?: { [key: string]: string };
 };
 
 // Returns the credentials for a given registry by reading the Docker config
@@ -58,7 +60,7 @@ export const getRegistryCredentials = (imageName: string): Credentials => {
   // If the identitytoken is present, use it as the password (primarily for ACR)
   const pass = creds.identitytoken ? creds.identitytoken : password;
 
-  return { username, password: pass };
+  return { headers: dockerConfig.HttpHeaders, username, password: pass };
 };
 
 // Encode the username and password as base64-encoded basicauth value
