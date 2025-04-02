@@ -89,15 +89,39 @@ describe('getRegistryCredentials', () => {
     });
   });
 
+  describe('when ther are no creds but there are headers', () => {
+    const dockerConfig = {
+      HttpHeaders: {
+        'X-Api-Key': 'apikey',
+      },
+    };
+
+    beforeEach(() => {
+      fs.writeFileSync(
+        path.join(tempDir, '.docker', 'config.json'),
+        JSON.stringify(dockerConfig),
+        {}
+      );
+    });
+
+    it('returns the headers', () => {
+      const creds = getRegistryCredentials(imageName);
+
+      expect(creds).toEqual({ headers: dockerConfig.HttpHeaders });
+    });
+  });
+
   describe('when credentials exist for the registry', () => {
     const username = 'username';
     const password = 'password';
+    const headers = { 'X-Api-Key': 'apikey' };
     const dockerConfig = {
       auths: {
         [registryName]: {
           auth: Buffer.from(`${username}:${password}`).toString('base64'),
         },
       },
+      HttpHeaders: headers,
     };
 
     beforeEach(() => {
@@ -111,7 +135,7 @@ describe('getRegistryCredentials', () => {
     it('returns the credentials', () => {
       const creds = getRegistryCredentials(imageName);
 
-      expect(creds).toEqual({ username, password });
+      expect(creds).toEqual({ username, password, headers });
     });
   });
 
