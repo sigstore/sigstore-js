@@ -72,6 +72,10 @@ export type RegistryFetchOptions = Pick<
   'proxy' | 'noProxy' | 'retry' | 'timeout'
 >;
 
+type UsernamePasswordCreds = Required<
+  Pick<Credentials, 'username' | 'password'>
+>;
+
 export class RegistryClient {
   readonly #baseURL: string;
   readonly #repository: string;
@@ -100,6 +104,9 @@ export class RegistryClient {
   // authenticate requests.
   // https://github.com/google/go-containerregistry/blob/main/pkg/authn/README.md#the-registry
   async signIn(creds: Credentials): Promise<void> {
+    // Ensure we include an auth headers if they are present
+    this.#fetch = this.#fetch.defaults({ headers: creds.headers });
+
     // Initiate a blob upload to get the auth challenge
     const probeResponse = await this.#fetch(
       `${this.#baseURL}/v2/${this.#repository}/blobs/uploads/`,
@@ -110,6 +117,13 @@ export class RegistryClient {
     if (probeResponse.status === 200) {
       return;
     }
+
+    // If we still need to authenticate, we must have credentials
+    const { username, password } = creds;
+    if (!username || !password) {
+      throw new Error('No credentials provided');
+    }
+    const userPass = { username, password };
 
     const authHeader =
       probeResponse.headers.get(HEADER_AUTHENTICATE) ||
@@ -129,13 +143,13 @@ export class RegistryClient {
     let token: string | undefined;
     if (creds.username === '<token>') {
       // If the OAUth2 token request fails, try to fetch a distribution token
-      token = await this.#fetchOAuth2Token(creds, challenge).catch(
+      token = await this.#fetchOAuth2Token(userPass, challenge).catch(
         () => undefined
       );
     }
 
     if (!token) {
-      token = await this.#fetchDistributionToken(creds, challenge);
+      token = await this.#fetchDistributionToken(userPass, challenge);
     }
 
     // Ensure the token is sent with all future requests
@@ -284,7 +298,7 @@ export class RegistryClient {
   }
 
   async #fetchDistributionToken(
-    creds: Credentials,
+    creds: UsernamePasswordCreds,
     challenge: AuthChallenge
   ): Promise<string> {
     const basicAuth = toBasicAuth(creds);
@@ -302,7 +316,7 @@ export class RegistryClient {
   }
 
   async #fetchOAuth2Token(
-    creds: Credentials,
+    creds: UsernamePasswordCreds,
     challenge: AuthChallenge
   ): Promise<string> {
     const body = new URLSearchParams({

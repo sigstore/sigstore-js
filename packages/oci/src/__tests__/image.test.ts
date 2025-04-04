@@ -36,9 +36,11 @@ describe('OCIImage', () => {
     path: 'path',
   };
 
+  const headers = { 'X-Custom-Auth': 'authtoken' };
   const creds: Credentials = {
     username: 'username',
     password: 'password',
+    headers,
   };
 
   describe('constructor', () => {
@@ -71,7 +73,7 @@ describe('OCIImage', () => {
 
     describe('when the registry supports referrers', () => {
       beforeEach(() => {
-        nock(`https://${registry}`)
+        nock(`https://${registry}`, { reqheaders: headers })
           .post(`/v2/${repo}/blobs/uploads/`)
           .reply(401, {}, { [HEADER_AUTHENTICATE]: challenge })
           .head(`/v2/${repo}/manifests/${imageDigest}`)
@@ -88,14 +90,14 @@ describe('OCIImage', () => {
           .matchHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_OCTET_STREAM)
           .reply(201);
 
-        nock(`https://${registry}`)
+        nock(`https://${registry}`, { reqheaders: headers })
           .filteringPath(/sha256:[0-9a-f]{64}/, artifactManifestDigest)
           .put(`/v2/${repo}/manifests/${artifactManifestDigest}`)
           .reply(201, undefined, {
             [HEADER_OCI_SUBJECT]: artifactManifestDigest,
           });
 
-        nock(`https://${registry}`)
+        nock(`https://${registry}`, { reqheaders: headers })
           .get(`/v2/${repo}/referrers/${ZERO_DIGEST}`)
           .reply(200);
       });
@@ -116,7 +118,7 @@ describe('OCIImage', () => {
 
     describe('when the registry does NOT support referrers', () => {
       beforeEach(() => {
-        nock(`https://${registry}`)
+        nock(`https://${registry}`, { reqheaders: headers })
           .post(`/v2/${repo}/blobs/uploads/`)
           .reply(401, {}, { [HEADER_AUTHENTICATE]: challenge })
           .head(`/v2/${repo}/manifests/${imageDigest}`)
@@ -135,7 +137,7 @@ describe('OCIImage', () => {
           .get(`/v2/${repo}/referrers/${ZERO_DIGEST}`)
           .reply(404);
 
-        nock(`https://${registry}`)
+        nock(`https://${registry}`, { reqheaders: headers })
           .filteringPath(/sha256:[0-9a-f]{64}/, artifactManifestDigest)
           .put(`/v2/${repo}/manifests/${artifactManifestDigest}`)
           .reply(201, undefined);
@@ -143,7 +145,7 @@ describe('OCIImage', () => {
 
       describe('when there is NO existing referrer index', () => {
         beforeEach(() => {
-          nock(`https://${registry}`)
+          nock(`https://${registry}`, { reqheaders: headers })
             .get(`/v2/${repo}/manifests/sha256-deadbeef`)
             .reply(404, undefined)
             .put(`/v2/${repo}/manifests/sha256-deadbeef`)
@@ -178,7 +180,7 @@ describe('OCIImage', () => {
         };
 
         beforeEach(() => {
-          nock(`https://${registry}`)
+          nock(`https://${registry}`, { reqheaders: headers })
             .get(`/v2/${repo}/manifests/sha256-deadbeef`)
             .reply(200, index, {
               [HEADER_CONTENT_TYPE]: CONTENT_TYPE_OCI_INDEX,
@@ -203,7 +205,7 @@ describe('OCIImage', () => {
 
       describe('when the referrer index is NOT the expected type', () => {
         beforeEach(() => {
-          nock(`https://${registry}`)
+          nock(`https://${registry}`, { reqheaders: headers })
             .get(`/v2/${repo}/manifests/sha256-deadbeef`)
             .reply(
               200,
@@ -228,7 +230,7 @@ describe('OCIImage', () => {
 
       describe('when there is an error retrieving the referrer index', () => {
         beforeEach(() => {
-          nock(`https://${registry}`)
+          nock(`https://${registry}`, { reqheaders: headers })
             .get(`/v2/${repo}/manifests/sha256-deadbeef`)
             .reply(418, undefined);
         });

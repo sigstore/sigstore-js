@@ -36,6 +36,7 @@ describe('RegistryClient', () => {
   const registryName = 'registry.example.com';
   const repoName = 'test';
   const registryURL = `https://${registryName}`;
+  const headers = { 'X-Custom-Auth': 'sometoken' };
   const subject = new RegistryClient(registryName, repoName, { retry: false });
 
   describe('checkVersion', () => {
@@ -78,6 +79,32 @@ describe('RegistryClient', () => {
 
       it('returns without error', async () => {
         await expect(subject.signIn(creds)).resolves.toBeUndefined();
+      });
+    });
+
+    describe('when auth is provided by headers', () => {
+      beforeEach(() => {
+        nock(registryURL, { reqheaders: headers })
+          .post(`/v2/${repoName}/blobs/uploads/`)
+          .reply(200, undefined, {});
+      });
+
+      it('returns without error', async () => {
+        await expect(subject.signIn({ headers })).resolves.toBeUndefined();
+      });
+    });
+
+    describe('when header auth is unsuccessful', () => {
+      beforeEach(() => {
+        nock(registryURL, { reqheaders: headers })
+          .post(`/v2/${repoName}/blobs/uploads/`)
+          .reply(401, undefined, {});
+      });
+
+      it('returns without error', async () => {
+        await expect(subject.signIn({ headers })).rejects.toThrow(
+          /no credentials/i
+        );
       });
     });
 
@@ -141,8 +168,7 @@ describe('RegistryClient', () => {
       });
     });
 
-    describe('when the registry uses an bearer token returns an error', () => {
-       
+    describe('when the registry uses a bearer token and returns an error', () => {
       const creds = { username: '<token>', password: 'password' };
       const challenge =
         'Bearer realm="https://registry.example.com/oauth2/token";service="service";scope="scope"';
