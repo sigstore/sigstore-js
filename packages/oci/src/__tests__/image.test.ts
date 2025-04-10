@@ -69,6 +69,10 @@ describe('OCIImage', () => {
       .createHash('sha256')
       .update(Buffer.from('{}'))
       .digest('hex')}`;
+    const altEmptyDigest = `sha256:${crypto
+      .createHash('sha256')
+      .update(Buffer.from('{ }'))
+      .digest('hex')}`;
     const artifactManifestDigest = 'sha256:cafed00d';
 
     describe('when the registry supports referrers', () => {
@@ -108,6 +112,52 @@ describe('OCIImage', () => {
           mediaType,
           imageDigest,
           annotations,
+        });
+
+        expect(descriptor.digest).toMatch(/^sha256:[0-9a-f]{64}$/);
+        expect(descriptor.mediaType).toBe(CONTENT_TYPE_OCI_MANIFEST);
+        expect(descriptor.size).toBeGreaterThan(0);
+      });
+    });
+
+    describe('when the registry supports referrers (compat mode)', () => {
+      beforeEach(() => {
+        nock(`https://${registry}`, { reqheaders: headers })
+          .post(`/v2/${repo}/blobs/uploads/`)
+          .reply(401, {}, { [HEADER_AUTHENTICATE]: challenge })
+          .head(`/v2/${repo}/manifests/${imageDigest}`)
+          .reply(200, {})
+          .head(`/v2/${repo}/blobs/${artifactDigest}`)
+          .reply(404, {})
+          .head(`/v2/${repo}/blobs/${altEmptyDigest}`)
+          .reply(200, {})
+          .post(`/v2/${repo}/blobs/uploads/`)
+          .reply(202, undefined, {
+            Location: `/v2/${repo}/blobs/uploads/123`,
+          })
+          .put(`/v2/${repo}/blobs/uploads/123?digest=${artifactDigest}`)
+          .matchHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_OCTET_STREAM)
+          .reply(201);
+
+        nock(`https://${registry}`, { reqheaders: headers })
+          .filteringPath(/sha256:[0-9a-f]{64}/, artifactManifestDigest)
+          .put(`/v2/${repo}/manifests/${artifactManifestDigest}`)
+          .reply(201, undefined, {
+            [HEADER_OCI_SUBJECT]: artifactManifestDigest,
+          });
+
+        nock(`https://${registry}`, { reqheaders: headers })
+          .get(`/v2/${repo}/referrers/${ZERO_DIGEST}`)
+          .reply(200);
+      });
+
+      it('adds an artifact', async () => {
+        const descriptor = await subject.addArtifact({
+          artifact,
+          mediaType,
+          imageDigest,
+          annotations,
+          compatibility: true,
         });
 
         expect(descriptor.digest).toMatch(/^sha256:[0-9a-f]{64}$/);
