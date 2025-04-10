@@ -92,12 +92,14 @@ describe('getRegistryCredentials', () => {
   describe('when credentials exist for the registry', () => {
     const username = 'username';
     const password = 'password';
+    const headers = { 'X-Api-Key': 'apikey' };
     const dockerConfig = {
       auths: {
         [registryName]: {
           auth: Buffer.from(`${username}:${password}`).toString('base64'),
         },
       },
+      HttpHeaders: headers,
     };
 
     beforeEach(() => {
@@ -111,7 +113,7 @@ describe('getRegistryCredentials', () => {
     it('returns the credentials', () => {
       const creds = getRegistryCredentials(imageName);
 
-      expect(creds).toEqual({ username, password });
+      expect(creds).toEqual({ username, password, headers });
     });
   });
 

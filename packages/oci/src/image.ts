@@ -30,13 +30,22 @@ import {
 import type { Descriptor, ImageIndex, ImageManifest } from './types';
 
 const DOCKER_DEFAULT_REGISTRY = 'registry-1.docker.io';
+
+// https://github.com/opencontainers/image-spec/blob/main/manifest.md#guidance-for-an-empty-descriptor
 const EMPTY_BLOB = Buffer.from('{}');
+
+// Certain registries have been found to have issues with the OCI-standard empty
+// blob (i.e. `{}`) when uploading an OCI artifact manifest. To work around
+// this, we use a non-standard empty blob (containing an extra white space
+// character) that seems to wortk with these registries.
+const ALT_EMPTY_BLOB = Buffer.from('{ }');
 
 export type AddArtifactOptions = {
   readonly artifact: Buffer;
   readonly mediaType: string;
   readonly imageDigest: string;
   readonly annotations?: Record<string, string>;
+  readonly compatibility?: boolean;
   readonly fetchOpts?: FetchOptions;
 };
 
@@ -75,7 +84,9 @@ export class OCIImage {
       const artifactBlob = await this.#client.uploadBlob(opts.artifact);
 
       // Upload the empty blob (needed for the manifest config)
-      const emptyBlob = await this.#client.uploadBlob(EMPTY_BLOB);
+      const emptyBlob = await this.#client.uploadBlob(
+        opts.compatibility ? ALT_EMPTY_BLOB : EMPTY_BLOB
+      );
 
       // Construct artifact manifest
       const manifest = buildManifest({

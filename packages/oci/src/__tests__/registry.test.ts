@@ -36,6 +36,7 @@ describe('RegistryClient', () => {
   const registryName = 'registry.example.com';
   const repoName = 'test';
   const registryURL = `https://${registryName}`;
+  const headers = { 'X-Custom-Auth': 'sometoken' };
   const subject = new RegistryClient(registryName, repoName, { retry: false });
 
   describe('checkVersion', () => {
@@ -67,11 +68,11 @@ describe('RegistryClient', () => {
   });
 
   describe('signIn', () => {
-    const creds = { username: 'username', password: 'password' };
+    const creds = { username: 'username', password: 'password', headers };
 
     describe('when the client is already signed in', () => {
       beforeEach(() => {
-        nock(registryURL)
+        nock(registryURL, { reqheaders: headers })
           .post(`/v2/${repoName}/blobs/uploads/`)
           .reply(200, undefined, {});
       });
@@ -141,8 +142,7 @@ describe('RegistryClient', () => {
       });
     });
 
-    describe('when the registry uses an bearer token returns an error', () => {
-       
+    describe('when the registry uses a bearer token and returns an error', () => {
       const creds = { username: '<token>', password: 'password' };
       const challenge =
         'Bearer realm="https://registry.example.com/oauth2/token";service="service";scope="scope"';

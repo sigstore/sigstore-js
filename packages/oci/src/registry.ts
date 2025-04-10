@@ -100,6 +100,9 @@ export class RegistryClient {
   // authenticate requests.
   // https://github.com/google/go-containerregistry/blob/main/pkg/authn/README.md#the-registry
   async signIn(creds: Credentials): Promise<void> {
+    // Ensure we include an auth headers if they are present
+    this.#fetch = this.#fetch.defaults({ headers: creds.headers });
+
     // Initiate a blob upload to get the auth challenge
     const probeResponse = await this.#fetch(
       `${this.#baseURL}/v2/${this.#repository}/blobs/uploads/`,
