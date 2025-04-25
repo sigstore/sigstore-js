@@ -1,5 +1,12 @@
 # @sigstore/cli
 
+## 0.8.2
+
+### Patch Changes
+
+- Updated dependencies [dbf63f7]
+  - @sigstore/oci@0.5.0
+
 ## 0.8.1
 
 ### Patch Changes
