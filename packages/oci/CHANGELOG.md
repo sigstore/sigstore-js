@@ -1,5 +1,11 @@
 # @sigstore/oci
 
+## 0.5.0
+
+### Minor Changes
+
+- dbf63f7: Support for reading `HttpHeaders` from Docker configuration file.
+
 ## 0.4.0
 
 ### Minor Changes

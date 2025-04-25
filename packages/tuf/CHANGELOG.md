@@ -1,5 +1,11 @@
 # @sigstore/tuf
 
+## 3.1.1
+
+### Patch Changes
+
+- ec68ea7: Update TUF seed files
+
 ## 3.1.0
 
 ### Minor Changes
