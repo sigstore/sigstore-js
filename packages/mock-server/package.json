@@ -25,7 +25,7 @@
     "express": "5.1.0"
   },
   "devDependencies": {
-    "@types/express": "^5.0.1",
+    "@types/express": "^5.0.2",
     "oclif": "^4",
     "tslib": "^2.8.1"
   },
