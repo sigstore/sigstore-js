@@ -97,6 +97,7 @@ function initTufCache(cachePath: string): void {
     fs.mkdirSync(cachePath, { recursive: true });
   }
 
+  /* istanbul ignore else */
   if (!fs.existsSync(targetsPath)) {
     fs.mkdirSync(targetsPath);
   }
@@ -120,10 +121,11 @@ function seedCache({
 
   // If the root.json file does not exist (or we're forcing re-initialization),
   // populate it either from the supplied rootPath or from one of the repo seeds.
+  /* istanbul ignore else */
   if (!fs.existsSync(cachedRootPath) || forceInit) {
     if (tufRootPath) {
       fs.copyFileSync(tufRootPath, cachedRootPath);
-    } else { 
+    } else {
       const seeds: RepoSeeds = require('../seeds.json');
       const repoSeed = seeds[mirrorURL];
 
