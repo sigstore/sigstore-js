@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@peculiar/webcrypto": "^1.5.0",
-    "@peculiar/x509": "^1.12.3",
+    "@peculiar/x509": "^1.12.4",
     "@sigstore/protobuf-specs": "^0.4.1",
     "asn1js": "^3.0.6",
     "bytestreamjs": "^2.0.1",
