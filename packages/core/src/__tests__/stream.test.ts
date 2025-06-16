@@ -69,7 +69,7 @@ describe('ByteStream', () => {
       });
 
       it('throws an error', () => {
-        expect(() => subject.getUint8()).toThrowError(
+        expect(() => subject.getUint8()).toThrow(
           'request past end of buffer'
         );
       });
@@ -92,7 +92,7 @@ describe('ByteStream', () => {
       });
 
       it('throws an error', () => {
-        expect(() => subject.getUint16()).toThrowError(
+        expect(() => subject.getUint16()).toThrow(
           'request past end of buffer'
         );
       });
@@ -108,7 +108,7 @@ describe('ByteStream', () => {
 
     describe('when the length is greater than the buffer length', () => {
       it('throws an error', () => {
-        expect(() => subject.slice(0, 11)).toThrowError(
+        expect(() => subject.slice(0, 11)).toThrow(
           'request past end of buffer'
         );
       });

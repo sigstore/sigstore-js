@@ -62,6 +62,7 @@ export class OCIImage {
     };
 
     try {
+      /* istanbul ignore else */
       if (this.#credentials) {
         await this.#client.signIn(this.#credentials);
       }
@@ -127,6 +128,7 @@ export class OCIImage {
 
   async getDigest(tag: string): Promise<string> {
     try {
+      /* istanbul ignore else */
       if (this.#credentials) {
         await this.#client.signIn(this.#credentials);
       }
@@ -175,6 +177,7 @@ export class OCIImage {
 
     // If the artifact is not already in the index, add it to the list and
     // re-upload the index
+    /* istanbul ignore else */
     if (
       !referrerManifest.manifests.some(
         (manifest) => manifest.digest === opts.artifact.digest

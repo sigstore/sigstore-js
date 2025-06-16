@@ -37,7 +37,7 @@ describe('mock', () => {
         method: 'POST',
         body: 'test',
       });
-      expect(handler.fn).toBeCalled();
+      expect(handler.fn).toHaveBeenCalled();
       expect(response.status).toBe(result.statusCode);
       await expect(response.text()).resolves.toBe(result.response);
     });
@@ -50,7 +50,7 @@ describe('mock', () => {
         method: 'POST',
         body: JSON.stringify({ test: 'test' }),
       });
-      expect(handler.fn).toBeCalled();
+      expect(handler.fn).toHaveBeenCalled();
       expect(response.status).toBe(result.statusCode);
       await expect(response.text()).resolves.toBe(result.response);
     });

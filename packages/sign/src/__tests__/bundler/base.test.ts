@@ -113,7 +113,7 @@ describe('BaseBundleBuilder', () => {
 
       it('invokes the signer', async () => {
         await subject.create(artifact);
-        expect(fakePublicKeySigner.sign).toBeCalledWith(artifact.data);
+        expect(fakePublicKeySigner.sign).toHaveBeenCalledWith(artifact.data);
       });
 
       it('invokes the witnesses', async () => {
@@ -130,12 +130,12 @@ describe('BaseBundleBuilder', () => {
           },
         };
 
-        expect(fakeTSAWitness.testify).toBeCalledWith(
+        expect(fakeTSAWitness.testify).toHaveBeenCalledWith(
           expectedContent,
           publicKeySignature.key.publicKey
         );
 
-        expect(fakeRekorWitness.testify).toBeCalledWith(
+        expect(fakeRekorWitness.testify).toHaveBeenCalledWith(
           expectedContent,
           publicKeySignature.key.publicKey
         );
@@ -205,7 +205,7 @@ describe('BaseBundleBuilder', () => {
 
       it('invokes the signer', async () => {
         await subject.create(artifact);
-        expect(fakeCertificateSigner.sign).toBeCalledWith(artifact.data);
+        expect(fakeCertificateSigner.sign).toHaveBeenCalledWith(artifact.data);
       });
 
       it('invokes the witness', async () => {
@@ -222,12 +222,12 @@ describe('BaseBundleBuilder', () => {
           },
         };
 
-        expect(fakeTSAWitness.testify).toBeCalledWith(
+        expect(fakeTSAWitness.testify).toHaveBeenCalledWith(
           expectedContent,
           publicKeySignature.key.publicKey
         );
 
-        expect(fakeRekorWitness.testify).toBeCalledWith(
+        expect(fakeRekorWitness.testify).toHaveBeenCalledWith(
           expectedContent,
           publicKeySignature.key.publicKey
         );
@@ -312,8 +312,8 @@ describe('BaseBundleBuilder', () => {
       it('invokes the witnesses the correct number of times', async () => {
         await subject.create(artifact);
 
-        expect(fakeTSAWitness.testify).toBeCalledTimes(2);
-        expect(fakeRekorWitness.testify).toBeCalledTimes(2);
+        expect(fakeTSAWitness.testify).toHaveBeenCalledTimes(2);
+        expect(fakeRekorWitness.testify).toHaveBeenCalledTimes(2);
       });
 
       it('returns a bundle with all the verification material', async () => {

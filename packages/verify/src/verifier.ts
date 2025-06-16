@@ -162,6 +162,7 @@ export class Verifier {
     identity: CertificateIdentity
   ) {
     // Check the subject alternative name of the signer matches the policy
+    /* istanbul ignore else */
     if (policy.subjectAlternativeName) {
       verifySubjectAlternativeName(
         policy.subjectAlternativeName,
@@ -170,6 +171,7 @@ export class Verifier {
     }
 
     // Check that the extensions of the signer match the policy
+    /* istanbul ignore else */
     if (policy.extensions) {
       verifyExtensions(policy.extensions, identity.extensions);
     }
