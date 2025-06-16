@@ -43,7 +43,7 @@ describe('decodeLength', () => {
       0x87, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     ]);
     it('throws an error', () => {
-      expect(() => decodeLength(stream)).toThrowError(
+      expect(() => decodeLength(stream)).toThrow(
         'length exceeds 6 byte limit'
       );
     });
@@ -52,7 +52,7 @@ describe('decodeLength', () => {
   describe('when the encoded length is indefinite', () => {
     const stream = streamFromBytes([0x80]);
     it('throws an error', () => {
-      expect(() => decodeLength(stream)).toThrowError(
+      expect(() => decodeLength(stream)).toThrow(
         'indefinite length encoding not supported'
       );
     });

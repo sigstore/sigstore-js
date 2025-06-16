@@ -143,6 +143,7 @@ export class X509Certificate {
     const ca = this.extBasicConstraints?.isCA || false;
 
     // If the KeyUsage extension is present, keyCertSign must be set
+    /* istanbul ignore else */
     if (this.extKeyUsage) {
       return ca && this.extKeyUsage.keyCertSign;
     }

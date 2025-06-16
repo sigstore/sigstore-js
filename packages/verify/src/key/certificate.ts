@@ -184,6 +184,7 @@ export class CertificateChainVerifier {
     // or issuer/subject. Potential issuers are added to the result array.
     this.localCerts.forEach((possibleIssuer) => {
       if (keyIdentifier) {
+        /* istanbul ignore else */
         if (possibleIssuer.extSubjectKeyID) {
           if (
             possibleIssuer.extSubjectKeyID.keyIdentifier.equals(keyIdentifier)

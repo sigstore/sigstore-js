@@ -53,13 +53,13 @@ describe('ASN1Tag', () => {
 
   describe('when the tag is long form', () => {
     it('should throw an error', () => {
-      expect(() => new ASN1Tag(0x1f)).toThrowError(ASN1ParseError);
+      expect(() => new ASN1Tag(0x1f)).toThrow(ASN1ParseError);
     });
   });
 
   describe('when the tag is the null tag', () => {
     it('should throw an error', () => {
-      expect(() => new ASN1Tag(0x20)).toThrowError(ASN1ParseError);
+      expect(() => new ASN1Tag(0x20)).toThrow(ASN1ParseError);
     });
   });
 
