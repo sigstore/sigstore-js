@@ -32,7 +32,7 @@
     "@types/make-fetch-happen": "^10.0.4"
   },
   "dependencies": {
-    "@sigstore/protobuf-specs": "^0.4.1",
+    "@sigstore/protobuf-specs": "^0.4.3",
     "tuf-js": "^3.0.1"
   },
   "engines": {

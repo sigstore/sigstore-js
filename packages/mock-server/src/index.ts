@@ -158,6 +158,7 @@ function certificateAuthority(
       })),
     },
     validFor: { start: new Date() },
+    operator: 'sigstore.mock',
   };
 }
 
@@ -177,6 +178,7 @@ function transparencyLogInstance(
       validFor: { start: new Date() },
     },
     checkpointKeyId: undefined,
+    operator: 'sigstore.mock',
   };
 }
 

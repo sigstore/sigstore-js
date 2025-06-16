@@ -42,6 +42,7 @@ function trustCA(ca: CA): CertificateAuthority {
     validFor: {
       start: new Date(),
     },
+    operator: 'sigstore.mock',
   };
 }
 
@@ -61,6 +62,7 @@ function trustTLog(tlog: TLog): TransparencyLogInstance {
       },
     },
     checkpointKeyId: undefined,
+    operator: 'sigstore.mock',
   };
 }
 
@@ -78,5 +80,6 @@ function trustCTLog(ctlog: CTLog): TransparencyLogInstance {
       },
     },
     checkpointKeyId: undefined,
+    operator: 'sigstore.mock',
   };
 }
