@@ -1,5 +1,11 @@
 # @sigstore/rekor-types
 
+## 4.0.0
+
+### Major Changes
+
+- 383e200: Drop support for node 18
+
 ## 3.0.0
 
 ### Major Changes

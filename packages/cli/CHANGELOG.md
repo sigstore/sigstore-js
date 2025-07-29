@@ -1,5 +1,23 @@
 # @sigstore/cli
 
+## 0.9.0
+
+### Minor Changes
+
+- 383e200: Drop support for node 18
+- 383e200: Bump make-fetch-happen from 14.x to 15.x
+
+### Patch Changes
+
+- Updated dependencies [383e200]
+- Updated dependencies [383e200]
+- Updated dependencies [383e200]
+- Updated dependencies [383e200]
+  - @sigstore/sign@4.0.0
+  - @sigstore/oci@0.6.0
+  - @sigstore/bundle@4.0.0
+  - sigstore@4.0.0
+
 ## 0.8.2
 
 ### Patch Changes
@@ -85,12 +103,10 @@
 ### Patch Changes
 
 - 69fdfdd: Bump dependencies:
-
   - openid-client from 5.6.0 to 5.6.1
 
 - 97516ef: Bump @oclif/plugin-help from 5.2.20 to 6.0.3
 - cb81e53: Bump dependencies:
-
   - @oclif/color from 1.0.12 to 1.0.13
 
 ## 0.4.0
@@ -102,7 +118,6 @@
 ### Patch Changes
 
 - 9173d9c: Bump dependencies:
-
   - @oclif/color from 1.0.11 to 1.0.12
   - @oclif/plugin-help from 5.2.19 to 5.2.20
 

@@ -1,5 +1,17 @@
 # @sigstore/mock-server
 
+## 0.3.0
+
+### Minor Changes
+
+- 383e200: Drop support for node 18
+
+### Patch Changes
+
+- Updated dependencies [383e200]
+- Updated dependencies [383e200]
+  - @sigstore/mock@0.11.0
+
 ## 0.2.2
 
 ### Patch Changes
@@ -25,7 +37,6 @@
 ### Patch Changes
 
 - 5a2c116: Bump dependencies:
-
   - @tufjs/repo-mock from 3.0.0 to 3.0.1
   - express from 4.21.0 to 4.21.1
 
@@ -71,7 +82,6 @@
 ### Patch Changes
 
 - cb81e53: Bump dependencies:
-
   - @oclif/color from 1.0.12 to 1.0.1
 
 - Updated dependencies [69fdfdd]
@@ -83,7 +93,6 @@
 
 - c6d6498: Bump @oclif/core from 2.15.0 to 3.0.1
 - 9173d9c: Bump dependencies:
-
   - @oclif/color from 1.0.11 to 1.0.12
   - @oclif/plugin-help from 5.2.19 to 5.2.20
 

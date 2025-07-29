@@ -1,5 +1,16 @@
 # @sigstore/tuf
 
+## 4.0.0
+
+### Major Changes
+
+- 383e200: Drop support for node 18
+- 383e200: Bump tuf-js from 3.x to 4.x
+
+### Patch Changes
+
+- 40395f5: Update TUF seed files
+
 ## 3.1.1
 
 ### Patch Changes

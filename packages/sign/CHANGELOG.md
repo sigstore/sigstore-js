@@ -1,5 +1,18 @@
 # @sigstore/sign
 
+## 4.0.0
+
+### Major Changes
+
+- 383e200: Bump make-fetch-happen from 14.x to 15.x
+- 383e200: Drop support for node 18
+
+### Patch Changes
+
+- Updated dependencies [383e200]
+  - @sigstore/bundle@4.0.0
+  - @sigstore/core@3.0.0
+
 ## 3.1.0
 
 ### Minor Changes
