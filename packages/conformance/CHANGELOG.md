@@ -1,5 +1,21 @@
 # @sigstore/conformance
 
+## 0.6.0
+
+### Minor Changes
+
+- 383e200: Drop support for node 18
+
+### Patch Changes
+
+- Updated dependencies [40395f5]
+- Updated dependencies [383e200]
+- Updated dependencies [383e200]
+  - @sigstore/tuf@4.0.0
+  - @sigstore/bundle@4.0.0
+  - sigstore@4.0.0
+  - @sigstore/verify@3.0.0
+
 ## 0.5.0
 
 ### Minor Changes

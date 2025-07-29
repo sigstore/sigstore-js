@@ -1,5 +1,17 @@
 # @sigstore/verify
 
+## 3.0.0
+
+### Major Changes
+
+- 383e200: Drop support for node 18
+
+### Patch Changes
+
+- Updated dependencies [383e200]
+  - @sigstore/bundle@4.0.0
+  - @sigstore/core@3.0.0
+
 ## 2.1.1
 
 ### Patch Changes

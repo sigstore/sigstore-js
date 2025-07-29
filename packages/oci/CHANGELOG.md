@@ -1,5 +1,12 @@
 # @sigstore/oci
 
+## 0.6.0
+
+### Minor Changes
+
+- 383e200: Drop support for node 18
+- 383e200: Bump make-fetch-happen from 14.x to 15.x
+
 ## 0.5.0
 
 ### Minor Changes
