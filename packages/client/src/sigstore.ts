@@ -20,6 +20,7 @@ import {
 } from '@sigstore/bundle';
 import * as tuf from '@sigstore/tuf';
 import {
+  Signer,
   Verifier,
   VerifierOptions,
   toSignedEntity,
@@ -69,9 +70,8 @@ export async function verify(
     options = dataOrOptions;
   }
 
-  return createVerifier(options).then((verifier) =>
-    verifier.verify(bundle, data)
-  );
+  const verifier = await createVerifier(options);
+  return verifier.verify(bundle, data);
 }
 
 export interface BundleVerifier {
@@ -104,11 +104,10 @@ export async function createVerifier(
   const policy = config.createVerificationPolicy(options);
 
   return {
-    verify: (bundle: SerializedBundle, payload?: Buffer): void => {
+    verify: (bundle: SerializedBundle, payload?: Buffer): Signer => {
       const deserializedBundle = bundleFromJSON(bundle);
       const signedEntity = toSignedEntity(deserializedBundle, payload);
-      verifier.verify(signedEntity, policy);
-      return;
+      return verifier.verify(signedEntity, policy);
     },
   };
 }
