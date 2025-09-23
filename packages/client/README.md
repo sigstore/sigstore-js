@@ -182,7 +182,7 @@ as well as the verification material necessary to verify the signature.
 
 ### verify(bundle[, payload][, options])
 
-Verifies the signature in the supplied bundle.
+Verifies the signature in the supplied bundle. Returns a `Signer` object containing the public key and identity information from the verification.
 
 - `bundle` `<Bundle>`: The Sigstore bundle containing the signature to be verified and the verification material necessary to verify the signature.
 - `payload` `<Buffer>`: The bytes of the artifact over which the signature was created. Only necessary when the `sign` function was used to generate the signature since the Bundle does not contain any information about the artifact which was signed. Not required when the `attest` function was used to generate the Bundle.
