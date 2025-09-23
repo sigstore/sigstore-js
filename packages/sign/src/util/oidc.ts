@@ -19,17 +19,23 @@ type JWTSubject = {
   iss: string;
   sub: string;
   email: string;
+  email_verified: boolean;
 };
 
 export function extractJWTSubject(jwt: string): string {
   const parts = jwt.split('.', 3);
   const payload: JWTSubject = JSON.parse(enc.base64Decode(parts[1]));
 
-  switch (payload.iss) {
-    case 'https://accounts.google.com':
-    case 'https://oauth2.sigstore.dev/auth':
-      return payload.email;
-    default:
-      return payload.sub;
+  if (payload.email) {
+    if (!payload.email_verified) {
+      throw new Error('JWT email not verified by issuer');
+    }
+    return payload.email;
+  }
+
+  if (payload.sub) {
+    return payload.sub;
+  } else {
+    throw new Error('JWT subject not found');
   }
 }

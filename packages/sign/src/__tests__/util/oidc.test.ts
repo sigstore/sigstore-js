@@ -16,10 +16,11 @@ limitations under the License.
 import { extractJWTSubject } from '../../util/oidc';
 
 describe('extractJWTSubject', () => {
-  describe('when the JWT is issued by accounts.google.com', () => {
+  describe('when the JWT has a verified email', () => {
     const payload = {
       iss: 'https://accounts.google.com',
       email: 'foo@bar.com',
+      email_verified: true,
     };
 
     const jwt = `.${Buffer.from(JSON.stringify(payload)).toString('base64')}.`;
@@ -29,20 +30,23 @@ describe('extractJWTSubject', () => {
     });
   });
 
-  describe('when the JWT is issued by sigstore.dev', () => {
+  describe('when the JWT has an unverified email', () => {
     const payload = {
       iss: 'https://oauth2.sigstore.dev/auth',
       email: 'foo@bar.com',
+      email_verified: false,
     };
 
     const jwt = `.${Buffer.from(JSON.stringify(payload)).toString('base64')}.`;
 
-    it('should return the email address', () => {
-      expect(extractJWTSubject(jwt)).toBe(payload.email);
+    it('throws an error', () => {
+      expect(() => extractJWTSubject(jwt)).toThrow(
+        'JWT email not verified by issuer'
+      );
     });
   });
 
-  describe('when the JWT is a generic JWT', () => {
+  describe('when the JWT has a sub claim', () => {
     const payload = {
       iss: 'https://example.com',
       sub: 'foo@bar.com',
@@ -51,6 +55,17 @@ describe('extractJWTSubject', () => {
 
     it('should return the subject', () => {
       expect(extractJWTSubject(jwt)).toBe(payload.sub);
+    });
+  });
+
+  describe('when the JWT has neither an email nor a sub claim', () => {
+    const payload = {
+      iss: 'https://example.com',
+    };
+    const jwt = `.${Buffer.from(JSON.stringify(payload)).toString('base64')}.`;
+
+    it('throws an error', () => {
+      expect(() => extractJWTSubject(jwt)).toThrow('JWT subject not found');
     });
   });
 });
