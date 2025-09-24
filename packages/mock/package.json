@@ -27,11 +27,11 @@
   },
   "devDependencies": {
     "@sigstore/rekor-types": "^4.0.0",
-    "make-fetch-happen": "^15.0.0"
+    "make-fetch-happen": "^15.0.2"
   },
   "dependencies": {
     "@peculiar/webcrypto": "^1.5.0",
-    "@peculiar/x509": "^1.13.0",
+    "@peculiar/x509": "^1.14.0",
     "@sigstore/protobuf-specs": "^0.5.0",
     "asn1js": "^3.0.6",
     "bytestreamjs": "^2.0.1",
