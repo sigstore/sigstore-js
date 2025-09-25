@@ -1,5 +1,11 @@
 # @sigstore/sign
 
+## 4.0.1
+
+### Patch Changes
+
+- 55ae624: Fix for selecting correct OIDC claim when calculating proof-of-possession for Fulcio
+
 ## 4.0.0
 
 ### Major Changes
