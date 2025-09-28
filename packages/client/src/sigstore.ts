@@ -52,17 +52,17 @@ export async function attest(
 export async function verify(
   bundle: SerializedBundle,
   options?: config.VerifyOptions
-): Promise<void>;
+): Promise<Signer>;
 export async function verify(
   bundle: SerializedBundle,
   data: Buffer,
   options?: config.VerifyOptions
-): Promise<void>;
+): Promise<Signer>;
 export async function verify(
   bundle: SerializedBundle,
   dataOrOptions?: Buffer | config.VerifyOptions,
   options?: config.VerifyOptions
-): Promise<void> {
+): Promise<Signer> {
   let data: Buffer | undefined;
   if (Buffer.isBuffer(dataOrOptions)) {
     data = dataOrOptions;
@@ -75,7 +75,7 @@ export async function verify(
 }
 
 export interface BundleVerifier {
-  verify(bundle: SerializedBundle, data?: Buffer): void;
+  verify(bundle: SerializedBundle, data?: Buffer): Signer;
 }
 
 export async function createVerifier(
