@@ -20,6 +20,7 @@ import {
 } from '@sigstore/bundle';
 import * as tuf from '@sigstore/tuf';
 import {
+  Signer,
   Verifier,
   VerifierOptions,
   toSignedEntity,
@@ -51,17 +52,17 @@ export async function attest(
 export async function verify(
   bundle: SerializedBundle,
   options?: config.VerifyOptions
-): Promise<void>;
+): Promise<Signer>;
 export async function verify(
   bundle: SerializedBundle,
   data: Buffer,
   options?: config.VerifyOptions
-): Promise<void>;
+): Promise<Signer>;
 export async function verify(
   bundle: SerializedBundle,
   dataOrOptions?: Buffer | config.VerifyOptions,
   options?: config.VerifyOptions
-): Promise<void> {
+): Promise<Signer> {
   let data: Buffer | undefined;
   if (Buffer.isBuffer(dataOrOptions)) {
     data = dataOrOptions;
@@ -69,13 +70,12 @@ export async function verify(
     options = dataOrOptions;
   }
 
-  return createVerifier(options).then((verifier) =>
-    verifier.verify(bundle, data)
-  );
+  const verifier = await createVerifier(options);
+  return verifier.verify(bundle, data);
 }
 
 export interface BundleVerifier {
-  verify(bundle: SerializedBundle, data?: Buffer): void;
+  verify(bundle: SerializedBundle, data?: Buffer): Signer;
 }
 
 export async function createVerifier(
@@ -104,11 +104,10 @@ export async function createVerifier(
   const policy = config.createVerificationPolicy(options);
 
   return {
-    verify: (bundle: SerializedBundle, payload?: Buffer): void => {
+    verify: (bundle: SerializedBundle, payload?: Buffer): Signer => {
       const deserializedBundle = bundleFromJSON(bundle);
       const signedEntity = toSignedEntity(deserializedBundle, payload);
-      verifier.verify(signedEntity, policy);
-      return;
+      return verifier.verify(signedEntity, policy);
     },
   };
 }
