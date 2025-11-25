@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { crypto } from '@sigstore/core';
+import { crypto, HASH_ALGORITHM_NAMES } from '@sigstore/core';
 
 import type { MessageSignature } from '@sigstore/bundle';
 import type { SignatureContent } from '../shared.types';
@@ -22,11 +22,13 @@ export class MessageSignatureContent implements SignatureContent {
   public readonly signature: Buffer;
   private readonly messageDigest: Buffer;
   private readonly artifact: Buffer;
+  private readonly hashAlgorithm: string | undefined;
 
   constructor(messageSignature: MessageSignature, artifact: Buffer) {
     this.signature = messageSignature.signature;
     this.messageDigest = messageSignature.messageDigest.digest;
     this.artifact = artifact;
+    this.hashAlgorithm = HASH_ALGORITHM_NAMES[messageSignature.messageDigest.algorithm];
   }
 
   public compareSignature(signature: Buffer): boolean {
@@ -38,6 +40,6 @@ export class MessageSignatureContent implements SignatureContent {
   }
 
   public verifySignature(key: crypto.KeyObject): boolean {
-    return crypto.verify(this.artifact, key, this.signature);
+    return crypto.verify(this.artifact, key, this.signature, this.hashAlgorithm);
   }
 }
