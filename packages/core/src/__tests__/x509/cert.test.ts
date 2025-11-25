@@ -333,4 +333,20 @@ describe('X509Certificate', () => {
       });
     });
   });
+
+  describe('#signatureAlgorithm', () => {
+    describe('when the certificate is signed with ECDSA', () => {
+      it('returns the correct algorithm', () => {
+        const cert = X509Certificate.parse(certificates.root);
+        expect(cert.signatureAlgorithm).toBe('sha384');
+      });
+    });
+
+    describe('when the certificate is signed with RSA', () => {
+      it('returns the correct algorithm', () => {
+        const cert = X509Certificate.parse(certificates.rsaroot);
+        expect(cert.signatureAlgorithm).toBe('sha512');
+      });
+    });
+  });
 });

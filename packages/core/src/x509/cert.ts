@@ -15,7 +15,7 @@ limitations under the License.
 */
 import { ASN1Obj } from '../asn1';
 import * as crypto from '../crypto';
-import { ECDSA_SIGNATURE_ALGOS } from '../oid';
+import { ECDSA_SIGNATURE_ALGOS, RSA_SIGNATURE_ALGOS } from '../oid';
 import * as pem from '../pem';
 import {
   X509AuthorityKeyIDExtension,
@@ -85,6 +85,10 @@ export class X509Certificate {
 
   get signatureAlgorithm(): string {
     const oid: string = this.signatureAlgorithmObj.subs[0].toOID();
+    if (RSA_SIGNATURE_ALGOS[oid]) {
+      return RSA_SIGNATURE_ALGOS[oid];
+    }
+
     return ECDSA_SIGNATURE_ALGOS[oid];
   }
 
