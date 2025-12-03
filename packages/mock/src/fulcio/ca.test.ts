@@ -207,7 +207,7 @@ describe('CA', () => {
         const root = ca.rootCertificate;
         const ctLogList = [
           {
-            log_id: ctLog.logID.toString('base64'),
+            log_id: Buffer.from(ctLog.logID.buffer).toString('base64'),
             key: ctLog.publicKey.toString('base64'),
           },
         ];

@@ -18,16 +18,16 @@ class StreamError extends Error {}
 export class ByteStream {
   private static BLOCK_SIZE = 1024;
 
-  private buf: ArrayBuffer;
+  private buf: Buffer<ArrayBufferLike>;
   private view: Buffer;
   private start = 0;
 
-  constructor(buffer?: ArrayBuffer) {
+  constructor(buffer?: Buffer<ArrayBufferLike>) {
     if (buffer) {
       this.buf = buffer;
       this.view = Buffer.from(buffer);
     } else {
-      this.buf = new ArrayBuffer(0);
+      this.buf = Buffer.alloc(0);
       this.view = Buffer.from(this.buf);
     }
   }
@@ -129,7 +129,7 @@ export class ByteStream {
   }
 
   private realloc(size: number) {
-    const newArray = new ArrayBuffer(size);
+    const newArray = Buffer.alloc(size);
     const newView = Buffer.from(newArray);
 
     // Copy the old buffer into the new one
