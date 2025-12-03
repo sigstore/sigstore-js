@@ -23,7 +23,7 @@ type TUFErrorCode =
 
 export class TUFError extends Error {
   code: TUFErrorCode;
-  cause: any | undefined;
+  override cause: any | undefined;
 
   constructor({
     code,

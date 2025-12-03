@@ -27,7 +27,7 @@ type InternalErrorCode =
 
 export class InternalError extends Error {
   code: InternalErrorCode;
-  cause: any | undefined;
+  override cause: any | undefined;
 
   constructor({
     code,

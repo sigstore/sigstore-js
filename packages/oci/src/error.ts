@@ -41,7 +41,7 @@ export const ensureStatus = (
 };
 
 export class OCIError extends Error {
-  cause: any; /* eslint-disable-line @typescript-eslint/no-explicit-any */
+  override cause: any; /* eslint-disable-line @typescript-eslint/no-explicit-any */
 
   constructor({
     message,
