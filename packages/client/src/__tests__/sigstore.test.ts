@@ -15,7 +15,7 @@ limitations under the License.
 */
 import type { SerializedBundle } from '@sigstore/bundle';
 import { mockFulcio, mockRekor, mockTSA } from '@sigstore/mock';
-import { VerificationError, Signer } from '@sigstore/verify';
+import { VerificationError } from '@sigstore/verify';
 import { fromPartial } from '@total-typescript/shoehorn';
 import mocktuf, { Target } from '@tufjs/repo-mock';
 import { attest, createVerifier, sign, verify } from '../sigstore';
@@ -358,11 +358,9 @@ describe('#verify - Signer object structure and properties', () => {
 
       // The identity should have either subjectAlternativeName or extensions
       expect(
-        result.identity?.subjectAlternativeName ||
-        result.identity?.extensions
+        result.identity?.subjectAlternativeName || result.identity?.extensions
       ).toBeDefined();
     });
-
   });
 
   describe('when verifying a message signature bundle', () => {
@@ -480,7 +478,6 @@ describe('#createVerifier', () => {
         // Test the Signer type properties
         expect(result.key).toHaveProperty('asymmetricKeyType');
       });
-
 
       it('BundleVerifier.verify throws error for invalid bundle but still returns Signer type when valid', async () => {
         const validVerifier = await createVerifier(tufOptions!);
