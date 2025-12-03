@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`toDSSEBundle when the certificateChain option is true when a certificate chain provided returns a valid DSSE bundle 1`] = `
 {

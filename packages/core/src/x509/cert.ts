@@ -41,7 +41,7 @@ export class X509Certificate {
     this.root = asn1;
   }
 
-  public static parse(cert: Buffer | string): X509Certificate {
+  public static parse(cert: Buffer<ArrayBuffer> | string): X509Certificate {
     const der = typeof cert === 'string' ? pem.toDER(cert) : cert;
     const asn1 = ASN1Obj.parseBuffer(der);
     return new X509Certificate(asn1);

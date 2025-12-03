@@ -16,7 +16,7 @@ limitations under the License.
 const PEM_HEADER = /-----BEGIN (.*)-----/;
 const PEM_FOOTER = /-----END (.*)-----/;
 
-export function toDER(certificate: string): Buffer {
+export function toDER(certificate: string): Buffer<ArrayBuffer> {
   let der = '';
 
   certificate.split('\n').forEach((line) => {

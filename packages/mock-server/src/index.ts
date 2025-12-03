@@ -104,7 +104,9 @@ export default class Server extends Command {
     tufEndpoints.forEach(({ path, fn }) => {
       app.get(
         path,
-        adapt(() => Promise.resolve(fn()))
+        // TODO: fix types in tuf-mock
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        adapt(() => Promise.resolve((fn as any)()))
       );
     });
 
@@ -143,7 +145,7 @@ function assembleTrustedRoot({
 }
 
 function certificateAuthority(
-  certificates: Buffer[],
+  certificates: ArrayBufferView<ArrayBuffer>[],
   url: string
 ): CertificateAuthority {
   return {
@@ -154,7 +156,7 @@ function certificateAuthority(
     uri: url,
     certChain: {
       certificates: certificates.map((certificate) => ({
-        rawBytes: certificate,
+        rawBytes: Buffer.from(certificate.buffer),
       })),
     },
     validFor: { start: new Date() },

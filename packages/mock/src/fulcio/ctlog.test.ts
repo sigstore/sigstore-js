@@ -38,13 +38,15 @@ describe('CTLog', () => {
   describe('#logID', () => {
     it('returns the log ID', async () => {
       const ctLog: CTLog = await initializeCTLog(keyPair, clock);
-      expect(ctLog.logID.toString('hex')).toMatch(/^[0-9a-f]{64}$/);
+      expect(Buffer.from(ctLog.logID.buffer).toString('hex')).toMatch(
+        /^[0-9a-f]{64}$/
+      );
     });
 
     it('returns the log ID matching the public key', async () => {
       const ctLog: CTLog = await initializeCTLog(keyPair, clock);
 
-      const logID = ctLog.logID.toString('hex');
+      const logID = Buffer.from(ctLog.logID.buffer).toString('hex');
       const keyDigest = crypto
         .createHash('sha256')
         .update(ctLog.publicKey)

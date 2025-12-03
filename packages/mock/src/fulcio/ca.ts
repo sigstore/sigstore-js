@@ -34,12 +34,14 @@ const OID_SIGNED_CERTIFICATE_TIMESTAMP_LIST = '1.3.6.1.4.1.11129.2.4.2';
 const MS_PER_MINUTE = 1000 * 60;
 
 export interface CA {
-  rootCertificate: Buffer;
-  issueCertificate: (options: CertificateRequestOptions) => Promise<Buffer>;
+  rootCertificate: ArrayBufferView<ArrayBuffer>;
+  issueCertificate: (
+    options: CertificateRequestOptions
+  ) => Promise<ArrayBufferView<ArrayBuffer>>;
 }
 
 export interface CertificateRequestOptions {
-  publicKey: Buffer;
+  publicKey: ArrayBufferView<ArrayBuffer>;
   subjectAltName: string;
   extensions?: ExtensionValue[];
 }
@@ -99,13 +101,13 @@ class CAImpl implements CA {
     this.crypto = new Crypto();
   }
 
-  public get rootCertificate(): Buffer {
+  public get rootCertificate(): ArrayBufferView<ArrayBuffer> {
     return Buffer.from(this.root.rawData);
   }
 
   public async issueCertificate(
     opts: CertificateRequestOptions
-  ): Promise<Buffer> {
+  ): Promise<ArrayBufferView<ArrayBuffer>> {
     // convert key to CryptoKey
     const key = await this.crypto.subtle.importKey(
       'spki',
