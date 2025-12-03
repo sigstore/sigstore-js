@@ -1,6 +1,13 @@
 module.exports = {
   transform: {
-    '^.+\\.ts$': '@swc/jest',
+    '^.+\\.ts$': [
+      '@swc/jest',
+      {
+        jsc: {
+          target: "es2021",
+        },
+      },
+    ],
   },
   coverageThreshold: {
     global: {
