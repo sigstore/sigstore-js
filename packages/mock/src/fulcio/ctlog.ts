@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 import { Crypto, CryptoKey } from '@peculiar/webcrypto';
-import * as asn1js from 'asn1js';
 import * as bs from 'bytestreamjs';
 import type { KeyPairKeyObjectResult } from 'crypto';
 import * as pkijs from 'pkijs';
@@ -110,7 +109,7 @@ class CTLogImpl implements CTLog {
       version,
       logID: this.logID.buffer,
       timestamp,
-      signature: asn1js.fromBER(sig).result,
+      signature: sig,
       hashAlgorithm: 'sha256',
       signatureAlgorithm: 'ecdsa',
     }).toStream().buffer;
