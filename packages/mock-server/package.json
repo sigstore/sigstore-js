@@ -22,10 +22,10 @@
     "@oclif/core": "^4",
     "@sigstore/mock": "^0.11.0",
     "@tufjs/repo-mock": "^4.0.0",
-    "express": "5.2.0"
+    "express": "5.2.1"
   },
   "devDependencies": {
-    "@types/express": "^5.0.4",
+    "@types/express": "^5.0.6",
     "oclif": "^4",
     "tslib": "^2.8.1"
   },
