@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import crypto, { KeyPairKeyObjectResult } from 'crypto';
+import { generateKeyPairSync, sign, KeyPairKeyObjectResult } from 'crypto';
 
 import type { Signature, Signer } from '../signer';
 
@@ -27,13 +27,13 @@ export class EphemeralSigner implements Signer {
   private keypair: KeyPairKeyObjectResult;
 
   constructor() {
-    this.keypair = crypto.generateKeyPairSync(EC_KEYPAIR_TYPE, {
+    this.keypair = generateKeyPairSync(EC_KEYPAIR_TYPE, {
       namedCurve: P256_CURVE,
     });
   }
 
   public async sign(data: Buffer): Promise<Signature> {
-    const signature = crypto.sign(null, data, this.keypair.privateKey);
+    const signature = sign('sha256', data, this.keypair.privateKey);
     const publicKey = this.keypair.publicKey
       .export({ format: 'pem', type: 'spki' })
       .toString('ascii');
