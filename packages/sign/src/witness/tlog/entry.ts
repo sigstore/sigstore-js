@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Sigstore Authors.
+Copyright 2025 The Sigstore Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { Envelope, MessageSignature, envelopeToJSON } from '@sigstore/bundle';
-import { crypto, encoding as enc, json } from '../../util';
+import { PublicKeyDetails } from '@sigstore/protobuf-specs';
+import { crypto, encoding as enc, json, pem } from '../../util';
 
+import type { CreateEntryRequest } from '@sigstore/protobuf-specs/rekor/v2';
 import type {
   ProposedDSSEEntry,
   ProposedEntry,
@@ -169,4 +171,74 @@ function calculateDSSEHash(envelope: Envelope, publicKey: string): string {
   return crypto
     .digest(SHA256_ALGORITHM, json.canonicalize(dsse))
     .toString('hex');
+}
+
+export function toCreateEntryRequest(
+  content: SignatureBundle,
+  publicKey: string
+): CreateEntryRequest {
+  switch (content.$case) {
+    case 'dsseEnvelope':
+      return toCreateEntryRequestDSSE(content.dsseEnvelope, publicKey);
+    case 'messageSignature':
+      return toCreateEntryRequestMessageSignature(
+        content.messageSignature,
+        publicKey
+      );
+  }
+}
+
+function toCreateEntryRequestDSSE(
+  envelope: Envelope,
+  publicKey: string
+): CreateEntryRequest {
+  return {
+    spec: {
+      $case: 'dsseRequestV002',
+      dsseRequestV002: {
+        envelope: envelope,
+        verifiers: [
+          {
+            // TODO: We need to add support of passing the key details in the
+            // signature bundle. For now we're hardcoding the key details here.
+            keyDetails: PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
+            verifier: {
+              $case: 'x509Certificate',
+              x509Certificate: {
+                rawBytes: pem.toDER(publicKey),
+              },
+            },
+          },
+        ],
+      },
+    },
+  };
+}
+
+function toCreateEntryRequestMessageSignature(
+  messageSignature: MessageSignature,
+  publicKey: string
+): CreateEntryRequest {
+  return {
+    spec: {
+      $case: 'hashedRekordRequestV002',
+      hashedRekordRequestV002: {
+        digest: messageSignature.messageDigest.digest,
+        signature: {
+          content: messageSignature.signature,
+          verifier: {
+            // TODO: We need to add support of passing the key details in the
+            // signature bundle. For now we're hardcoding the key details here.
+            keyDetails: PublicKeyDetails.PKIX_ECDSA_P256_SHA_256,
+            verifier: {
+              $case: 'x509Certificate',
+              x509Certificate: {
+                rawBytes: Buffer.from(publicKey, 'base64'),
+              },
+            },
+          },
+        },
+      },
+    },
+  };
 }

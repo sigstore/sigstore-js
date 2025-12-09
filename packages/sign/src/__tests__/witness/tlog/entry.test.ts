@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Sigstore Authors.
+Copyright 2025 The Sigstore Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,10 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { envelopeToJSON } from '@sigstore/bundle';
-import { HashAlgorithm } from '@sigstore/protobuf-specs';
+import { HashAlgorithm, PublicKeyDetails } from '@sigstore/protobuf-specs';
 import assert from 'assert';
-import { crypto, encoding as enc } from '../../../util';
-import { toProposedEntry } from '../../../witness/tlog/entry';
+import { crypto, encoding as enc, pem } from '../../../util';
+import {
+  toCreateEntryRequest,
+  toProposedEntry,
+} from '../../../witness/tlog/entry';
 
 import type { SignatureBundle } from '../../../witness';
 
@@ -230,6 +233,140 @@ describe('toProposedEntry', () => {
         expect(entry.spec.proposedContent?.verifiers[0]).toEqual(
           enc.base64Encode(publicKey)
         );
+      });
+    });
+  });
+});
+
+describe('toCreateEntryRequest', () => {
+  const publicKey = '-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----';
+  const signature = Buffer.from('signature');
+
+  describe('when a message signature is provided', () => {
+    const sigBundle: SignatureBundle = {
+      $case: 'messageSignature',
+      messageSignature: {
+        signature: signature,
+        messageDigest: {
+          algorithm: HashAlgorithm.SHA2_256,
+          digest: Buffer.from('digest'),
+        },
+      },
+    };
+
+    it('returns a valid CreateEntryRequest with hashedRekordRequestV002', () => {
+      const request = toCreateEntryRequest(sigBundle, publicKey);
+
+      expect(request.spec).toBeTruthy();
+      expect(request.spec?.$case).toBe('hashedRekordRequestV002');
+
+      if (request.spec?.$case === 'hashedRekordRequestV002') {
+        const hashedRekord = request.spec.hashedRekordRequestV002;
+
+        // Check digest
+        expect(hashedRekord.digest).toEqual(
+          sigBundle.messageSignature.messageDigest.digest
+        );
+
+        // Check signature content
+        expect(hashedRekord.signature).toBeTruthy();
+        assert(hashedRekord.signature);
+        expect(hashedRekord.signature.content).toEqual(
+          sigBundle.messageSignature.signature
+        );
+
+        // Check verifier
+        expect(hashedRekord.signature.verifier).toBeTruthy();
+        assert(hashedRekord.signature.verifier);
+        expect(hashedRekord.signature.verifier.keyDetails).toBe(
+          PublicKeyDetails.PKIX_ECDSA_P256_SHA_256
+        );
+        expect(hashedRekord.signature.verifier.verifier?.$case).toBe(
+          'x509Certificate'
+        );
+
+        if (
+          hashedRekord.signature.verifier.verifier?.$case === 'x509Certificate'
+        ) {
+          expect(
+            hashedRekord.signature.verifier.verifier.x509Certificate.rawBytes
+          ).toEqual(Buffer.from(publicKey, 'base64'));
+        }
+      }
+    });
+  });
+
+  describe('when a DSSE envelope is provided', () => {
+    describe('when the keyid is a non-empty string', () => {
+      const sigBundle: SignatureBundle = {
+        $case: 'dsseEnvelope',
+        dsseEnvelope: {
+          signatures: [{ keyid: '123', sig: signature }],
+          payloadType: 'application/vnd.in-toto+json',
+          payload: Buffer.from('payload'),
+        },
+      };
+
+      it('returns a valid CreateEntryRequest with dsseRequestV002', () => {
+        const request = toCreateEntryRequest(sigBundle, publicKey);
+
+        expect(request.spec).toBeTruthy();
+        expect(request.spec?.$case).toBe('dsseRequestV002');
+
+        if (request.spec?.$case === 'dsseRequestV002') {
+          const dsseRequest = request.spec.dsseRequestV002;
+
+          // Check envelope
+          expect(dsseRequest.envelope).toEqual(sigBundle.dsseEnvelope);
+
+          // Check verifiers array
+          expect(dsseRequest.verifiers).toHaveLength(1);
+          const verifier = dsseRequest.verifiers[0];
+
+          expect(verifier.keyDetails).toBe(
+            PublicKeyDetails.PKIX_ECDSA_P256_SHA_256
+          );
+          expect(verifier.verifier?.$case).toBe('x509Certificate');
+
+          if (verifier.verifier?.$case === 'x509Certificate') {
+            expect(verifier.verifier.x509Certificate.rawBytes).toEqual(
+              pem.toDER(publicKey)
+            );
+          }
+        }
+      });
+    });
+
+    describe('when the keyid is an empty string', () => {
+      const sigBundle: SignatureBundle = {
+        $case: 'dsseEnvelope',
+        dsseEnvelope: {
+          signatures: [{ keyid: '', sig: signature }],
+          payloadType: 'application/vnd.in-toto+json',
+          payload: Buffer.from('payload'),
+        },
+      };
+
+      it('returns a valid CreateEntryRequest with dsseRequestV002', () => {
+        const request = toCreateEntryRequest(sigBundle, publicKey);
+
+        expect(request.spec).toBeTruthy();
+        expect(request.spec?.$case).toBe('dsseRequestV002');
+
+        if (request.spec?.$case === 'dsseRequestV002') {
+          const dsseRequest = request.spec.dsseRequestV002;
+
+          // Check envelope is preserved exactly
+          assert(dsseRequest.envelope);
+          expect(dsseRequest.envelope).toEqual(sigBundle.dsseEnvelope);
+          expect(dsseRequest.envelope.signatures[0].keyid).toBe('');
+
+          // Check verifiers
+          expect(dsseRequest.verifiers).toHaveLength(1);
+          expect(dsseRequest.verifiers[0].keyDetails).toBe(
+            PublicKeyDetails.PKIX_ECDSA_P256_SHA_256
+          );
+        }
       });
     });
   });

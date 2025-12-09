@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Sigstore Authors.
+Copyright 2025 The Sigstore Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,7 +16,11 @@ limitations under the License.
 import { internalError } from '../../error';
 import { HTTPError } from '../../external/error';
 import { Rekor } from '../../external/rekor';
+import { RekorV2 } from '../../external/rekor-v2';
 
+import type { TransparencyLogEntry } from '@sigstore/bundle';
+import type { TransparencyLogEntry as TLE } from '@sigstore/protobuf-specs';
+import type { CreateEntryRequest } from '@sigstore/protobuf-specs/rekor/v2';
 import type { Entry, ProposedEntry } from '../../external/rekor';
 import type { FetchOptions } from '../../types/fetch';
 
@@ -85,4 +89,56 @@ function entryExistsError(
     value.statusCode === 409 &&
     value.location !== undefined
   );
+}
+
+export interface TLogV2 {
+  createEntry: (
+    createEntryRequest: CreateEntryRequest
+  ) => Promise<TransparencyLogEntry>;
+}
+
+export type TLogV2ClientOptions = {
+  rekorBaseURL: string;
+} & FetchOptions;
+
+export class TLogV2Client implements TLogV2 {
+  private rekor: RekorV2;
+
+  constructor(options: TLogV2ClientOptions) {
+    this.rekor = new RekorV2({
+      baseURL: options.rekorBaseURL,
+      retry: options.retry,
+      timeout: options.timeout,
+    });
+  }
+
+  public async createEntry(
+    createEntryRequest: CreateEntryRequest
+  ): Promise<TransparencyLogEntry> {
+    let entry: TLE;
+
+    try {
+      entry = await this.rekor.createEntry(createEntryRequest);
+    } catch (err) {
+      internalError(
+        err,
+        'TLOG_CREATE_ENTRY_ERROR',
+        'error creating tlog entry'
+      );
+    }
+
+    if (entry.logId === undefined || entry.kindVersion === undefined) {
+      internalError(
+        new Error('invalid tlog entry'),
+        'TLOG_CREATE_ENTRY_ERROR',
+        'error creating tlog entry'
+      );
+    }
+
+    return {
+      ...entry,
+      logId: entry.logId,
+      kindVersion: entry.kindVersion,
+    };
+  }
 }
