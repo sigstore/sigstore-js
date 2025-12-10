@@ -116,7 +116,7 @@ describe('RekorV2', () => {
         expect(typeof result.integratedTime).toBe('string');
         expect(result.kindVersion).toBeDefined();
         expect(result.kindVersion?.kind).toBe('hashedrekord');
-        expect(result.inclusionPromise).toBeDefined();
+        expect(result.inclusionPromise).toBeUndefined();
       });
     });
 
