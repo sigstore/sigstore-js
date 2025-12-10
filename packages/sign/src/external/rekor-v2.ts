@@ -15,7 +15,7 @@ limitations under the License.
 */
 import { fetchWithRetry } from './fetch';
 
-import type { TransparencyLogEntry } from '@sigstore/protobuf-specs';
+import { TransparencyLogEntry } from '@sigstore/protobuf-specs';
 import { CreateEntryRequest } from '@sigstore/protobuf-specs/rekor/v2';
 import type { FetchOptions } from '../types/fetch';
 
@@ -49,6 +49,6 @@ export class RekorV2 {
       retry,
     });
 
-    return response.json();
+    return response.json().then((data) => TransparencyLogEntry.fromJSON(data));
   }
 }

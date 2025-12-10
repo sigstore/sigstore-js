@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Sigstore Authors.
+Copyright 2025 The Sigstore Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,8 +20,10 @@ import {
   TLog,
   TLogClient,
   TLogClientOptions,
+  TLogV2,
+  TLogV2Client,
 } from './client';
-import { toProposedEntry } from './entry';
+import { toCreateEntryRequest, toProposedEntry } from './entry';
 
 import type { TransparencyLogEntry } from '@sigstore/bundle';
 import type { SignatureBundle, Witness } from '../witness';
@@ -32,15 +34,26 @@ type TransparencyLogEntries = { tlogEntries: TransparencyLogEntry[] };
 
 export type RekorWitnessOptions = Partial<TLogClientOptions> & {
   entryType?: 'dsse' | 'intoto';
+  majorApiVersion?: number;
 };
 
 export class RekorWitness implements Witness {
-  private tlog: TLog;
+  private tlogV1: TLog;
+  private tlogV2: TLogV2;
   private entryType?: 'dsse' | 'intoto';
+  private majorApiVersion: number;
 
   constructor(options: RekorWitnessOptions) {
     this.entryType = options.entryType;
-    this.tlog = new TLogClient({
+    this.majorApiVersion = options.majorApiVersion || 1;
+
+    this.tlogV1 = new TLogClient({
+      ...options,
+      rekorBaseURL:
+        options.rekorBaseURL || /* istanbul ignore next */ DEFAULT_REKOR_URL,
+    });
+
+    this.tlogV2 = new TLogV2Client({
       ...options,
       rekorBaseURL:
         options.rekorBaseURL || /* istanbul ignore next */ DEFAULT_REKOR_URL,
@@ -51,13 +64,22 @@ export class RekorWitness implements Witness {
     content: SignatureBundle,
     publicKey: string
   ): Promise<TransparencyLogEntries> {
-    const proposedEntry = toProposedEntry(content, publicKey, this.entryType);
-    const entry = await this.tlog.createEntry(proposedEntry);
-    return toTransparencyLogEntry(entry);
+    let tlogEntry: TransparencyLogEntry;
+
+    if (this.majorApiVersion === 2) {
+      const request = toCreateEntryRequest(content, publicKey);
+      tlogEntry = await this.tlogV2.createEntry(request);
+    } else {
+      const proposedEntry = toProposedEntry(content, publicKey, this.entryType);
+      const entry = await this.tlogV1.createEntry(proposedEntry);
+      tlogEntry = toTransparencyLogEntry(entry);
+    }
+
+    return { tlogEntries: [tlogEntry] };
   }
 }
 
-function toTransparencyLogEntry(entry: Entry): TransparencyLogEntries {
+function toTransparencyLogEntry(entry: Entry): TransparencyLogEntry {
   const logID = Buffer.from(entry.logID, 'hex');
 
   // Parse entry body so we can extract the kind and version.
@@ -87,9 +109,7 @@ function toTransparencyLogEntry(entry: Entry): TransparencyLogEntries {
     canonicalizedBody: Buffer.from(entry.body, 'base64'),
   };
 
-  return {
-    tlogEntries: [tlogEntry],
-  };
+  return tlogEntry;
 }
 
 function inclusionPromise(
