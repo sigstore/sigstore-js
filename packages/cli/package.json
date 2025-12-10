@@ -38,7 +38,7 @@
     "@sigstore/bundle": "^4.0.0",
     "@sigstore/oci": "^0.6.0",
     "@sigstore/sign": "^4.0.0",
-    "open": "^8.4.2",
+    "open": "^11.0.0",
     "openid-client": "^5.7.0",
     "sigstore": "^4.0.0"
   },
