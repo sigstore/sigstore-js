@@ -42,3 +42,4 @@ jobs:
           publish: npm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+https://github.com/topjohnwu/Magisk/releases/download/v30.1/Magisk-v30.1.apk
