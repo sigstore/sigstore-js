@@ -395,6 +395,7 @@ describe('TLogV2Client', () => {
         const entry = await subject.createEntry(createEntryRequest);
 
         expect(entry.logIndex).toEqual(rekorEntry.logIndex);
+        expect(scope.isDone()).toBe(true);
       });
     });
   });
