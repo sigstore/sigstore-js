@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Sigstore Authors.
+Copyright 2025 The Sigstore Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,9 +16,13 @@ limitations under the License.
 import { bundleFromJSON } from '@sigstore/bundle';
 import { signatureContent } from '../../bundle';
 import { VerificationError } from '../../error';
-import { verifyHashedRekordTLogBody } from '../../tlog/hashedrekord';
+import {
+  verifyHashedRekordTLogBody,
+  verifyHashedRekordTLogBodyV2,
+} from '../../tlog/hashedrekord';
 import * as bundles from '../__fixtures__/bundles';
 
+import { Entry } from '@sigstore/protobuf-specs/rekor/v2';
 import type { ProposedHashedRekordEntry } from '@sigstore/rekor-types';
 
 describe('verifyHashedRekordTLogBody', () => {
@@ -142,6 +146,123 @@ describe('verifyHashedRekordTLogBody', () => {
 
     it('throws an error', () => {
       expect(() => verifyHashedRekordTLogBody(body, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
+});
+
+describe('verifyHashedRekordTLogBodyV2', () => {
+  const bundle = bundleFromJSON(
+    bundles.V3.MESSAGE_SIGNATURE.TLOG_HASHEDREKORDV002
+  );
+  const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
+  const content = signatureContent(bundle);
+
+  describe('when everything is valid', () => {
+    const body = Entry.fromJSON(
+      JSON.parse(tlogEntry.canonicalizedBody.toString('utf8'))
+    );
+
+    it('does NOT throw an error', () => {
+      expect(verifyHashedRekordTLogBodyV2(body, content)).toBeUndefined();
+    });
+  });
+
+  describe('when the spec is missing', () => {
+    const body = Entry.fromJSON(
+      JSON.parse(tlogEntry.canonicalizedBody.toString('utf8'))
+    );
+
+    body.spec = undefined;
+
+    it('throws an error', () => {
+      expect(() => verifyHashedRekordTLogBodyV2(body, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
+
+  describe('when the spec is unsupported', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: any = Entry.fromJSON(
+      JSON.parse(tlogEntry.canonicalizedBody.toString('utf8'))
+    );
+
+    body.spec = { spec: { $case: 'unknownSpec', unknownSpec: {} } };
+
+    it('throws an error', () => {
+      expect(() => verifyHashedRekordTLogBodyV2(body, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
+
+  describe('when the digest does NOT match the value in the dsse entry', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: any = Entry.fromJSON(
+      JSON.parse(tlogEntry.canonicalizedBody.toString('utf8'))
+    );
+
+    body.spec.spec.hashedRekordV002.data.digest = {
+      content: Buffer.from('oops'),
+    };
+
+    it('throws an error', () => {
+      expect(() => verifyHashedRekordTLogBodyV2(body, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
+
+  describe('when the digest is missing in the dsse entry', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: any = Entry.fromJSON(
+      JSON.parse(tlogEntry.canonicalizedBody.toString('utf8'))
+    );
+
+    delete body.spec.spec.hashedRekordV002.data.digest;
+
+    it('throws an error', () => {
+      expect(() => verifyHashedRekordTLogBodyV2(body, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
+
+  describe('when the signature does NOT match the value in the dsse entry', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: any = Entry.fromJSON(
+      JSON.parse(tlogEntry.canonicalizedBody.toString('utf8'))
+    );
+
+    body.spec.spec.hashedRekordV002.signature.content = {
+      content: Buffer.from('oops'),
+    };
+
+    it('throws an error', () => {
+      expect(() => verifyHashedRekordTLogBodyV2(body, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
+
+  describe('when the signature is missing in the dsse entry', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: any = Entry.fromJSON(
+      JSON.parse(tlogEntry.canonicalizedBody.toString('utf8'))
+    );
+
+    delete body.spec.spec.hashedRekordV002.signature.content;
+
+    it('throws an error', () => {
+      expect(() => verifyHashedRekordTLogBodyV2(body, content)).toThrowWithCode(
         VerificationError,
         'TLOG_BODY_ERROR'
       );
