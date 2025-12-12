@@ -1,5 +1,11 @@
 # @sigstore/tuf
 
+## 4.0.1
+
+### Patch Changes
+
+- cee51c0: Update TUF seed files
+
 ## 4.0.0
 
 ### Major Changes
