@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Sigstore Authors.
+Copyright 2025 The Sigstore Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@ limitations under the License.
 import { BundleWithDsseEnvelope, bundleFromJSON } from '@sigstore/bundle';
 import { signatureContent } from '../../bundle';
 import { VerificationError } from '../../error';
-import { verifyDSSETLogBody } from '../../tlog/dsse';
+import { verifyDSSETLogBody, verifyDSSETLogBodyV2 } from '../../tlog/dsse';
 import * as bundles from '../__fixtures__/bundles';
 
+import { Entry } from '@sigstore/protobuf-specs/rekor/v2';
 import type { ProposedDSSEEntry } from '@sigstore/rekor-types';
 
 describe('verifyDSSETLogBody', () => {
@@ -152,6 +153,121 @@ describe('verifyDSSETLogBody', () => {
 
     it('throws an error', () => {
       expect(() => verifyDSSETLogBody(body, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
+});
+
+describe('verifyDSSETLogBodyV2', () => {
+  const bundle = bundleFromJSON(
+    bundles.V3.DSSE.WITH_SIGNING_CERT.TLOG_DSSEV002
+  );
+  const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
+  const content = signatureContent(bundle);
+
+  describe('when everything is valid', () => {
+    const body = Entry.fromJSON(
+      JSON.parse(tlogEntry.canonicalizedBody.toString('utf8'))
+    );
+
+    it('does NOT throw an error', () => {
+      expect(verifyDSSETLogBodyV2(body, content)).toBeUndefined();
+    });
+  });
+
+  describe('when the spec is missing', () => {
+    const body = Entry.fromJSON(
+      JSON.parse(tlogEntry.canonicalizedBody.toString('utf8'))
+    );
+
+    body.spec = undefined;
+
+    it('throws an error', () => {
+      expect(() => verifyDSSETLogBodyV2(body, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
+
+  describe('when the spec is unsupported', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: any = Entry.fromJSON(
+      JSON.parse(tlogEntry.canonicalizedBody.toString('utf8'))
+    );
+
+    body.spec = { spec: { $case: 'unknownSpec', unknownSpec: {} } };
+
+    it('throws an error', () => {
+      expect(() => verifyDSSETLogBodyV2(body, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
+
+  describe('when the signature is missing in the dsse entry', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: any = Entry.fromJSON(
+      JSON.parse(tlogEntry.canonicalizedBody.toString('utf8'))
+    );
+
+    body.spec!.spec.dsseV002.signatures!.push(
+      body.spec!.spec.dsseV002.signatures![0]
+    );
+
+    it('throws an error', () => {
+      expect(() => verifyDSSETLogBodyV2(body, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
+
+  describe('when the signature does NOT match the value in the dsse entry', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: any = Entry.fromJSON(
+      JSON.parse(tlogEntry.canonicalizedBody.toString('utf8'))
+    );
+
+    body.spec.spec.dsseV002.signatures[0] = { content: Buffer.from('oops') };
+
+    it('throws an error', () => {
+      expect(() => verifyDSSETLogBodyV2(body, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
+
+  describe('when the payload hash does NOT match the value in the dsse entry', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: any = Entry.fromJSON(
+      JSON.parse(tlogEntry.canonicalizedBody.toString('utf8'))
+    );
+
+    body.spec.spec.dsseV002.payloadHash.digest = Buffer.from('oops');
+
+    it('throws an error', () => {
+      expect(() => verifyDSSETLogBodyV2(body, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
+
+  describe('when the digest is missing in the dsse entry', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: any = Entry.fromJSON(
+      JSON.parse(tlogEntry.canonicalizedBody.toString('utf8'))
+    );
+
+    delete body.spec.spec.dsseV002.payloadHash.digest;
+
+    it('throws an error', () => {
+      expect(() => verifyDSSETLogBodyV2(body, content)).toThrowWithCode(
         VerificationError,
         'TLOG_BODY_ERROR'
       );
