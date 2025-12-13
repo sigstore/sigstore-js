@@ -102,6 +102,28 @@ describe('Verifier', () => {
       });
     });
 
+    describe('when the certificate-signed Rekor v2 DSSE bundle is valid', () => {
+      const bundle = bundleFromJSON(
+        bundles.V3.DSSE.WITH_SIGNING_CERT.TLOG_DSSEV002
+      );
+      const signedEntity = toSignedEntity(bundle);
+
+      it('returns without error', () => {
+        subject.verify(signedEntity);
+      });
+    });
+
+    describe('when the certificate-signed Rekor v2 DSSE bundle is valid', () => {
+      const bundle = bundleFromJSON(
+        bundles.V3.MESSAGE_SIGNATURE.TLOG_HASHEDREKORDV002
+      );
+      const signedEntity = toSignedEntity(bundle, bundles.ARTIFACT);
+
+      it('returns without error', () => {
+        subject.verify(signedEntity);
+      });
+    });
+
     describe('when the a matching policy is specified', () => {
       const bundle = bundleFromJSON(
         bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
@@ -170,13 +192,13 @@ describe('Verifier', () => {
       it('throws an error', () => {
         expect(() => subject.verify(signedEntity)).toThrowWithCode(
           VerificationError,
-          'TIMESTAMP_ERROR'
+          'TLOG_ERROR'
         );
       });
     });
 
-    describe('when the tsa timestamp threshold is not met', () => {
-      const subject = new Verifier(trustMaterial, { tsaThreshold: 2 });
+    describe('when the timestamp threshold is not met', () => {
+      const subject = new Verifier(trustMaterial, { timestampThreshold: 3 });
       const bundle = bundleFromJSON(
         bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
       );

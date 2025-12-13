@@ -14,18 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { RFC3161Timestamp } from '@sigstore/core';
-import { VerificationError } from '../error';
-import { verifyCheckpoint } from './checkpoint';
-import { verifyMerkleInclusion } from './merkle';
-import { verifyTLogSET } from './set';
 import { verifyRFC3161Timestamp } from './tsa';
 
-import type {
-  TLogEntryWithInclusionPromise,
-  TLogEntryWithInclusionProof,
-  TransparencyLogEntry,
-} from '@sigstore/bundle';
-import type { CertAuthority, TLogAuthority } from '../trust';
+import type { TransparencyLogEntry } from '@sigstore/bundle';
+import type { CertAuthority } from '../trust';
 
 export type TimestampType = 'transparency-log' | 'timestamp-authority';
 
@@ -35,7 +27,7 @@ export type TimestampVerificationResult = {
   timestamp: Date;
 };
 
-export function verifyTSATimestamp(
+export function getTSATimestamp(
   timestamp: RFC3161Timestamp,
   data: Buffer,
   timestampAuthorities: CertAuthority[]
@@ -49,45 +41,12 @@ export function verifyTSATimestamp(
   };
 }
 
-export function verifyTLogTimestamp(
-  entry: TransparencyLogEntry,
-  tlogAuthorities: TLogAuthority[]
+export function getTLogTimestamp(
+  entry: TransparencyLogEntry
 ): TimestampVerificationResult {
-  let inclusionVerified = false;
-
-  if (isTLogEntryWithInclusionPromise(entry)) {
-    verifyTLogSET(entry, tlogAuthorities);
-    inclusionVerified = true;
-  }
-
-  if (isTLogEntryWithInclusionProof(entry)) {
-    verifyMerkleInclusion(entry);
-    verifyCheckpoint(entry, tlogAuthorities);
-    inclusionVerified = true;
-  }
-
-  if (!inclusionVerified) {
-    throw new VerificationError({
-      code: 'TLOG_MISSING_INCLUSION_ERROR',
-      message: 'inclusion could not be verified',
-    });
-  }
-
   return {
     type: 'transparency-log',
     logID: entry.logId.keyId,
     timestamp: new Date(Number(entry.integratedTime) * 1000),
   };
-}
-
-function isTLogEntryWithInclusionPromise(
-  entry: TransparencyLogEntry
-): entry is TLogEntryWithInclusionPromise {
-  return entry.inclusionPromise !== undefined;
-}
-
-function isTLogEntryWithInclusionProof(
-  entry: TransparencyLogEntry
-): entry is TLogEntryWithInclusionProof {
-  return entry.inclusionProof !== undefined;
 }

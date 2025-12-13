@@ -17,7 +17,7 @@ import { crypto } from '@sigstore/core';
 import { TransparencyLogEntry } from '@sigstore/protobuf-specs';
 import { fromPartial } from '@total-typescript/shoehorn';
 import { VerificationError } from '../../error';
-import { verifyTLogSET } from '../../timestamp/set';
+import { verifyTLogSET } from '../../tlog/set';
 
 import type { TLogEntryWithInclusionPromise } from '@sigstore/bundle';
 import type { TLogAuthority } from '../../trust';
