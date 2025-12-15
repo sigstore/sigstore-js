@@ -16,7 +16,7 @@ limitations under the License.
 
 export type HandlerFnResult = {
   statusCode: number;
-  response: string | Buffer;
+  response: string | ArrayBufferView<ArrayBuffer>;
   contentType?: string;
 };
 export type HandlerFn = (request: string) => Promise<HandlerFnResult>;

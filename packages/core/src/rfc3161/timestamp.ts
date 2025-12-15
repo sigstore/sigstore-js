@@ -30,7 +30,7 @@ export class RFC3161Timestamp {
     this.root = asn1;
   }
 
-  public static parse(der: Buffer): RFC3161Timestamp {
+  public static parse(der: Buffer<ArrayBuffer>): RFC3161Timestamp {
     const asn1 = ASN1Obj.parseBuffer(der);
     return new RFC3161Timestamp(asn1);
   }

@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 import { Crypto, CryptoKey } from '@peculiar/webcrypto';
-import * as asn1js from 'asn1js';
 import * as bs from 'bytestreamjs';
 import type { KeyPairKeyObjectResult } from 'crypto';
 import * as pkijs from 'pkijs';
@@ -25,7 +24,7 @@ import { keyObjectToCryptoKey } from '../util/key';
 
 export interface CTLog {
   publicKey: Buffer;
-  logID: Buffer;
+  logID: ArrayBufferView<ArrayBuffer>;
   log: (
     certificate: ArrayBuffer,
     issuerID: ArrayBuffer
@@ -61,7 +60,7 @@ export async function initializeCTLog(
 
 interface CTLogOptions {
   publicKey: Buffer;
-  logID: Buffer;
+  logID: ArrayBufferView<ArrayBuffer>;
   privateKey: CryptoKey;
   clock?: Date;
   crypto: Crypto;
@@ -69,7 +68,7 @@ interface CTLogOptions {
 
 class CTLogImpl implements CTLog {
   public readonly publicKey: Buffer;
-  public readonly logID: Buffer;
+  public readonly logID: ArrayBufferView<ArrayBuffer>;
   private privateKey: CryptoKey;
   private getCurrentTime: () => Date;
   private crypto: Crypto;
@@ -88,7 +87,6 @@ class CTLogImpl implements CTLog {
   ): Promise<ArrayBuffer> {
     const version = 0;
     const timestamp = this.getCurrentTime();
-    const logID = this.logID;
 
     // A bit of a hack to get the TBS bytes
     const tbs = pkijs.Certificate.fromBER(certificate).encodeTBS().toBER();
@@ -109,9 +107,9 @@ class CTLogImpl implements CTLog {
 
     return new pkijs.SignedCertificateTimestamp({
       version,
-      logID,
+      logID: this.logID.buffer,
       timestamp,
-      signature: asn1js.fromBER(sig).result,
+      signature: sig,
       hashAlgorithm: 'sha256',
       signatureAlgorithm: 'ecdsa',
     }).toStream().buffer;

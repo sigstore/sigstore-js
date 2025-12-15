@@ -35,7 +35,7 @@ export class X509Extension {
     return this.root.subs.length === 3 ? this.root.subs[1].toBoolean() : false;
   }
 
-  get value(): Buffer {
+  get value(): Buffer<ArrayBufferLike> {
     return this.extnValueObj.value;
   }
 

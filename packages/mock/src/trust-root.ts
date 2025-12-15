@@ -35,7 +35,7 @@ function trustCA(ca: CA): CertificateAuthority {
     certChain: {
       certificates: [
         {
-          rawBytes: ca.rootCertificate,
+          rawBytes: Buffer.from(ca.rootCertificate.buffer),
         },
       ],
     },
@@ -70,7 +70,7 @@ function trustTLog(tlog: TLog): TransparencyLogInstance {
 function trustCTLog(ctlog: CTLog): TransparencyLogInstance {
   return {
     baseUrl: 'https://ctfe.sigstore.dev',
-    logId: { keyId: ctlog.logID },
+    logId: { keyId: Buffer.from(ctlog.logID.buffer) },
     hashAlgorithm: HashAlgorithm.SHA2_256,
     publicKey: {
       rawBytes: ctlog.publicKey,

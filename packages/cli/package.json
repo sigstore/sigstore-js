@@ -38,12 +38,12 @@
     "@sigstore/bundle": "^4.0.0",
     "@sigstore/oci": "^0.6.0",
     "@sigstore/sign": "^4.0.0",
-    "open": "^8.4.2",
+    "open": "^11.0.0",
     "openid-client": "^5.7.0",
     "sigstore": "^4.0.0"
   },
   "devDependencies": {
-    "make-fetch-happen": "^15.0.2",
+    "make-fetch-happen": "^15.0.3",
     "oclif": "^4",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1"

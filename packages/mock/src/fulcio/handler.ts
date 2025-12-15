@@ -132,7 +132,10 @@ function stubBody(): {
   };
 }
 
-function buildResponse(leaf: Buffer, root: Buffer): string {
+function buildResponse(
+  leaf: ArrayBufferView<ArrayBuffer>,
+  root: ArrayBufferView<ArrayBuffer>
+): string {
   const body = {
     signedCertificateEmbeddedSct: {
       chain: {
@@ -275,7 +278,7 @@ function extractCSRKey(pem: string): string {
 }
 
 // PEM string to DER-encoded byte buffer conversion
-function fromPEM(pem: string): Buffer {
+function fromPEM(pem: string): ArrayBufferView<ArrayBuffer> {
   return Buffer.from(
     pem.replace(/-{5}(BEGIN|END) .*-{5}/gm, '').replace(/\s/gm, ''),
     'base64'
@@ -283,10 +286,10 @@ function fromPEM(pem: string): Buffer {
 }
 
 // DER-encoded byte buffer to PEM string conversion
-function toPEM(der: Buffer): string {
+function toPEM(der: ArrayBufferView<ArrayBuffer>): string {
   return [
     '-----BEGIN CERTIFICATE-----',
-    der.toString('base64'),
+    Buffer.from(der.buffer).toString('base64'),
     '-----END CERTIFICATE-----',
     '',
   ].join('\n');

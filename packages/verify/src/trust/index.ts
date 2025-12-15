@@ -86,7 +86,7 @@ function createCertAuthority(ca: CertificateAuthority): CertAuthority {
   /* istanbul ignore next */
   return {
     certChain: ca.certChain!.certificates.map((cert) => {
-      return X509Certificate.parse(cert.rawBytes);
+      return X509Certificate.parse(Buffer.from(cert.rawBytes));
     }),
     validFor: {
       start: ca.validFor?.start || BEGINNING_OF_TIME,

@@ -43,7 +43,7 @@ export function toSignedEntity(
   for (const ts of timestampVerificationData?.rfc3161Timestamps ?? []) {
     timestamps.push({
       $case: 'timestamp-authority',
-      timestamp: RFC3161Timestamp.parse(ts.signedTimestamp),
+      timestamp: RFC3161Timestamp.parse(Buffer.from(ts.signedTimestamp)),
     });
   }
 
@@ -81,15 +81,17 @@ function key(bundle: Bundle): VerificationKey {
       return {
         $case: 'certificate',
         certificate: X509Certificate.parse(
-          bundle.verificationMaterial.content.x509CertificateChain
-            .certificates[0].rawBytes
+          Buffer.from(
+            bundle.verificationMaterial.content.x509CertificateChain
+              .certificates[0].rawBytes
+          )
         ),
       };
     case 'certificate':
       return {
         $case: 'certificate',
         certificate: X509Certificate.parse(
-          bundle.verificationMaterial.content.certificate.rawBytes
+          Buffer.from(bundle.verificationMaterial.content.certificate.rawBytes)
         ),
       };
   }

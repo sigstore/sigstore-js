@@ -15,7 +15,7 @@ limitations under the License.
 */
 class BaseError<T extends string> extends Error {
   code: T;
-  cause: any; /* eslint-disable-line @typescript-eslint/no-explicit-any */
+  override cause: any; /* eslint-disable-line @typescript-eslint/no-explicit-any */
 
   constructor({
     code,

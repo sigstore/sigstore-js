@@ -40,9 +40,9 @@ const OKD_PKCS9_MESSAGE_DIGEST_KEY = '1.2.840.113549.1.9.4';
 const OID_PKCS9_SIGNING_CERTIFICATE_V2_KEY = '1.2.840.113549.1.9.16.2.47';
 
 export interface TSA {
-  rootCertificate: Buffer;
-  intCertificate: Buffer;
-  timestamp: (req: TimestampRequest) => Promise<Buffer>;
+  rootCertificate: ArrayBufferView<ArrayBuffer>;
+  intCertificate: ArrayBufferView<ArrayBuffer>;
+  timestamp: (req: TimestampRequest) => Promise<ArrayBufferView<ArrayBuffer>>;
 }
 
 export interface TimestampRequest {
@@ -106,17 +106,19 @@ class TSAImpl implements TSA {
     }) as pkijs.ICryptoEngine;
   }
 
-  public get rootCertificate(): Buffer {
+  public get rootCertificate(): ArrayBufferView<ArrayBuffer> {
     return Buffer.from(this.rootCert.toSchema().toBER(false));
   }
 
-  public get intCertificate(): Buffer {
+  public get intCertificate(): ArrayBufferView<ArrayBuffer> {
     return Buffer.from(this.intCert.toSchema().toBER(false));
   }
 
   // Create a timestamp according to
   // https://www.rfc-editor.org/rfc/rfc3161.html
-  public async timestamp(req: TimestampRequest): Promise<Buffer> {
+  public async timestamp(
+    req: TimestampRequest
+  ): Promise<ArrayBufferView<ArrayBuffer>> {
     const includeCerts = req.certReq ?? false;
 
     // Create the TSTInfo structure and sign it
