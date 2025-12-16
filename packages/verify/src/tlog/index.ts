@@ -15,8 +15,13 @@ limitations under the License.
 */
 import { Entry } from '@sigstore/protobuf-specs/rekor/v2';
 import { VerificationError } from '../error';
-import { verifyDSSETLogBody, verifyDSSETLogBodyV2 } from './dsse';
 import {
+  DSSE_API_VERSION_V1,
+  verifyDSSETLogBody,
+  verifyDSSETLogBodyV2,
+} from './dsse';
+import {
+  HASHEDREKORD_API_VERSION_V1,
   verifyHashedRekordTLogBody,
   verifyHashedRekordTLogBodyV2,
 } from './hashedrekord';
@@ -52,7 +57,7 @@ export function verifyTLogBody(
   switch (kind) {
     case 'dsse':
       // Rekor V1 and V2 use incompatible types so we need to branch here based on version
-      if (version == '0.0.1') {
+      if (version == DSSE_API_VERSION_V1) {
         return verifyDSSETLogBody(body, sigContent);
       } else {
         const entryRekorV2 = Entry.fromJSON(body);
@@ -62,7 +67,7 @@ export function verifyTLogBody(
       return verifyIntotoTLogBody(body, sigContent);
     case 'hashedrekord':
       // Rekor V1 and V2 use incompatible types so we need to branch here based on version
-      if (version == '0.0.1') {
+      if (version == HASHEDREKORD_API_VERSION_V1) {
         return verifyHashedRekordTLogBody(body, sigContent);
       } else {
         const entryRekorV2 = Entry.fromJSON(body);
