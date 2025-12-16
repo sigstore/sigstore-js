@@ -35,6 +35,7 @@ class BaseError<T extends string> extends Error {
 
 type VerificationErrorCode =
   | 'NOT_IMPLEMENTED_ERROR'
+  | 'TLOG_ERROR'
   | 'TLOG_INCLUSION_PROOF_ERROR'
   | 'TLOG_INCLUSION_PROMISE_ERROR'
   | 'TLOG_MISSING_INCLUSION_ERROR'

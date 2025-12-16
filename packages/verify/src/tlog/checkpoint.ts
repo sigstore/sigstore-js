@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Sigstore Authors.
+Copyright 2025 The Sigstore Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@ limitations under the License.
 */
 import { crypto } from '@sigstore/core';
 import { VerificationError } from '../error';
-import { filterTLogAuthorities, TLogAuthority } from '../trust';
+import { TLogAuthority } from '../trust';
 
 import type { TLogEntryWithInclusionProof } from '@sigstore/bundle';
 
@@ -47,33 +47,20 @@ interface TLogSignature {
 export function verifyCheckpoint(
   entry: TLogEntryWithInclusionProof,
   tlogs: TLogAuthority[]
-): void {
-  // Filter tlog instances to just those which were valid at the time of the
-  // entry
-  const validTLogs = filterTLogAuthorities(tlogs, {
-    targetDate: new Date(Number(entry.integratedTime) * 1000),
-  });
-
+): LogCheckpoint {
   const inclusionProof = entry.inclusionProof;
   const signedNote = SignedNote.fromString(inclusionProof.checkpoint.envelope);
   const checkpoint = LogCheckpoint.fromString(signedNote.note);
 
   // Verify that the signatures in the checkpoint are all valid
-  if (!verifySignedNote(signedNote, validTLogs)) {
+  if (!verifySignedNote(signedNote, tlogs)) {
     throw new VerificationError({
       code: 'TLOG_INCLUSION_PROOF_ERROR',
       message: 'invalid checkpoint signature',
     });
   }
 
-  // Verify that the root hash from the checkpoint matches the root hash in the
-  // inclusion proof
-  if (!crypto.bufferEqual(checkpoint.logHash, inclusionProof.rootHash)) {
-    throw new VerificationError({
-      code: 'TLOG_INCLUSION_PROOF_ERROR',
-      message: 'root hash mismatch',
-    });
-  }
+  return checkpoint;
 }
 
 // Verifies the signatures in the SignedNote. For each signature, the
@@ -169,7 +156,7 @@ class SignedNote {
 //  - rest: the rest of the checkpoint body, which is a list of log entries
 // See:
 // https://github.com/transparency-dev/formats/blob/main/log/README.md#checkpoint-body
-class LogCheckpoint {
+export class LogCheckpoint {
   readonly origin: string;
   readonly logSize: bigint;
   readonly logHash: Buffer;

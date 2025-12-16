@@ -15,6 +15,7 @@ limitations under the License.
 */
 import { crypto } from '@sigstore/core';
 import { VerificationError } from '../error';
+import { LogCheckpoint } from './checkpoint';
 
 import type { TLogEntryWithInclusionProof } from '@sigstore/bundle';
 
@@ -22,11 +23,12 @@ const RFC6962_LEAF_HASH_PREFIX = Buffer.from([0x00]);
 const RFC6962_NODE_HASH_PREFIX = Buffer.from([0x01]);
 
 export function verifyMerkleInclusion(
-  entry: TLogEntryWithInclusionProof
+  entry: TLogEntryWithInclusionProof,
+  checkpoint: LogCheckpoint
 ): void {
   const inclusionProof = entry.inclusionProof;
   const logIndex = BigInt(inclusionProof.logIndex);
-  const treeSize = BigInt(inclusionProof.treeSize);
+  const treeSize = BigInt(checkpoint.logSize);
 
   if (logIndex < 0n || logIndex >= treeSize) {
     throw new VerificationError({
@@ -59,7 +61,7 @@ export function verifyMerkleInclusion(
   );
 
   // Calculated hash should match the root hash in the inclusion proof
-  if (!crypto.bufferEqual(calculatedHash, inclusionProof.rootHash)) {
+  if (!crypto.bufferEqual(calculatedHash, checkpoint.logHash)) {
     throw new VerificationError({
       code: 'TLOG_INCLUSION_PROOF_ERROR',
       message: 'calculated root hash does not match inclusion proof',

@@ -17,8 +17,8 @@ import { isDeepStrictEqual } from 'util';
 import { VerificationError } from './error';
 import { verifyCertificate, verifyPublicKey } from './key';
 import { verifyExtensions, verifySubjectAlternativeName } from './policy';
-import { verifyTLogTimestamp, verifyTSATimestamp } from './timestamp';
-import { verifyTLogBody } from './tlog';
+import { getTLogTimestamp, getTSATimestamp } from './timestamp';
+import { verifyTLogBody, verifyTLogInclusion } from './tlog';
 
 import type {
   CertificateIdentity,
@@ -32,6 +32,7 @@ export type VerifierOptions = {
   tlogThreshold?: number;
   ctlogThreshold?: number;
   tsaThreshold?: number;
+  timestampThreshold?: number;
 };
 
 export class Verifier {
@@ -43,7 +44,9 @@ export class Verifier {
     this.options = {
       ctlogThreshold: options.ctlogThreshold ?? 1,
       tlogThreshold: options.tlogThreshold ?? 1,
-      tsaThreshold: options.tsaThreshold ?? 0,
+      timestampThreshold:
+        options.timestampThreshold ?? options.tsaThreshold ?? 1,
+      tsaThreshold: 0,
     };
   }
 
@@ -62,24 +65,20 @@ export class Verifier {
 
   // Checks that all of the timestamps in the entity are valid and returns them
   private verifyTimestamps(entity: SignedEntity): Date[] {
-    let tlogCount = 0;
-    let tsaCount = 0;
+    let timestampCount = 0;
 
     const timestamps = entity.timestamps.map((timestamp) => {
       switch (timestamp.$case) {
         case 'timestamp-authority':
-          tsaCount++;
-          return verifyTSATimestamp(
+          timestampCount++;
+          return getTSATimestamp(
             timestamp.timestamp,
             entity.signature.signature,
             this.trustMaterial.timestampAuthorities
           );
         case 'transparency-log':
-          tlogCount++;
-          return verifyTLogTimestamp(
-            timestamp.tlogEntry,
-            this.trustMaterial.tlogs
-          );
+          timestampCount++;
+          return getTLogTimestamp(timestamp.tlogEntry);
       }
     });
 
@@ -91,17 +90,10 @@ export class Verifier {
       });
     }
 
-    if (tlogCount < this.options.tlogThreshold) {
+    if (timestampCount < this.options.timestampThreshold) {
       throw new VerificationError({
         code: 'TIMESTAMP_ERROR',
-        message: `expected ${this.options.tlogThreshold} tlog timestamps, got ${tlogCount}`,
-      });
-    }
-
-    if (tsaCount < this.options.tsaThreshold) {
-      throw new VerificationError({
-        code: 'TIMESTAMP_ERROR',
-        message: `expected ${this.options.tsaThreshold} tsa timestamps, got ${tsaCount}`,
+        message: `expected ${this.options.timestampThreshold} timestamps, got ${timestampCount}`,
       });
     }
 
@@ -144,7 +136,20 @@ export class Verifier {
 
   // Checks that the tlog entries are valid for the supplied content
   private verifyTLogs({ signature: content, tlogEntries }: SignedEntity): void {
-    tlogEntries.forEach((entry) => verifyTLogBody(entry, content));
+    let tlogCount = 0;
+
+    tlogEntries.forEach((entry) => {
+      tlogCount++;
+      verifyTLogInclusion(entry, this.trustMaterial.tlogs);
+      verifyTLogBody(entry, content);
+    });
+
+    if (tlogCount < this.options.tlogThreshold) {
+      throw new VerificationError({
+        code: 'TLOG_ERROR',
+        message: `expected ${this.options.tlogThreshold} tlog entries, got ${tlogCount}`,
+      });
+    }
   }
 
   // Checks that the signature is valid for the supplied content

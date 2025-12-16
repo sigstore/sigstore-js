@@ -15,7 +15,7 @@ limitations under the License.
 */
 import { crypto, json } from '@sigstore/core';
 import { VerificationError } from '../error';
-import { TLogAuthority, filterTLogAuthorities } from '../trust';
+import { filterTLogAuthorities, TLogAuthority } from '../trust';
 
 import type { TLogEntryWithInclusionPromise } from '@sigstore/bundle';
 

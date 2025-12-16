@@ -16,9 +16,10 @@ limitations under the License.
 import { crypto } from '@sigstore/core';
 import { fromPartial } from '@total-typescript/shoehorn';
 import { VerificationError } from '../../error';
-import { verifyMerkleInclusion } from '../../timestamp/merkle';
+import { verifyMerkleInclusion } from '../../tlog/merkle';
 
 import type { TLogEntryWithInclusionProof } from '@sigstore/bundle';
+import { LogCheckpoint } from '../../tlog/checkpoint';
 
 describe('verifyMerkleInclusion', () => {
   // Test data comes from https://rekor.sigstore.dev/api/v1/log/entries?logIndex=25591465
@@ -26,9 +27,18 @@ describe('verifyMerkleInclusion', () => {
     'eyJhcGlWZXJzaW9uIjoiMC4wLjIiLCJraW5kIjoiaW50b3RvIiwic3BlYyI6eyJjb250ZW50Ijp7ImVudmVsb3BlIjp7InBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmluLXRvdG8ranNvbiIsInNpZ25hdHVyZXMiOlt7InB1YmxpY0tleSI6IkxTMHRMUzFDUlVkSlRpQkRSVkpVU1VaSlEwRlVSUzB0TFMwdENrMUpTVU13VkVORFFXeGhaMEYzU1VKQlowbFZRMGxaYmpsclZWQkRTV2hqTVdKcFJFTTBhMlJQV1ROVGNXRm5kME5uV1VsTGIxcEplbW93UlVGM1RYY0tUbnBGVmsxQ1RVZEJNVlZGUTJoTlRXTXliRzVqTTFKMlkyMVZkVnBIVmpKTlVqUjNTRUZaUkZaUlVVUkZlRlo2WVZka2VtUkhPWGxhVXpGd1ltNVNiQXBqYlRGc1drZHNhR1JIVlhkSWFHTk9UV3BOZDA1cVNUVk5WR040VFVSVk1WZG9ZMDVOYWsxM1RtcEpOVTFVWTNsTlJGVXhWMnBCUVUxR2EzZEZkMWxJQ2t0dldrbDZhakJEUVZGWlNVdHZXa2w2YWpCRVFWRmpSRkZuUVVVelZVOVVZWGhKVW5sUFdHbHJOM1JCVFRKT01rcFNkV04zVG1aRmNYUXdRbkE1Tm1FS2VHd3hORUpOV0ZRMWR5OW1lVzAwWmtNd1JFUnZUazVyY0ZaWVVtZHFhMjkxTTBjeFpsa3dZV3RzY2xJclJpOWFWWEZQUTBGWVZYZG5aMFo0VFVFMFJ3cEJNVlZrUkhkRlFpOTNVVVZCZDBsSVowUkJWRUpuVGxaSVUxVkZSRVJCUzBKblozSkNaMFZHUWxGalJFRjZRV1JDWjA1V1NGRTBSVVpuVVZWWlRXbGxDa2xRVVhKWUwwdE5NM2xqTWtZeFNHRnhXSEZwTTJNMGQwaDNXVVJXVWpCcVFrSm5kMFp2UVZVek9WQndlakZaYTBWYVlqVnhUbXB3UzBaWGFYaHBORmtLV2tRNGQwaDNXVVJXVWpCU1FWRklMMEpDVlhkRk5FVlNXVzVLY0ZsWE5VRmFSMVp2V1ZjeGJHTnBOV3BpTWpCM1RFRlpTMHQzV1VKQ1FVZEVkbnBCUWdwQlVWRmxZVWhTTUdOSVRUWk1lVGx1WVZoU2IyUlhTWFZaTWpsMFRESjRkbG95YkhWTU1qbG9aRmhTYjAxRE5FZERhWE5IUVZGUlFtYzNPSGRCVVdkRkNrbEJkMlZoU0ZJd1kwaE5Oa3g1T1c1aFdGSnZaRmRKZFZreU9YUk1NbmgyV2pKc2RVd3lPV2hrV0ZKdlRVbEhTMEpuYjNKQ1owVkZRV1JhTlVGblVVTUtRa2gzUldWblFqUkJTRmxCTTFRd2QyRnpZa2hGVkVwcVIxSTBZMjFYWXpOQmNVcExXSEpxWlZCTE15OW9OSEI1WjBNNGNEZHZORUZCUVVkS1EwTk1lUXAxVVVGQlFrRk5RVko2UWtaQmFVRnphbTh6YTBvd1lYWlFkelUwY2tGVVNHNVNRelF6TkZKUVpFMHZlbTlCVldsdFRuZERSQ3MyZVZsUlNXaEJURXQ0Q2pGdWVsUk9NSGxEYTBKdVRUbFlTMVkyUVdSRGVVdFdkMmh2TjFKeU1GbEdORW95WldGclMweE5RVzlIUTBOeFIxTk5ORGxDUVUxRVFUSnJRVTFIV1VNS1RWRkVORzgwWVRoa2VraDNZbFIwTmpJMU5FazFXWHBETVVoWVJVSnRlazQwVkVoYVpGQnBMMlpZZFc1T2NXTTVMMjF2V0d0cWQxcExTSE5DWWtSV09RcElOVmxEVFZGRVRVRTNaemhQWldwSU5rMTNVa2xpVXk5WFVUTjFOM1ZWV21WYVNsRnFTMFJHWWpkTmJHTmxRbFI0SzBRdlQzTnFkVkpOTldwWWRtNWFDa1l5UmxaeVYxVTlDaTB0TFMwdFJVNUVJRU5GVWxSSlJrbERRVlJGTFMwdExTMD0iLCJzaWciOiJUVVZWUTBsUlJFNXBWWGxPZWxwc05pOU1iblJ4ZUdoNVRsZExUbkZJYm1aRFFrWnNWRWxCYjNKdFNtSnFXRWRqZVZGSlowOVFSM0ZNYm5wWFlWWlJWbk5KUlZwQ1MyNXJURzlWVGtJMlJIWkRVVGRxT0RaTVJIZ3dObE13ZEZrOSJ9XX0sImhhc2giOnsiYWxnb3JpdGhtIjoic2hhMjU2IiwidmFsdWUiOiI3OWJiMDRhN2VhMDA3M2FiN2VmY2NkYjlkOWM5NTQ0MWJiOWJkNjQ5ZGE5ZTc0YzNlNzkzMTVlZTk5NjFkYWE4In0sInBheWxvYWRIYXNoIjp7ImFsZ29yaXRobSI6InNoYTI1NiIsInZhbHVlIjoiOGE3NWY2YzhkYzRkOWY0MDcyODViYjQ5ZDNlMDE5YTVlNjY2ZjQzNDk5YzI3MDdkOTI4OWFhMjdjM2MyYTY3ZSJ9fX19',
     'base64'
   );
+
+  const checkpoint = new LogCheckpoint(
+    'foo',
+    21476367n,
+    Buffer.from(
+      'd5c395a44b9537f8fa2524a6e93071969dd475ac40e87e2b1231b2aebd9a138b',
+      'hex'
+    ),
+    []
+  );
   const inclusionProof = {
     logIndex: '21428034',
-    treeSize: '21476367',
     hashes: [
       Buffer.from(
         '19d3dbf73de6aefabc91f0b0e143b98aa85a09da0fe425ec5f1cd6d156f71618',
@@ -115,10 +125,6 @@ describe('verifyMerkleInclusion', () => {
         'hex'
       ),
     ],
-    rootHash: Buffer.from(
-      'd5c395a44b9537f8fa2524a6e93071969dd475ac40e87e2b1231b2aebd9a138b',
-      'hex'
-    ),
   };
 
   describe('when the inclusion proof is valid', () => {
@@ -128,7 +134,7 @@ describe('verifyMerkleInclusion', () => {
     });
 
     it('does NOT throw an error', () => {
-      expect(verifyMerkleInclusion(entry)).toBeUndefined();
+      expect(verifyMerkleInclusion(entry, checkpoint)).toBeUndefined();
     });
   });
 
@@ -139,10 +145,9 @@ describe('verifyMerkleInclusion', () => {
     });
 
     it('throws an error', () => {
-      expect(() => verifyMerkleInclusion(invalidEntry)).toThrowWithCode(
-        VerificationError,
-        'TLOG_INCLUSION_PROOF_ERROR'
-      );
+      expect(() =>
+        verifyMerkleInclusion(invalidEntry, checkpoint)
+      ).toThrowWithCode(VerificationError, 'TLOG_INCLUSION_PROOF_ERROR');
     });
   });
 
@@ -153,10 +158,9 @@ describe('verifyMerkleInclusion', () => {
     });
 
     it('throws an error', () => {
-      expect(() => verifyMerkleInclusion(invalidEntry)).toThrowWithCode(
-        VerificationError,
-        'TLOG_INCLUSION_PROOF_ERROR'
-      );
+      expect(() =>
+        verifyMerkleInclusion(invalidEntry, checkpoint)
+      ).toThrowWithCode(VerificationError, 'TLOG_INCLUSION_PROOF_ERROR');
     });
   });
 
@@ -167,10 +171,9 @@ describe('verifyMerkleInclusion', () => {
     });
 
     it('throws an error', () => {
-      expect(() => verifyMerkleInclusion(invalidEntry)).toThrowWithCode(
-        VerificationError,
-        'TLOG_INCLUSION_PROOF_ERROR'
-      );
+      expect(() =>
+        verifyMerkleInclusion(invalidEntry, checkpoint)
+      ).toThrowWithCode(VerificationError, 'TLOG_INCLUSION_PROOF_ERROR');
     });
   });
 
@@ -184,27 +187,31 @@ describe('verifyMerkleInclusion', () => {
     });
 
     it('throws an error', () => {
-      expect(() => verifyMerkleInclusion(invalidEntry)).toThrowWithCode(
-        VerificationError,
-        'TLOG_INCLUSION_PROOF_ERROR'
-      );
+      expect(() =>
+        verifyMerkleInclusion(invalidEntry, checkpoint)
+      ).toThrowWithCode(VerificationError, 'TLOG_INCLUSION_PROOF_ERROR');
     });
   });
 
   describe('when we have the smallest possible tree', () => {
     const body = Buffer.from('foo');
+    const checkpoint = new LogCheckpoint(
+      'foo',
+      1n,
+      crypto.digest('sha256', Buffer.from([0x00]), body),
+      []
+    );
+
     const entry: TLogEntryWithInclusionProof = fromPartial({
       canonicalizedBody: body,
       inclusionProof: {
         hashes: [],
-        treeSize: '1',
         logIndex: '0',
-        rootHash: crypto.digest('sha256', Buffer.from([0x00]), body),
       },
     });
 
     it('does NOT throw an error', () => {
-      expect(verifyMerkleInclusion(entry)).toBeUndefined();
+      expect(verifyMerkleInclusion(entry, checkpoint)).toBeUndefined();
     });
   });
 });
