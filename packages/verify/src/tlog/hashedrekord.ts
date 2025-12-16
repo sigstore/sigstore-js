@@ -22,13 +22,15 @@ import {
 import type { ProposedHashedRekordEntry } from '@sigstore/rekor-types';
 import type { SignatureContent } from '../shared.types';
 
+export const HASHEDREKORD_API_VERSION_V1 = '0.0.1';
+
 // Compare the given hashedrekord tlog entry to the given bundle
 export function verifyHashedRekordTLogBody(
   tlogEntry: ProposedHashedRekordEntry,
   content: SignatureContent
 ): void {
   switch (tlogEntry.apiVersion) {
-    case '0.0.1':
+    case HASHEDREKORD_API_VERSION_V1:
       return verifyHashedrekord001TLogBody(tlogEntry, content);
     default:
       throw new VerificationError({

@@ -29,6 +29,7 @@ describe('verifyCheckpoint', () => {
   const keyID = crypto.digest('sha256', keyBytes);
 
   const tlogInstance: TLogAuthority = {
+    baseURL: 'https://rekor.sigstore.dev',
     publicKey: crypto.createPublicKey(keyBytes),
     logID: keyID,
     validFor: { start: new Date('2000-01-01'), end: new Date('2100-01-01') },
@@ -198,6 +199,7 @@ describe('verifyCheckpoint', () => {
     const keyID = crypto.digest('sha256', keyBytes);
 
     const tlogInstance: TLogAuthority = {
+      baseURL: 'https://rekor.sigstage.dev',
       publicKey: crypto.createPublicKey(keyBytes),
       logID: keyID,
       validFor: { start: new Date('2000-01-01'), end: new Date('2100-01-01') },

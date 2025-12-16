@@ -18,7 +18,7 @@ const trustedRootJSON = {
   mediaType: 'application/vnd.dev.sigstore.trustedroot+json;version=0.1',
   tlogs: [
     {
-      baseUrl: 'https://tlog.sigstore.dev',
+      baseUrl: 'https://rekor.sigstore.dev',
       hashAlgorithm: 'SHA2_256',
       publicKey: {
         rawBytes:

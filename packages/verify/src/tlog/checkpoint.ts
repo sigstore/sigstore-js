@@ -75,8 +75,10 @@ function verifySignedNote(
 
   return signedNote.signatures.every((signature) => {
     // Find the transparency log instance with the matching key hint
-    const tlog = tlogs.find((tlog) =>
-      crypto.bufferEqual(tlog.logID.subarray(0, 4), signature.keyHint)
+    const tlog = tlogs.find(
+      (tlog) =>
+        crypto.bufferEqual(tlog.logID.subarray(0, 4), signature.keyHint) &&
+        tlog.baseURL.match(signature.name) // Match the name to the base URL of the tlog
     );
 
     if (!tlog) {

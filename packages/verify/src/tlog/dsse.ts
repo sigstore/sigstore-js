@@ -22,13 +22,15 @@ import type {
 import type { ProposedDSSEEntry } from '@sigstore/rekor-types';
 import type { SignatureContent } from '../shared.types';
 
+export const DSSE_API_VERSION_V1 = '0.0.1';
+
 // Compare the given dsse tlog entry to the given bundle
 export function verifyDSSETLogBody(
   tlogEntry: ProposedDSSEEntry,
   content: SignatureContent
 ): void {
   switch (tlogEntry.apiVersion) {
-    case '0.0.1':
+    case DSSE_API_VERSION_V1:
       return verifyDSSE001TLogBody(tlogEntry, content);
     default:
       throw new VerificationError({
