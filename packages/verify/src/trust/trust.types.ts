@@ -17,6 +17,7 @@ import type { X509Certificate, crypto } from '@sigstore/core';
 
 export type TLogAuthority = {
   logID: Buffer;
+  baseURL: string;
   publicKey: crypto.KeyObject;
   validFor: {
     start: Date;
