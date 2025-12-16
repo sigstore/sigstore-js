@@ -28,12 +28,24 @@ import type {
 } from './shared.types';
 import type { TrustMaterial } from './trust';
 
-export type VerifierOptions = {
+/**
+ * Configuration options for the verifier.
+ *
+ * @public
+ */
+export interface VerifierOptions {
+  /** Minimum number of transparency log entries required for verification */
   tlogThreshold?: number;
+  /** Minimum number of certificate transparency log entries required */
   ctlogThreshold?: number;
+  /**
+   * Minimum number of timestamp authority timestamps required for verification
+   * @deprecated Use timestampThreshold instead
+   */
   tsaThreshold?: number;
+  /** Minimum number of timestamps required for verification */
   timestampThreshold?: number;
-};
+}
 
 export class Verifier {
   private trustMaterial: TrustMaterial;
