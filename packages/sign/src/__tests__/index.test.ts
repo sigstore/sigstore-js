@@ -15,6 +15,7 @@ limitations under the License.
 */
 import { fromPartial } from '@total-typescript/shoehorn';
 import {
+  bundleBuilderFromSigningConfig,
   CIContextProvider,
   DEFAULT_FULCIO_URL,
   DEFAULT_REKOR_URL,
@@ -91,6 +92,10 @@ it('exports classes', () => {
   expect(FulcioSigner).toBeInstanceOf(Function);
   expect(RekorWitness).toBeInstanceOf(Function);
   expect(TSAWitness).toBeInstanceOf(Function);
+});
+
+it('exports functions', () => {
+  expect(bundleBuilderFromSigningConfig).toBeInstanceOf(Function);
 });
 
 it('exports errors', () => {

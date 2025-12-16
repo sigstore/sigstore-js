@@ -1,6 +1,7 @@
 export type { Bundle } from '@sigstore/bundle';
 export { DSSEBundleBuilder, MessageSignatureBundleBuilder } from './bundler';
 export type { Artifact, BundleBuilder, BundleBuilderOptions } from './bundler';
+export { bundleBuilderFromSigningConfig } from './config';
 export { InternalError } from './error';
 export { CIContextProvider } from './identity';
 export type { IdentityProvider } from './identity';

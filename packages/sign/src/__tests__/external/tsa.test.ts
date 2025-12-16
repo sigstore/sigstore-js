@@ -76,7 +76,7 @@ describe('TimestampAuthority', () => {
 
       it('returns the timestamp', async () => {
         const subject = new TimestampAuthority({
-          baseURL,
+          baseURL: `${baseURL}/api/v1/timestamp`,
           retry: { retries: 1, factor: 0, minTimeout: 1, maxTimeout: 1 },
         });
         const result = await subject.createTimestamp(timestampRequest);
