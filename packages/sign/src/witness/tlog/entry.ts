@@ -233,7 +233,7 @@ function toCreateEntryRequestMessageSignature(
             verifier: {
               $case: 'x509Certificate',
               x509Certificate: {
-                rawBytes: Buffer.from(publicKey, 'base64'),
+                rawBytes: pem.toDER(publicKey),
               },
             },
           },
