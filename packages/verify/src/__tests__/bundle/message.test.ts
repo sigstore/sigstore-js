@@ -81,10 +81,16 @@ describe('MessageSignatureContent', () => {
       const message256 = Buffer.from('message256');
       const messageDigest256 = core.digest('sha256', message256);
       const messageSignature256: MessageSignature = {
-        messageDigest: { digest: messageDigest256, algorithm: HashAlgorithm.SHA2_256 },
+        messageDigest: {
+          digest: messageDigest256,
+          algorithm: HashAlgorithm.SHA2_256,
+        },
         signature: crypto.sign('sha256', message256, key.privateKey),
       };
-      const subject256 = new MessageSignatureContent(messageSignature256, message256);
+      const subject256 = new MessageSignatureContent(
+        messageSignature256,
+        message256
+      );
 
       it('verifies signature with explicit hash algorithm', () => {
         expect(subject256.verifySignature(key.publicKey)).toBe(true);
@@ -95,13 +101,37 @@ describe('MessageSignatureContent', () => {
       const message512 = Buffer.from('message512');
       const messageDigest512 = core.digest('sha512', message512);
       const messageSignature512: MessageSignature = {
-        messageDigest: { digest: messageDigest512, algorithm: HashAlgorithm.SHA2_512 },
+        messageDigest: {
+          digest: messageDigest512,
+          algorithm: HashAlgorithm.SHA2_512,
+        },
         signature: crypto.sign('sha512', message512, key.privateKey),
       };
-      const subject512 = new MessageSignatureContent(messageSignature512, message512);
+      const subject512 = new MessageSignatureContent(
+        messageSignature512,
+        message512
+      );
 
       it('verifies signature with explicit hash algorithm', () => {
         expect(subject512.verifySignature(key.publicKey)).toBe(true);
+      });
+    });
+
+    describe('when using HASH_ALGORITHM_UNSPECIFIED', () => {
+      const unspecifiedMessageSignature: MessageSignature = {
+        messageDigest: {
+          digest: messageDigest,
+          algorithm: HashAlgorithm.HASH_ALGORITHM_UNSPECIFIED,
+        },
+        signature: crypto.sign(null, message, key.privateKey),
+      };
+      const unspecifiedSubject = new MessageSignatureContent(
+        unspecifiedMessageSignature,
+        message
+      );
+
+      it('defaults to sha256 and returns true for valid signature', () => {
+        expect(unspecifiedSubject.verifySignature(key.publicKey)).toBe(true);
       });
     });
   });
