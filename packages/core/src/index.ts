@@ -18,7 +18,6 @@ export * as crypto from './crypto';
 export * as dsse from './dsse';
 export * as encoding from './encoding';
 export * as json from './json';
-export { HASH_ALGORITHM_NAMES } from './oid';
 export * as pem from './pem';
 export { RFC3161Timestamp } from './rfc3161';
 export { ByteStream } from './stream';
