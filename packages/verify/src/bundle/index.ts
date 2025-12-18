@@ -34,10 +34,12 @@ export function toSignedEntity(
   const timestamps: Timestamp[] = [];
 
   for (const entry of tlogEntries) {
-    timestamps.push({
-      $case: 'transparency-log',
-      tlogEntry: entry,
-    });
+    if (entry.integratedTime && entry.integratedTime !== '0') {
+      timestamps.push({
+        $case: 'transparency-log',
+        tlogEntry: entry,
+      });
+    }
   }
 
   for (const ts of timestampVerificationData?.rfc3161Timestamps ?? []) {

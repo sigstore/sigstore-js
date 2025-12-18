@@ -38,7 +38,14 @@ export class TimestampAuthority {
 
   public async createTimestamp(request: TimestampRequest): Promise<Buffer> {
     const { baseURL, timeout, retry } = this.options;
-    const url = `${baseURL}/api/v1/timestamp`;
+
+    // Account for the fact that the TSA URL may already include the full
+    // path if the client was initalized from a `SigningConfig` service entry
+    // (which always uses the full URL).
+    const url =
+      new URL(baseURL).pathname === '/'
+        ? `${baseURL}/api/v1/timestamp`
+        : baseURL;
 
     const response = await fetchWithRetry(url, {
       headers: {

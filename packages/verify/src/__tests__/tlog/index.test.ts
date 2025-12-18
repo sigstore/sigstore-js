@@ -16,7 +16,7 @@ limitations under the License.
 import { bundleFromJSON } from '@sigstore/bundle';
 import { signatureContent } from '../../bundle';
 import { VerificationError } from '../../error';
-import { verifyTLogBody } from '../../tlog';
+import { verifyTLogBody, verifyTLogInclusion } from '../../tlog';
 import * as bundles from '../__fixtures__/bundles';
 
 describe('verifyTLogBody', () => {
@@ -67,6 +67,27 @@ describe('verifyTLogBody', () => {
       expect(() => verifyTLogBody(tlogEntry, content)).toThrowWithCode(
         VerificationError,
         'TLOG_BODY_ERROR'
+      );
+    });
+  });
+});
+
+describe('verifyTLogInclusion', () => {
+  describe('when there is no inclusion proof/promise', () => {
+    const bundle = bundleFromJSON(
+      bundles.V3.DSSE.WITH_SIGNING_CERT.TLOG_DSSEV002
+    );
+    const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
+
+    beforeEach(() => {
+      tlogEntry.inclusionPromise = undefined;
+      tlogEntry.inclusionProof = undefined;
+    });
+
+    it('throws an error', () => {
+      expect(() => verifyTLogInclusion(tlogEntry, [])).toThrowWithCode(
+        VerificationError,
+        'TLOG_MISSING_INCLUSION_ERROR'
       );
     });
   });

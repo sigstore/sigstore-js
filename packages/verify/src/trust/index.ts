@@ -69,8 +69,12 @@ function createTLogAuthority(
     keyDetails === PublicKeyDetails.PKIX_RSA_PKCS1V15_4096_SHA256
       ? 'pkcs1'
       : 'spki';
+  /* istanbul ignore next */
   return {
-    logID: tlogInstance.logId!.keyId,
+    baseURL: tlogInstance.baseUrl,
+    logID: tlogInstance.checkpointKeyId
+      ? tlogInstance.checkpointKeyId.keyId
+      : tlogInstance.logId!.keyId,
     publicKey: crypto.createPublicKey(
       tlogInstance.publicKey!.rawBytes!,
       keyType

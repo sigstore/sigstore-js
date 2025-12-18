@@ -22,8 +22,8 @@ describe('toTrustMaterial', () => {
     const result = toTrustMaterial(trustedRoot);
     expect(result).toBeDefined();
     expect(result.certificateAuthorities).toHaveLength(2);
-    expect(result.timestampAuthorities).toHaveLength(1);
-    expect(result.tlogs).toHaveLength(1);
+    expect(result.timestampAuthorities).toHaveLength(2);
+    expect(result.tlogs).toHaveLength(2);
     expect(result.ctlogs).toHaveLength(3);
 
     expect(() => result.publicKey('FOO')).toThrowWithCode(

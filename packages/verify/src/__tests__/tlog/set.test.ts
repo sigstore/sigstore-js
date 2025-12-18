@@ -17,7 +17,7 @@ import { crypto } from '@sigstore/core';
 import { TransparencyLogEntry } from '@sigstore/protobuf-specs';
 import { fromPartial } from '@total-typescript/shoehorn';
 import { VerificationError } from '../../error';
-import { verifyTLogSET } from '../../timestamp/set';
+import { verifyTLogSET } from '../../tlog/set';
 
 import type { TLogEntryWithInclusionPromise } from '@sigstore/bundle';
 import type { TLogAuthority } from '../../trust';
@@ -30,12 +30,14 @@ describe('verifyTLogSET', () => {
   const keyID = crypto.digest('sha256', keyBytes);
 
   const validTLog: TLogAuthority = {
+    baseURL: 'rekor.sigstore.dev',
     logID: keyID,
     publicKey: crypto.createPublicKey(keyBytes),
     validFor: { start: new Date(0), end: new Date('2100-01-01') },
   };
 
   const invalidTLog: TLogAuthority = {
+    baseURL: 'rekor.sigstore.dev',
     logID: Buffer.from('invalid'),
     publicKey: crypto.createPublicKey(keyBytes),
     validFor: { start: new Date(0), end: new Date('2100-01-01') },

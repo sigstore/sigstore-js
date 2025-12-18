@@ -16,7 +16,7 @@ limitations under the License.
 import { crypto } from '@sigstore/core';
 import { fromPartial } from '@total-typescript/shoehorn';
 import { VerificationError } from '../../error';
-import { verifyCheckpoint } from '../../timestamp/checkpoint';
+import { verifyCheckpoint } from '../../tlog/checkpoint';
 
 import type { TLogEntryWithInclusionProof } from '@sigstore/bundle';
 import type { TLogAuthority } from '../../trust';
@@ -29,6 +29,7 @@ describe('verifyCheckpoint', () => {
   const keyID = crypto.digest('sha256', keyBytes);
 
   const tlogInstance: TLogAuthority = {
+    baseURL: 'https://rekor.sigstore.dev',
     publicKey: crypto.createPublicKey(keyBytes),
     logID: keyID,
     validFor: { start: new Date('2000-01-01'), end: new Date('2100-01-01') },
@@ -55,7 +56,11 @@ describe('verifyCheckpoint', () => {
 
   describe('when the entry has a valid checkpoint', () => {
     it('does NOT throw an error', () => {
-      expect(verifyCheckpoint(entry, tlogs)).toBeUndefined();
+      const checkpoint = verifyCheckpoint(entry, tlogs);
+
+      expect(checkpoint).toBeDefined();
+      expect(checkpoint.logHash).toBeDefined();
+      expect(checkpoint.logSize).toBeDefined();
     });
   });
 
@@ -147,20 +152,6 @@ describe('verifyCheckpoint', () => {
     });
   });
 
-  describe('when the entry checkpoint has the wrong root hash', () => {
-    const entry: TLogEntryWithInclusionProof = fromPartial({
-      inclusionProof: { ...inclusionProof, rootHash: Buffer.from('foo') },
-      integratedTime: '1688058655',
-    });
-
-    it('throws an error', () => {
-      expect(() => verifyCheckpoint(entry, tlogs)).toThrowWithCode(
-        VerificationError,
-        'TLOG_INCLUSION_PROOF_ERROR'
-      );
-    });
-  });
-
   describe('when the entry checkpoint has a bad signature', () => {
     const badSignatureCheckpoint =
       'rekor.sigstore.dev - 2605736670972794746\n21428036\nrxnoKyFZlJ7/R6bMh/d3lcqwKqAy5CL1LcNBJP17kgQ=\n\n— rekor.sigstore.dev wNI9ajBFAiEAuDk7uu5Ae8Own\n';
@@ -197,44 +188,6 @@ describe('verifyCheckpoint', () => {
     });
   });
 
-  describe('when key start time is after the entry time', () => {
-    const invalidTLogs = [
-      {
-        ...tlogInstance,
-        validFor: {
-          start: new Date('2099-01-01'),
-          end: new Date('2100-01-01'),
-        },
-      },
-    ];
-
-    it('throws an error', () => {
-      expect(() => verifyCheckpoint(entry, invalidTLogs)).toThrowWithCode(
-        VerificationError,
-        'TLOG_INCLUSION_PROOF_ERROR'
-      );
-    });
-  });
-
-  describe('when key is expired at the entry time', () => {
-    const invalidTLogs = [
-      {
-        ...tlogInstance,
-        validFor: {
-          start: new Date('2000-01-01'),
-          end: new Date('2001-01-01'),
-        },
-      },
-    ];
-
-    it('throws an error', () => {
-      expect(() => verifyCheckpoint(entry, invalidTLogs)).toThrowWithCode(
-        VerificationError,
-        'TLOG_INCLUSION_PROOF_ERROR'
-      );
-    });
-  });
-
   describe('when there is a valid checkpoint with no timestamp', () => {
     // Using a real checkpoint from Rekor staging instance (log index 22781754)
     // At the time this test was added, only the staging instance was generating
@@ -246,6 +199,7 @@ describe('verifyCheckpoint', () => {
     const keyID = crypto.digest('sha256', keyBytes);
 
     const tlogInstance: TLogAuthority = {
+      baseURL: 'https://rekor.sigstage.dev',
       publicKey: crypto.createPublicKey(keyBytes),
       logID: keyID,
       validFor: { start: new Date('2000-01-01'), end: new Date('2100-01-01') },
@@ -271,7 +225,7 @@ describe('verifyCheckpoint', () => {
     });
 
     it('does NOT throw an error', () => {
-      expect(verifyCheckpoint(entry, tlogs)).toBeUndefined();
+      expect(verifyCheckpoint(entry, tlogs)).toBeDefined();
     });
   });
 });

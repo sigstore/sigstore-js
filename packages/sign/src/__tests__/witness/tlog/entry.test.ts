@@ -290,7 +290,7 @@ describe('toCreateEntryRequest', () => {
         ) {
           expect(
             hashedRekord.signature.verifier.verifier.x509Certificate.rawBytes
-          ).toEqual(Buffer.from(publicKey, 'base64'));
+          ).toEqual(pem.toDER(publicKey));
         }
       }
     });
