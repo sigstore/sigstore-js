@@ -23,7 +23,7 @@ import { DSSEBundleBuilder } from './bundler/dsse';
 import { MessageSignatureBundleBuilder } from './bundler/message';
 import { IdentityProvider } from './identity';
 import { FulcioSigner, Signer } from './signer';
-import { RekorWitness, Witness } from './witness';
+import { RekorWitness, TSAWitness, Witness } from './witness';
 
 import type { MakeFetchHappenOptions } from 'make-fetch-happen';
 
@@ -129,8 +129,8 @@ function witnessesFromConfig(
 
     const tsa = tsaService(signingConfig);
     witnesses.push(
-      new RekorWitness({
-        rekorBaseURL: tsa.url,
+      new TSAWitness({
+        tsaBaseURL: tsa.url,
         retry: fetchOptions.retry,
         timeout: fetchOptions.timeout,
       })
