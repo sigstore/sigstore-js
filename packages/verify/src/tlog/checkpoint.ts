@@ -73,7 +73,7 @@ function verifySignedNote(
 ): boolean {
   const data = Buffer.from(signedNote.note, 'utf-8');
 
-  return signedNote.signatures.every((signature) => {
+  return signedNote.signatures.some((signature) => {
     // Find the transparency log instance with the matching key hint
     const tlog = tlogs.find(
       (tlog) =>
