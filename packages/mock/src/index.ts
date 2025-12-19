@@ -17,7 +17,7 @@ limitations under the License.
 import type { KeyPairKeyObjectResult } from 'crypto';
 import { fulcioHandler, initializeCA, initializeCTLog } from './fulcio';
 import { mock } from './mock';
-import { initializeTLog, rekorHandler } from './rekor';
+import { initializeTLog, rekorHandler, rekorV2Handler } from './rekor';
 import { initializeTSA, tsaHandler } from './timestamp';
 import { generateKeyPair } from './util/key';
 
@@ -63,6 +63,16 @@ export async function mockRekor(options: RekorOptions = {}) {
   mock(url, handler);
 }
 
+export async function mockRekorV2(options: RekorOptions = {}) {
+  const url = options.baseURL || DEFAULT_REKOR_URL;
+  const strict = options.strict ?? true;
+  const keyPair = options.keyPair || generateKeyPair('prime256v1');
+  const handler = await initializeTLog(url, keyPair).then((tlog) =>
+    rekorV2Handler(tlog, { strict })
+  );
+  mock(url, handler);
+}
+
 export async function mockTSA(options: TSAOptions = {}) {
   const url = options.baseURL || DEFAULT_TSA_URL;
   const strict = options.strict ?? true;
@@ -81,5 +91,6 @@ export {
   initializeTLog,
   initializeTSA,
   rekorHandler,
+  rekorV2Handler,
   tsaHandler,
 };

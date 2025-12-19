@@ -14,11 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { TransparencyLogEntry } from '@sigstore/protobuf-specs';
+import { CreateEntryRequest } from '@sigstore/protobuf-specs/rekor/v2';
 import assert from 'assert';
 import type { Handler, HandlerFn, HandlerFnResult } from '../shared.types';
 import type { TLog } from './tlog';
 
 const CREATE_ENTRY_PATH = '/api/v1/log/entries';
+const CREATE_ENTRY_V2_PATH = '/api/v2/log/entries';
 
 interface RekorHandlerOptions {
   strict?: boolean;
@@ -34,6 +37,16 @@ export function rekorHandler(
   };
 }
 
+export function rekorV2Handler(
+  tlog: TLog,
+  opts: RekorHandlerOptions = {}
+): Handler {
+  return {
+    path: CREATE_ENTRY_V2_PATH,
+    fn: createEntryV2Handler(tlog, opts),
+  };
+}
+
 function createEntryHandler(tlog: TLog, opts: RekorHandlerOptions): HandlerFn {
   const strict = opts.strict ?? true;
 
@@ -44,6 +57,27 @@ function createEntryHandler(tlog: TLog, opts: RekorHandlerOptions): HandlerFn {
         : { kind: 'intoto', apiVersion: '0.0.2' };
       const tlogEntry = await tlog.log(proposedEntry);
       const response = JSON.stringify(tlogEntry);
+
+      return { statusCode: 201, response, contentType: 'application/json' };
+    } catch (e) {
+      assert(e instanceof Error);
+      return { statusCode: 400, response: e.message };
+    }
+  };
+}
+
+function createEntryV2Handler(
+  tlog: TLog,
+  opts: RekorHandlerOptions
+): HandlerFn {
+  const strict = opts.strict ?? true;
+
+  return async (body: string): Promise<HandlerFnResult> => {
+    try {
+      const request = strict ? JSON.parse(body) : { dsseRequestV002: {} };
+      const createEntryRequest = CreateEntryRequest.fromJSON(request);
+      const tlogEntry = await tlog.logV2(createEntryRequest);
+      const response = JSON.stringify(TransparencyLogEntry.toJSON(tlogEntry));
 
       return { statusCode: 201, response, contentType: 'application/json' };
     } catch (e) {

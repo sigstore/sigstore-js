@@ -15,5 +15,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-export { rekorHandler } from './handler';
-export { TLog, initializeTLog } from './tlog';
+export { rekorHandler, rekorV2Handler } from './handler';
+export { initializeTLog, TLog } from './tlog';

@@ -24,8 +24,10 @@ import {
   initializeTSA,
   mockFulcio,
   mockRekor,
+  mockRekorV2,
   mockTSA,
   rekorHandler,
+  rekorV2Handler,
   tsaHandler,
 } from '.';
 
@@ -44,6 +46,7 @@ it('exports functions', () => {
   expect(initializeTSA).toBeDefined();
   expect(fulcioHandler).toBeDefined();
   expect(rekorHandler).toBeDefined();
+  expect(rekorV2Handler).toBeDefined();
   expect(tsaHandler).toBeDefined();
 });
 
@@ -72,6 +75,18 @@ describe('exports mock functions', () => {
 
     it('mocks rekor w/ options', async () => {
       await mockRekor({ strict: true });
+      expect(nock.pendingMocks()).toHaveLength(1);
+    });
+  });
+
+  describe('mockRekorV2', () => {
+    it('mocks rekor', async () => {
+      await mockRekorV2();
+      expect(nock.pendingMocks()).toHaveLength(1);
+    });
+
+    it('mocks rekor w/ options', async () => {
+      await mockRekorV2({ strict: true });
       expect(nock.pendingMocks()).toHaveLength(1);
     });
   });

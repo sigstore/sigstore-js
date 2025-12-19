@@ -17,7 +17,7 @@ limitations under the License.
 import { fromPartial } from '@total-typescript/shoehorn';
 import crypto from 'crypto';
 import { generateKeyPair } from '../util/key';
-import { rekorHandler } from './handler';
+import { rekorHandler, rekorV2Handler } from './handler';
 import { initializeTLog, TLog } from './tlog';
 
 describe('rekorHandler', () => {
@@ -87,6 +87,81 @@ describe('rekorHandler', () => {
 
         it('returns 400 error', async () => {
           const { fn } = rekorHandler(tlog, { strict: false });
+
+          // Make a request
+          const request = {};
+
+          const resp = await fn(JSON.stringify(request));
+          expect(resp.statusCode).toBe(400);
+        });
+      });
+    });
+  });
+});
+
+describe('rekorV2Handler', () => {
+  const url = 'https://rekor.sigstore.dev';
+  const keyPair = generateKeyPair();
+
+  describe('#path', () => {
+    it('returns the correct path', async () => {
+      const tlog = await initializeTLog(url, keyPair);
+      const handler = rekorV2Handler(tlog);
+      expect(handler.path).toBe('/api/v2/log/entries');
+    });
+  });
+
+  describe('#fn', () => {
+    it('returns a function', async () => {
+      const tlog = await initializeTLog(url, keyPair);
+      const handler = rekorV2Handler(tlog);
+      expect(handler.fn).toBeInstanceOf(Function);
+    });
+
+    describe('when invoked', () => {
+      const ceateEntryRequest = {
+        hashedRekordRequestV002: {},
+      };
+
+      it('returns a tlog entry', async () => {
+        const tlog = await initializeTLog(url, keyPair);
+        const { fn } = rekorV2Handler(tlog);
+
+        const resp = await fn(JSON.stringify(ceateEntryRequest));
+        expect(resp.statusCode).toBe(201);
+        expect(resp.contentType).toBe('application/json');
+
+        // Check the response
+        const logID = crypto
+          .createHash('sha256')
+          .update(tlog.publicKey)
+          .digest();
+
+        const body = JSON.parse(resp.response.toString());
+        expect(body).toBeDefined();
+        expect(body.logId).toBeDefined();
+        expect(Buffer.from(body.logId.keyId, 'base64')).toEqual(logID);
+        expect(body.kindVersion).toBeDefined();
+        expect(body.kindVersion.kind).toBe('hashedrekord');
+        expect(body.kindVersion.version).toBe('0.0.2');
+        expect(body.logIndex).toBeDefined();
+        expect(parseInt(body.logIndex)).toBeGreaterThan(0);
+        expect(body.integratedTime).toBeDefined();
+        expect(parseInt(body.integratedTime)).toBeGreaterThan(0);
+        expect(body.canonicalizedBody).toBeDefined();
+        expect(body.inclusionProof).toBeDefined();
+        expect(body.inclusionProof.checkpoint).toBeDefined();
+      });
+
+      describe('when the TLog raises an error', () => {
+        const tlog = fromPartial<TLog>({
+          logV2: async () => {
+            throw new Error('oops');
+          },
+        });
+
+        it('returns 400 error', async () => {
+          const { fn } = rekorV2Handler(tlog, { strict: false });
 
           // Make a request
           const request = {};

@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { TransparencyLogEntry } from '@sigstore/protobuf-specs';
+import { CreateEntryRequest } from '@sigstore/protobuf-specs/rekor/v2';
 import { LogEntry } from '@sigstore/rekor-types';
 import canonicalize from 'canonicalize';
 import crypto from 'crypto';
@@ -25,6 +27,7 @@ type InclusionProof = NonNullable<
 export interface TLog {
   publicKey: Buffer;
   log(proposedEntry: object): Promise<LogEntry>;
+  logV2(proposedEntry: CreateEntryRequest): Promise<TransparencyLogEntry>;
 }
 
 export async function initializeTLog(
@@ -77,6 +80,46 @@ class TLogImpl implements TLog {
         verification: {
           inclusionProof: proof,
           signedEntryTimestamp: set.toString('base64'),
+        },
+      },
+    };
+  }
+
+  public async logV2(
+    proposedEntry: CreateEntryRequest
+  ): Promise<TransparencyLogEntry> {
+    const logID = crypto.createHash('sha256').update(this.publicKey).digest();
+    const logIndex = crypto.randomInt(10_000_000);
+    const timestamp = Math.floor(this.getCurrentTime() / 1000);
+    const body = Buffer.from(canonicalize(proposedEntry)!);
+
+    const entry = { logID, logIndex, timestamp, body };
+    const proof = this.calculateInclusionProof(entry)!;
+
+    const kind =
+      proposedEntry?.spec?.$case === 'hashedRekordRequestV002'
+        ? 'hashedrekord'
+        : 'dsse';
+
+    return {
+      logId: {
+        keyId: logID,
+      },
+      kindVersion: {
+        kind: kind,
+        version: '0.0.2',
+      },
+      logIndex: logIndex.toString(),
+      integratedTime: timestamp.toString(),
+      canonicalizedBody: body,
+      inclusionPromise: undefined,
+      inclusionProof: {
+        logIndex: logIndex.toString(),
+        treeSize: proof.treeSize.toString(),
+        rootHash: Buffer.from(proof.rootHash, 'base64'),
+        hashes: [],
+        checkpoint: {
+          envelope: proof.checkpoint,
         },
       },
     };
