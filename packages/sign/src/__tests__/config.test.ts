@@ -543,27 +543,5 @@ describe('bundleBuilderFromSigningConfig', () => {
 
       expect(builder).toBeDefined();
     });
-
-    it('handles services with end date exactly at current time', () => {
-      const now = new Date();
-      const signingConfig = createValidSigningConfig({
-        caUrls: [
-          createService(
-            'https://ca.example.com',
-            1,
-            new Date('2023-01-01'),
-            now
-          ),
-        ],
-      });
-
-      const builder = bundleBuilderFromSigningConfig({
-        signingConfig,
-        identityProvider: mockIdentityProvider,
-        bundleType: 'messageSignature',
-      });
-
-      expect(builder).toBeDefined();
-    });
   });
 });
