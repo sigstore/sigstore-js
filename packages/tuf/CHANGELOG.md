@@ -1,5 +1,12 @@
 # @sigstore/tuf
 
+## 4.0.1
+
+### Patch Changes
+
+- cee51c0: Update TUF seed files
+- 61a4f9e: Include a custom User-Agent header with fetch calls made to TUF repository
+
 ## 4.0.0
 
 ### Major Changes

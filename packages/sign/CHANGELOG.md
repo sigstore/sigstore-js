@@ -1,5 +1,17 @@
 # @sigstore/sign
 
+## 4.1.0
+
+### Minor Changes
+
+- dea916f: Support for constructing a `BundleBuilder` from a `SigningConfig`
+
+### Patch Changes
+
+- 018974e: Fix BoringSSL compatibility for Bun runtime. The ephemeral signer now explicitly uses SHA-256 as the digest algorithm instead of relying on implicit defaults, enabling @sigstore/sign to work with Bun's BoringSSL implementation.
+- Updated dependencies [5ffadc0]
+  - @sigstore/core@3.1.0
+
 ## 4.0.1
 
 ### Patch Changes

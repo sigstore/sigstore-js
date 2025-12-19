@@ -1,5 +1,11 @@
 # @sigstore/core
 
+## 3.1.0
+
+### Minor Changes
+
+- 5ffadc0: Add support for parsing RSA-signed certificates
+
 ## 3.0.0
 
 ### Major Changes
