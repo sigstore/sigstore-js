@@ -1,5 +1,26 @@
 # sigstore
 
+## 4.1.0
+
+### Minor Changes
+
+- eba6a52: `verify(bundle[, payload][, options])` now returns a `Signer` object containing the public key and identity information from the verification.
+
+### Patch Changes
+
+- Updated dependencies [cee51c0]
+- Updated dependencies [2042aad]
+- Updated dependencies [018974e]
+- Updated dependencies [dea916f]
+- Updated dependencies [61a4f9e]
+- Updated dependencies [5ffadc0]
+- Updated dependencies [5ffadc0]
+- Updated dependencies [1663b3e]
+  - @sigstore/tuf@4.0.1
+  - @sigstore/verify@3.1.0
+  - @sigstore/sign@4.1.0
+  - @sigstore/core@3.1.0
+
 ## 4.0.0
 
 ### Major Changes

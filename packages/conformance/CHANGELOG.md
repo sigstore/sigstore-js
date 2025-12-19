@@ -1,5 +1,23 @@
 # @sigstore/conformance
 
+## 0.7.0
+
+### Minor Changes
+
+- 4d24ff7: Support for new `signing-config` input in conformance CLI
+
+### Patch Changes
+
+- Updated dependencies [cee51c0]
+- Updated dependencies [2042aad]
+- Updated dependencies [61a4f9e]
+- Updated dependencies [eba6a52]
+- Updated dependencies [5ffadc0]
+- Updated dependencies [1663b3e]
+  - @sigstore/tuf@4.0.1
+  - @sigstore/verify@3.1.0
+  - sigstore@4.1.0
+
 ## 0.6.0
 
 ### Minor Changes
