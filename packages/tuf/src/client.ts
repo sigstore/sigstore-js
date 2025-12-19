@@ -17,6 +17,7 @@ import fs from 'fs';
 import path from 'path';
 import { Config, Updater } from 'tuf-js';
 import { TUFError } from '.';
+import { name as packageName, version } from '../package.json';
 import { readTarget } from './target';
 
 import type { MakeFetchHappenOptions } from 'make-fetch-happen';
@@ -162,6 +163,7 @@ function initClient(
   const config: Partial<Config> = {
     fetchTimeout: options.timeout,
     fetchRetry: options.retry,
+    userAgent: `${encodeURIComponent(packageName)}/${version}`,
   };
 
   return new Updater({
