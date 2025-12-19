@@ -4,6 +4,7 @@
 
 ### Minor Changes
 
+- 39435da: Support for creating transparency log entries via Rekor v2 API
 - dea916f: Support for constructing a `BundleBuilder` from a `SigningConfig`
 
 ### Patch Changes
