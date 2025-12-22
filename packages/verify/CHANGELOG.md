@@ -4,7 +4,7 @@
 
 ### Minor Changes
 
-- ## 2042aad: Deprecation of `tsaThreshold` verifier option. Use `timestampThreshold` instead.
+- 2042aad: Deprecation of `tsaThreshold` verifier option. Use `timestampThreshold` instead.
 - 5ffadc0: Add support for multiple hashing algorithms when verifying message signature bundles
 - 1663b3e: Verification of Sigstore bundles containing TLog entries from the Rekor V2 API
 
