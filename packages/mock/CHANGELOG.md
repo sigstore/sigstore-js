@@ -1,5 +1,11 @@
 # @sigstore/mock
 
+## 0.12.0
+
+### Minor Changes
+
+- bdc0c6f: Add support for mocked Rekor v2 endpoint
+
 ## 0.11.0
 
 ### Minor Changes
