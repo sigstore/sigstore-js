@@ -38,6 +38,12 @@ describe('verifySubjectAlternativeName', () => {
       ).not.toThrow();
     });
 
+    it('accepts a RegExp policy', () => {
+      expect(() =>
+        verifySubjectAlternativeName(/^user@example\.com$/, 'user@example.com')
+      ).not.toThrow();
+    });
+
     it('accepts a substring match without anchoring', () => {
       expect(() =>
         verifySubjectAlternativeName(

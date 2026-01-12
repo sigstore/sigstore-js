@@ -8,7 +8,7 @@ import type { ObjectIdentifierValuePair } from '@sigstore/protobuf-specs';
 // tested against the full signerIdentity string. For exact matching, use
 // anchored patterns (e.g. '^user@example\\.com$').
 export function verifySubjectAlternativeName(
-  policyIdentity: string,
+  policyIdentity: string | RegExp,
   signerIdentity: string | undefined
 ): void {
   if (signerIdentity === undefined || !signerIdentity.match(policyIdentity)) {
