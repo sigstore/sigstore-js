@@ -29,7 +29,7 @@
     "prettier": "^3.7.4",
     "shx": "^0.4.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.50.1"
+    "typescript-eslint": "^8.52.0"
   },
   "workspaces": [
     "./packages/*"
