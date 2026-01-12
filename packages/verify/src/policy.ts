@@ -2,7 +2,7 @@ import { PolicyError } from './error';
 import { CertificateExtensions } from './shared.types';
 
 export function verifySubjectAlternativeName(
-  policyIdentity: string,
+  policyIdentity: string | RegExp,
   signerIdentity: string | undefined
 ): void {
   if (signerIdentity === undefined || !signerIdentity.match(policyIdentity)) {
