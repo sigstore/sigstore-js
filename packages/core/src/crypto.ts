@@ -21,7 +21,13 @@ export function createPublicKey(
   type: 'spki' | 'pkcs1' = 'spki'
 ): crypto.KeyObject {
   if (typeof key === 'string') {
+    // Check if the key looks like a PEM
+    if (key.startsWith('-----')) {
     return crypto.createPublicKey(key);
+    }
+    // If not assume it's a base64 encoded DER
+    const derBuffer = Buffer.from(key, 'base64');
+    return crypto.createPublicKey({ key: derBuffer, format: 'der', type: type });
   } else {
     return crypto.createPublicKey({ key, format: 'der', type: type });
   }
@@ -43,8 +49,10 @@ export function verify(
 ): boolean {
   // The try/catch is to work around an issue in Node 14.x where verify throws
   // an error in some scenarios if the signature is invalid.
+  // Bun requires an explicit algorithm
+  const algo = algorithm ?? 'sha256'
   try {
-    return crypto.verify(algorithm, data, key, signature);
+    return crypto.verify(algo, data, key, signature);
   } catch (e) {
     /* istanbul ignore next */
     return false;
