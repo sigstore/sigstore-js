@@ -26,10 +26,10 @@
     "eslint": "^9.39.2",
     "jest": "^30.2.0",
     "nock": "^13.5.5",
-    "prettier": "^3.7.4",
+    "prettier": "^3.8.0",
     "shx": "^0.4.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.50.1"
+    "typescript-eslint": "^8.53.0"
   },
   "workspaces": [
     "./packages/*"
