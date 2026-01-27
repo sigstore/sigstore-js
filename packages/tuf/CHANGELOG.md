@@ -1,5 +1,11 @@
 # @sigstore/tuf
 
+## 4.0.2
+
+### Patch Changes
+
+- 90804e7: Update TUF seed files
+
 ## 4.0.1
 
 ### Patch Changes
