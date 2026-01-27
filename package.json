@@ -22,7 +22,7 @@
     "@total-typescript/shoehorn": "^0.1.2",
     "@tsconfig/node20": "^20.1.8",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.10.2",
+    "@types/node": "^25.0.10",
     "eslint": "^9.39.2",
     "jest": "^30.2.0",
     "nock": "^13.5.5",
