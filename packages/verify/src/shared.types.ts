@@ -26,7 +26,10 @@ export type CertificateIdentity = {
   extensions?: CertificateExtensions;
 };
 
-export type VerificationPolicy = CertificateIdentity;
+export type VerificationPolicy = {
+  subjectAlternativeName?: string | RegExp;
+  extensions?: CertificateExtensions;
+};
 
 export type Signer = {
   key: crypto.KeyObject;
