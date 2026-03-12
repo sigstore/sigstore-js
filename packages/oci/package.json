@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@gar/promise-retry": "^1.0.2",
-    "make-fetch-happen": "^15.0.3",
+    "make-fetch-happen": "^15.0.4",
     "proc-log": "^6.1.0"
   },
   "engines": {
