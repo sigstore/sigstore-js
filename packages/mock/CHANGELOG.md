@@ -1,5 +1,15 @@
 # @sigstore/mock
 
+## 0.12.0
+
+### Minor Changes
+
+- bdc0c6f: Add support for mocked Rekor v2 endpoint
+
+### Patch Changes
+
+- 3ce13b5: Bump `@peculiar/x509` from 1.14.2 to 1.14.3
+
 ## 0.11.0
 
 ### Minor Changes

@@ -1,5 +1,15 @@
 # @sigstore/cli
 
+## 0.9.1
+
+### Patch Changes
+
+- 3ce13b5: Bump `make-fetch-happen` from 15.0.3 to 15.0.4
+- Updated dependencies [aeb3add]
+- Updated dependencies [3ce13b5]
+  - @sigstore/sign@4.1.1
+  - @sigstore/oci@0.6.1
+
 ## 0.9.0
 
 ### Minor Changes
