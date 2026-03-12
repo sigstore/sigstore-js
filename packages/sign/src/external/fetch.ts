@@ -13,10 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { promiseRetry } from '@gar/promise-retry';
 import { constants as httpConstants } from 'http2';
 import fetch, { FetchOptions } from 'make-fetch-happen';
 import { log } from 'proc-log';
-import promiseRetry from 'promise-retry';
 import { ua } from '../util';
 import { HTTPError } from './error';
 

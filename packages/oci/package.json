@@ -29,6 +29,7 @@
     "@types/make-fetch-happen": "^10.0.4"
   },
   "dependencies": {
+    "@gar/promise-retry": "^1.0.2",
     "make-fetch-happen": "^15.0.3",
     "proc-log": "^6.1.0"
   },

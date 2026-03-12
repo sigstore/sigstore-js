@@ -16,7 +16,7 @@ limitations under the License.
 import { constants as httpConstants } from 'http2';
 import fetch, { FetchOptions } from 'make-fetch-happen';
 import { log } from 'proc-log';
-import promiseRetry from 'promise-retry';
+import { promiseRetry } from '@gar/promise-retry';
 
 const {
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
