@@ -39,7 +39,7 @@
     "@sigstore/oci": "^0.6.0",
     "@sigstore/sign": "^4.0.0",
     "open": "^11.0.0",
-    "openid-client": "^5.7.0",
+    "openid-client": "^6.8.2",
     "sigstore": "^4.0.0"
   },
   "devDependencies": {
