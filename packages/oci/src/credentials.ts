@@ -39,7 +39,9 @@ export const getRegistryCredentials = (imageName: string): Credentials => {
   try {
     content = fs.readFileSync(dockerConfigFile, 'utf8');
   } catch (err) {
-    throw new Error(`No credential file found at ${dockerConfigFile}`);
+    throw new Error(`No credential file found at ${dockerConfigFile}`, {
+      cause: err,
+    });
   }
 
   const dockerConfig: DockerConifg = JSON.parse(content);
