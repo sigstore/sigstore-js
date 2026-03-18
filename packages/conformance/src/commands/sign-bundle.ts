@@ -19,6 +19,10 @@ export default class SignBundle extends Command {
       description: 'whether to use the staging environment',
       default: false,
     }),
+    'in-toto': Flags.boolean({
+      description: 'treat the input file as an in-toto statement',
+      default: false,
+    }),
     'signing-config': Flags.file({
       description: 'path to signing config file',
       required: false,
@@ -61,14 +65,18 @@ export default class SignBundle extends Command {
     const signingConfig = SigningConfig.fromJSON(configJson);
 
     const artifact = await fs.readFile(args.artifact);
+    const inToto = flags['in-toto'];
 
     const builder = bundleBuilderFromSigningConfig({
-      bundleType: 'messageSignature',
+      bundleType: inToto ? 'dsseEnvelope' : 'messageSignature',
       signingConfig,
       identityProvider,
     });
 
-    const bundle = await builder.create({ data: artifact });
+    const bundle = await builder.create({
+      data: artifact,
+      type: inToto ? 'application/vnd.in-toto+json' : undefined,
+    });
 
     await fs.writeFile(flags['bundle'], JSON.stringify(bundleToJSON(bundle)));
   }
