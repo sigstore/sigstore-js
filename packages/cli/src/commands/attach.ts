@@ -96,7 +96,8 @@ export default class Attach extends Command {
       return credentials;
     } catch (err) {
       throw new Error(
-        'Error getting registry credentials. Make sure you are authenticated.'
+        'Error getting registry credentials. Make sure you are authenticated.',
+        { cause: err }
       );
     }
   }
