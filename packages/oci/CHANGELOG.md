@@ -1,5 +1,13 @@
 # @sigstore/oci
 
+## 0.6.1
+
+### Patch Changes
+
+- 5af92a7: Preserve orignal error as `cause` when throwing
+- aeb3add: Swap `promise-retry` library for `@gar/promise-retry`
+- 3ce13b5: Bump `make-fetch-happen` from 15.0.3 to 15.0.4
+
 ## 0.6.0
 
 ### Minor Changes

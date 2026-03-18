@@ -1,6 +1,6 @@
 {
   "name": "@sigstore/cli",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Sigstore CLI",
   "author": "Brian DeHamer @bdehamer",
   "license": "Apache-2.0",
@@ -36,8 +36,8 @@
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
     "@sigstore/bundle": "^4.0.0",
-    "@sigstore/oci": "^0.6.0",
-    "@sigstore/sign": "^4.0.0",
+    "@sigstore/oci": "^0.6.1",
+    "@sigstore/sign": "^4.1.1",
     "open": "^11.0.0",
     "openid-client": "^5.7.0",
     "sigstore": "^4.0.0"

@@ -1,5 +1,17 @@
 # @sigstore/cli
 
+## 0.9.1
+
+### Patch Changes
+
+- 5af92a7: Preserve orignal error as `cause` when throwing
+- 3ce13b5: Bump `make-fetch-happen` from 15.0.3 to 15.0.4
+- Updated dependencies [5af92a7]
+- Updated dependencies [aeb3add]
+- Updated dependencies [3ce13b5]
+  - @sigstore/oci@0.6.1
+  - @sigstore/sign@4.1.1
+
 ## 0.9.0
 
 ### Minor Changes
