@@ -23,7 +23,7 @@
     "@tsconfig/node20": "^20.1.9",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.10.2",
-    "eslint": "^9.39.2",
+    "eslint": "^10.0.3",
     "jest": "^30.3.0",
     "nock": "^13.5.5",
     "prettier": "^3.8.1",
