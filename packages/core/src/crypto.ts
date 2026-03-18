@@ -21,7 +21,15 @@ export function createPublicKey(
   type: 'spki' | 'pkcs1' = 'spki'
 ): crypto.KeyObject {
   if (typeof key === 'string') {
-    return crypto.createPublicKey(key);
+    if (key.startsWith('-----')) {
+      return crypto.createPublicKey(key);
+    } else {
+      return crypto.createPublicKey({
+        key: Buffer.from(key, 'base64'),
+        format: 'der',
+        type: type,
+      });
+    }
   } else {
     return crypto.createPublicKey({ key, format: 'der', type: type });
   }

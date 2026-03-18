@@ -13,7 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { bufferEqual, createPublicKey, digest } from '../crypto';
+import { bufferEqual, createPublicKey, digest, verify } from '../crypto';
+import { generateKeyPairSync, sign } from 'crypto';
 
 describe('createPublicKey', () => {
   it('should create a public key from a PEM string', () => {
@@ -21,6 +22,15 @@ describe('createPublicKey', () => {
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2G2Y+2tabdTV5BcGiBIx0a9fAFw
 rkBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
 -----END PUBLIC KEY-----`;
+    const key = createPublicKey(input);
+    expect(key).toBeDefined();
+    expect(key.asymmetricKeyType).toBe('ec');
+    expect(key.asymmetricKeyDetails).toEqual({ namedCurve: 'prime256v1' });
+  });
+
+  it('should create a public key from a base64-encoded DER string', () => {
+    const input =
+      'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2G2Y+2tabdTV5BcGiBIx0a9fAFwrkBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==';
     const key = createPublicKey(input);
     expect(key).toBeDefined();
     expect(key.asymmetricKeyType).toBe('ec');
@@ -46,6 +56,25 @@ describe('digest', () => {
     expect(d.toString('hex')).toBe(
       'b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9'
     );
+  });
+});
+
+describe('verify', () => {
+  const keyPair = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
+  const data = Buffer.from('test data');
+  const signature = sign('sha256', data, keyPair.privateKey);
+
+  it('returns true for a valid signature', () => {
+    expect(verify(data, keyPair.publicKey, signature, 'sha256')).toBe(true);
+  });
+
+  it('returns false for an invalid signature', () => {
+    const badSig = Buffer.from('bad signature');
+    expect(verify(data, keyPair.publicKey, badSig, 'sha256')).toBe(false);
+  });
+
+  it('returns true when algorithm is omitted', () => {
+    expect(verify(data, keyPair.publicKey, signature)).toBe(true);
   });
 });
 
