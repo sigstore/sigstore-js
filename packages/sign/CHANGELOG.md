@@ -1,5 +1,14 @@
 # @sigstore/sign
 
+## 4.1.1
+
+### Patch Changes
+
+- aeb3add: Swap `promise-retry` library for `@gar/promise-retry`
+- 3ce13b5: Bump `make-fetch-happen` from 15.0.3 to 15.0.4
+- Updated dependencies [8f736ef]
+  - @sigstore/core@3.2.0
+
 ## 4.1.0
 
 ### Minor Changes

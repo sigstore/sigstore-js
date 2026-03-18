@@ -1,5 +1,11 @@
 # @sigstore/core
 
+## 3.2.0
+
+### Minor Changes
+
+- 8f736ef: Update the `createPublicKey` function to support base64-encoded keys
+
 ## 3.1.0
 
 ### Minor Changes
