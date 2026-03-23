@@ -18,11 +18,15 @@ export default class VerifyBundle extends Command {
     'certificate-identity': Flags.string({
       description:
         'The expected identity in the signing ceritifcate SAN extension',
-      required: true,
+      required: false,
     }),
     'certificate-oidc-issuer': Flags.string({
       description: 'the expected OIDC issuer for the signing certificate',
-      required: true,
+      required: false,
+    }),
+    key: Flags.string({
+      description: 'path to PEM-encoded public key file',
+      required: false,
     }),
     'trusted-root': Flags.string({
       description: 'path to trusted root',
@@ -44,6 +48,17 @@ export default class VerifyBundle extends Command {
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(VerifyBundle);
 
+    const keyPath = flags['key'];
+
+    if (
+      !keyPath &&
+      (!flags['certificate-identity'] || !flags['certificate-oidc-issuer'])
+    ) {
+      this.error(
+        '--certificate-identity and --certificate-oidc-issuer are required when --key is not provided'
+      );
+    }
+
     const trustedRootPath = flags['trusted-root'];
     const bundle = await fs
       .readFile(flags.bundle)
@@ -53,18 +68,32 @@ export default class VerifyBundle extends Command {
     const trustMaterial = trustedRootPath
       ? await trustMaterialFromPath(trustedRootPath)
       : await trustMaterialFromTUF(flags['staging']);
-    const verifier = new Verifier(trustMaterial);
 
-    const policy = {
-      subjectAlternativeName: flags['certificate-identity'],
-      extensions: { issuer: flags['certificate-oidc-issuer'] },
-    };
+    // Override the public key finder with the externally-provided key
+    if (keyPath) {
+      const keyPEM = await fs.readFile(keyPath);
+      const publicKey = crypto.createPublicKey(keyPEM);
+      trustMaterial.publicKey = () => ({
+        publicKey,
+        validFor: () => true,
+      });
+    }
+
+    const verifier = new Verifier(trustMaterial);
 
     const signedEntity = isDigest(args.fileOrDigest)
       ? await signedEntityFromDigest(bundle, args.fileOrDigest)
       : await signedEntityFromFile(bundle, args.fileOrDigest);
 
-    verifier.verify(signedEntity, policy);
+    if (keyPath) {
+      verifier.verify(signedEntity);
+    } else {
+      const policy = {
+        subjectAlternativeName: flags['certificate-identity'],
+        extensions: { issuer: flags['certificate-oidc-issuer'] },
+      };
+      verifier.verify(signedEntity, policy);
+    }
   }
 }
 
