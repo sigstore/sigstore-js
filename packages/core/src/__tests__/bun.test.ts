@@ -2,7 +2,6 @@ import { verify } from '../crypto';
 import { createPublicKey } from '../crypto';
 import crypto from 'crypto';
 import assert from 'assert';
-import { test } from 'bun:test';
 
 // 1. Test base64 DER public key
 test('base64 DER public key', () => {
@@ -16,13 +15,14 @@ test('base64 DER public key', () => {
   console.log('Base64 DER key parsed successfully');
 });
 
-// 2. Test verify() default SHA-256
-test('verify() defaults to SHA-256', () => {
-	const data = Buffer.from('verify me');
-	const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' });
-	const sig = crypto.sign('sha256', data, keyPair.privateKey);
-	// verify from core/src/crypto defaults to sha256 if algorithm is undefined
-	const ok = verify(data, keyPair.publicKey, sig);
-	assert(ok, 'verify() should default to sha256');
-	console.log('verify() default SHA-256 works');
+// 2. verify() passes undefined algorithm for Ed25519
+test('verify() passes undefined algorithm for Ed25519', () => {
+  const data = Buffer.from('verify me');
+  const keyPair = crypto.generateKeyPairSync('ed25519');
+  const sig = crypto.sign(null, data, keyPair.privateKey);
+
+  const ok = verify(data, keyPair.publicKey, sig);
+  assert(ok, 'verify() should work with Ed25519 without specifying a digest');
+  console.log('verify() Ed25519 works');
 });
+

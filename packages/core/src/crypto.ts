@@ -49,10 +49,8 @@ export function verify(
 ): boolean {
   // The try/catch is to work around an issue in Node 14.x where verify throws
   // an error in some scenarios if the signature is invalid.
-  // Bun requires an explicit algorithm
-  const algo = algorithm ?? 'sha256'
   try {
-    return crypto.verify(algo, data, key, signature);
+    return crypto.verify(algorithm, data, key, signature);
   } catch (e) {
     /* istanbul ignore next */
     return false;
