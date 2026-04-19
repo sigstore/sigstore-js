@@ -15,6 +15,7 @@ limitations under the License.
 */
 import type { TransparencyLogEntry } from '@sigstore/bundle';
 import type { RFC3161Timestamp, X509Certificate, crypto } from '@sigstore/core';
+import type { ObjectIdentifierValuePair } from '@sigstore/protobuf-specs';
 
 export type CertificateExtensionName = 'issuer';
 export type CertificateExtensions = {
@@ -27,6 +28,7 @@ export type CertificateIdentity = {
   // matching, use an anchored pattern (e.g. '^user@example\\.com$').
   subjectAlternativeName?: string;
   extensions?: CertificateExtensions;
+  oids?: ObjectIdentifierValuePair[];
 };
 
 export type VerificationPolicy = CertificateIdentity;

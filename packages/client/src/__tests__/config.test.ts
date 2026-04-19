@@ -134,4 +134,37 @@ describe('createVerificationPolicy', () => {
       expect(policy.subjectAlternativeName).toBeUndefined();
     });
   });
+
+  describe('when the options specify certificateOIDs', () => {
+    const options = {
+      certificateOIDs: {
+        '1.3.6.1.4.1.57264.1.9': 'https://github.com/foo/bar',
+        '1.3.6.1.4.1.57264.1.12': 'https://github.com/baz/qux',
+      },
+    };
+
+    it('returns a verification policy with oids', () => {
+      const policy = createVerificationPolicy(options);
+      expect(policy).toBeDefined();
+      expect(policy.oids).toBeDefined();
+      expect(policy.oids).toHaveLength(2);
+      expect(policy.oids?.[0]).toEqual({
+        oid: { id: [1, 3, 6, 1, 4, 1, 57264, 1, 9] },
+        value: Buffer.from('https://github.com/foo/bar'),
+      });
+      expect(policy.oids?.[1]).toEqual({
+        oid: { id: [1, 3, 6, 1, 4, 1, 57264, 1, 12] },
+        value: Buffer.from('https://github.com/baz/qux'),
+      });
+    });
+  });
+
+  describe('when the options do not specify certificateOIDs', () => {
+    const options = {};
+
+    it('returns a verification policy without oids', () => {
+      const policy = createVerificationPolicy(options);
+      expect(policy.oids).toBeUndefined();
+    });
+  });
 });

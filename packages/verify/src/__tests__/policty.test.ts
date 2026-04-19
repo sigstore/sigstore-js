@@ -1,5 +1,11 @@
 import { PolicyError } from '../error';
-import { verifyExtensions, verifySubjectAlternativeName } from '../policy';
+import {
+  verifyExtensions,
+  verifyOIDs,
+  verifySubjectAlternativeName,
+} from '../policy';
+
+import type { ObjectIdentifierValuePair } from '@sigstore/protobuf-specs';
 
 describe('verifySubjectAlternativeName', () => {
   describe('when the signer identity is undefined', () => {
@@ -82,6 +88,105 @@ describe('verifyExtensions', () => {
       expect(() =>
         verifyExtensions({ issuer: 'foo' }, { issuer: 'foo' })
       ).not.toThrow();
+    });
+  });
+});
+
+describe('verifyOIDs', () => {
+  const makeOIDPair = (
+    oid: string,
+    value: string
+  ): ObjectIdentifierValuePair => ({
+    oid: { id: oid.split('.').map(Number) },
+    value: Buffer.from(value),
+  });
+
+  describe('when the policy has no OIDs', () => {
+    it('does not throw an error', () => {
+      expect(() => verifyOIDs([], [])).not.toThrow();
+    });
+  });
+
+  describe('when the signer OIDs are undefined', () => {
+    it('throws an error', () => {
+      const policyOIDs = [makeOIDPair('1.3.6.1.4.1.57264.1.9', 'foo')];
+
+      expect(() => verifyOIDs(policyOIDs, undefined)).toThrowWithCode(
+        PolicyError,
+        'UNTRUSTED_SIGNER_ERROR'
+      );
+    });
+  });
+
+  describe('when the signer has a matching OID', () => {
+    it('does not throw an error', () => {
+      const oid = '1.3.6.1.4.1.57264.1.9';
+      const value = 'https://github.com/foo/bar';
+      const policyOIDs = [makeOIDPair(oid, value)];
+      const signerOIDs = [
+        makeOIDPair('1.3.6.1.4.1.57264.1.8', 'issuer-value'),
+        makeOIDPair(oid, value),
+      ];
+
+      expect(() => verifyOIDs(policyOIDs, signerOIDs)).not.toThrow();
+    });
+  });
+
+  describe('when the signer is missing the OID', () => {
+    it('throws an error', () => {
+      const policyOIDs = [makeOIDPair('1.3.6.1.4.1.57264.1.9', 'foo')];
+      const signerOIDs = [
+        makeOIDPair('1.3.6.1.4.1.57264.1.8', 'issuer-value'),
+      ];
+
+      expect(() => verifyOIDs(policyOIDs, signerOIDs)).toThrowWithCode(
+        PolicyError,
+        'UNTRUSTED_SIGNER_ERROR'
+      );
+    });
+  });
+
+  describe('when the OID matches but the value does not', () => {
+    it('throws an error', () => {
+      const oid = '1.3.6.1.4.1.57264.1.9';
+      const policyOIDs = [makeOIDPair(oid, 'expected-value')];
+      const signerOIDs = [makeOIDPair(oid, 'different-value')];
+
+      expect(() => verifyOIDs(policyOIDs, signerOIDs)).toThrowWithCode(
+        PolicyError,
+        'UNTRUSTED_SIGNER_ERROR'
+      );
+    });
+  });
+
+  describe('when multiple OIDs are required', () => {
+    it('does not throw when all match', () => {
+      const policyOIDs = [
+        makeOIDPair('1.3.6.1.4.1.57264.1.9', 'uri-value'),
+        makeOIDPair('1.3.6.1.4.1.57264.1.12', 'repo-value'),
+      ];
+      const signerOIDs = [
+        makeOIDPair('1.3.6.1.4.1.57264.1.9', 'uri-value'),
+        makeOIDPair('1.3.6.1.4.1.57264.1.12', 'repo-value'),
+        makeOIDPair('1.3.6.1.4.1.57264.1.8', 'issuer'),
+      ];
+
+      expect(() => verifyOIDs(policyOIDs, signerOIDs)).not.toThrow();
+    });
+
+    it('throws when one is missing', () => {
+      const policyOIDs = [
+        makeOIDPair('1.3.6.1.4.1.57264.1.9', 'uri-value'),
+        makeOIDPair('1.3.6.1.4.1.57264.1.12', 'repo-value'),
+      ];
+      const signerOIDs = [
+        makeOIDPair('1.3.6.1.4.1.57264.1.9', 'uri-value'),
+      ];
+
+      expect(() => verifyOIDs(policyOIDs, signerOIDs)).toThrowWithCode(
+        PolicyError,
+        'UNTRUSTED_SIGNER_ERROR'
+      );
     });
   });
 });

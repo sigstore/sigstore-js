@@ -141,6 +141,15 @@ export function createVerificationPolicy(
     policy.extensions = { issuer: options.certificateIssuer };
   }
 
+  if (options.certificateOIDs) {
+    policy.oids = Object.entries(options.certificateOIDs).map(
+      ([oid, value]) => ({
+        oid: { id: oid.split('.').map(Number) },
+        value: Buffer.from(value),
+      })
+    );
+  }
+
   return policy;
 }
 
