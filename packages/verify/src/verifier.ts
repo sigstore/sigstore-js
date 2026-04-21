@@ -21,7 +21,11 @@ import {
   verifyOIDs,
   verifySubjectAlternativeName,
 } from './policy';
-import { getTLogTimestamp, getTSATimestamp } from './timestamp';
+import {
+  TimestampVerificationResult,
+  getTLogTimestamp,
+  getTSATimestamp,
+} from './timestamp';
 import { verifyTLogBody, verifyTLogInclusion } from './tlog';
 
 import type {
@@ -81,22 +85,29 @@ export class Verifier {
 
   // Checks that all of the timestamps in the entity are valid and returns them
   private verifyTimestamps(entity: SignedEntity): Date[] {
-    let timestampCount = 0;
+    const timestamps: TimestampVerificationResult[] = [];
 
-    const timestamps = entity.timestamps.map((timestamp) => {
+    for (const timestamp of entity.timestamps) {
       switch (timestamp.$case) {
         case 'timestamp-authority':
-          timestampCount++;
-          return getTSATimestamp(
-            timestamp.timestamp,
-            entity.signature.signature,
-            this.trustMaterial.timestampAuthorities
+          timestamps.push(
+            getTSATimestamp(
+              timestamp.timestamp,
+              entity.signature.signature,
+              this.trustMaterial.timestampAuthorities
+            )
           );
-        case 'transparency-log':
-          timestampCount++;
-          return getTLogTimestamp(timestamp.tlogEntry);
+          break;
+        case 'transparency-log': {
+          const result = getTLogTimestamp(timestamp.tlogEntry);
+          /* istanbul ignore else */
+          if (result) {
+            timestamps.push(result);
+          }
+          break;
+        }
       }
-    });
+    }
 
     // Check for duplicate timestamps
     if (containsDupes(timestamps)) {
@@ -106,10 +117,10 @@ export class Verifier {
       });
     }
 
-    if (timestampCount < this.options.timestampThreshold) {
+    if (timestamps.length < this.options.timestampThreshold) {
       throw new VerificationError({
         code: 'TIMESTAMP_ERROR',
-        message: `expected ${this.options.timestampThreshold} timestamps, got ${timestampCount}`,
+        message: `expected ${this.options.timestampThreshold} timestamps, got ${timestamps.length}`,
       });
     }
 
