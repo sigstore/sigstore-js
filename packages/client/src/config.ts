@@ -58,7 +58,12 @@ export type VerifyOptions = {
   ctLogThreshold?: number;
   tlogThreshold?: number;
   certificateIssuer?: string;
+  // Expected certificate SAN email, matched as a regular expression. For exact
+  // matching, use an anchored pattern (e.g. '^user@example\\.com$').
   certificateIdentityEmail?: string;
+  // Expected certificate SAN URI, matched as a regular expression. For exact
+  // matching, use an anchored pattern
+  // (e.g. '^https://github\\.com/owner/repo').
   certificateIdentityURI?: string;
   certificateOIDs?: Record<string, string>;
   keySelector?: KeySelector;

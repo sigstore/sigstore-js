@@ -1,6 +1,10 @@
 import { PolicyError } from './error';
 import { CertificateExtensions } from './shared.types';
 
+// Verifies that the signer's SAN matches the policy identity. The
+// policyIdentity is treated as a JavaScript regular expression pattern and
+// tested against the full signerIdentity string. For exact matching, use
+// anchored patterns (e.g. '^user@example\\.com$').
 export function verifySubjectAlternativeName(
   policyIdentity: string,
   signerIdentity: string | undefined

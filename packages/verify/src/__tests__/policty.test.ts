@@ -24,6 +24,32 @@ describe('verifySubjectAlternativeName', () => {
       expect(() => verifySubjectAlternativeName('foo', 'foo')).not.toThrow();
     });
   });
+
+  describe('when the policy is a regex pattern', () => {
+    it('matches as an unanchored regex', () => {
+      expect(() =>
+        verifySubjectAlternativeName('user@example\\.com', 'user@example.com')
+      ).not.toThrow();
+    });
+
+    it('accepts a substring match without anchoring', () => {
+      expect(() =>
+        verifySubjectAlternativeName(
+          'user@example\\.com',
+          'evil-user@example.com'
+        )
+      ).not.toThrow();
+    });
+
+    it('rejects a non-matching identity with an anchored pattern', () => {
+      expect(() =>
+        verifySubjectAlternativeName(
+          '^user@example\\.com$',
+          'evil-user@example.com'
+        )
+      ).toThrowWithCode(PolicyError, 'UNTRUSTED_SIGNER_ERROR');
+    });
+  });
 });
 
 describe('verifyExtensions', () => {

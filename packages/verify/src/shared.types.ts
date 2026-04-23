@@ -22,6 +22,9 @@ export type CertificateExtensions = {
 };
 
 export type CertificateIdentity = {
+  // The expected SAN value for the signing certificate, matched as a
+  // JavaScript regular expression against the certificate's SAN. For exact
+  // matching, use an anchored pattern (e.g. '^user@example\\.com$').
   subjectAlternativeName?: string;
   extensions?: CertificateExtensions;
 };
