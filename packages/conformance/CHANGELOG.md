@@ -1,5 +1,11 @@
 # @sigstore/conformance
 
+## 0.8.0
+
+### Minor Changes
+
+- aedec73: Support for managed key verification tests
+
 ## 0.7.0
 
 ### Minor Changes
