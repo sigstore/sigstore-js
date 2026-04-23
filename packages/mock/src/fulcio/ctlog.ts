@@ -16,7 +16,7 @@ limitations under the License.
 
 import { Crypto, CryptoKey } from '@peculiar/webcrypto';
 import * as bs from 'bytestreamjs';
-import type { KeyPairKeyObjectResult } from 'crypto';
+import type { KeyPairKeyObjectResult } from '../util/key';
 import * as pkijs from 'pkijs';
 import * as pvutils from 'pvutils';
 import { DIGEST_SHA256, SIGNING_ALGORITHM_ECDSA_SHA256 } from '../constants';

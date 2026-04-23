@@ -75,7 +75,7 @@ describe('fulcioHandler', () => {
             algorithm: 'ECDSA',
             content: publicKey
               .export({ format: 'pem', type: 'spki' })
-              .toString('ascii'),
+              .toString(),
           },
           proofOfPossession: 'foobar',
         },

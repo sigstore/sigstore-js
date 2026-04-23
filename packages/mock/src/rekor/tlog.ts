@@ -20,6 +20,8 @@ import { LogEntry } from '@sigstore/rekor-types';
 import canonicalize from 'canonicalize';
 import crypto from 'crypto';
 
+import type { KeyPairKeyObjectResult } from '../util/key';
+
 type InclusionProof = NonNullable<
   LogEntry['x']['verification']
 >['inclusionProof'];
@@ -32,7 +34,7 @@ export interface TLog {
 
 export async function initializeTLog(
   url: string,
-  keyPair: crypto.KeyPairKeyObjectResult,
+  keyPair: KeyPairKeyObjectResult,
   clock?: Date
 ): Promise<TLog> {
   const host = new URL(url).host;

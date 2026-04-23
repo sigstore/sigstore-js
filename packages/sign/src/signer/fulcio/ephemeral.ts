@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { generateKeyPairSync, sign, KeyPairKeyObjectResult } from 'crypto';
+import { generateKeyPairSync, sign, KeyObject } from 'crypto';
 
 import type { Signature, Signer } from '../signer';
 
@@ -24,7 +24,7 @@ const P256_CURVE = 'P-256';
 // The private key lives only in memory and is tied to the lifetime of the
 // EphemeralSigner instance.
 export class EphemeralSigner implements Signer {
-  private keypair: KeyPairKeyObjectResult;
+  private keypair: { publicKey: KeyObject; privateKey: KeyObject };
 
   constructor() {
     this.keypair = generateKeyPairSync(EC_KEYPAIR_TYPE, {
@@ -36,7 +36,7 @@ export class EphemeralSigner implements Signer {
     const signature = sign('sha256', data, this.keypair.privateKey);
     const publicKey = this.keypair.publicKey
       .export({ format: 'pem', type: 'spki' })
-      .toString('ascii');
+      .toString();
 
     return {
       signature: signature,
