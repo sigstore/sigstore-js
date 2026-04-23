@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import type { KeyPairKeyObjectResult } from 'crypto';
+import type { KeyPairKeyObjectResult } from './util/key';
 import { fulcioHandler, initializeCA, initializeCTLog } from './fulcio';
 import { mock } from './mock';
 import { initializeTLog, rekorHandler, rekorV2Handler } from './rekor';

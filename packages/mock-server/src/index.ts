@@ -54,7 +54,7 @@ export default class Server extends Command {
     const url = `http://localhost:${flags.port}`;
 
     // If a private key is provided, use it. Otherwise, generate a new one.
-    let keyPair: crypto.KeyPairKeyObjectResult | undefined;
+    let keyPair: { publicKey: crypto.KeyObject; privateKey: crypto.KeyObject } | undefined;
     if (flags['private-key']) {
       const keyFile = fs.readFileSync(flags['private-key']);
       keyPair = {

@@ -16,7 +16,7 @@ limitations under the License.
 
 import { Crypto } from '@peculiar/webcrypto';
 import * as asn1js from 'asn1js';
-import type { KeyPairKeyObjectResult } from 'crypto';
+import type { KeyPairKeyObjectResult } from '../util/key';
 import * as pkijs from 'pkijs';
 import { DIGEST_SHA256, SIGNING_ALGORITHM_ECDSA_SHA384 } from '../constants';
 import { ESSCertIDv2 } from '../util/ess-cert-id';

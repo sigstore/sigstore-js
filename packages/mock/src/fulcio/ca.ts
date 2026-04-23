@@ -17,7 +17,7 @@ limitations under the License.
 import { Crypto } from '@peculiar/webcrypto';
 import x509 from '@peculiar/x509';
 import * as asn1js from 'asn1js';
-import type { KeyPairKeyObjectResult } from 'crypto';
+import type { KeyPairKeyObjectResult } from '../util/key';
 import {
   DIGEST_SHA256,
   KEY_ALGORITHM_ECDSA_P256,

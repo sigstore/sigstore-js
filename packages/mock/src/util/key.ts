@@ -1,9 +1,14 @@
 import { Crypto, CryptoKey } from '@peculiar/webcrypto';
 import crypto from 'crypto';
 
+export type KeyPairKeyObjectResult = {
+  publicKey: crypto.KeyObject;
+  privateKey: crypto.KeyObject;
+};
+
 export function generateKeyPair(
   namedCurve: string = 'P-256'
-): crypto.KeyPairKeyObjectResult {
+): KeyPairKeyObjectResult {
   return crypto.generateKeyPairSync('ec', { namedCurve });
 }
 
