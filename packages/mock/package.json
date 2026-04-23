@@ -27,18 +27,18 @@
   },
   "devDependencies": {
     "@sigstore/rekor-types": "^4.0.0",
-    "make-fetch-happen": "^15.0.4"
+    "make-fetch-happen": "^15.0.5"
   },
   "dependencies": {
     "@peculiar/webcrypto": "^1.5.0",
     "@peculiar/x509": "^1.14.3",
     "@sigstore/protobuf-specs": "^0.5.0",
-    "asn1js": "^3.0.7",
+    "asn1js": "^3.0.10",
     "bytestreamjs": "^2.0.1",
     "canonicalize": "^2.1.0",
     "jose": "^5.9.6",
     "nock": "^13.5.5",
-    "pkijs": "^3.3.3",
+    "pkijs": "^3.4.0",
     "pvutils": "^1.1.5"
   },
   "engines": {
