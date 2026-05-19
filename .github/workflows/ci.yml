@@ -36,10 +36,11 @@ jobs:
       fail-fast: false
       matrix:
         node-version:
-          - 20.17.0
-          - 20.x
-          - 22.9.0
+          - 22.22.2
           - 22.x
+          - 24.15.0
+          - 24.x
+          - 26.x
         platform:
           - os: ubuntu-latest
             shell: bash
