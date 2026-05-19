@@ -10,7 +10,7 @@ A JavaScript library for working with the Sigstore bundle format.
 
 ## Prerequisites
 
-- Node.js version ^20.17.0 || >=22.9.0
+- Node.js version ^22.22.2 || ^24.15.0 || >=26.0.0
 
 ## Installation
 
