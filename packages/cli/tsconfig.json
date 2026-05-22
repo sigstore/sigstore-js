@@ -3,7 +3,8 @@
   "compilerOptions": {
     "importHelpers": true,
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "types": ["node", "jest"]
   },
   "exclude": ["./dist"],
   "references": [
