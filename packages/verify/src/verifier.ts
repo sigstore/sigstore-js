@@ -16,7 +16,11 @@ limitations under the License.
 import { isDeepStrictEqual } from 'util';
 import { VerificationError } from './error';
 import { verifyCertificate, verifyPublicKey } from './key';
-import { verifyExtensions, verifySubjectAlternativeName } from './policy';
+import {
+  verifyExtensions,
+  verifyOIDs,
+  verifySubjectAlternativeName,
+} from './policy';
 import { getTLogTimestamp, getTSATimestamp } from './timestamp';
 import { verifyTLogBody, verifyTLogInclusion } from './tlog';
 
@@ -191,6 +195,12 @@ export class Verifier {
     /* istanbul ignore else */
     if (policy.extensions) {
       verifyExtensions(policy.extensions, identity.extensions);
+    }
+
+    // Check that the OIDs of the signer match the policy
+    /* istanbul ignore if */
+    if (policy.oids) {
+      verifyOIDs(policy.oids, identity.oids);
     }
   }
 }
