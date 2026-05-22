@@ -46,7 +46,6 @@ export function verifyOIDs(
     );
 
     if (!match) {
-      /* istanbul ignore next */
       const oid = policyOID.oid?.id.join('.') ?? '<unknown>';
       throw new PolicyError({
         code: 'UNTRUSTED_SIGNER_ERROR',
@@ -57,7 +56,6 @@ export function verifyOIDs(
 }
 
 function oidEquals(a: number[] | undefined, b: number[] | undefined): boolean {
-  /* istanbul ignore if */
   if (a === undefined || b === undefined) {
     return false;
   }
