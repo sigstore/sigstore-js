@@ -54,6 +54,11 @@ export class OAuthIdentityProvider implements IdentityProvider {
     }
 
     // Wait for callback and exchange auth code for ID token
-    return this.server.callback.then((authCode) => client.getIDToken(authCode));
+    try {
+      const authCode = await this.server.callback;
+      return await client.getIDToken(authCode)
+    } finally {
+      await this.server.shutdown();
+    }
   }
 }
