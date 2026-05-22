@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import 'reflect-metadata';
+
 import { Crypto } from '@peculiar/webcrypto';
 import x509 from '@peculiar/x509';
 import { generateKeyPairSync } from 'crypto';
