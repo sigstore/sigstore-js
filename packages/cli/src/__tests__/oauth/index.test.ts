@@ -1,5 +1,4 @@
  import * as jose from 'jose';
-import fetch from 'make-fetch-happen';
 import nock from 'nock';
 import open from 'open';
 import { OAuthIdentityProvider } from '../../oauth';
