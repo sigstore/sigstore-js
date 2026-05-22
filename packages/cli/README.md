@@ -154,10 +154,13 @@ FLAGS
                                         attest
   --blob-file=<value>                   File containing data to verify. Only required if bundle was not signed using
                                         attest
-  --certificate-identity-email=<value>  Email address which must appear in the signing certificate's Subject Alternative
-                                        Name (SAN) extension. Not verified if no value is supplied
-  --certificate-identity-uri=<value>    URI which must appear in the signing certificate's Subject Alternative Name
-                                        (SAN) extension. Not verified if no value is supplied
+  --certificate-identity-email=<value>  Email address expected in the signing certificate's Subject Alternative
+                                        Name (SAN) extension. Matched as a regular expression; for exact matching,
+                                        use an anchored pattern (e.g. ^user@example\.com$). Not verified if no
+                                        value is supplied
+  --certificate-identity-uri=<value>    URI expected in the signing certificate's Subject Alternative Name
+                                        (SAN) extension. Matched as a regular expression; for exact matching,
+                                        use an anchored pattern. Not verified if no value is supplied
   --certificate-issuer=<value>          Value that must appear in the signing certificate's issuer extension (OID
                                         1.3.6.1.4.1.57264.1.1 or 1.3.6.1.4.1.57264.1.8). Not verified if no value is
                                         supplied
