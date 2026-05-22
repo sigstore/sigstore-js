@@ -1,5 +1,13 @@
 # @sigstore/mock
 
+## 0.12.1
+
+### Patch Changes
+
+- aca341b: Bump `@peculiar/webcrypt` from 1.5.0 to 1.7.1
+  Bump `pkijs` from 3.3.3 to 3.4.0
+- ffb221c: Bump `@peculiar/x509` from 1.14.3 to 2.0.0
+
 ## 0.12.0
 
 ### Minor Changes

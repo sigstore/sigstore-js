@@ -1,5 +1,14 @@
 # @sigstore/verify
 
+## 3.1.1
+
+### Patch Changes
+
+- 7845532: Verification of OID certificate extensions
+- f074710: Require inclusion promise in Rekor entry when used as timestamp source
+- Updated dependencies [b5aa4f1]
+  - @sigstore/core@3.2.1
+
 ## 3.1.0
 
 ### Minor Changes
