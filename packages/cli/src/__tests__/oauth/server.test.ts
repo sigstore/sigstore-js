@@ -1,4 +1,3 @@
-import fetch from 'make-fetch-happen';
 import { URLSearchParams } from 'url';
 import { CallbackServer } from '../../oauth/server';
 
