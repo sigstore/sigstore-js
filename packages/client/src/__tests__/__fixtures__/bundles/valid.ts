@@ -152,6 +152,10 @@ export const v2 = {
             logId: { keyId: 'wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0=' },
             kindVersion: { kind: 'hashedrekord', version: '0.0.1' },
             integratedTime: '1667957590',
+            inclusionPromise: {
+              signedEntryTimestamp:
+                'MEUCIFUNcHgHB318gCNJR0/CH4E0daODbnfePyzKCDqrt3twAiEA9N+ZObaLwVJwvOtPgkfoBa5NzjTH0eC06YBlOyZlMiY=',
+            },
             inclusionProof: {
               logIndex: '2594072',
               rootHash: 'kAnoYYy8iB3NjC5tE2l6pGBqY3uw3CBJ6x2cBBQXu0U=',
@@ -221,6 +225,10 @@ export const v3 = {
             logId: { keyId: 'wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0=' },
             kindVersion: { kind: 'hashedrekord', version: '0.0.1' },
             integratedTime: '1667957590',
+            inclusionPromise: {
+              signedEntryTimestamp:
+                'MEUCIFUNcHgHB318gCNJR0/CH4E0daODbnfePyzKCDqrt3twAiEA9N+ZObaLwVJwvOtPgkfoBa5NzjTH0eC06YBlOyZlMiY=',
+            },
             inclusionProof: {
               logIndex: '2594072',
               rootHash: 'kAnoYYy8iB3NjC5tE2l6pGBqY3uw3CBJ6x2cBBQXu0U=',

@@ -18,6 +18,7 @@ import { VerificationError } from '../error';
 import { verifyCertificateChain } from './certificate';
 import { VerifiedSCTProvider, verifySCTs } from './sct';
 
+import type { ObjectIdentifierValuePair } from '@sigstore/protobuf-specs';
 import type { CertificateIdentity, Signer } from '../shared.types';
 import type { TrustMaterial } from '../trust';
 
@@ -80,9 +81,18 @@ function getSigner(cert: X509Certificate): Signer {
     issuer = cert.extension(OID_FULCIO_ISSUER_V1)?.value.toString('ascii');
   }
 
+  const oids: ObjectIdentifierValuePair[] = cert.extensions.map((ext) => {
+    const oid = ext.subs[0].toOID();
+    return {
+      oid: { id: oid.split('.').map(Number) },
+      value: ext.subs[ext.subs.length - 1].value,
+    };
+  });
+
   const identity: CertificateIdentity = {
     extensions: { issuer },
     subjectAlternativeName: cert.subjectAltName,
+    oids,
   };
 
   return {

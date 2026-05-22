@@ -1,5 +1,18 @@
 # @sigstore/conformance
 
+## 0.8.0
+
+### Minor Changes
+
+- aedec73: Support for managed key verification tests
+
+### Patch Changes
+
+- Updated dependencies [7845532]
+- Updated dependencies [f074710]
+  - sigstore@4.1.1
+  - @sigstore/verify@3.1.1
+
 ## 0.7.0
 
 ### Minor Changes

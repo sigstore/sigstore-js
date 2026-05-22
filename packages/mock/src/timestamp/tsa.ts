@@ -14,12 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import 'reflect-metadata';
+
 import { Crypto } from '@peculiar/webcrypto';
 import * as asn1js from 'asn1js';
-import type { KeyPairKeyObjectResult } from '../util/key';
 import * as pkijs from 'pkijs';
 import { DIGEST_SHA256, SIGNING_ALGORITHM_ECDSA_SHA384 } from '../constants';
 import { ESSCertIDv2 } from '../util/ess-cert-id';
+import type { KeyPairKeyObjectResult } from '../util/key';
 import { keyObjectToCryptoKey } from '../util/key';
 import {
   createIntermediateCertificate,

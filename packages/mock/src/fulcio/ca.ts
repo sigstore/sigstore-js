@@ -14,15 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import 'reflect-metadata';
+
 import { Crypto } from '@peculiar/webcrypto';
 import x509 from '@peculiar/x509';
 import * as asn1js from 'asn1js';
-import type { KeyPairKeyObjectResult } from '../util/key';
 import {
   DIGEST_SHA256,
   KEY_ALGORITHM_ECDSA_P256,
   SIGNING_ALGORITHM_ECDSA_SHA384,
 } from '../constants';
+import type { KeyPairKeyObjectResult } from '../util/key';
 import { keyObjectToCryptoKey } from '../util/key';
 import { createRootCertificate } from '../util/root-cert';
 import type { CTLog } from './ctlog';

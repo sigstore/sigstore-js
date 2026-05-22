@@ -17,13 +17,12 @@ const PAE_PREFIX = 'DSSEv1';
 
 // DSSE Pre-Authentication Encoding
 export function preAuthEncoding(payloadType: string, payload: Buffer): Buffer {
-  const prefix = [
-    PAE_PREFIX,
-    payloadType.length,
-    payloadType,
-    payload.length,
-    '',
-  ].join(' ');
+  const typeBytes = Buffer.from(payloadType, 'utf-8');
 
-  return Buffer.concat([Buffer.from(prefix, 'ascii'), payload]);
+  return Buffer.concat([
+    Buffer.from(`${PAE_PREFIX} ${typeBytes.length} `, 'ascii'),
+    typeBytes,
+    Buffer.from(` ${payload.length} `, 'ascii'),
+    payload,
+  ]);
 }

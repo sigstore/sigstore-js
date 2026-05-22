@@ -1,5 +1,11 @@
 # @sigstore/core
 
+## 3.2.1
+
+### Patch Changes
+
+- b5aa4f1: Apply UTF-8 encoding to payload type during PAE calculation
+
 ## 3.2.0
 
 ### Minor Changes
