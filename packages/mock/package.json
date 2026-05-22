@@ -39,7 +39,8 @@
     "jose": "^5.9.6",
     "nock": "^13.5.5",
     "pkijs": "^3.3.3",
-    "pvutils": "^1.1.5"
+    "pvutils": "^1.1.5",
+    "reflect-metadata": "^0.2.2"
   },
   "engines": {
     "node": "^20.17.0 || >=22.9.0"
