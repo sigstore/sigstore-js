@@ -33,15 +33,31 @@ describe('getTLogTimestamp', () => {
       TransparencyLogEntry.fromJSON({
         logId: { keyId: 'wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0=' },
         integratedTime: '1667957590',
+        inclusionPromise: { signedEntryTimestamp: '' },
       })
     );
 
     it('does NOT throw an error', () => {
       const result = getTLogTimestamp(tlogEntry);
 
-      expect(result.type).toEqual('transparency-log');
-      expect(result.logID).toEqual(keyID);
-      expect(result.timestamp).toBeDefined();
+      expect(result).toBeDefined();
+      expect(result!.type).toEqual('transparency-log');
+      expect(result!.logID).toEqual(keyID);
+      expect(result!.timestamp).toBeDefined();
+    });
+  });
+
+  describe('when the tlog entry has no inclusion promise', () => {
+    const tlogEntry: TLogEntry = fromPartial(
+      TransparencyLogEntry.fromJSON({
+        logId: { keyId: 'wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0=' },
+        integratedTime: '1667957590',
+      })
+    );
+
+    it('returns undefined', () => {
+      const result = getTLogTimestamp(tlogEntry);
+      expect(result).toBeUndefined();
     });
   });
 });

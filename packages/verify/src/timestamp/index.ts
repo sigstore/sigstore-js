@@ -43,7 +43,12 @@ export function getTSATimestamp(
 
 export function getTLogTimestamp(
   entry: TransparencyLogEntry
-): TimestampVerificationResult {
+): TimestampVerificationResult | undefined {
+  // Only entries with an inclusion promise provide a verifiable timestamp
+  if (!entry.inclusionPromise) {
+    return undefined;
+  }
+
   return {
     type: 'transparency-log',
     logID: entry.logId.keyId,
