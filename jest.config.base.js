@@ -1,6 +1,6 @@
 module.exports = {
   transform: {
-    '^.+\\.ts$': [
+    '^.+\\.(t|j)s$': [
       '@swc/jest',
       {
         jsc: {
@@ -9,6 +9,9 @@ module.exports = {
       },
     ],
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(agent-base|http-proxy-agent|https-proxy-agent|socks-proxy-agent|socks)/)',
+  ],
   coverageThreshold: {
     global: {
       branches: 100,
