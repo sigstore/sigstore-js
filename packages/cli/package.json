@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@oclif/color": "^1.0.13",
-    "@oclif/core": "^4",
+    "@oclif/core": "^4.11.4",
     "@oclif/plugin-help": "^6",
     "@sigstore/bundle": "^4.0.0",
     "@sigstore/oci": "^0.6.1",
@@ -43,7 +43,7 @@
     "sigstore": "^4.0.0"
   },
   "devDependencies": {
-    "make-fetch-happen": "^15.0.4",
+    "make-fetch-happen": "^15.0.6",
     "oclif": "^4.23.8",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1"
