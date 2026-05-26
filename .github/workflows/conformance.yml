@@ -28,7 +28,7 @@ jobs:
       run: npm ci
     - name: Build sigstore-js
       run: npm run build
-    - uses: sigstore/sigstore-conformance@4d66ba3cb0c9c95f705c757c0f5e226d3f4d5151 # v0.0.27
+    - uses: sigstore/sigstore-conformance@e2cc8e51870bb9af4e4ae3342e97cf5f7ea2cdd8 # v0.0.28
       with:
         entrypoint: ${{ github.workspace }}/packages/conformance/bin/run
 
@@ -47,7 +47,7 @@ jobs:
       run: npm ci
     - name: Build sigstore-js
       run: npm run build
-    - uses: sigstore/sigstore-conformance@4d66ba3cb0c9c95f705c757c0f5e226d3f4d5151 # v0.0.27
+    - uses: sigstore/sigstore-conformance@e2cc8e51870bb9af4e4ae3342e97cf5f7ea2cdd8 # v0.0.28
       with:
         entrypoint: ${{ github.workspace }}/packages/conformance/bin/run
         environment: staging
