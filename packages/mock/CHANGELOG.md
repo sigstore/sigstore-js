@@ -1,5 +1,11 @@
 # @sigstore/mock
 
+## 0.13.0
+
+### Minor Changes
+
+- 46c00b3: Drop support for Node 20
+
 ## 0.12.1
 
 ### Patch Changes

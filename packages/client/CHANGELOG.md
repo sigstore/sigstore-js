@@ -1,5 +1,25 @@
 # sigstore
 
+## 5.0.0
+
+### Major Changes
+
+- 46c00b3: Drop support for Node 20
+
+### Patch Changes
+
+- Updated dependencies [7db2666]
+- Updated dependencies [74eda7a]
+- Updated dependencies [46c00b3]
+- Updated dependencies [46c00b3]
+- Updated dependencies [46c00b3]
+- Updated dependencies [46c00b3]
+  - @sigstore/tuf@5.0.0
+  - @sigstore/bundle@5.0.0
+  - @sigstore/verify@4.0.0
+  - @sigstore/core@4.0.0
+  - @sigstore/sign@5.0.0
+
 ## 4.1.1
 
 ### Patch Changes

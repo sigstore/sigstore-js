@@ -1,5 +1,11 @@
 # @sigstore/bundle
 
+## 5.0.0
+
+### Major Changes
+
+- 46c00b3: Drop support for Node 20
+
 ## 4.0.0
 
 ### Major Changes

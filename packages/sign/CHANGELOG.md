@@ -1,5 +1,19 @@
 # @sigstore/sign
 
+## 5.0.0
+
+### Major Changes
+
+- 46c00b3: Drop support for Node 20
+- 46c00b3: Bump make-fetch-happen from 15.x to 16.x
+- 46c00b3: Bump proc-log from 6.x to 7.x
+
+### Patch Changes
+
+- Updated dependencies [46c00b3]
+  - @sigstore/bundle@5.0.0
+  - @sigstore/core@4.0.0
+
 ## 4.1.1
 
 ### Patch Changes

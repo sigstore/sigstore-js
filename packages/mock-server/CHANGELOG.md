@@ -1,5 +1,17 @@
 # @sigstore/mock-server
 
+## 0.4.0
+
+### Minor Changes
+
+- 46c00b3: Drop support for Node 20
+
+### Patch Changes
+
+- 46c00b3: Bump `@tuf-js\repo-mock` from 4.0.1 to 5.0.0
+- Updated dependencies [46c00b3]
+  - @sigstore/mock@0.13.0
+
 ## 0.3.1
 
 ### Patch Changes

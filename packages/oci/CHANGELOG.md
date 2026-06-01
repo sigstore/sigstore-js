@@ -1,5 +1,13 @@
 # @sigstore/oci
 
+## 0.7.0
+
+### Minor Changes
+
+- 46c00b3: Drop support for Node 20
+- 46c00b3: Bump make-fetch-happen from 15.x to 16.x
+- 46c00b3: Bump proc-log from 6.x to 7.x
+
 ## 0.6.1
 
 ### Patch Changes

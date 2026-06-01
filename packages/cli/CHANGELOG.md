@@ -1,5 +1,24 @@
 # @sigstore/cli
 
+## 0.10.0
+
+### Minor Changes
+
+- 46c00b3: Drop support for Node 20
+
+### Patch Changes
+
+- 74eda7a: Fix callback server shutdown issue in cli OAuth implementation
+- Updated dependencies [46c00b3]
+- Updated dependencies [46c00b3]
+- Updated dependencies [46c00b3]
+- Updated dependencies [46c00b3]
+- Updated dependencies [46c00b3]
+  - @sigstore/oci@0.7.0
+  - @sigstore/bundle@5.0.0
+  - sigstore@5.0.0
+  - @sigstore/sign@5.0.0
+
 ## 0.9.1
 
 ### Patch Changes
