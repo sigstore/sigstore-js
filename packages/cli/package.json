@@ -1,6 +1,6 @@
 {
   "name": "@sigstore/cli",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "description": "Sigstore CLI",
   "author": "Brian DeHamer @bdehamer",
   "license": "Apache-2.0",
@@ -35,12 +35,12 @@
     "@oclif/color": "^1.0.13",
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
-    "@sigstore/bundle": "^4.0.0",
-    "@sigstore/oci": "^0.6.1",
-    "@sigstore/sign": "^4.1.1",
+    "@sigstore/bundle": "^5.0.0",
+    "@sigstore/oci": "^0.7.0",
+    "@sigstore/sign": "^5.0.0",
     "open": "^11.0.0",
     "openid-client": "^5.7.0",
-    "sigstore": "^4.0.0"
+    "sigstore": "^5.0.0"
   },
   "devDependencies": {
     "make-fetch-happen": "^15.0.4",

@@ -1,5 +1,17 @@
 # @sigstore/verify
 
+## 4.0.0
+
+### Major Changes
+
+- 46c00b3: Drop support for Node 20
+
+### Patch Changes
+
+- Updated dependencies [46c00b3]
+  - @sigstore/bundle@5.0.0
+  - @sigstore/core@4.0.0
+
 ## 3.1.1
 
 ### Patch Changes

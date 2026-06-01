@@ -1,5 +1,22 @@
 # @sigstore/conformance
 
+## 0.9.0
+
+### Minor Changes
+
+- 46c00b3: Drop support for Node 20
+
+### Patch Changes
+
+- Updated dependencies [7db2666]
+- Updated dependencies [74eda7a]
+- Updated dependencies [46c00b3]
+- Updated dependencies [46c00b3]
+  - @sigstore/tuf@5.0.0
+  - @sigstore/bundle@5.0.0
+  - sigstore@5.0.0
+  - @sigstore/verify@4.0.0
+
 ## 0.8.0
 
 ### Minor Changes

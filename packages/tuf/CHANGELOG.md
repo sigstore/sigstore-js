@@ -1,5 +1,17 @@
 # @sigstore/tuf
 
+## 5.0.0
+
+### Major Changes
+
+- 46c00b3: Drop support for Node 20
+
+### Patch Changes
+
+- 7db2666: Update TUF seed files
+- 74eda7a: Bump `tuf-js` from 4.x to 5.0.1
+- 46c00b3: Bump `tuf-js` from 5.0.1 to 6.0.0
+
 ## 4.0.2
 
 ### Patch Changes
