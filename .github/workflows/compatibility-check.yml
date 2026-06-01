@@ -23,7 +23,7 @@ jobs:
     - name: Setup node
       uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v3
       with:
-        node-version: 20
+        node-version: 22
         cache: npm
     - name: Install CLI
       run: npm install -g @sigstore/cli

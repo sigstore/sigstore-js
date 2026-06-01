@@ -4,6 +4,6 @@ A library for verifying [Sigstore][1] signatures.
 
 ## Prerequisites
 
-- Node.js version ^20.17.0 || >=22.9.0
+- Node.js version ^22.22.2 || ^24.15.0 || >=26.0.0
 
 [1]: https://www.sigstore.dev
