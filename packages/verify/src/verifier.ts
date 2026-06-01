@@ -100,7 +100,6 @@ export class Verifier {
           break;
         case 'transparency-log': {
           const result = getTLogTimestamp(timestamp.tlogEntry);
-          /* istanbul ignore else */
           if (result) {
             timestamps.push(result);
           }

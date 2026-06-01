@@ -197,6 +197,23 @@ describe('Verifier', () => {
       });
     });
 
+    describe('when the tlog entry has no inclusion promise', () => {
+      const bundle = bundleFromJSON(
+        bundles.V1.MESSAGE_SIGNATURE.WITH_SIGNING_CERT
+      );
+
+      bundle.verificationMaterial.tlogEntries[0].inclusionPromise = undefined;
+
+      const signedEntity = toSignedEntity(bundle, bundles.ARTIFACT);
+
+      it('throws an error', () => {
+        expect(() => subject.verify(signedEntity)).toThrowWithCode(
+          VerificationError,
+          'TLOG_MISSING_INCLUSION_ERROR'
+        );
+      });
+    });
+
     describe('when the timestamp threshold is not met', () => {
       const subject = new Verifier(trustMaterial, { timestampThreshold: 3 });
       const bundle = bundleFromJSON(
