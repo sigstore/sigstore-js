@@ -132,6 +132,34 @@ describe('verifyOIDs', () => {
     });
   });
 
+  describe('when a policy OID has no oid identifier', () => {
+    it('throws an error', () => {
+      const policyOIDs: ObjectIdentifierValuePair[] = [
+        { oid: undefined, value: Buffer.from('foo') },
+      ];
+      const signerOIDs = [makeOIDPair('1.3.6.1.4.1.57264.1.9', 'foo')];
+
+      expect(() => verifyOIDs(policyOIDs, signerOIDs)).toThrowWithCode(
+        PolicyError,
+        'UNTRUSTED_SIGNER_ERROR'
+      );
+    });
+  });
+
+  describe('when a signer OID has no oid identifier', () => {
+    it('throws an error', () => {
+      const policyOIDs = [makeOIDPair('1.3.6.1.4.1.57264.1.9', 'foo')];
+      const signerOIDs: ObjectIdentifierValuePair[] = [
+        { oid: undefined, value: Buffer.from('foo') },
+      ];
+
+      expect(() => verifyOIDs(policyOIDs, signerOIDs)).toThrowWithCode(
+        PolicyError,
+        'UNTRUSTED_SIGNER_ERROR'
+      );
+    });
+  });
+
   describe('when the signer is missing the OID', () => {
     it('throws an error', () => {
       const policyOIDs = [makeOIDPair('1.3.6.1.4.1.57264.1.9', 'foo')];
