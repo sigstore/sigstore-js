@@ -38,7 +38,16 @@ export class ASN1Obj {
 
   // Constructs an ASN.1 object from a Buffer of DER-encoded bytes.
   public static parseBuffer(buf: Buffer<ArrayBuffer>): ASN1Obj {
-    return parseStream(new ByteStream(buf));
+    const stream = new ByteStream(buf);
+    const obj = parseStream(stream);
+
+    // Ensure the entire buffer was consumed; trailing data after the top-level
+    // object indicates a malformed (or maliciously padded) encoding.
+    if (stream.position !== stream.length) {
+      throw new ASN1ParseError('invalid trailing data');
+    }
+
+    return obj;
   }
 
   public toDER(): Buffer {
@@ -124,7 +133,16 @@ export class ASN1Obj {
 /////////////////////////////////////////////////////////////////////////////
 // Internal stream parsing functions
 
-function parseStream(stream: ByteStream): ASN1Obj {
+// Maximum nesting depth for parsed ASN.1 objects. Bounds the mutual recursion
+// between parseStream and collectSubs so that deeply nested DER cannot exhaust
+// the call stack (denial of service).
+const MAX_DEPTH = 100;
+
+function parseStream(stream: ByteStream, depth = 0): ASN1Obj {
+  if (depth > MAX_DEPTH) {
+    throw new ASN1ParseError('maximum nesting depth exceeded');
+  }
+
   // Parse tag, length, and value from stream
   const tag = new ASN1Tag(stream.getUint8());
   const len = decodeLength(stream);
@@ -137,12 +155,16 @@ function parseStream(stream: ByteStream): ASN1Obj {
   // are embedded in OCTESTRING objects, so we need to check those
   // for children as well.
   if (tag.constructed) {
-    subs = collectSubs(stream, len);
+    subs = collectSubs(stream, len, depth);
   } else if (tag.isOctetString()) {
     // Attempt to parse children of OCTETSTRING objects. If anything fails,
-    // assume the object is not constructed and treat as primitive.
+    // assume the object is not constructed and treat as primitive. This is
+    // intentional: it transparently unwraps DER content embedded in an OCTET
+    // STRING (e.g. X.509 extnValue, CMS eContent). The error is swallowed
+    // because a parse failure simply means the bytes are an opaque primitive
+    // value rather than a nested structure.
     try {
-      subs = collectSubs(stream, len);
+      subs = collectSubs(stream, len, depth);
     } catch (e) {
       // Fail silently and treat as primitive
     }
@@ -156,7 +178,11 @@ function parseStream(stream: ByteStream): ASN1Obj {
   return new ASN1Obj(tag, value, subs);
 }
 
-function collectSubs(stream: ByteStream, len: number): ASN1Obj[] {
+function collectSubs(
+  stream: ByteStream,
+  len: number,
+  depth: number
+): ASN1Obj[] {
   // Calculate end of object content
   const end = stream.position + len;
 
@@ -171,7 +197,7 @@ function collectSubs(stream: ByteStream, len: number): ASN1Obj[] {
   // Parse all children
   const subs: ASN1Obj[] = [];
   while (stream.position < end) {
-    subs.push(parseStream(stream));
+    subs.push(parseStream(stream, depth + 1));
   }
 
   // When we're done parsing children, we should be at the end of the object

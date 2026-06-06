@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { ASN1TypeError } from '../../asn1/error';
+import { ASN1ParseError, ASN1TypeError } from '../../asn1/error';
 import { ASN1Obj } from '../../asn1/obj';
 
 describe('ASN1Obj', () => {
@@ -163,12 +163,21 @@ describe('ASN1Obj', () => {
         });
       });
 
-      describe('when the value is 0x01', () => {
-        // BOOLEAN (1 byte) 0x01
-        const buffer = Buffer.from('010101', 'hex');
+      describe('when the value is 0xff', () => {
+        // BOOLEAN (1 byte) 0xff
+        const buffer = Buffer.from('0101ff', 'hex');
         it('returns true', () => {
           const obj = ASN1Obj.parseBuffer(buffer);
           expect(obj.toBoolean()).toBe(true);
+        });
+      });
+
+      describe('when the value is non-canonical', () => {
+        // BOOLEAN (1 byte) 0x01 -- not a valid DER boolean
+        const buffer = Buffer.from('010101', 'hex');
+        it('throws an error', () => {
+          const obj = ASN1Obj.parseBuffer(buffer);
+          expect(() => obj.toBoolean()).toThrow(ASN1ParseError);
         });
       });
     });
