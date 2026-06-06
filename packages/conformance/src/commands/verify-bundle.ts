@@ -161,6 +161,10 @@ class MessageDigestSignatureContent {
     );
   }
 
+  public compareSignedDigest(digest: Buffer): boolean {
+    return this.compareDigest(digest);
+  }
+
   verifySignature(key: crypto.KeyObject): boolean {
     // Export public key to JWK format
     const jwk = key.export({ format: 'jwk' });

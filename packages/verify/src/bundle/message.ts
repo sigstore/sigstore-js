@@ -53,6 +53,12 @@ export class MessageSignatureContent implements SignatureContent {
     return crypto.bufferEqual(digest, this.messageDigest);
   }
 
+  // For a message signature the signature is computed over the artifact, so the
+  // digest of the signed bytes is the artifact's message digest.
+  public compareSignedDigest(digest: Buffer): boolean {
+    return this.compareDigest(digest);
+  }
+
   public verifySignature(key: crypto.KeyObject): boolean {
     return crypto.verify(
       this.artifact,

@@ -55,6 +55,30 @@ describe('DSSESignatureContent', () => {
     });
   });
 
+  describe('#compareSignedDigest', () => {
+    describe('when the digest does NOT match the PAE hash', () => {
+      it('returns false', () => {
+        expect(subject.compareSignedDigest(Buffer.from(''))).toBe(false);
+      });
+    });
+
+    describe('when the digest matches the payload hash (but not the PAE)', () => {
+      const payloadDigest = core.digest('sha256', env.payload);
+
+      it('returns false', () => {
+        expect(subject.compareSignedDigest(payloadDigest)).toBe(false);
+      });
+    });
+
+    describe('when the digest matches the PAE hash', () => {
+      const expectedDigest = core.digest('sha256', pae);
+
+      it('returns true', () => {
+        expect(subject.compareSignedDigest(expectedDigest)).toBe(true);
+      });
+    });
+  });
+
   describe('#compareSignature', () => {
     describe('when the signature does NOT match the payload hash', () => {
       it('returns false', () => {

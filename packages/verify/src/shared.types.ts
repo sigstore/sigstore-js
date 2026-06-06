@@ -61,7 +61,14 @@ export type VerificationKey =
 export type SignatureContent = {
   signature: Buffer;
   compareSignature(signature: Buffer): boolean;
+  // Compares the given digest against the digest of the artifact's payload.
+  // For a DSSE envelope this is the digest of the envelope payload.
   compareDigest(digest: Buffer): boolean;
+  // Compares the given digest against the digest of the bytes that the
+  // signature actually covers. For a message signature this is the digest of
+  // the artifact; for a DSSE envelope this is the digest of the pre-authentication
+  // encoding (PAE). Used when verifying hashedrekord tlog entries.
+  compareSignedDigest(digest: Buffer): boolean;
   verifySignature(key: crypto.KeyObject): boolean;
 };
 
