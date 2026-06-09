@@ -57,6 +57,20 @@ describe('decodeLength', () => {
       );
     });
   });
+
+  describe('when the long-form length has a leading zero byte', () => {
+    const stream = streamFromBytes([0x82, 0x00, 0x80]);
+    it('throws an error', () => {
+      expect(() => decodeLength(stream)).toThrow('non-minimal length encoding');
+    });
+  });
+
+  describe('when a value less than 128 uses the long form', () => {
+    const stream = streamFromBytes([0x81, 0x7f]);
+    it('throws an error', () => {
+      expect(() => decodeLength(stream)).toThrow('non-minimal length encoding');
+    });
+  });
 });
 
 describe('encodeLength', () => {

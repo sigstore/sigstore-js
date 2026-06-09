@@ -128,6 +128,18 @@ describe('parseBoolean', () => {
     expect(parseBoolean(Buffer.from([0x00]))).toEqual(false);
     expect(parseBoolean(Buffer.from([0xff]))).toEqual(true);
   });
+
+  it('rejects non-canonical boolean values', () => {
+    expect(() => parseBoolean(Buffer.from([0x01]))).toThrow('invalid boolean');
+    expect(() => parseBoolean(Buffer.from([0x7f]))).toThrow('invalid boolean');
+  });
+
+  it('rejects boolean values with the wrong length', () => {
+    expect(() => parseBoolean(Buffer.from([]))).toThrow('invalid boolean');
+    expect(() => parseBoolean(Buffer.from([0x00, 0x00]))).toThrow(
+      'invalid boolean'
+    );
+  });
 });
 
 describe('parseBitString', () => {
@@ -141,5 +153,24 @@ describe('parseBitString', () => {
     expect(parseBitString(Buffer.from([0x04, 0x57, 0xdf]))).toEqual([
       0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1,
     ]);
+  });
+
+  it('rejects bit strings with an invalid unused-bits count', () => {
+    expect(() => parseBitString(Buffer.from([0x08, 0x57]))).toThrow(
+      'invalid bit string'
+    );
+    expect(() => parseBitString(Buffer.from([0xff, 0x57]))).toThrow(
+      'invalid bit string'
+    );
+  });
+});
+
+describe('parseOID', () => {
+  it('parses OID arcs that exceed 32 bits without truncation', () => {
+    // Arc value 2^35 (34359738368) encoded as base-128: it would overflow a
+    // 32-bit accumulator and collide with a smaller value if truncated.
+    expect(parseOID(Buffer.from('2a81808080800a', 'hex'))).toEqual(
+      '1.2.34359738378'
+    );
   });
 });

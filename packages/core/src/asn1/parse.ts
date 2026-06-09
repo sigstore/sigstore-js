@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { ASN1ParseError } from './error';
+
 const RE_TIME_SHORT_YEAR =
   /^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\.\d{3})?Z$/;
 const RE_TIME_LONG_YEAR =
@@ -93,17 +95,19 @@ export function parseOID(buf: Buffer): string {
 
   let oid = `${first}.${second}`;
 
-  // Consume remaining bytes
-  let val = 0;
+  // Consume remaining bytes. Use a BigInt accumulator so that arcs which
+  // exceed 32 bits are not silently truncated (a truncated arc could be made
+  // to collide with a trusted OID).
+  let val = 0n;
   for (; pos < end; ++pos) {
     n = buf[pos];
-    val = (val << 7) + (n & 0x7f);
+    val = (val << 7n) + BigInt(n & 0x7f);
 
     // If the left-most bit is NOT set, then this is the last byte in the
     // sequence and we can add the value to the OID and reset the accumulator
     if ((n & 0x80) === 0) {
       oid += `.${val}`;
-      val = 0;
+      val = 0n;
     }
   }
 
@@ -113,7 +117,20 @@ export function parseOID(buf: Buffer): string {
 // Parse a boolean from the DER-encoded buffer
 // https://learn.microsoft.com/en-us/windows/win32/seccertenroll/about-basic-types#boolean
 export function parseBoolean(buf: Buffer): boolean {
-  return buf[0] !== 0;
+  // DER requires a BOOLEAN to be a single byte that is either 0x00 (false) or
+  // 0xff (true). Reject any other (non-canonical) encoding.
+  if (buf.length !== 1) {
+    throw new ASN1ParseError('invalid boolean');
+  }
+
+  switch (buf[0]) {
+    case 0x00:
+      return false;
+    case 0xff:
+      return true;
+    default:
+      throw new ASN1ParseError('invalid boolean');
+  }
 }
 
 // Parse a bit string from the DER-encoded buffer
@@ -121,6 +138,11 @@ export function parseBoolean(buf: Buffer): boolean {
 export function parseBitString(buf: Buffer): number[] {
   // First byte tell us how many unused bits are in the last byte
   const unused = buf[0];
+
+  // The number of unused bits must be in the range 0-7.
+  if (unused > 7) {
+    throw new ASN1ParseError('invalid bit string');
+  }
 
   const start = 1;
   const end = buf.length;
