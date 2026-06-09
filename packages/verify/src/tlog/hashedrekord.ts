@@ -81,10 +81,10 @@ function verifyHashedrekord001TLogBody(
     });
   }
 
-  // Ensure that the bundle's message digest matches the tlog entry
+  // Ensure that the bundle's signed digest matches the tlog entry
   const tlogDigest = tlogEntry.spec.data.hash?.value || '';
 
-  if (!content.compareDigest(Buffer.from(tlogDigest, 'hex'))) {
+  if (!content.compareSignedDigest(Buffer.from(tlogDigest, 'hex'))) {
     throw new VerificationError({
       code: 'TLOG_BODY_ERROR',
       message: 'digest mismatch',
@@ -108,10 +108,10 @@ function verifyHashedrekord002TLogBody(
     });
   }
 
-  // Ensure that the bundle's message digest matches the tlog entry
+  // Ensure that the bundle's signed digest matches the tlog entry
   const tlogHash = spec.data?.digest || Buffer.from('');
 
-  if (!content.compareDigest(tlogHash)) {
+  if (!content.compareSignedDigest(tlogHash)) {
     throw new VerificationError({
       code: 'TLOG_BODY_ERROR',
       message: 'digest mismatch',

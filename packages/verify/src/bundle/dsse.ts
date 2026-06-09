@@ -32,6 +32,16 @@ export class DSSESignatureContent implements SignatureContent {
     );
   }
 
+  // For a DSSE envelope the signature is computed over the pre-authentication
+  // encoding (PAE), so the digest of the signed bytes is the digest of the PAE.
+  // This is what a Rekor v2 hashedrekord entry records for a DSSE envelope.
+  public compareSignedDigest(digest: Buffer): boolean {
+    return crypto.bufferEqual(
+      digest,
+      crypto.digest('sha256', this.preAuthEncoding)
+    );
+  }
+
   public compareSignature(signature: Buffer): boolean {
     return crypto.bufferEqual(signature, this.signature);
   }

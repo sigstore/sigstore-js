@@ -46,6 +46,20 @@ describe('MessageSignatureContent', () => {
     });
   });
 
+  describe('#compareSignedDigest', () => {
+    describe('when the digest does NOT match the message hash', () => {
+      it('returns false', () => {
+        expect(subject.compareSignedDigest(Buffer.from(''))).toBe(false);
+      });
+    });
+
+    describe('when the digest matches the message hash', () => {
+      it('returns true', () => {
+        expect(subject.compareSignedDigest(messageDigest)).toBe(true);
+      });
+    });
+  });
+
   describe('#compareSignature', () => {
     describe('when the signature does NOT match the message signature', () => {
       it('returns false', () => {
