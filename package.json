@@ -23,14 +23,14 @@
     "@total-typescript/shoehorn": "^0.1.2",
     "@tsconfig/node20": "^20.1.9",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.9.1",
-    "eslint": "^10.4.1",
+    "@types/node": "^25.9.3",
+    "eslint": "^10.5.0",
     "jest": "^30.4.2",
     "nock": "^13.5.5",
-    "prettier": "^3.8.3",
+    "prettier": "^3.8.4",
     "shx": "^0.4.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.60.1"
+    "typescript-eslint": "^8.61.0"
   },
   "optionalDependencies": {
     "@swc/core-darwin-arm64": "1.15.40",
