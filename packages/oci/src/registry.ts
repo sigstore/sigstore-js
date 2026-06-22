@@ -327,7 +327,11 @@ export class RegistryClient {
 
   private static digest(blob: crypto.BinaryLike): string {
     const hash = crypto.createHash('sha256');
-    hash.update(blob);
+    if (typeof blob === 'string' || ArrayBuffer.isView(blob)) {
+      hash.update(blob);
+    } else {
+      hash.update(new Uint8Array(blob));
+    }
     return `sha256:${hash.digest('hex')}`;
   }
 }
