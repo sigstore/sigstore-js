@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@oclif/color": "^1.0.13",
-    "@oclif/core": "^4.11.7",
+    "@oclif/core": "^4.11.10",
     "@oclif/plugin-help": "^6.2.52",
     "@sigstore/bundle": "^5.0.0",
     "@sigstore/oci": "^0.7.0",
