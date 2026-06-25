@@ -1,5 +1,16 @@
 # @sigstore/verify
 
+## 4.1.0
+
+### Minor Changes
+
+- 754e2a3: Support verification of DSSE bundles with a Rekor v2 `hashedrekord` transparency log entry, where the entry's digest is computed over the DSSE pre-authentication encoding (PAE) rather than the envelope payload
+
+### Patch Changes
+
+- Updated dependencies [04ea25a]
+  - @sigstore/core@4.0.1
+
 ## 4.0.0
 
 ### Major Changes
