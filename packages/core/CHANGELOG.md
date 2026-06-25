@@ -1,5 +1,11 @@
 # @sigstore/core
 
+## 4.0.1
+
+### Patch Changes
+
+- 04ea25a: ASN.1 parser hardening
+
 ## 4.0.0
 
 ### Major Changes
