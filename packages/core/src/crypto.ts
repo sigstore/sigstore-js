@@ -38,7 +38,11 @@ export function createPublicKey(
 export function digest(algorithm: string, ...data: BinaryLike[]): Buffer {
   const hash = crypto.createHash(algorithm);
   for (const d of data) {
-    hash.update(d);
+    if (typeof d === 'string' || ArrayBuffer.isView(d)) {
+      hash.update(d);
+    } else {
+      hash.update(new Uint8Array(d));
+    }
   }
   return hash.digest();
 }
