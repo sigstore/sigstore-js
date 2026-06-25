@@ -170,6 +170,114 @@ describe('getRegistryCredentials', () => {
       expect(creds).toEqual({ username, password });
     });
   });
+
+  describe('when the registry is a substring of a configured registry', () => {
+    const username = 'victim-user';
+    const password = 'victim-pass';
+    // The target registry ("cr.io") is a substring of the configured
+    // registry ("ghcr.io") but is NOT the same registry.
+    const dockerConfig = {
+      auths: {
+        'ghcr.io': {
+          auth: Buffer.from(`${username}:${password}`).toString('base64'),
+        },
+      },
+    };
+
+    beforeEach(() => {
+      fs.writeFileSync(
+        path.join(tempDir, '.docker', 'config.json'),
+        JSON.stringify(dockerConfig),
+        {}
+      );
+    });
+
+    it('does not leak the unrelated credentials', () => {
+      expect(() => getRegistryCredentials('cr.io/attacker/repo')).toThrow(
+        /no credentials found for/i
+      );
+    });
+  });
+
+  describe('when a configured registry is a substring of the target registry', () => {
+    const username = 'victim-user';
+    const password = 'victim-pass';
+    // The configured registry ("127.0.0.1:5000") is a substring of the target
+    // registry ("victim.127.0.0.1:5000") but is NOT the same registry.
+    const dockerConfig = {
+      auths: {
+        '127.0.0.1:5000': {
+          auth: Buffer.from(`${username}:${password}`).toString('base64'),
+        },
+      },
+    };
+
+    beforeEach(() => {
+      fs.writeFileSync(
+        path.join(tempDir, '.docker', 'config.json'),
+        JSON.stringify(dockerConfig),
+        {}
+      );
+    });
+
+    it('does not leak the unrelated credentials', () => {
+      expect(() =>
+        getRegistryCredentials('victim.127.0.0.1:5000/attacker/repo')
+      ).toThrow(/no credentials found for/i);
+    });
+  });
+
+  describe('when the target registry includes a port', () => {
+    const username = 'username';
+    const password = 'password';
+    const dockerConfig = {
+      auths: {
+        'localhost:5000': {
+          auth: Buffer.from(`${username}:${password}`).toString('base64'),
+        },
+      },
+    };
+
+    beforeEach(() => {
+      fs.writeFileSync(
+        path.join(tempDir, '.docker', 'config.json'),
+        JSON.stringify(dockerConfig),
+        {}
+      );
+    });
+
+    it('returns the credentials for the matching host and port', () => {
+      const creds = getRegistryCredentials('localhost:5000/my-image');
+
+      expect(creds).toEqual({ username, password });
+    });
+  });
+
+  describe('when credentials are stored under a Docker Hub alias', () => {
+    const username = 'username';
+    const password = 'password';
+    const dockerConfig = {
+      auths: {
+        'https://index.docker.io/v1/': {
+          auth: Buffer.from(`${username}:${password}`).toString('base64'),
+        },
+      },
+    };
+
+    beforeEach(() => {
+      fs.writeFileSync(
+        path.join(tempDir, '.docker', 'config.json'),
+        JSON.stringify(dockerConfig),
+        {}
+      );
+    });
+
+    it('returns the credentials for the canonical Docker Hub host', () => {
+      const creds = getRegistryCredentials('docker.io/library/my-image');
+
+      expect(creds).toEqual({ username, password });
+    });
+  });
 });
 
 describe('toBasicAuth', () => {
