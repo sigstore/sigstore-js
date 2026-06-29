@@ -325,7 +325,7 @@ export class RegistryClient {
     return tokenResponse.json().then((json) => json.access_token);
   }
 
-  private static digest(blob: crypto.BinaryLike): string {
+  private static digest(blob: string | Buffer): string {
     const hash = crypto.createHash('sha256');
     hash.update(blob);
     return `sha256:${hash.digest('hex')}`;

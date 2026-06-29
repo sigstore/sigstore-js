@@ -50,12 +50,28 @@ rkBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
 });
 
 describe('digest', () => {
+  const expectedDigest =
+    'b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9';
+
   it('returns the SHA256 digest of the blob', () => {
     const blob = Buffer.from('hello world');
     const d = digest('sha256', blob);
-    expect(d.toString('hex')).toBe(
-      'b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9'
+    expect(d.toString('hex')).toBe(expectedDigest);
+  });
+
+  it('returns the SHA256 digest of a string', () => {
+    const d = digest('sha256', 'hello world');
+    expect(d.toString('hex')).toBe(expectedDigest);
+  });
+
+  it('returns the SHA256 digest of an ArrayBuffer', () => {
+    const view = new TextEncoder().encode('hello world');
+    const blob = view.buffer.slice(
+      view.byteOffset,
+      view.byteOffset + view.byteLength
     );
+    const d = digest('sha256', blob);
+    expect(d.toString('hex')).toBe(expectedDigest);
   });
 });
 
