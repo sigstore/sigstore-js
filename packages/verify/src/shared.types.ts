@@ -31,7 +31,11 @@ export type CertificateIdentity = {
   oids?: ObjectIdentifierValuePair[];
 };
 
-export type VerificationPolicy = CertificateIdentity;
+export type VerificationPolicy = {
+  subjectAlternativeName?: string | RegExp;
+  extensions?: CertificateExtensions;
+  oids?: ObjectIdentifierValuePair[];
+};
 
 export type Signer = {
   key: crypto.KeyObject;
