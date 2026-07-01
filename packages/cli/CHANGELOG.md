@@ -1,5 +1,11 @@
 # @sigstore/cli
 
+## 0.10.2
+
+### Patch Changes
+
+- 132ad51: Bump `@oclif/plugin-help` from 6.2.52 to 6.2.53
+
 ## 0.10.1
 
 ### Patch Changes
