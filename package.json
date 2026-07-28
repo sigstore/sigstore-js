@@ -17,20 +17,20 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
-    "@changesets/cli": "^2.31.0",
+    "@changesets/cli": "^2.31.1",
     "@eslint/js": "^10.0.1",
     "@swc/jest": "^0.2.39",
     "@total-typescript/shoehorn": "^0.1.2",
     "@tsconfig/node20": "^20.1.9",
     "@types/jest": "^30.0.0",
-    "@types/node": "^26.0.0",
-    "eslint": "^10.6.0",
+    "@types/node": "^26.1.2",
+    "eslint": "^10.8.0",
     "jest": "^30.4.2",
     "nock": "^13.5.5",
-    "prettier": "^3.9.3",
+    "prettier": "^3.9.6",
     "shx": "^0.4.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.62.0"
+    "typescript-eslint": "^8.65.0"
   },
   "optionalDependencies": {
     "@swc/core-darwin-arm64": "1.15.43",
