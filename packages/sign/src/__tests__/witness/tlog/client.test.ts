@@ -125,6 +125,23 @@ describe('TLogClient', () => {
           .reply(409, {}, { Location: `/api/v1/log/entries/${uuid}` });
       });
 
+      describe('by default', () => {
+        const subject = new TLogClient({ rekorBaseURL });
+
+        describe('when the fetch is successful', () => {
+          beforeEach(() => {
+            nock(rekorBaseURL)
+              .get(`/api/v1/log/entries/${uuid}`)
+              .reply(200, rekorEntry);
+          });
+
+          it('returns a tlog entry', async () => {
+            const entry = await subject.createEntry(proposedEntry);
+            expect(entry).toBeTruthy();
+          });
+        });
+      });
+
       describe('when fetchOnConflict is false', () => {
         const subject = new TLogClient({
           rekorBaseURL,
