@@ -162,18 +162,28 @@ export class Verifier {
 
   // Checks that the tlog entries are valid for the supplied content
   private verifyTLogs({ signature: content, tlogEntries }: SignedEntity): void {
-    let tlogCount = 0;
+    const entryIDs: { logID: Buffer; logIndex: string }[] = [];
 
     tlogEntries.forEach((entry) => {
-      tlogCount++;
       verifyTLogInclusion(entry, this.trustMaterial.tlogs);
       verifyTLogBody(entry, content);
+      entryIDs.push({ logID: entry.logId.keyId, logIndex: entry.logIndex });
     });
 
-    if (tlogCount < this.options.tlogThreshold) {
+    // Check for duplicate entries so that repeated copies of a single entry
+    // cannot be counted more than once toward the threshold. The timestamp and
+    // SCT checks above dedupe their collections the same way.
+    if (containsDupes(entryIDs)) {
       throw new VerificationError({
         code: 'TLOG_ERROR',
-        message: `expected ${this.options.tlogThreshold} tlog entries, got ${tlogCount}`,
+        message: 'duplicate tlog entry',
+      });
+    }
+
+    if (entryIDs.length < this.options.tlogThreshold) {
+      throw new VerificationError({
+        code: 'TLOG_ERROR',
+        message: `expected ${this.options.tlogThreshold} tlog entries, got ${entryIDs.length}`,
       });
     }
   }

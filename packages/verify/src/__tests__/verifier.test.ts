@@ -182,6 +182,33 @@ describe('Verifier', () => {
       });
     });
 
+    describe('when the bundle repeats a single inclusion-proof tlog entry', () => {
+      // A proof-only entry (no inclusion promise) produces no tlog timestamp,
+      // so duplicating it is not caught by the timestamp duplicate check. The
+      // tlog counting itself has to reject the repeat, otherwise N copies of
+      // one entry would satisfy an N-of-N tlog threshold.
+      const subject = new Verifier(trustMaterial, {
+        tlogThreshold: 2,
+        timestampThreshold: 1,
+      });
+      const bundle = bundleFromJSON(
+        bundles.V3.MESSAGE_SIGNATURE.TLOG_HASHEDREKORDV002
+      );
+
+      bundle.verificationMaterial.tlogEntries.push({
+        ...bundle.verificationMaterial.tlogEntries[0],
+      });
+
+      const signedEntity = toSignedEntity(bundle, bundles.ARTIFACT);
+
+      it('throws an error', () => {
+        expect(() => subject.verify(signedEntity)).toThrowWithCode(
+          VerificationError,
+          'TLOG_ERROR'
+        );
+      });
+    });
+
     describe('when the tlog timestamp threshold is not met', () => {
       const subject = new Verifier(trustMaterial, { tlogThreshold: 2 });
       const bundle = bundleFromJSON(
