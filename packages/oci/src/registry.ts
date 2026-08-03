@@ -38,6 +38,72 @@ import fetch, { FetchInterface, FetchOptions } from './fetch';
 
 import type { Descriptor } from './types';
 
+type HeadersObject = Record<string, string>;
+type Response = Awaited<ReturnType<typeof fetch>>;
+
+// Maximum number of redirects to follow in the manual redirect loop
+const MAX_REDIRECTS = 20;
+
+// Headers that carry credentials or origin-specific secrets
+const SENSITIVE_HEADERS = new Set([
+  'authorization',
+  'cookie',
+  'cookie2',
+  'proxy-authorization',
+  'www-authenticate',
+]);
+
+// Entity headers removed when redirect changes method to GET
+const ENTITY_HEADERS = new Set([
+  'content-type',
+  'content-length',
+  'content-encoding',
+  'content-language',
+  'content-location',
+]);
+
+const isRedirect = (status: number): boolean =>
+  [301, 302, 303, 307, 308].includes(status);
+
+const stripSensitiveHeaders = (headers: HeadersObject): HeadersObject => {
+  const result: HeadersObject = {};
+  for (const [key, value] of Object.entries(headers)) {
+    if (!SENSITIVE_HEADERS.has(key.toLowerCase())) {
+      result[key] = value;
+    }
+  }
+  return result;
+};
+
+const stripEntityHeaders = (headers: HeadersObject): HeadersObject => {
+  const result: HeadersObject = {};
+  for (const [key, value] of Object.entries(headers)) {
+    if (!ENTITY_HEADERS.has(key.toLowerCase())) {
+      result[key] = value;
+    }
+  }
+  return result;
+};
+
+// Generic redirect policy: drives the canonical redirect loop with
+// per-hop header decisions and state transitions.
+type RedirectPolicy<S> = {
+  initial: S;
+  headersForHop: (
+    state: S,
+    targetOrigin: string,
+    perRequestHeaders: HeadersObject,
+    registryHeaders: HeadersObject
+  ) => HeadersObject;
+  stateForRedirect: (state: S, targetOrigin: string) => S;
+};
+
+// State for #securedFetch policy
+type SecuredFetchState = { defaultsSuppressed: boolean };
+
+// State for #tokenFetch policy
+type TokenFetchState = { authOrigin: string };
+
 const ALL_MANIFEST_MEDIA_TYPES = [
   CONTENT_TYPE_OCI_INDEX,
   CONTENT_TYPE_OCI_MANIFEST,
@@ -72,10 +138,20 @@ export type RegistryFetchOptions = Pick<
   'proxy' | 'noProxy' | 'retry' | 'timeout'
 >;
 
+// Options for the origin-scoped redirect helpers
+type SecuredRequestOptions = {
+  method?: string;
+  headers?: HeadersObject;
+  body?: FetchOptions['body'];
+};
+
 export class RegistryClient {
   readonly #baseURL: string;
+  readonly #registryOrigin: string;
   readonly #repository: string;
   #fetch: FetchInterface;
+  // Registry-scoped credentials/Docker HttpHeaders stored separately
+  #registryHeaders: HeadersObject = {};
 
   constructor(
     registry: string,
@@ -83,6 +159,7 @@ export class RegistryClient {
     opts?: RegistryFetchOptions
   ) {
     this.#repository = repository;
+    // Transport fetch handles only retry/timeout/proxy — no credentials
     this.#fetch = fetch.defaults(opts);
 
     // Use http for localhost registries, https otherwise
@@ -91,6 +168,7 @@ export class RegistryClient {
     const protocol =
       hostname === 'localhost' || hostname === '127.0.0.1' ? 'http' : 'https';
     this.#baseURL = `${protocol}://${registry}`;
+    this.#registryOrigin = new URL(this.#baseURL).origin;
   }
 
   // Authenticate with the registry. Sends an unauthenticated request to the
@@ -100,11 +178,13 @@ export class RegistryClient {
   // authenticate requests.
   // https://github.com/google/go-containerregistry/blob/main/pkg/authn/README.md#the-registry
   async signIn(creds: Credentials): Promise<void> {
-    // Ensure we include an auth headers if they are present
-    this.#fetch = this.#fetch.defaults({ headers: creds.headers });
+    // Store Docker HttpHeaders as registry-scoped credentials
+    if (creds.headers) {
+      this.#registryHeaders = { ...this.#registryHeaders, ...creds.headers };
+    }
 
     // Initiate a blob upload to get the auth challenge
-    const probeResponse = await this.#fetch(
+    const probeResponse = await this.#securedFetch(
       `${this.#baseURL}/v2/${this.#repository}/blobs/uploads/`,
       { method: 'POST' }
     );
@@ -123,15 +203,13 @@ export class RegistryClient {
     // authenticate requests using basic auth
     if (challenge.scheme === 'basic') {
       const basicAuth = toBasicAuth(creds);
-      this.#fetch = this.#fetch.defaults({
-        headers: { [HEADER_AUTHORIZATION]: `Basic ${basicAuth}` },
-      });
+      this.#registryHeaders[HEADER_AUTHORIZATION] = `Basic ${basicAuth}`;
       return;
     }
 
     let token: string | undefined;
     if (creds.username === '<token>') {
-      // If the OAUth2 token request fails, try to fetch a distribution token
+      // If the OAuth2 token request fails, try to fetch a distribution token
       token = await this.#fetchOAuth2Token(creds, challenge).catch(
         () => undefined
       );
@@ -141,16 +219,13 @@ export class RegistryClient {
       token = await this.#fetchDistributionToken(creds, challenge);
     }
 
-    // Ensure the token is sent with all future requests
-    this.#fetch = this.#fetch.defaults({
-      headers: { [HEADER_AUTHORIZATION]: `Bearer ${token}` },
-    });
+    // Store the bearer token as a registry-scoped credential
+    this.#registryHeaders[HEADER_AUTHORIZATION] = `Bearer ${token}`;
   }
 
   // Check the registry API version
   async checkVersion(): Promise<string> {
-    const response = await this.#fetch(`${this.#baseURL}/v2/`);
-
+    const response = await this.#securedFetch(`${this.#baseURL}/v2/`);
     return response.headers.get(HEADER_API_VERSION) || '';
   }
 
@@ -161,10 +236,10 @@ export class RegistryClient {
     const digest = RegistryClient.digest(blob);
     const size = blob.length;
 
-    // Check if blob already exists
-    const headResponse = await this.#fetch(
+    // Check if blob already exists (registries MAY redirect to storage)
+    const headResponse = await this.#securedFetch(
       `${this.#baseURL}/v2/${this.#repository}/blobs/${digest}`,
-      { method: 'HEAD', redirect: 'follow' }
+      { method: 'HEAD' }
     );
 
     if (headResponse.status === 200) {
@@ -176,26 +251,28 @@ export class RegistryClient {
     }
 
     // Retrieve upload location (session ID)
-    const postResponse = await this.#fetch(
-      `${this.#baseURL}/v2/${this.#repository}/blobs/uploads/`,
-      { method: 'POST' }
-    ).then(ensureStatus(202));
+    const postURL = `${this.#baseURL}/v2/${this.#repository}/blobs/uploads/`;
+    const postResponse = await this.#securedFetch(postURL, {
+      method: 'POST',
+    }).then(ensureStatus(202));
 
     const location = postResponse.headers.get(HEADER_LOCATION);
     if (!location) {
       throw new Error('Missing location for blob upload');
     }
 
-    // Translate location to a full URL
+    // Resolve location per RFC 7231: base is effective request URI (final
+    // URL after any redirects). response.url provides this; fall back to
+    // original POST URL.
     const uploadLocation = new URL(
-      location.startsWith('/') ? `${this.#baseURL}${location}` : location
+      location,
+      /* istanbul ignore next - make-fetch-happen always sets response.url */
+      postResponse.url || postURL
     );
-
-    // Add digest to query string
     uploadLocation.searchParams.set('digest', digest);
 
-    // Upload blob
-    await this.#fetch(uploadLocation.href, {
+    // Upload blob — origin-scoped so cross-origin uploads proceed safely
+    await this.#securedFetch(uploadLocation.href, {
       method: 'PUT',
       body: blob,
       headers: { [HEADER_CONTENT_TYPE]: CONTENT_TYPE_OCTET_STREAM },
@@ -206,7 +283,7 @@ export class RegistryClient {
 
   // Checks for the existence of a manifest by reference
   async checkManifest(reference: string): Promise<CheckManifestResponse> {
-    const response = await this.#fetch(
+    const response = await this.#securedFetch(
       `${this.#baseURL}/v2/${this.#repository}/manifests/${reference}`,
       {
         method: 'HEAD',
@@ -228,7 +305,7 @@ export class RegistryClient {
 
   // Retrieves a manifest by reference
   async getManifest(reference: string): Promise<GetManifestResponse> {
-    const response = await this.#fetch(
+    const response = await this.#securedFetch(
       `${this.#baseURL}/v2/${this.#repository}/manifests/${reference}`,
       {
         headers: { [HEADER_ACCEPT]: ALL_MANIFEST_MEDIA_TYPES },
@@ -257,12 +334,12 @@ export class RegistryClient {
     const reference = options.reference || digest;
     const contentType = options.mediaType || CONTENT_TYPE_OCI_MANIFEST;
 
-    const headers: HeadersInit = { [HEADER_CONTENT_TYPE]: contentType };
+    const headers: HeadersObject = { [HEADER_CONTENT_TYPE]: contentType };
     if (options.etag) {
       headers[HEADER_IF_MATCH] = options.etag;
     }
 
-    const response = await this.#fetch(
+    const response = await this.#securedFetch(
       `${this.#baseURL}/v2/${this.#repository}/manifests/${reference}`,
       { method: 'PUT', body: manifest, headers }
     ).then(ensureStatus(201));
@@ -279,11 +356,129 @@ export class RegistryClient {
 
   // Returns true if the registry supports the referrers API
   async pingReferrers(): Promise<boolean> {
-    const response = await this.#fetch(
+    const response = await this.#securedFetch(
       `${this.#baseURL}/v2/${this.#repository}/referrers/${ZERO_DIGEST}`
     );
-
     return response.status === 200;
+  }
+
+  // Origin-scoped fetch: follows redirects manually, attaching registry
+  // credentials only on same-origin hops that have never left the origin.
+  async #securedFetch(
+    url: string,
+    opts: SecuredRequestOptions = {}
+  ): Promise<Response> {
+    const policy: RedirectPolicy<SecuredFetchState> = {
+      initial: { defaultsSuppressed: false },
+      headersForHop: (state, targetOrigin, perReq, regHeaders) => {
+        const isSameOrigin = targetOrigin === this.#registryOrigin;
+        const includeDefaults = isSameOrigin && !state.defaultsSuppressed;
+        const effectivePerRequest = isSameOrigin
+          ? perReq
+          : stripSensitiveHeaders(perReq);
+        return {
+          ...(includeDefaults ? regHeaders : {}),
+          ...effectivePerRequest,
+        };
+      },
+      stateForRedirect: (state, targetOrigin) => {
+        const isSameOrigin = targetOrigin === this.#registryOrigin;
+        return isSameOrigin
+          ? state
+          : { defaultsSuppressed: true };
+      },
+    };
+    return this.#redirectFetchWithPolicy(url, opts, policy);
+  }
+
+  // Fetch for token-exchange requests. Does NOT include registry credentials.
+  async #tokenFetch(
+    url: string,
+    opts: SecuredRequestOptions
+  ): Promise<Response> {
+    const policy: RedirectPolicy<TokenFetchState> = {
+      initial: { authOrigin: new URL(url).origin },
+      headersForHop: (state, targetOrigin, perReq) => {
+        const isSameOrigin = targetOrigin === state.authOrigin;
+        return isSameOrigin ? perReq : stripSensitiveHeaders(perReq);
+      },
+      stateForRedirect: (state) => state,
+    };
+    return this.#redirectFetchWithPolicy(url, opts, policy);
+  }
+
+  // Canonical redirect loop driven by a generic policy.
+  async #redirectFetchWithPolicy<S>(
+    url: string,
+    opts: SecuredRequestOptions,
+    policy: RedirectPolicy<S>
+  ): Promise<Response> {
+    let currentUrl = url;
+    let method = opts.method || 'GET';
+    let body = opts.body;
+    let perRequestHeaders: HeadersObject = { ...(opts.headers || {}) };
+    let state = policy.initial;
+
+    for (let i = 0; i <= MAX_REDIRECTS; i++) {
+      const targetOrigin = new URL(currentUrl).origin;
+
+      const headers = policy.headersForHop(
+        state,
+        targetOrigin,
+        perRequestHeaders,
+        this.#registryHeaders
+      );
+
+      const response = await this.#fetch(currentUrl, {
+        method,
+        body,
+        headers,
+        redirect: 'manual',
+      });
+
+      if (!isRedirect(response.status)) {
+        return response;
+      }
+
+      if (i === MAX_REDIRECTS) {
+        throw new Error(`maximum redirect reached at: ${currentUrl}`);
+      }
+
+      const location = response.headers.get('location');
+      if (!location) {
+        throw new Error(`redirect location header missing for: ${currentUrl}`);
+      }
+
+      currentUrl = new URL(location, currentUrl).href;
+
+      // Standard redirect method/body semantics
+      let bodyDropped = false;
+      if (response.status === 303) {
+        if (method !== 'GET' && method !== 'HEAD') {
+          method = 'GET';
+          body = undefined;
+          bodyDropped = true;
+        }
+      } else if (
+        [301, 302].includes(response.status) &&
+        method === 'POST'
+      ) {
+        method = 'GET';
+        body = undefined;
+        bodyDropped = true;
+      }
+
+      if (bodyDropped) {
+        perRequestHeaders = stripEntityHeaders(perRequestHeaders);
+      }
+
+      // Update policy state after processing the redirect
+      state = policy.stateForRedirect(state, targetOrigin);
+    }
+
+    // Unreachable — loop throws at MAX_REDIRECTS
+    /* istanbul ignore next */
+    throw new Error(`maximum redirect reached at: ${currentUrl}`);
   }
 
   async #fetchDistributionToken(
@@ -296,8 +491,9 @@ export class RegistryClient {
     authURL.searchParams.set('service', challenge.service);
     authURL.searchParams.set('scope', challenge.scope);
 
-    // Make token request with basic auth
-    const tokenResponse = await this.#fetch(authURL.toString(), {
+    // Token request bypasses registry credentials entirely. The explicit
+    // Basic auth header is origin-scoped via #tokenFetch.
+    const tokenResponse = await this.#tokenFetch(authURL.toString(), {
       headers: { [HEADER_AUTHORIZATION]: `Basic ${basicAuth}` },
     }).then(ensureStatus(200));
 
@@ -316,8 +512,8 @@ export class RegistryClient {
       grant_type: 'password',
     });
 
-    // Make OAuth token request
-    const tokenResponse = await this.#fetch(challenge.realm, {
+    // OAuth token request bypasses registry credentials entirely.
+    const tokenResponse = await this.#tokenFetch(challenge.realm, {
       method: 'POST',
       body,
     }).then(ensureStatus(200));
