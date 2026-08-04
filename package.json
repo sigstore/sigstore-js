@@ -29,7 +29,7 @@
     "nock": "^13.5.5",
     "prettier": "^3.9.6",
     "shx": "^0.4.0",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.65.0"
   },
   "optionalDependencies": {
