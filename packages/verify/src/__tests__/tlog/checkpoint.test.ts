@@ -188,6 +188,46 @@ describe('verifyCheckpoint', () => {
     });
   });
 
+  describe('when the checkpoint has a non-numeric log size', () => {
+    const entryWithInvalidCheckpoint: TLogEntryWithInclusionProof = fromPartial(
+      {
+        inclusionProof: {
+          checkpoint: {
+            envelope:
+              'rekor.sigstore.dev\nnotanumber\nrxnoKyFZlJ7/R6bMh/d3lcqwKqAy5CL1LcNBJP17kgQ=\n\n— rekor.sigstore.dev wNI9ajBFAiEAu\n',
+          },
+        },
+      }
+    );
+
+    it('throws a VerificationError (not an uncaught SyntaxError)', () => {
+      expect(() =>
+        verifyCheckpoint(entryWithInvalidCheckpoint, tlogs)
+      ).toThrowWithCode(VerificationError, 'TLOG_INCLUSION_PROOF_ERROR');
+    });
+  });
+
+  describe('when the checkpoint signature name is a malicious regex', () => {
+    // A signature name of "(" would compile to an invalid RegExp, and a
+    // nested-quantifier name like "(.*)*x" would be a catastrophic-backtracking
+    // ReDoS pattern, if the name were ever coerced into a RegExp. It must be
+    // treated as a literal string instead.
+    const checkpointWithRegexName =
+      'rekor.sigstore.dev - 2605736670972794746\n21428036\nrxnoKyFZlJ7/R6bMh/d3lcqwKqAy5CL1LcNBJP17kgQ=\nTimestamp: 1688058656037355364\n\n— (.*)*x wNI9ajBFAiEAuDk7uu5Ae8Own/MjhSZNuVzbLuYH2jBMxbSA0WaNDNACIDV4reKpYiOpkwtvazCClnpUuduF2o/th2xR3gRZAUU4\n';
+    const entryWithRegexName: TLogEntryWithInclusionProof = fromPartial({
+      inclusionProof: {
+        ...inclusionProof,
+        checkpoint: { envelope: checkpointWithRegexName },
+      },
+    });
+
+    it('throws a VerificationError (name is not treated as a RegExp)', () => {
+      expect(() =>
+        verifyCheckpoint(entryWithRegexName, tlogs)
+      ).toThrowWithCode(VerificationError, 'TLOG_INCLUSION_PROOF_ERROR');
+    });
+  });
+
   describe('when there is a valid checkpoint with no timestamp', () => {
     // Using a real checkpoint from Rekor staging instance (log index 22781754)
     // At the time this test was added, only the staging instance was generating

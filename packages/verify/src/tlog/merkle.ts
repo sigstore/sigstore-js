@@ -27,7 +27,18 @@ export function verifyMerkleInclusion(
   checkpoint: LogCheckpoint
 ): void {
   const inclusionProof = entry.inclusionProof;
-  const logIndex = BigInt(inclusionProof.logIndex);
+
+  // logIndex is attacker-controlled; parse defensively so malformed input
+  // yields a VerificationError rather than an uncaught SyntaxError.
+  let logIndex: bigint;
+  try {
+    logIndex = BigInt(inclusionProof.logIndex);
+  } catch {
+    throw new VerificationError({
+      code: 'TLOG_INCLUSION_PROOF_ERROR',
+      message: 'invalid inclusion proof log index',
+    });
+  }
   const treeSize = BigInt(checkpoint.logSize);
 
   if (logIndex < 0n || logIndex >= treeSize) {
