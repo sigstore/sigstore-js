@@ -78,7 +78,10 @@ function verifySignedNote(
     const tlog = tlogs.find(
       (tlog) =>
         crypto.bufferEqual(tlog.logID.subarray(0, 4), signature.keyHint) &&
-        tlog.baseURL.match(signature.name) // Match the name to the base URL of the tlog
+        // Match the signature name to the base URL of the tlog. The name is
+        // attacker-controlled, so it MUST be compared as a literal substring
+        // and never coerced into a RegExp (as String.prototype.match would).
+        tlog.baseURL.includes(signature.name)
     );
 
     if (!tlog) {
@@ -187,7 +190,19 @@ export class LogCheckpoint {
     }
 
     const origin = lines[0];
-    const logSize = BigInt(lines[1]);
+
+    // logSize is attacker-controlled and parsed before any signature is
+    // verified, so guard against BigInt() throwing an uncaught SyntaxError on
+    // malformed input.
+    let logSize: bigint;
+    try {
+      logSize = BigInt(lines[1]);
+    } catch {
+      throw new VerificationError({
+        code: 'TLOG_INCLUSION_PROOF_ERROR',
+        message: 'invalid checkpoint log size',
+      });
+    }
     const rootHash = Buffer.from(lines[2], 'base64');
     const rest = lines.slice(3);
 

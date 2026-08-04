@@ -44,7 +44,19 @@ export function verifyTLogBody(
   sigContent: SignatureContent
 ): void {
   const { kind, version } = entry.kindVersion;
-  const body = JSON.parse(entry.canonicalizedBody.toString('utf8'));
+
+  // The canonicalized body is attacker-controlled; parse defensively so
+  // malformed JSON yields a VerificationError rather than an uncaught
+  // SyntaxError.
+  let body;
+  try {
+    body = JSON.parse(entry.canonicalizedBody.toString('utf8'));
+  } catch {
+    throw new VerificationError({
+      code: 'TLOG_BODY_ERROR',
+      message: 'invalid canonicalized body',
+    });
+  }
 
   // validate body
   if (kind !== body.kind || version !== body.apiVersion) {

@@ -70,6 +70,22 @@ describe('verifyTLogBody', () => {
       );
     });
   });
+  describe('when the canonicalized body is not valid JSON', () => {
+    const bundle = bundleFromJSON(bundles.V1.DSSE.WITH_SIGNING_CERT.TLOG_DSSE);
+    const tlogEntry = bundle.verificationMaterial.tlogEntries[0];
+    const content = signatureContent(bundle);
+
+    beforeEach(() => {
+      tlogEntry.canonicalizedBody = Buffer.from('not valid json');
+    });
+
+    it('throws a VerificationError (not an uncaught SyntaxError)', () => {
+      expect(() => verifyTLogBody(tlogEntry, content)).toThrowWithCode(
+        VerificationError,
+        'TLOG_BODY_ERROR'
+      );
+    });
+  });
 });
 
 describe('verifyTLogInclusion', () => {

@@ -177,6 +177,19 @@ describe('verifyMerkleInclusion', () => {
     });
   });
 
+  describe('when the log index is not a valid integer', () => {
+    const invalidEntry: TLogEntryWithInclusionProof = fromPartial({
+      canonicalizedBody,
+      inclusionProof: { ...inclusionProof, logIndex: 'notanumber' },
+    });
+
+    it('throws a VerificationError (not an uncaught SyntaxError)', () => {
+      expect(() =>
+        verifyMerkleInclusion(invalidEntry, checkpoint)
+      ).toThrowWithCode(VerificationError, 'TLOG_INCLUSION_PROOF_ERROR');
+    });
+  });
+
   describe('when the inclusion proof is missing hashes', () => {
     const invalidEntry: TLogEntryWithInclusionProof = fromPartial({
       canonicalizedBody: Buffer.from('foo'),
