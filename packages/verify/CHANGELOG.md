@@ -1,5 +1,11 @@
 # @sigstore/verify
 
+## 4.1.2
+
+### Patch Changes
+
+- e66d99f: harden pre-signature checkpoint parsing
+
 ## 4.1.1
 
 ### Patch Changes
