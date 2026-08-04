@@ -1,5 +1,11 @@
 # @sigstore/oci
 
+## 0.7.2
+
+### Patch Changes
+
+- b855f46: Select Docker registry credentials by exact host match instead of substring match to avoid sending credentials to an unintended registry
+
 ## 0.7.1
 
 ### Patch Changes
