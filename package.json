@@ -30,7 +30,7 @@
     "prettier": "^3.9.6",
     "shx": "^0.4.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.65.0"
+    "typescript-eslint": "^8.66.0"
   },
   "optionalDependencies": {
     "@swc/core-darwin-arm64": "1.15.47",
