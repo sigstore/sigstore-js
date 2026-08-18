@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import fetch from 'make-fetch-happen';
+import { execFile } from 'node:child_process';
 import type { IdentityProvider } from './provider';
 
 type ProviderFunc = (audience: string) => Promise<string>;
 
 // Collection of all the CI-specific providers we have implemented
-const providers: ProviderFunc[] = [getGHAToken, getEnv];
+const providers: ProviderFunc[] = [getGHAToken, getBuildkiteToken, getEnv];
 
 /**
  * CIContextProvider is a composite identity provider which will iterate
@@ -69,6 +70,26 @@ async function getGHAToken(audience: string): Promise<string> {
   });
 
   return response.json().then((data) => data.value);
+}
+
+/**
+ * getBuildkiteToken can retrieve an OIDC token when running in a Buildkite job.
+ */
+async function getBuildkiteToken(audience: string): Promise<string> {
+  if (process.env.BUILDKITE !== 'true') {
+    return Promise.reject('no token available');
+  }
+
+  const stdout = await new Promise<string>((resolve, reject) => {
+    execFile(
+      'buildkite-agent',
+      ['oidc', 'request-token', '--audience', audience],
+      (error, stdout) => (error ? reject(error) : resolve(stdout))
+    );
+  });
+  const token = stdout.trim();
+
+  return token || Promise.reject('no token available');
 }
 
 /**

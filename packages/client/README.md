@@ -208,6 +208,17 @@ Note: the `id_token: write` permission must be granted to the GitHub Action Job.
 See https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect
 for more details.
 
+### Buildkite
+
+If sigstore-js detects that it is running in a Buildkite job (`BUILDKITE=true`),
+it will run `buildkite-agent oidc request-token --audience sigstore` to request
+an OIDC token from the native Buildkite agent. Buildkite tokens are issued by
+`https://agent.buildkite.com` and identify the job with claims including
+`organization_slug`, `pipeline_slug`, `build_commit`, and `job_id`.
+
+The agent must support the [`oidc request-token` command](https://buildkite.com/docs/agent/cli/reference/oidc),
+and the Sigstore Fulcio instance must trust the Buildkite issuer.
+
 ### Environment Variables
 
 If the `SIGSTORE_ID_TOKEN` environment variable is set, it will use this to authenticate to Fulcio.

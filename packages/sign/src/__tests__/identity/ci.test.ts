@@ -14,7 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import nock from 'nock';
+import { execFile } from 'node:child_process';
 import { CIContextProvider } from '../../identity/ci';
+
+jest.mock('node:child_process');
+
+const mockedExecFile = jest.mocked(execFile);
 
 describe('CIContextProvider', () => {
   const subject = new CIContextProvider('sigstore');
@@ -55,6 +60,53 @@ describe('CIContextProvider', () => {
       it('returns undefined', async () => {
         const token = subject.getToken();
         await expect(token).rejects.toBe('CI: no tokens available');
+      });
+    });
+
+    describe('when running in Buildkite', () => {
+      beforeEach(() => {
+        process.env.BUILDKITE = 'true';
+      });
+
+      afterEach(() => {
+        delete process.env.BUILDKITE;
+        mockedExecFile.mockReset();
+      });
+
+      it('requests and returns an audience-scoped token from the agent', async () => {
+        mockedExecFile.mockImplementation((_file, _args, callback) => {
+          callback?.(null, 'x.y.z\n', '');
+          return undefined as never;
+        });
+
+        await expect(subject.getToken()).resolves.toBe('x.y.z');
+        expect(mockedExecFile).toHaveBeenCalledWith(
+          'buildkite-agent',
+          ['oidc', 'request-token', '--audience', 'sigstore'],
+          expect.any(Function)
+        );
+      });
+
+      it('reports no token when the agent request fails', async () => {
+        mockedExecFile.mockImplementation((_file, _args, callback) => {
+          callback?.(new Error('request failed'), '', '');
+          return undefined as never;
+        });
+
+        await expect(subject.getToken()).rejects.toBe(
+          'CI: no tokens available'
+        );
+      });
+
+      it('reports no token when the agent returns an empty response', async () => {
+        mockedExecFile.mockImplementation((_file, _args, callback) => {
+          callback?.(null, '\n', '');
+          return undefined as never;
+        });
+
+        await expect(subject.getToken()).rejects.toBe(
+          'CI: no tokens available'
+        );
       });
     });
   });
