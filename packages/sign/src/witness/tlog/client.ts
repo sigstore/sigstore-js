@@ -40,7 +40,7 @@ export class TLogClient implements TLog {
   private fetchOnConflict: boolean;
 
   constructor(options: TLogClientOptions) {
-    this.fetchOnConflict = options.fetchOnConflict ?? false;
+    this.fetchOnConflict = options.fetchOnConflict ?? true;
     this.rekor = new Rekor({
       baseURL: options.rekorBaseURL,
       retry: options.retry,
