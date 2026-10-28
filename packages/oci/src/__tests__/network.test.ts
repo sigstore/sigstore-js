@@ -629,6 +629,8 @@ describe('connection-time destination enforcement (real transport)', () => {
       for (const url of [
         'https://169.254.169.254/latest',
         'https://localhost/v2/',
+        'https://localhost./v2/',
+        'https://auth.localhost./v2/',
         'http://registry.example.com/v2/',
       ]) {
         await expect(fetch(url, { proxy: proxyURL() })).rejects.toThrow(

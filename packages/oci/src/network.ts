@@ -129,7 +129,7 @@ export const validateDestination = (
   if (url.protocol === 'http:' && !allowed) {
     throw new NetworkPolicyError('HTTP requires an explicit origin exception');
   }
-  const hostname = url.hostname.replace(/^\[|\]$/g, '');
+  const hostname = url.hostname.replace(/^\[|\]$/g, '').replace(/\.$/, '');
   if (
     !allowed &&
     ((isIP(hostname) && !isPublicAddress(hostname)) ||
