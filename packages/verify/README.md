@@ -2,6 +2,10 @@
 
 A library for verifying [Sigstore][1] signatures.
 
+## Transparency log threshold
+
+The `Verifier` option `tlogThreshold` sets the minimum number of transparency log entries required for verification (default: `1`). Entries are identified by their authenticated log ID and canonicalized body. Repeated bodies from the same log are rejected as duplicates, even if their log indices differ. The same body from different authenticated logs counts separately.
+
 ## Prerequisites
 
 - Node.js version ^22.22.2 || ^24.15.0 || >=26.0.0

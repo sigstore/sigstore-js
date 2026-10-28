@@ -106,7 +106,11 @@ export function verifyTLogInclusion(
   }
 
   if (isTLogEntryWithInclusionProof(entry)) {
-    const checkpoint = verifyCheckpoint(entry, tlogAuthorities);
+    // Bind the claimed log ID to the authority that verifies the checkpoint.
+    const matchingAuthorities = tlogAuthorities.filter((tlog) =>
+      tlog.logID.equals(entry.logId.keyId)
+    );
+    const checkpoint = verifyCheckpoint(entry, matchingAuthorities);
     verifyMerkleInclusion(entry, checkpoint);
     inclusionVerified = true;
   }
