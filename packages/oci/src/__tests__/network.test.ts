@@ -432,6 +432,16 @@ describe('destination and credential policy', () => {
 });
 
 describe('connection-time destination enforcement (real transport)', () => {
+  const PROXY_ENV_KEYS = [
+    'HTTPS_PROXY',
+    'https_proxy',
+    'HTTP_PROXY',
+    'http_proxy',
+    'PROXY',
+    'proxy',
+    'NO_PROXY',
+    'no_proxy',
+  ];
   let server: http.Server;
   let port: number;
   let requests: number;
@@ -452,7 +462,6 @@ describe('connection-time destination enforcement (real transport)', () => {
       server.close((err) => (err ? reject(err) : resolve()))
     );
   });
-
   it('blocks DNS resolving to loopback without dialing or retrying', async () => {
     const lookup = jest
       .spyOn(dns, 'lookup')
@@ -570,14 +579,13 @@ describe('connection-time destination enforcement (real transport)', () => {
   });
 
   describe('proxies', () => {
-    const ENV_KEYS = ['HTTPS_PROXY', 'HTTP_PROXY', 'NO_PROXY'];
-    let savedEnv: Record<string, string | undefined>;
+    let proxySuiteEnv: Record<string, string | undefined>;
     let connects: string[];
     let lookup: jest.SpyInstance;
 
     beforeEach(() => {
-      savedEnv = Object.fromEntries(
-        ENV_KEYS.map((key) => [key, process.env[key]])
+      proxySuiteEnv = Object.fromEntries(
+        PROXY_ENV_KEYS.map((key) => [key, process.env[key]])
       );
       connects = [];
       server.on('connect', (req, socket) => {
@@ -591,9 +599,9 @@ describe('connection-time destination enforcement (real transport)', () => {
         });
     });
     afterEach(() => {
-      for (const key of ENV_KEYS) {
-        if (savedEnv[key] === undefined) delete process.env[key];
-        else process.env[key] = savedEnv[key];
+      for (const key of PROXY_ENV_KEYS) {
+        if (proxySuiteEnv[key] === undefined) delete process.env[key];
+        else process.env[key] = proxySuiteEnv[key];
       }
     });
 

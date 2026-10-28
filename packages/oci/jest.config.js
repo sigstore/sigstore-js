@@ -18,7 +18,7 @@ const base = require('../../jest.config.base');
 module.exports = {
   ...base,
   displayName: 'oci',
-  setupFilesAfterEnv: ['@sigstore/jest/all'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts', '@sigstore/jest/all'],
   testPathIgnorePatterns: [
     '<rootDir>/dist/',
     '<rootDir>/src/__tests__/__fixtures__',
