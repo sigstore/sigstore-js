@@ -18,7 +18,7 @@ import {
   CONTENT_TYPE_OCI_INDEX,
   CONTENT_TYPE_OCI_MANIFEST,
 } from './constants';
-import { Credentials } from './credentials';
+import { Credentials, DOCKER_HUB_ALIASES } from './credentials';
 import { HTTPError, OCIError } from './error';
 import { ImageName } from './name';
 import {
@@ -230,5 +230,5 @@ const digestToTag = (digest: string): string => {
 // registry.
 // https://github.com/moby/moby/blob/v24.0.2/registry/config.go#L25-L48
 const canonicalizeRegistryName = (registry: string): string => {
-  return registry.endsWith('docker.io') ? DOCKER_DEFAULT_REGISTRY : registry;
+  return DOCKER_HUB_ALIASES.has(registry) ? DOCKER_DEFAULT_REGISTRY : registry;
 };

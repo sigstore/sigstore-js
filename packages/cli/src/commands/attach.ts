@@ -17,6 +17,7 @@ import { Args, Command, Flags } from '@oclif/core';
 import { bundleFromJSON } from '@sigstore/bundle';
 import {
   Credentials,
+  RegistryFetchOptions,
   attachArtifactToImage,
   getImageDigest,
   getRegistryCredentials,
@@ -48,6 +49,12 @@ export default class Attach extends Command {
       char: 'p',
       dependsOn: ['username'],
     }),
+    'allow-private-origin': Flags.string({
+      description:
+        'allow an exact private registry, token, or storage origin (scheme://host:port); permits HTTP at that origin',
+      multiple: true,
+      multipleNonGreedy: true,
+    }),
   };
 
   static override args = {
@@ -73,7 +80,14 @@ export default class Attach extends Command {
         ? { username: flags['username'], password: flags['password'] }
         : this.getRegistryCredentials(imageRef.name);
 
-    const imageDigest = await this.getImageDigest(imageRef, credentials);
+    const fetchOpts: RegistryFetchOptions = {
+      allowedPrivateOrigins: flags['allow-private-origin'],
+    };
+    const imageDigest = await this.getImageDigest(
+      imageRef,
+      credentials,
+      fetchOpts
+    );
 
     const descriptor = await attachArtifactToImage({
       imageName: imageRef.name,
@@ -81,6 +95,7 @@ export default class Attach extends Command {
       credentials,
       artifact,
       mediaType: bundle.mediaType,
+      fetchOpts,
     });
 
     this.logToStderr('Artifact attached to image:', descriptor.digest);
@@ -104,7 +119,8 @@ export default class Attach extends Command {
 
   private async getImageDigest(
     imageRef: ImageRef,
-    credentials: Credentials
+    credentials: Credentials,
+    fetchOpts: RegistryFetchOptions
   ): Promise<string> {
     if (imageRef.digest) {
       return imageRef.digest;
@@ -113,6 +129,7 @@ export default class Attach extends Command {
         credentials,
         imageName: imageRef.name,
         imageTag: imageRef.tag,
+        fetchOpts,
       });
     } else {
       throw new Error('No digest found for image');

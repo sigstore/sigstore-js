@@ -21,6 +21,7 @@ import type { RegistryFetchOptions as FetchOptions } from './registry';
 import type { Descriptor } from './types';
 
 export type { Credentials, Descriptor };
+export type { RegistryFetchOptions } from './registry';
 
 export type AttachArtifactOptions = AddArtifactOptions & {
   readonly imageName: string;

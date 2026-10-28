@@ -35,6 +35,12 @@ import {
 import { Credentials, toBasicAuth } from './credentials';
 import { ensureStatus } from './error';
 import fetch, { FetchInterface, FetchOptions } from './fetch';
+import {
+  isNetworkPolicyError,
+  NetworkOptions,
+  NetworkPolicyError,
+  validateDestination,
+} from './network';
 
 import type { Descriptor } from './types';
 
@@ -102,7 +108,7 @@ type RedirectPolicy<S> = {
 type SecuredFetchState = { defaultsSuppressed: boolean };
 
 // State for #tokenFetch policy
-type TokenFetchState = { authOrigin: string };
+type TokenFetchState = { authOrigin: string; authSuppressed: boolean };
 
 const ALL_MANIFEST_MEDIA_TYPES = [
   CONTENT_TYPE_OCI_INDEX,
@@ -136,19 +142,23 @@ export type GetManifestResponse = Descriptor & {
 export type RegistryFetchOptions = Pick<
   FetchOptions,
   'proxy' | 'noProxy' | 'retry' | 'timeout'
->;
+> &
+  NetworkOptions;
 
 // Options for the origin-scoped redirect helpers
 type SecuredRequestOptions = {
   method?: string;
   headers?: HeadersObject;
   body?: FetchOptions['body'];
+  credentialBodyOrigin?: string;
+  previousURL?: string;
 };
 
 export class RegistryClient {
   readonly #baseURL: string;
   readonly #registryOrigin: string;
   readonly #repository: string;
+  readonly #options: RegistryFetchOptions;
   #fetch: FetchInterface;
   // Registry-scoped credentials/Docker HttpHeaders stored separately
   #registryHeaders: HeadersObject = {};
@@ -159,14 +169,22 @@ export class RegistryClient {
     opts?: RegistryFetchOptions
   ) {
     this.#repository = repository;
-    // Transport fetch handles only retry/timeout/proxy — no credentials
+    this.#options = opts || {};
+    // Transport enforces destination policy and retry/timeout, never credentials.
     this.#fetch = fetch.defaults(opts);
 
-    // Use http for localhost registries, https otherwise
-    const hostname = new URL(`http://${registry}`).hostname;
-    /* istanbul ignore next */
-    const protocol =
-      hostname === 'localhost' || hostname === '127.0.0.1' ? 'http' : 'https';
+    // HTTP is available only through an exact caller-configured origin.
+    const httpOrigin = new URL(`http://${registry}`).origin;
+    const protocol = opts?.allowedPrivateOrigins?.some((origin) => {
+      try {
+        return new URL(origin).origin === httpOrigin;
+      } catch {
+        // Full configuration validation happens before the first request.
+        return false;
+      }
+    })
+      ? 'http'
+      : 'https';
     this.#baseURL = `${protocol}://${registry}`;
     this.#registryOrigin = new URL(this.#baseURL).origin;
   }
@@ -197,7 +215,7 @@ export class RegistryClient {
     const authHeader =
       probeResponse.headers.get(HEADER_AUTHENTICATE) ||
       /* istanbul ignore next */ '';
-    const challenge = parseChallenge(authHeader);
+    const challenge = parseChallenge(authHeader, probeResponse.url);
 
     // If the challenge scheme is "basic" we don't need a token and can
     // authenticate requests using basic auth
@@ -210,9 +228,10 @@ export class RegistryClient {
     let token: string | undefined;
     if (creds.username === '<token>') {
       // If the OAuth2 token request fails, try to fetch a distribution token
-      token = await this.#fetchOAuth2Token(creds, challenge).catch(
-        () => undefined
-      );
+      token = await this.#fetchOAuth2Token(creds, challenge).catch((err) => {
+        if (isNetworkPolicyError(err)) throw err;
+        return undefined;
+      });
     }
 
     if (!token) {
@@ -276,6 +295,7 @@ export class RegistryClient {
       method: 'PUT',
       body: blob,
       headers: { [HEADER_CONTENT_TYPE]: CONTENT_TYPE_OCTET_STREAM },
+      previousURL: postResponse.url,
     }).then(ensureStatus(201));
 
     return { mediaType: CONTENT_TYPE_OCTET_STREAM, digest, size };
@@ -383,9 +403,7 @@ export class RegistryClient {
       },
       stateForRedirect: (state, targetOrigin) => {
         const isSameOrigin = targetOrigin === this.#registryOrigin;
-        return isSameOrigin
-          ? state
-          : { defaultsSuppressed: true };
+        return isSameOrigin ? state : { defaultsSuppressed: true };
       },
     };
     return this.#redirectFetchWithPolicy(url, opts, policy);
@@ -397,12 +415,17 @@ export class RegistryClient {
     opts: SecuredRequestOptions
   ): Promise<Response> {
     const policy: RedirectPolicy<TokenFetchState> = {
-      initial: { authOrigin: new URL(url).origin },
+      initial: { authOrigin: new URL(url).origin, authSuppressed: false },
       headersForHop: (state, targetOrigin, perReq) => {
-        const isSameOrigin = targetOrigin === state.authOrigin;
+        const isSameOrigin =
+          targetOrigin === state.authOrigin && !state.authSuppressed;
         return isSameOrigin ? perReq : stripSensitiveHeaders(perReq);
       },
-      stateForRedirect: (state) => state,
+      stateForRedirect: (state, targetOrigin) => ({
+        ...state,
+        authSuppressed:
+          state.authSuppressed || targetOrigin !== state.authOrigin,
+      }),
     };
     return this.#redirectFetchWithPolicy(url, opts, policy);
   }
@@ -418,9 +441,23 @@ export class RegistryClient {
     let body = opts.body;
     let perRequestHeaders: HeadersObject = { ...(opts.headers || {}) };
     let state = policy.initial;
+    let previousUrl = opts.previousURL || this.#baseURL;
 
     for (let i = 0; i <= MAX_REDIRECTS; i++) {
-      const targetOrigin = new URL(currentUrl).origin;
+      const targetOrigin = validateDestination(
+        currentUrl,
+        this.#options,
+        previousUrl
+      ).origin;
+      if (
+        body &&
+        opts.credentialBodyOrigin &&
+        targetOrigin !== opts.credentialBodyOrigin
+      ) {
+        throw new NetworkPolicyError(
+          'cross-origin credential body redirect is prohibited'
+        );
+      }
 
       const headers = policy.headersForHop(
         state,
@@ -449,7 +486,12 @@ export class RegistryClient {
         throw new Error(`redirect location header missing for: ${currentUrl}`);
       }
 
-      currentUrl = new URL(location, currentUrl).href;
+      previousUrl = currentUrl;
+      try {
+        currentUrl = new URL(location, currentUrl).href;
+      } catch {
+        throw new NetworkPolicyError('invalid redirect destination URL');
+      }
 
       // Standard redirect method/body semantics
       let bodyDropped = false;
@@ -459,10 +501,7 @@ export class RegistryClient {
           body = undefined;
           bodyDropped = true;
         }
-      } else if (
-        [301, 302].includes(response.status) &&
-        method === 'POST'
-      ) {
+      } else if ([301, 302].includes(response.status) && method === 'POST') {
         method = 'GET';
         body = undefined;
         bodyDropped = true;
@@ -487,7 +526,11 @@ export class RegistryClient {
   ): Promise<string> {
     const basicAuth = toBasicAuth(creds);
 
-    const authURL = new URL(challenge.realm);
+    const authURL = validateDestination(
+      challenge.realm,
+      this.#options,
+      challenge.sourceURL
+    );
     authURL.searchParams.set('service', challenge.service);
     authURL.searchParams.set('scope', challenge.scope);
 
@@ -504,6 +547,11 @@ export class RegistryClient {
     creds: Credentials,
     challenge: AuthChallenge
   ): Promise<string> {
+    const authURL = validateDestination(
+      challenge.realm,
+      this.#options,
+      challenge.sourceURL
+    );
     const body = new URLSearchParams({
       service: challenge.service,
       scope: challenge.scope,
@@ -516,6 +564,7 @@ export class RegistryClient {
     const tokenResponse = await this.#tokenFetch(challenge.realm, {
       method: 'POST',
       body,
+      credentialBodyOrigin: authURL.origin,
     }).then(ensureStatus(200));
 
     return tokenResponse.json().then((json) => json.access_token);
@@ -530,6 +579,7 @@ export class RegistryClient {
 
 type AuthChallenge = {
   scheme: 'basic' | 'bearer';
+  sourceURL: string;
   realm: string;
   service: string;
   scope: string;
@@ -537,7 +587,7 @@ type AuthChallenge = {
 
 // Parses an auth challenge header into its components
 // https://datatracker.ietf.org/doc/html/rfc7235#section-4.1
-function parseChallenge(challenge: string): AuthChallenge {
+function parseChallenge(challenge: string, sourceURL: string): AuthChallenge {
   // Account for the possibility of spaces in the auth params
   const [scheme, ...rest] = challenge.split(' ');
   const authParams = rest.join(' ');
@@ -548,6 +598,7 @@ function parseChallenge(challenge: string): AuthChallenge {
 
   return {
     scheme: scheme.toLocaleLowerCase() as 'basic' | 'bearer',
+    sourceURL,
     realm: singleMatch(authParams, /realm="(.+?)"/),
     service: singleMatch(authParams, /service="(.+?)"/),
     scope: singleMatch(authParams, /scope="(.+?)"/),
