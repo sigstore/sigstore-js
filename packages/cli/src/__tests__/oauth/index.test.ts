@@ -1,5 +1,4 @@
- import * as jose from 'jose';
-import nock from 'nock';
+import * as jose from 'jose';
 import open from 'open';
 import { OAuthIdentityProvider } from '../../oauth';
 
@@ -7,6 +6,7 @@ import type { ChildProcess } from 'child_process';
 
 jest.mock('open', () => jest.fn());
 const mockedOpen = jest.mocked(open);
+const fetchCallback = globalThis.fetch;
 
 describe('OAuthIdentityProvider', () => {
   describe('constructor', () => {
@@ -22,14 +22,12 @@ describe('OAuthIdentityProvider', () => {
     });
 
     describe('#getToken', () => {
-      const issuer = 'http://foo.com/auth';
+      const issuer = 'https://foo.com/auth';
       const subject = 'foo@bar.com';
       const opts = {
         issuer,
         clientID: 'sigstore',
       };
-
-      mockedOpen.mockImplementation(sendFakeRedirect(issuer, subject));
 
       const wellKnownResponse = {
         issuer,
@@ -38,9 +36,19 @@ describe('OAuthIdentityProvider', () => {
         jwks_uri: `${issuer}/keys`,
       };
 
-      nock(issuer)
-        .get('/.well-known/openid-configuration')
-        .reply(200, wellKnownResponse);
+      beforeEach(() => {
+        const mockedFetch = jest
+          .spyOn(globalThis, 'fetch')
+          .mockRejectedValue(new Error('unexpected fetch request'))
+          .mockResolvedValueOnce(Response.json(wellKnownResponse));
+        mockedOpen.mockImplementation(
+          sendFakeRedirect(issuer, subject, mockedFetch)
+        );
+      });
+
+      afterEach(() => {
+        jest.restoreAllMocks();
+      });
 
       it('should return a token', async () => {
         const provider = new OAuthIdentityProvider(opts);
@@ -55,7 +63,11 @@ describe('OAuthIdentityProvider', () => {
   });
 });
 
-function sendFakeRedirect(issuer: string, subject: string) {
+function sendFakeRedirect(
+  issuer: string,
+  subject: string,
+  mockedFetch: jest.SpiedFunction<typeof fetch>
+) {
   // Simulate a user being redirect to the callback URL
   return async (authURL: string): ReturnType<typeof open> => {
     // Extract data from the auth URL so that we can construct the callback URL
@@ -78,10 +90,15 @@ function sendFakeRedirect(issuer: string, subject: string) {
       .setProtectedHeader({ alg: 'RS256' })
       .sign(privateKey);
 
-    nock(issuer).post('/token').reply(200, { id_token: jwt });
-    nock(issuer)
-      .get('/keys')
-      .reply(200, { keys: [jwk] });
+    mockedFetch
+      .mockResolvedValueOnce(
+        Response.json({
+          access_token: 'access-token',
+          token_type: 'Bearer',
+          id_token: jwt,
+        })
+      )
+      .mockResolvedValueOnce(Response.json({ keys: [jwk] }));
 
     // Construct the callback URL
     const params = new URLSearchParams({
@@ -90,7 +107,7 @@ function sendFakeRedirect(issuer: string, subject: string) {
     });
     const callbackURL = `${redirectURL}?${params.toString()}`;
 
-    return fetch(callbackURL).then(() => {
+    return fetchCallback(callbackURL).then(() => {
       return {} as ChildProcess;
     });
   };

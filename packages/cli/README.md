@@ -16,6 +16,9 @@ USAGE
 ...
 ```
 <!-- usagestop -->
+
+Browser authentication requires an HTTPS OpenID Connect issuer (`--oidc-issuer`). The local callback server continues to use HTTP.
+
 # Commands
 <!-- commands -->
 * [`sigstore attach IMAGE-URI`](#sigstore-attach-image-uri)

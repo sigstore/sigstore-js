@@ -1,4 +1,16 @@
-import { BaseClient, Issuer, generators } from 'openid-client';
+import {
+  ClientSecretBasic,
+  Configuration,
+  None,
+  authorizationCodeGrant,
+  buildAuthorizationUrl,
+  calculatePKCECodeChallenge,
+  discovery,
+  enableNonRepudiationChecks,
+  randomNonce,
+  randomPKCECodeVerifier,
+  randomState,
+} from 'openid-client';
 
 interface OAuthClientOptions {
   issuer: string;
@@ -7,63 +19,69 @@ interface OAuthClientOptions {
   clientSecret?: string;
 }
 
-// Returns an openid Client instance configured by looking up
-// the issuer's configuration from the well-known endpoint.
+// Discover the issuer's configuration and initialize an authorization flow.
 export async function initializeOAuthClient(
   options: OAuthClientOptions
 ): Promise<OAuthClient> {
-  const authMethod = options.clientSecret ? 'client_secret_basic' : 'none';
-  const client = await Issuer.discover(options.issuer).then(
-    (issuer) =>
-      new issuer.Client({
-        client_id: options.clientID,
-        client_secret: options.clientSecret,
-        token_endpoint_auth_method: authMethod,
-      })
+  const client = await discovery(
+    new URL(options.issuer),
+    options.clientID,
+    options.clientSecret,
+    options.clientSecret ? ClientSecretBasic(options.clientSecret) : None(),
+    // v6 requires opting in to ID-token signature verification.
+    { execute: [enableNonRepudiationChecks] }
   );
+  const verifier = randomPKCECodeVerifier();
+  const challenge = await calculatePKCECodeChallenge(verifier);
 
-  return new OAuthClient(client, options.redirectURL);
+  return new OAuthClient(client, options.redirectURL, verifier, challenge);
 }
 
-// Wrapper around an openid-client Client instance to maintain
-// state for the authorization flow.
+// Maintain state for a single authorization flow.
 class OAuthClient {
-  private client: BaseClient;
+  private client: Configuration;
   private redirectURL: string;
   private verifier: string;
+  private challenge: string;
   private nonce: string;
   private state: string;
 
-  constructor(client: BaseClient, redirectURL: string) {
+  constructor(
+    client: Configuration,
+    redirectURL: string,
+    verifier: string,
+    challenge: string
+  ) {
     this.client = client;
-    this.redirectURL = redirectURL;
-    this.verifier = generators.codeVerifier(32);
-    this.nonce = generators.nonce(32);
-    this.state = generators.state(16);
+    this.redirectURL = new URL(redirectURL).href;
+    this.verifier = verifier;
+    this.challenge = challenge;
+    this.nonce = randomNonce();
+    this.state = randomState();
   }
 
   get authorizationUrl(): string {
-    return this.client.authorizationUrl({
+    return buildAuthorizationUrl(this.client, {
       scope: 'openid email',
       redirect_uri: this.redirectURL,
-      code_challenge: generators.codeChallenge(this.verifier),
+      code_challenge: this.challenge,
       code_challenge_method: 'S256',
       state: this.state,
       nonce: this.nonce,
-    });
+    }).href;
   }
 
   public async getIDToken(callbackURL: string): Promise<string> {
-    const params = this.client.callbackParams(callbackURL);
-    return (
-      this.client
-        .callback(this.redirectURL, params, {
-          response_type: 'code',
-          code_verifier: this.verifier,
-          state: this.state,
-          nonce: this.nonce,
-        })
-        .then((tokenSet) => tokenSet.id_token!)
+    const tokenSet = await authorizationCodeGrant(
+      this.client,
+      new URL(callbackURL, this.redirectURL),
+      {
+        pkceCodeVerifier: this.verifier,
+        expectedState: this.state,
+        expectedNonce: this.nonce,
+        idTokenExpected: true,
+      }
     );
+    return tokenSet.id_token!;
   }
 }
