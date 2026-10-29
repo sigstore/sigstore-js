@@ -1,5 +1,12 @@
 # @sigstore/mock
 
+## 0.13.1
+
+### Patch Changes
+
+- 7d0ad01: Bump @sigstore/protobuf-specs from 0.5.0 to 0.5.2
+- 94a506b: Bump @peculiar/x509 from 2.0.0 to 2.2.0
+
 ## 0.13.0
 
 ### Minor Changes

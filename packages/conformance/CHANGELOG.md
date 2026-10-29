@@ -1,5 +1,18 @@
 # @sigstore/conformance
 
+## 0.9.1
+
+### Patch Changes
+
+- 7d0ad01: Bump @sigstore/protobuf-specs from 0.5.0 to 0.5.2
+- Updated dependencies [4188e72]
+- Updated dependencies [7d0ad01]
+- Updated dependencies [2af33f8]
+  - @sigstore/tuf@5.0.1
+  - @sigstore/bundle@5.0.1
+  - sigstore@5.0.1
+  - @sigstore/verify@4.1.3
+
 ## 0.9.0
 
 ### Minor Changes
