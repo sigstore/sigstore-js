@@ -10,7 +10,7 @@ module.exports = {
     ],
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(agent-base|http-proxy-agent|https-proxy-agent|socks-proxy-agent|socks)/)',
+    'node_modules/(?!(agent-base|http-proxy-agent|https-proxy-agent|socks-proxy-agent|socks|openid-client|oauth4webapi|jose)/)',
   ],
   coverageThreshold: {
     global: {
