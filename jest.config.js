@@ -14,7 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 module.exports = {
-  projects: ['<rootDir>/packages/*/jest.config.js'],
+  projects: [
+    '<rootDir>/packages/*/jest.config.js',
+    '<rootDir>/packages/oci/jest.network.config.js',
+  ],
   coverageThreshold: {
     global: {
       branches: 100,
