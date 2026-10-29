@@ -29,6 +29,8 @@ export type DSSEV001Schema = {
    * extracted collection of all signatures of the envelope's payload; elements will be sorted by lexicographical order of the base64 encoded signature strings
    *
    * @minItems 1
+   *
+   * Items: a signature of the envelope's payload along with the verification material for the signature
    */
   signatures?: [
     {
