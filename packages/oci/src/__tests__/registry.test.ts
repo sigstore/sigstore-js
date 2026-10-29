@@ -430,9 +430,7 @@ describe('RegistryClient', () => {
             // https://registry.example.com/v2/test/blobs/uploads/session-123
             Location: 'session-123',
           })
-          .put(
-            `/v2/${repoName}/blobs/uploads/session-123?digest=${digest}`
-          )
+          .put(`/v2/${repoName}/blobs/uploads/session-123?digest=${digest}`)
           .reply(201);
       });
 
@@ -1055,7 +1053,7 @@ describe('RegistryClient', () => {
       });
     });
 
-    describe('scheme change (https→http) strips registry credentials', () => {
+    describe('scheme change (https→http) is prohibited', () => {
       const httpURL = 'http://registry.example.com';
       let authSubject: RegistryClient;
 
@@ -1082,18 +1080,14 @@ describe('RegistryClient', () => {
           .reply(307, undefined, {
             Location: `${httpURL}/blob-data`,
           });
-
-        // Different scheme = different origin — must NOT receive credentials
-        nock(httpURL, {
-          badheaders: ['authorization', 'x-docker-custom'],
-        })
-          .head('/blob-data')
-          .reply(200);
       });
 
-      it('strips credentials when scheme changes', async () => {
-        const response = await authSubject.uploadBlob(blob);
-        expect(response.digest).toEqual(digest);
+      it('rejects without requesting the downgrade destination', async () => {
+        const destination = nock(httpURL).head('/blob-data').reply(200);
+        await expect(authSubject.uploadBlob(blob)).rejects.toThrow(
+          /HTTPS downgrades/
+        );
+        expect(destination.isDone()).toBe(false);
       });
     });
 
@@ -1471,9 +1465,7 @@ describe('RegistryClient', () => {
         .digest('hex')}`;
 
       beforeEach(() => {
-        nock(registryURL)
-          .head(`/v2/${repoName}/blobs/${digest}`)
-          .reply(404);
+        nock(registryURL).head(`/v2/${repoName}/blobs/${digest}`).reply(404);
 
         // POST to initiate upload gets a 303 See Other → must become GET
         nock(registryURL)
@@ -1513,9 +1505,7 @@ describe('RegistryClient', () => {
             .update(blob)
             .digest('hex')}`;
 
-          nock(registryURL)
-            .head(`/v2/${repoName}/blobs/${digest}`)
-            .reply(404);
+          nock(registryURL).head(`/v2/${repoName}/blobs/${digest}`).reply(404);
 
           // POST gets redirected with 301/302 → must become GET
           nock(registryURL)
@@ -1580,8 +1570,7 @@ describe('RegistryClient', () => {
 
   describe('#tokenFetch redirect handling', () => {
     describe('redirect limit at boundary (exactly 20 redirects succeeds) in token exchange', () => {
-      const challenge =
-        `Bearer realm="https://registry.example.com/token",service="svc",scope="repo:test:pull"`;
+      const challenge = `Bearer realm="https://registry.example.com/token",service="svc",scope="repo:test:pull"`;
 
       let scope: nock.Scope;
 
@@ -1589,11 +1578,9 @@ describe('RegistryClient', () => {
         scope = nock(registryURL);
 
         // POST triggers a 401 → token exchange
-        scope
-          .post(`/v2/${repoName}/blobs/uploads/`)
-          .reply(401, undefined, {
-            'WWW-Authenticate': challenge,
-          });
+        scope.post(`/v2/${repoName}/blobs/uploads/`).reply(401, undefined, {
+          'WWW-Authenticate': challenge,
+        });
 
         // Token endpoint: /token → token-redirect-0 (1st redirect, i=0)
         scope
@@ -1611,11 +1598,7 @@ describe('RegistryClient', () => {
         }
 
         // Terminal response at token-redirect-19 (21st request in tokenFetch)
-        scope
-          .get('/token-redirect-19')
-          .reply(200, { token: 'boundary-token' });
-
-
+        scope.get('/token-redirect-19').reply(200, { token: 'boundary-token' });
       });
 
       it('follows exactly 20 redirects in token exchange and succeeds', async () => {
@@ -1628,8 +1611,7 @@ describe('RegistryClient', () => {
     });
 
     describe('redirect limit exceeded (21st redirect throws) in token exchange', () => {
-      const challenge =
-        `Bearer realm="https://registry.example.com/token",service="svc",scope="repo:test:pull"`;
+      const challenge = `Bearer realm="https://registry.example.com/token",service="svc",scope="repo:test:pull"`;
 
       let scope: nock.Scope;
 
@@ -1637,11 +1619,9 @@ describe('RegistryClient', () => {
         scope = nock(registryURL);
 
         // POST triggers a 401 → token exchange
-        scope
-          .post(`/v2/${repoName}/blobs/uploads/`)
-          .reply(401, undefined, {
-            'WWW-Authenticate': challenge,
-          });
+        scope.post(`/v2/${repoName}/blobs/uploads/`).reply(401, undefined, {
+          'WWW-Authenticate': challenge,
+        });
 
         // Token endpoint: /token → token-redirect-0 (1st redirect, i=0)
         scope
@@ -1678,8 +1658,7 @@ describe('RegistryClient', () => {
     });
 
     describe('redirect without Location in token exchange', () => {
-      const challenge =
-        `Bearer realm="https://registry.example.com/token",service="svc",scope="repo:test:pull"`;
+      const challenge = `Bearer realm="https://registry.example.com/token",service="svc",scope="repo:test:pull"`;
 
       beforeEach(() => {
         nock(registryURL)
@@ -1706,8 +1685,7 @@ describe('RegistryClient', () => {
     });
 
     describe('303 on distribution token GET preserves GET method', () => {
-      const challenge =
-        `Bearer realm="https://registry.example.com/token",service="svc",scope="repo:test:pull"`;
+      const challenge = `Bearer realm="https://registry.example.com/token",service="svc",scope="repo:test:pull"`;
 
       beforeEach(() => {
         nock(registryURL)
@@ -1742,8 +1720,7 @@ describe('RegistryClient', () => {
 
     describe('OAuth token POST redirect handling', () => {
       it('303 on OAuth POST converts to GET and strips entity headers', async () => {
-        const oauthChallenge =
-          `Bearer realm="https://registry.example.com/oauth2/token",service="svc",scope="repo:test:pull"`;
+        const oauthChallenge = `Bearer realm="https://registry.example.com/oauth2/token",service="svc",scope="repo:test:pull"`;
 
         nock(registryURL)
           .post(`/v2/${repoName}/blobs/uploads/`)
@@ -1776,8 +1753,7 @@ describe('RegistryClient', () => {
       it.each([301, 302])(
         '%d on OAuth POST converts to GET without body',
         async (status) => {
-          const oauthChallenge =
-            `Bearer realm="https://registry.example.com/oauth2/token",service="svc",scope="repo:test:pull"`;
+          const oauthChallenge = `Bearer realm="https://registry.example.com/oauth2/token",service="svc",scope="repo:test:pull"`;
 
           nock(registryURL)
             .post(`/v2/${repoName}/blobs/uploads/`)

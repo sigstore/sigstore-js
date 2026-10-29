@@ -32,7 +32,7 @@ type DockerConifg = {
 // Well-known aliases for the Docker Hub registry. Docker stores Hub
 // credentials under a handful of different keys depending on how the user
 // authenticated, so they all need to canonicalize to the same host.
-const DOCKER_HUB_ALIASES = new Set([
+export const DOCKER_HUB_ALIASES = new Set([
   'docker.io',
   'index.docker.io',
   'registry-1.docker.io',

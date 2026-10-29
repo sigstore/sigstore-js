@@ -30,15 +30,18 @@ attach an attestation to a container image
 
 ```
 USAGE
-  $ sigstore attach IMAGE-URI --attestation <value> [-u <value> -p <value>]
+  $ sigstore attach IMAGE-URI --attestation <value> [-u <value> -p <value>] [--allow-private-origin
+    <value>...]
 
 ARGUMENTS
   IMAGE-URI  fully qualified URI to the image
 
 FLAGS
-  -p, --password=<value>     password for the registry
-  -u, --username=<value>     username for the registry
-      --attestation=<value>  (required) attestation bundle to attach
+  -p, --password=<value>                 password for the registry
+  -u, --username=<value>                 username for the registry
+      --allow-private-origin=<value>...  allow an exact private registry, token, or storage origin (scheme://host:port);
+                                         permits HTTP at that origin
+      --attestation=<value>              (required) attestation bundle to attach
 
 DESCRIPTION
   attach an attestation to a container image

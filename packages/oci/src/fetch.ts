@@ -14,9 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { constants as httpConstants } from 'http2';
-import fetch, { FetchOptions } from 'make-fetch-happen';
+import fetch, { FetchOptions as TransportOptions } from 'make-fetch-happen';
 import { log } from 'proc-log';
 import { promiseRetry } from '@gar/promise-retry';
+import {
+  destinationAgent,
+  isNetworkPolicyError,
+  NetworkOptions,
+  NetworkPolicyError,
+  resolveProxy,
+  validateDestination,
+} from './network';
+
+type FetchOptions = TransportOptions & NetworkOptions;
 
 const {
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
@@ -31,6 +41,14 @@ const fetchWithRetry = async (
   url: string,
   options: FetchOptions = {}
 ): Promise<Response> => {
+  const destination = validateDestination(url, options);
+  const proxy = resolveProxy(destination, options);
+  // The proxy resolves the destination itself, so connection-time DNS checks
+  // only apply to direct connections. Pin the proxy decision explicitly so the
+  // transport can't fall back to an unguarded direct connection.
+  const transport: TransportOptions = proxy
+    ? { proxy: proxy.href, noProxy: [] }
+    : { agent: destinationAgent(destination, options) };
   return promiseRetry<Response>(async (retry, attemptNum) => {
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const logRetry = (reason: any) => {
@@ -42,8 +60,15 @@ const fetchWithRetry = async (
 
     const response = await fetch(url, {
       ...options,
+      ...transport,
+      redirect: 'manual',
       retry: false, // We're handling retries ourselves
     }).catch((reason) => {
+      if (isNetworkPolicyError(reason)) {
+        throw new NetworkPolicyError(
+          'connection to a non-public destination was blocked'
+        );
+      }
       logRetry(reason);
       return retry(reason);
     });
