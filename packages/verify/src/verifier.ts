@@ -42,7 +42,10 @@ import type { TrustMaterial } from './trust';
  * @public
  */
 export interface VerifierOptions {
-  /** Minimum number of transparency log entries required for verification */
+  /**
+   * Minimum number of transparency log entries required for verification.
+   * Identical canonicalized bodies from the same log are rejected as duplicates.
+   */
   tlogThreshold?: number;
   /** Minimum number of certificate transparency log entries required */
   ctlogThreshold?: number;
@@ -162,17 +165,21 @@ export class Verifier {
 
   // Checks that the tlog entries are valid for the supplied content
   private verifyTLogs({ signature: content, tlogEntries }: SignedEntity): void {
-    const entryIDs: { logID: Buffer; logIndex: string }[] = [];
+    const entryIDs: { logID: Buffer; body: Buffer }[] = [];
 
     tlogEntries.forEach((entry) => {
       verifyTLogInclusion(entry, this.trustMaterial.tlogs);
       verifyTLogBody(entry, content);
-      entryIDs.push({ logID: entry.logId.keyId, logIndex: entry.logIndex });
+      entryIDs.push({
+        logID: entry.logId.keyId,
+        body: entry.canonicalizedBody,
+      });
     });
 
     // Check for duplicate entries so that repeated copies of a single entry
-    // cannot be counted more than once toward the threshold. The timestamp and
-    // SCT checks above dedupe their collections the same way.
+    // cannot be counted more than once toward the threshold. Inclusion
+    // verification authenticates the log ID and body, but a proof does not
+    // authenticate the top-level log index.
     if (containsDupes(entryIDs)) {
       throw new VerificationError({
         code: 'TLOG_ERROR',
