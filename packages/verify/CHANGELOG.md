@@ -1,5 +1,14 @@
 # @sigstore/verify
 
+## 4.1.3
+
+### Patch Changes
+
+- 7d0ad01: Bump @sigstore/protobuf-specs from 0.5.0 to 0.5.2
+- 2af33f8: Harden transparency log entry verification
+- Updated dependencies [7d0ad01]
+  - @sigstore/bundle@5.0.1
+
 ## 4.1.2
 
 ### Patch Changes

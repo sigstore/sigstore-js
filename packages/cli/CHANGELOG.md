@@ -1,5 +1,23 @@
 # @sigstore/cli
 
+## 0.11.0
+
+### Minor Changes
+
+- 7ca56e9: Harden registry authentication and redirect handling. Requests now require HTTPS and public network destinations unless an origin is explicitly allowed via `fetchOpts.allowedPrivateOrigins` (or `sigstore attach --allow-private-origin`). Configured proxies remain supported; destination DNS checks apply only to direct connections.
+
+### Patch Changes
+
+- 94a506b: Bump open from 11.0.0 to 11.0.4
+- Updated dependencies [e9864c3]
+- Updated dependencies [7d0ad01]
+- Updated dependencies [7ca56e9]
+- Updated dependencies [e77ae76]
+  - @sigstore/sign@5.1.0
+  - @sigstore/bundle@5.0.1
+  - sigstore@5.0.1
+  - @sigstore/oci@0.8.0
+
 ## 0.10.3
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @sigstore/oci
 
+## 0.8.0
+
+### Minor Changes
+
+- 7ca56e9: Harden registry authentication and redirect handling. Requests now require HTTPS and public network destinations unless an origin is explicitly allowed via `fetchOpts.allowedPrivateOrigins` (or `sigstore attach --allow-private-origin`). Configured proxies remain supported; destination DNS checks apply only to direct connections.
+
 ## 0.7.2
 
 ### Patch Changes
