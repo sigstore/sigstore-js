@@ -22,6 +22,7 @@ module.exports = {
   testPathIgnorePatterns: [
     '<rootDir>/dist/',
     '<rootDir>/src/__tests__/__fixtures__',
+    '<rootDir>/src/__tests__/network.test.ts',
   ],
   coveragePathIgnorePatterns: ['__fixtures__'],
 };

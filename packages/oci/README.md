@@ -159,3 +159,13 @@ Returns a `Credentials` object with the following keys:
 - `password` `string`
 
 Throws if the Docker config cannot be located or if there are no credentials for the specified registry.
+
+## Testing
+
+From the repository root, run all OCI tests with:
+
+```shell
+npm run test --workspace=@sigstore/oci
+```
+
+The `oci-network` Jest project runs `network.test.ts` in a separate worker process, even with `--runInBand`. Other suites install process-wide HTTP interceptors that can interfere with real connections. Keep this project on its dedicated runner; `nock.cleanAll()` only removes mock expectations, and restoring one Nock instance does not remove interceptors installed by other instances.

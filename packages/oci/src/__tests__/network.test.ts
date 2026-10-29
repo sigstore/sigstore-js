@@ -432,6 +432,10 @@ describe('destination and credential policy', () => {
 });
 
 describe('connection-time destination enforcement (real transport)', () => {
+  // cleanAll removes expectations but leaves HTTP interception installed.
+  beforeAll(() => nock.restore());
+  afterAll(() => nock.activate());
+
   const PROXY_ENV_KEYS = [
     'HTTPS_PROXY',
     'https_proxy',
@@ -606,19 +610,19 @@ describe('connection-time destination enforcement (real transport)', () => {
     });
 
     const proxyURL = () => `http://127.0.0.1:${port}`;
-    const settle = (p: Promise<unknown>) => p.catch(() => undefined);
-
     it('tunnels through an explicit proxy, even one at a private address', async () => {
-      await settle(
+      await expect(
         fetch('https://registry.example.com/v2/', { proxy: proxyURL() })
-      );
+      ).resolves.toMatchObject({ status: 403 });
       expect(connects).toEqual(['registry.example.com:443']);
       expect(lookup).not.toHaveBeenCalled();
     });
 
     it('honors proxy environment variables set after module load', async () => {
       process.env.HTTPS_PROXY = proxyURL();
-      await settle(fetch('https://registry.example.com/v2/'));
+      await expect(
+        fetch('https://registry.example.com/v2/')
+      ).resolves.toMatchObject({ status: 403 });
       expect(connects).toEqual(['registry.example.com:443']);
     });
 
@@ -671,7 +675,9 @@ describe('connection-time destination enforcement (real transport)', () => {
     it('does not exclude unrelated hosts listed in NO_PROXY', async () => {
       process.env.HTTPS_PROXY = proxyURL();
       process.env.NO_PROXY = 'other.example.com';
-      await settle(fetch('https://registry.example.com/v2/'));
+      await expect(
+        fetch('https://registry.example.com/v2/')
+      ).resolves.toMatchObject({ status: 403 });
       expect(connects).toEqual(['registry.example.com:443']);
     });
 
