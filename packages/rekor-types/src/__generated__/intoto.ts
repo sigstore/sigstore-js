@@ -72,6 +72,8 @@ export interface IntotoV002Schema {
        * collection of all signatures of the envelope's payload
        *
        * @minItems 1
+       *
+       * Items: a signature of the envelope's payload along with the public key for the signature
        */
       signatures: [
         {
