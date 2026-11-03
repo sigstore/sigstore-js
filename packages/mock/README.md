@@ -17,6 +17,10 @@ services.
 * Mocked TUF repository which returns the key material necessary to
   verify artifacts returned from the other services.
 
+## Development
+
+From the repository root, run `npm run build`, then `npm run test:cjs --workspace=@sigstore/mock` to check the compiled CommonJS package with Node.js. This check bypasses Jest's transforms and exercises certificate issuance and timestamp signing with the ESM dependencies.
+
 ## Prerequisites
 
 - Node.js version ^22.22.2 || ^24.15.0 || >=26.0.0
