@@ -66,6 +66,54 @@ describe('TLog', () => {
       expect(entry.verification?.inclusionProof?.hashes).toHaveLength(0);
       expect(entry.verification?.inclusionProof?.checkpoint).toBeDefined();
     });
+
+    it('canonicalizes the entry and signs its metadata', async () => {
+      const subject = await initializeTLog(url, keyPair);
+      const result = await subject.log({
+        z: [{ b: 2, a: 1 }],
+        a: 'example',
+      });
+      const entry = Object.values(result)[0];
+      const body = Buffer.from(entry.body, 'base64').toString('utf8');
+
+      expect(body).toBe('{"a":"example","z":[{"a":1,"b":2}]}');
+
+      const set = JSON.stringify({
+        body: entry.body,
+        integratedTime: entry.integratedTime,
+        logID: entry.logID,
+        logIndex: entry.logIndex,
+      });
+      const signature = Buffer.from(
+        entry.verification!.signedEntryTimestamp!,
+        'base64'
+      );
+      expect(
+        crypto.verify('sha256', Buffer.from(set), keyPair.publicKey, signature)
+      ).toBe(true);
+    });
+
+    it('handles values without a JSON representation', async () => {
+      const subject = await initializeTLog(url, keyPair);
+      const result = await subject.log({
+        omit: () => 'unused',
+        toJSON: { toJSON: () => undefined },
+        array: [undefined, () => 'unused'],
+      });
+      const entry = Object.values(result)[0];
+
+      expect(Buffer.from(entry.body, 'base64').toString('utf8')).toBe(
+        '{"array":[null,null]}'
+      );
+    });
+
+    it('rejects strings containing unpaired surrogates', async () => {
+      const subject = await initializeTLog(url, keyPair);
+
+      await expect(subject.log({ text: '\ud800' })).rejects.toThrow(
+        'Lone surrogate is not allowed'
+      );
+    });
   });
 
   describe('#logV2', () => {

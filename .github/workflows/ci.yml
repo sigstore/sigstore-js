@@ -74,3 +74,5 @@ jobs:
       run: npm ci
     - name: Run tests
       run: npm run test:ci -- --cacheDirectory ${{ matrix.platform.jest-cache }}
+    - name: Test CommonJS interoperability
+      run: node --test packages/mock/test/cjs-interop.cjs
