@@ -7,7 +7,8 @@
   "scripts": {
     "clean": "shx rm -rf dist *.tsbuildinfo",
     "build": "tsc --build",
-    "test": "jest"
+    "test": "jest",
+    "test:cjs": "node --test test/cjs-interop.cjs"
   },
   "files": [
     "dist"
@@ -30,7 +31,7 @@
     "make-fetch-happen": "^16.0.1"
   },
   "dependencies": {
-    "@peculiar/webcrypto": "^1.7.1",
+    "@peculiar/webcrypto": "^2.0.0",
     "@peculiar/x509": "^2.2.0",
     "@sigstore/protobuf-specs": "^0.5.2",
     "asn1js": "^4.0.0",
