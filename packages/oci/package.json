@@ -7,7 +7,7 @@
   "scripts": {
     "clean": "shx rm -rf dist *.tsbuildinfo",
     "build": "tsc --build",
-    "test": "jest"
+    "test": "jest --projects jest.config.js jest.network.config.js"
   },
   "files": [
     "dist"

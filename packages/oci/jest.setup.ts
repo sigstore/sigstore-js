@@ -11,7 +11,7 @@ const proxyEnvKeys = [
   'no_proxy',
 ];
 
-if (expect.getState().testPath?.endsWith('/network.test.ts')) {
+if (expect.getState().testPath?.match(/[/\\]network\.test\.ts$/)) {
   const savedProxyEnv = Object.fromEntries(
     proxyEnvKeys.map((key) => [key, process.env[key]])
   );
