@@ -10,7 +10,7 @@ module.exports = {
     ],
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(agent-base|http-proxy-agent|https-proxy-agent|socks-proxy-agent|socks|asn1js|pkijs|bytestreamjs|@peculiar/(utils|webcrypto|x509|asn1-[^/]+|json-schema)|webcrypto-core|@noble/hashes|canonicalize)/)',
+    'node_modules/(?!(agent-base|http-proxy-agent|https-proxy-agent|socks-proxy-agent|socks|openid-client|oauth4webapi|jose|asn1js|pkijs|bytestreamjs|@peculiar/(utils|webcrypto|x509|asn1-[^/]+|json-schema)|webcrypto-core|@noble/hashes|canonicalize)/)',
   ],
   coverageThreshold: {
     global: {
