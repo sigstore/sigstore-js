@@ -1,6 +1,6 @@
 module.exports = {
   transform: {
-    '^.+\\.(t|j)s$': [
+    '^.+\\.(t|[cm]?j)s$': [
       '@swc/jest',
       {
         jsc: {
@@ -10,7 +10,7 @@ module.exports = {
     ],
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(agent-base|http-proxy-agent|https-proxy-agent|socks-proxy-agent|socks|openid-client|oauth4webapi|jose|asn1js|pkijs|bytestreamjs|@peculiar/(utils|webcrypto|x509|asn1-[^/]+|json-schema)|webcrypto-core|@noble/hashes|canonicalize)/)',
+    'node_modules/(?!(agent-base|http-proxy-agent|https-proxy-agent|socks-proxy-agent|socks|openid-client|oauth4webapi|jose|asn1js|pkijs|bytestreamjs|@peculiar/(utils|webcrypto|x509|asn1-[^/]+|json-schema)|webcrypto-core|@noble/hashes|canonicalize|@tufjs/repo-mock|nock|@mswjs/interceptors|@open-draft/until|rettime)/)',
   ],
   coverageThreshold: {
     global: {
