@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { restoreNock } from '@sigstore/jest';
 import { TrustedRoot } from '@sigstore/protobuf-specs';
 import mocktuf, { Target } from '@tufjs/repo-mock';
 import fs from 'fs';
@@ -26,6 +27,8 @@ import {
   getTrustedRoot,
   initTUF,
 } from '../index';
+
+afterAll(() => restoreNock(require.resolve('@tufjs/repo-mock')));
 
 describe('public interface', () => {
   it('exports types', () => {
