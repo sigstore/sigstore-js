@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import type { SerializedBundle } from '@sigstore/bundle';
+import { restoreNock } from '@sigstore/jest';
 import { mockFulcio, mockRekor, mockTSA } from '@sigstore/mock';
 import { VerificationError } from '@sigstore/verify';
 import { fromPartial } from '@total-typescript/shoehorn';
@@ -25,6 +26,8 @@ import { trustedRoot } from './__fixtures__/trust';
 
 import path from 'path';
 import type { SignOptions, VerifyOptions } from '../config';
+
+afterAll(() => restoreNock(require.resolve('@tufjs/repo-mock')));
 
 const fulcioURL = 'https://fulcio.example.com';
 const rekorURL = 'https://rekor.example.com';

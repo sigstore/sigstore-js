@@ -1,6 +1,6 @@
 # @sigstore/jest
 
-Custom Jest matchers used across the different Sigstore JavaScript projects.
+Custom Jest matchers and test utilities used across the Sigstore JavaScript projects.
 This is a private package and is not published to the registry.
 
 ## Installation
@@ -38,3 +38,17 @@ or in the `package.json`:
   "setupFilesAfterEnv": ["@sigtore/jest/all"]
 }
 ```
+
+## Restore Nock after TUF mock tests
+
+`@tufjs/repo-mock` activates a Nock interceptor. Restore it after the test file
+to avoid affecting later test suites:
+
+```typescript
+import { restoreNock } from '@sigstore/jest';
+
+afterAll(() => restoreNock(require.resolve('@tufjs/repo-mock')));
+```
+
+The helper resolves Nock relative to the supplied package, so it restores the
+correct instance when multiple versions are installed.

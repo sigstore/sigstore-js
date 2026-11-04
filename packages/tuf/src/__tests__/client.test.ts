@@ -13,12 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { restoreNock } from '@sigstore/jest';
 import mocktuf, { Target } from '@tufjs/repo-mock';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { TUFClient, TUFOptions } from '../client';
 import { TUFError } from '../error';
+
+afterAll(() => restoreNock(require.resolve('@tufjs/repo-mock')));
 
 describe('TUFClient', () => {
   describe('constructor', () => {

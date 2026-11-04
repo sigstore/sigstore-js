@@ -30,7 +30,7 @@
     "@sigstore/jest": "^0.0.0",
     "@sigstore/mock": "^0.13.0",
     "@sigstore/rekor-types": "^5.0.0",
-    "@tufjs/repo-mock": "^5.0.1",
+    "@tufjs/repo-mock": "^5.0.2",
     "@types/make-fetch-happen": "^10.0.4"
   },
   "dependencies": {
