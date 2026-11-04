@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { Crypto } from '@peculiar/webcrypto';
-import x509 from '@peculiar/x509';
+import * as x509 from '@peculiar/x509';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 

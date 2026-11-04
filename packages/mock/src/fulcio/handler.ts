@@ -16,7 +16,7 @@ limitations under the License.
 
 import 'reflect-metadata';
 
-import x509 from '@peculiar/x509';
+import * as x509 from '@peculiar/x509';
 import assert from 'assert';
 import { generateKeyPairSync } from 'crypto';
 import * as jose from 'jose';

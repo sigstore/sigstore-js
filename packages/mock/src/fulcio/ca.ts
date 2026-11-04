@@ -17,7 +17,7 @@ limitations under the License.
 import 'reflect-metadata';
 
 import { Crypto } from '@peculiar/webcrypto';
-import x509 from '@peculiar/x509';
+import * as x509 from '@peculiar/x509';
 import * as asn1js from 'asn1js';
 import {
   DIGEST_SHA256,

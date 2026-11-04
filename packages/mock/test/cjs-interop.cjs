@@ -28,11 +28,27 @@ const pkijs = require('pkijs');
 // Resolve the package from the consumer directory rather than the test file.
 const requireFromCwd = createRequire(join(cwd(), 'package.json'));
 const {
+  fulcioHandler,
   initializeCA,
   initializeCTLog,
   initializeTLog,
   initializeTSA,
 } = requireFromCwd('@sigstore/mock');
+
+test('the CommonJS entry point issues signing certificates', async () => {
+  const keyPair = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
+  const ca = await initializeCA(keyPair);
+  const handler = fulcioHandler(ca, { strict: false });
+  const result = await handler.fn('');
+
+  assert.equal(result.statusCode, 201);
+  const { certificates } = JSON.parse(result.response)
+    .signedCertificateEmbeddedSct.chain;
+  const leaf = new X509Certificate(certificates[0]);
+  const root = new X509Certificate(certificates[1]);
+  assert.equal(root.verify(keyPair.publicKey), true);
+  assert.equal(leaf.verify(root.publicKey), true);
+});
 
 test('the CommonJS entry point signs canonicalized log entries', async () => {
   const keyPair = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });

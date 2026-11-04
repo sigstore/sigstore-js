@@ -17,7 +17,7 @@ limitations under the License.
 import 'reflect-metadata';
 
 import { Crypto } from '@peculiar/webcrypto';
-import x509 from '@peculiar/x509';
+import * as x509 from '@peculiar/x509';
 import { generateKeyPairSync } from 'crypto';
 import { generateKeyPair } from '../util/key';
 import { CA, initializeCA } from './ca';
