@@ -1,5 +1,18 @@
 # @sigstore/sign
 
+## 5.1.0
+
+### Minor Changes
+
+- e9864c3: Add ambient OIDC credential detection for Buildkite jobs using the native Buildkite agent token flow.
+- e77ae76: Fetch existing Rekor entries by default when a create request returns a conflict.
+
+### Patch Changes
+
+- 7d0ad01: Bump @sigstore/protobuf-specs from 0.5.0 to 0.5.2
+- Updated dependencies [7d0ad01]
+  - @sigstore/bundle@5.0.1
+
 ## 5.0.0
 
 ### Major Changes
