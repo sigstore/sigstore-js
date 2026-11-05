@@ -1,5 +1,17 @@
 # @sigstore/mock-server
 
+## 0.4.1
+
+### Patch Changes
+
+- 1fc6056: Bump `@oclif/core` from 4.13.2 to 5.1.11.
+- Updated dependencies [8fc8686]
+- Updated dependencies [7d0ad01]
+- Updated dependencies [f512dbe]
+- Updated dependencies [94a506b]
+- Updated dependencies [bfd9abe]
+  - @sigstore/mock@0.13.1
+
 ## 0.4.0
 
 ### Minor Changes

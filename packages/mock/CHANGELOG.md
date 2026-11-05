@@ -1,5 +1,15 @@
 # @sigstore/mock
 
+## 0.13.1
+
+### Patch Changes
+
+- 8fc8686: Update `canonicalize` to 5.1.0. Canonicalization now rejects unpaired surrogates and handles some non-JSON values differently.
+- 7d0ad01: Bump @sigstore/protobuf-specs from 0.5.0 to 0.5.2
+- f512dbe: Bump @peculiar/webcrypto from 1.7.1 to 2.0.0.
+- 94a506b: Bump @peculiar/x509 from 2.0.0 to 2.2.0
+- bfd9abe: Update `@peculiar/x509` to 3.1.0 and support its ESM-only release from CommonJS.
+
 ## 0.13.0
 
 ### Minor Changes

@@ -1,5 +1,14 @@
 # @sigstore/tuf
 
+## 5.0.1
+
+### Patch Changes
+
+- 4188e72: Update TUF seed files
+- 7d0ad01: Bump @sigstore/protobuf-specs from 0.5.0 to 0.5.2
+- bc962f7: Bump `tuf-js` from 6.0.0 to 6.0.1
+- e08db39: Bump `tuf-js` from 6.0.1 to 6.0.2
+
 ## 5.0.0
 
 ### Major Changes

@@ -1,5 +1,27 @@
 # @sigstore/cli
 
+## 0.11.0
+
+### Minor Changes
+
+- 7ca56e9: Harden registry authentication and redirect handling. Requests now require HTTPS and public network destinations unless an origin is explicitly allowed via `fetchOpts.allowedPrivateOrigins` (or `sigstore attach --allow-private-origin`). Configured proxies remain supported; destination DNS checks apply only to direct connections.
+
+### Patch Changes
+
+- 51b1245: Bump oclif from 4.23.29 to 6.0.15
+- 1fc6056: Bump `@oclif/core` from 4.13.2 to 5.1.11.
+- 278d844: Bump `@oclif/plugin-help` from 6.2.56 to 7.0.6
+- 12482d1: Upgrade openid-client to v6 and migrate browser authentication while retaining PKCE, state, nonce, and ID-token signature validation. OpenID Connect issuers must now use HTTPS; localhost callback URLs continue to use HTTP.
+- 94a506b: Bump open from 11.0.0 to 11.0.4
+- Updated dependencies [e9864c3]
+- Updated dependencies [7d0ad01]
+- Updated dependencies [7ca56e9]
+- Updated dependencies [e77ae76]
+  - @sigstore/sign@5.1.0
+  - @sigstore/bundle@5.0.1
+  - sigstore@5.0.1
+  - @sigstore/oci@0.8.0
+
 ## 0.10.3
 
 ### Patch Changes
