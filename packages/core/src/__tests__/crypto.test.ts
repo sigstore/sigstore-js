@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { bufferEqual, createPublicKey, digest, verify } from '../crypto';
-import { generateKeyPairSync, sign } from 'crypto';
+import crypto, { generateKeyPairSync, sign } from 'crypto';
 
 describe('createPublicKey', () => {
   it('should create a public key from a PEM string', () => {
@@ -80,6 +80,10 @@ describe('verify', () => {
   const data = Buffer.from('test data');
   const signature = sign('sha256', data, keyPair.privateKey);
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('returns true for a valid signature', () => {
     expect(verify(data, keyPair.publicKey, signature, 'sha256')).toBe(true);
   });
@@ -89,8 +93,101 @@ describe('verify', () => {
     expect(verify(data, keyPair.publicKey, badSig, 'sha256')).toBe(false);
   });
 
-  it('returns true when algorithm is omitted', () => {
+  it('uses sha256 by default for EC keys', () => {
+    const nodeVerify = jest.spyOn(crypto, 'verify');
+
     expect(verify(data, keyPair.publicKey, signature)).toBe(true);
+    expect(nodeVerify).toHaveBeenCalledWith(
+      'sha256',
+      data,
+      keyPair.publicKey,
+      signature
+    );
+  });
+
+  it('uses sha256 by default for PEM-encoded EC keys', () => {
+    const nodeVerify = jest.spyOn(crypto, 'verify');
+    const pem = keyPair.publicKey.export({ type: 'spki', format: 'pem' });
+
+    for (const key of [pem, Buffer.from(pem)]) {
+      expect(verify(data, key, signature)).toBe(true);
+      expect(nodeVerify).toHaveBeenLastCalledWith(
+        'sha256',
+        data,
+        key,
+        signature
+      );
+    }
+  });
+
+  it('uses sha256 by default for RSA keys', () => {
+    const nodeVerify = jest.spyOn(crypto, 'verify');
+    const rsaKeyPair = generateKeyPairSync('rsa', { modulusLength: 2048 });
+    const rsaSignature = sign('sha256', data, rsaKeyPair.privateKey);
+
+    expect(verify(data, rsaKeyPair.publicKey, rsaSignature)).toBe(true);
+    expect(nodeVerify).toHaveBeenCalledWith(
+      'sha256',
+      data,
+      rsaKeyPair.publicKey,
+      rsaSignature
+    );
+  });
+
+  it('leaves the algorithm unspecified for Ed25519 keys', () => {
+    const nodeVerify = jest.spyOn(crypto, 'verify');
+    const ed25519KeyPair = generateKeyPairSync('ed25519');
+    const ed25519Signature = sign(null, data, ed25519KeyPair.privateKey);
+
+    expect(verify(data, ed25519KeyPair.publicKey, ed25519Signature)).toBe(true);
+    expect(nodeVerify).toHaveBeenCalledWith(
+      undefined,
+      data,
+      ed25519KeyPair.publicKey,
+      ed25519Signature
+    );
+  });
+
+  it('preserves the default digest for restricted RSA-PSS keys', () => {
+    const nodeVerify = jest.spyOn(crypto, 'verify');
+    const rsaPssKeyPair = generateKeyPairSync('rsa-pss', {
+      modulusLength: 2048,
+      hashAlgorithm: 'sha384',
+      mgf1HashAlgorithm: 'sha384',
+    });
+    const rsaPssSignature = sign('sha384', data, rsaPssKeyPair.privateKey);
+    const pem = rsaPssKeyPair.publicKey.export({ type: 'spki', format: 'pem' });
+
+    for (const key of [rsaPssKeyPair.publicKey, pem]) {
+      expect(verify(data, key, rsaPssSignature)).toBe(true);
+      expect(nodeVerify).toHaveBeenLastCalledWith(
+        undefined,
+        data,
+        key,
+        rsaPssSignature
+      );
+    }
+  });
+
+  it('honors an explicitly supplied digest', () => {
+    const nodeVerify = jest.spyOn(crypto, 'verify');
+    const sha384Signature = sign('sha384', data, keyPair.privateKey);
+
+    expect(verify(data, keyPair.publicKey, sha384Signature, 'sha384')).toBe(
+      true
+    );
+    expect(nodeVerify).toHaveBeenCalledWith(
+      'sha384',
+      data,
+      keyPair.publicKey,
+      sha384Signature
+    );
+  });
+
+  it('returns false for an invalid signature when the algorithm is omitted', () => {
+    expect(verify(data, keyPair.publicKey, Buffer.from('bad signature'))).toBe(
+      false
+    );
   });
 });
 
