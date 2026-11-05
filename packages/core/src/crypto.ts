@@ -56,7 +56,19 @@ export function verify(
   // The try/catch is to work around an issue in Node 14.x where verify throws
   // an error in some scenarios if the signature is invalid.
   try {
-    return crypto.verify(algorithm, data, key, signature);
+    let verificationAlgorithm = algorithm;
+    if (verificationAlgorithm === undefined) {
+      const keyType =
+        key instanceof crypto.KeyObject
+          ? key.asymmetricKeyType
+          : crypto.createPublicKey(key).asymmetricKeyType;
+      // Preserve key-specific defaults for EdDSA and restricted RSA-PSS keys.
+      if (keyType === 'ec' || keyType === 'rsa') {
+        verificationAlgorithm = 'sha256';
+      }
+    }
+
+    return crypto.verify(verificationAlgorithm, data, key, signature);
   } catch (e) {
     /* istanbul ignore next */
     return false;
