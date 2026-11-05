@@ -149,7 +149,7 @@ The flags apply to both digest lookup and artifact upload.
 
 ### getRegistryCredentials(imageName)
 
-Reads the local `$HOME/.docker/config.json` file and returns the credentials associated with the image's registry.
+Reads the local Docker config file and returns the credentials associated with the image's registry. Uses `$DOCKER_CONFIG/config.json` when `DOCKER_CONFIG` is set; otherwise `$HOME/.docker/config.json`.
 
 - `imageName` `string`: Fully-qualified name of the image from which to extract the registry hostname.
 

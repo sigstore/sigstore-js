@@ -50,11 +50,22 @@ const canonicalizeRegistry = (value: string): string => {
   return DOCKER_HUB_ALIASES.has(host) ? 'docker.io' : host;
 };
 
+// Resolves the Docker config.json path. Honors $DOCKER_CONFIG when set
+// (nonempty), matching Docker's own lookup. An explicitly configured but
+// missing/unreadable path fails rather than falling back to $HOME/.docker.
+const resolveDockerConfigPath = (): string => {
+  const dockerConfig = process.env.DOCKER_CONFIG;
+  if (dockerConfig) {
+    return path.join(dockerConfig, 'config.json');
+  }
+  return path.join(os.homedir(), '.docker', 'config.json');
+};
+
 // Returns the credentials for a given registry by reading the Docker config
 // file.
 export const getRegistryCredentials = (imageName: string): Credentials => {
   const { registry } = parseImageName(imageName);
-  const dockerConfigFile = path.join(os.homedir(), '.docker', 'config.json');
+  const dockerConfigFile = resolveDockerConfigPath();
 
   let content: string | undefined;
   try {
