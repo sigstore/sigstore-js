@@ -21,16 +21,16 @@
     "@eslint/js": "^10.0.1",
     "@swc/jest": "^0.2.39",
     "@total-typescript/shoehorn": "^0.1.2",
-    "@tsconfig/node20": "^20.1.10",
+    "@tsconfig/node20": "^20.1.11",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.6.6",
     "eslint": "^10.14.0",
     "jest": "^30.5.2",
     "nock": "^13.5.5",
-    "prettier": "^3.9.10",
+    "prettier": "^3.10.1",
     "shx": "^0.4.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.72.1"
+    "typescript-eslint": "^8.72.2"
   },
   "optionalDependencies": {
     "@swc/core-darwin-arm64": "1.16.21",
