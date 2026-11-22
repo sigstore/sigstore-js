@@ -150,3 +150,90 @@ describe('MessageSignatureContent', () => {
     });
   });
 });
+
+describe('MessageSignatureContent with Ed25519 keys', () => {
+  const key = crypto.generateKeyPairSync('ed25519');
+  const message = Buffer.from('artifact contents');
+
+  const build = (artifact: Buffer, signature: Buffer, alg: HashAlgorithm) =>
+    new MessageSignatureContent(
+      {
+        messageDigest: {
+          digest: core.digest('sha256', artifact),
+          algorithm: alg,
+        },
+        signature,
+      },
+      artifact
+    );
+
+  const signature = crypto.sign(null, message, key.privateKey);
+
+  it.each([
+    HashAlgorithm.SHA2_256,
+    HashAlgorithm.SHA2_384,
+    HashAlgorithm.SHA2_512,
+    HashAlgorithm.HASH_ALGORITHM_UNSPECIFIED,
+  ])('verifies a signature over the full artifact (digest alg %s)', (alg) => {
+    expect(build(message, signature, alg).verifySignature(key.publicKey)).toBe(
+      true
+    );
+  });
+
+  it('rejects a tampered artifact', () => {
+    expect(
+      build(
+        Buffer.from('other contents'),
+        signature,
+        HashAlgorithm.SHA2_256
+      ).verifySignature(key.publicKey)
+    ).toBe(false);
+  });
+
+  it('rejects a signature over the digest instead of the artifact', () => {
+    const digestSig = crypto.sign(
+      null,
+      core.digest('sha256', message),
+      key.privateKey
+    );
+    expect(
+      build(message, digestSig, HashAlgorithm.SHA2_256).verifySignature(
+        key.publicKey
+      )
+    ).toBe(false);
+  });
+
+  it('rejects verification when no artifact is available', () => {
+    const subject = new MessageSignatureContent(
+      {
+        messageDigest: {
+          digest: core.digest('sha256', message),
+          algorithm: HashAlgorithm.SHA2_256,
+        },
+        signature,
+      },
+      undefined as unknown as Buffer
+    );
+    expect(subject.verifySignature(key.publicKey)).toBe(false);
+  });
+
+  it('identity point key is rejected', () => {
+    const smallOrderKey = crypto.createPublicKey({
+      key: Buffer.from(
+        '302a300506032b6570032100' + '01' + '00'.repeat(31),
+        'hex'
+      ),
+      format: 'der',
+      type: 'spki',
+    });
+    const identitySignature = Buffer.from(
+      '01' + '00'.repeat(31) + '00'.repeat(32),
+      'hex'
+    );
+    expect(
+      build(message, identitySignature, HashAlgorithm.SHA2_256).verifySignature(
+        smallOrderKey
+      )
+    ).toBe(false);
+  });
+});

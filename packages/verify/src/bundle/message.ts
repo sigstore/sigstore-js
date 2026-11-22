@@ -60,6 +60,16 @@ export class MessageSignatureContent implements SignatureContent {
   }
 
   public verifySignature(key: crypto.KeyObject): boolean {
+    // Ed25519 (PureEdDSA) signs the full message and cannot verify a
+    // pre-computed digest, so no hash algorithm is passed and the artifact
+    // itself is required.
+    if (key.asymmetricKeyType === 'ed25519') {
+      if (!this.artifact) {
+        return false;
+      }
+      return crypto.verify(this.artifact, key, this.signature);
+    }
+
     return crypto.verify(
       this.artifact,
       key,

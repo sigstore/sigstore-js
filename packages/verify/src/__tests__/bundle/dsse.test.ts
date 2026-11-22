@@ -122,3 +122,68 @@ describe('DSSESignatureContent', () => {
     });
   });
 });
+
+describe('DSSESignatureContent with Ed25519 keys', () => {
+  const payloadType = 'application/vnd.in-toto+json';
+  const toPAE = (payload: Buffer) =>
+    Buffer.concat([
+      Buffer.from(
+        `DSSEv1 ${payloadType.length} ${payloadType} ${payload.length} `
+      ),
+      payload,
+    ]);
+  const envelope = (payload: Buffer, sig: Buffer): Envelope => ({
+    payload,
+    payloadType,
+    signatures: [{ sig, keyid: '' }],
+  });
+
+  describe('with a generated key', () => {
+    const key = crypto.generateKeyPairSync('ed25519');
+    const payload = Buffer.from('{"_type":"statement"}');
+    const sig = crypto.sign(null, toPAE(payload), key.privateKey);
+
+    it('verifies a valid signature', () => {
+      const subject = new DSSESignatureContent(envelope(payload, sig));
+      expect(subject.verifySignature(key.publicKey)).toBe(true);
+    });
+
+    it('rejects a tampered payload', () => {
+      const subject = new DSSESignatureContent(
+        envelope(Buffer.from('{"_type":"other"}'), sig)
+      );
+      expect(subject.verifySignature(key.publicKey)).toBe(false);
+    });
+  });
+
+  describe('with the small-order identity key', () => {
+    const spki = Buffer.from(
+      '302a300506032b6570032100' + '01' + '00'.repeat(31),
+      'hex'
+    );
+    const identitySignature = Buffer.from(
+      '01' + '00'.repeat(31) + '00'.repeat(32),
+      'hex'
+    );
+
+    it('cannot be loaded through @sigstore/core', () => {
+      expect(() => core.createPublicKey(spki)).toThrow(
+        /invalid Ed25519 public key/
+      );
+    });
+
+    it('identity point key is rejected', () => {
+      const key = crypto.createPublicKey({
+        key: spki,
+        format: 'der',
+        type: 'spki',
+      });
+      for (const p of ['{}', '{"_type":"anything"}', 'x'.repeat(512)]) {
+        const subject = new DSSESignatureContent(
+          envelope(Buffer.from(p), identitySignature)
+        );
+        expect(subject.verifySignature(key)).toBe(false);
+      }
+    });
+  });
+});
