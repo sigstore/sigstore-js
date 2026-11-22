@@ -14,7 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { bufferEqual, createPublicKey, digest, verify } from '../crypto';
-import { ED25519_D, isValidEd25519Point } from '../ed25519';
+import {
+  ED25519_D,
+  isValidEd25519Point,
+  isValidEd25519Signature,
+} from '../ed25519';
 import crypto, { generateKeyPairSync, sign } from 'crypto';
 
 describe('createPublicKey', () => {
@@ -115,9 +119,11 @@ describe('verify', () => {
       expect(nodeVerify).toHaveBeenLastCalledWith(
         'sha256',
         data,
-        key,
+        expect.any(crypto.KeyObject),
         signature
       );
+      const passedKey = nodeVerify.mock.lastCall?.[2] as crypto.KeyObject;
+      expect(passedKey.equals(keyPair.publicKey)).toBe(true);
     }
   });
 
@@ -164,9 +170,11 @@ describe('verify', () => {
       expect(nodeVerify).toHaveBeenLastCalledWith(
         undefined,
         data,
-        key,
+        expect.any(crypto.KeyObject),
         rsaPssSignature
       );
+      const passedKey = nodeVerify.mock.lastCall?.[2] as crypto.KeyObject;
+      expect(passedKey.equals(rsaPssKeyPair.publicKey)).toBe(true);
     }
   });
 
@@ -382,6 +390,63 @@ describe('Ed25519 public key validation', () => {
       );
       expect(verify(Buffer.from(msg), pem, identitySignature)).toBe(false);
     }
+  });
+
+  describe('signature R component', () => {
+    const L =
+      (BigInt(1) << BigInt(252)) +
+      BigInt('27742317777372353535851937790883648493');
+    const leToBigInt = (b: Buffer): bigint =>
+      BigInt('0x' + (Buffer.from(b).reverse().toString('hex') || '0'));
+    const bigIntToLE = (n: bigint): Buffer =>
+      Buffer.from(n.toString(16).padStart(64, '0'), 'hex').reverse();
+
+    // Builds a signature with R = identity and S = k*s mod L, which satisfies
+    // the cofactorless equation [S]B = R + [k]A for the given key pair.
+    const identityRSignature = (
+      privateKey: crypto.KeyObject,
+      publicKey: crypto.KeyObject,
+      msg: Buffer
+    ): Buffer => {
+      const seed = Buffer.from(
+        privateKey.export({ format: 'jwk' }).d as string,
+        'base64url'
+      );
+      const h = crypto.createHash('sha512').update(seed).digest();
+      const a = Buffer.from(h.subarray(0, 32));
+      a[0] &= 248;
+      a[31] &= 127;
+      a[31] |= 64;
+      const A = publicKey.export({ format: 'der', type: 'spki' }).subarray(12);
+      const R = Buffer.from('01' + '00'.repeat(31), 'hex');
+      const k = leToBigInt(
+        crypto.createHash('sha512').update(R).update(A).update(msg).digest()
+      );
+      const S = (k * (leToBigInt(a) % L)) % L;
+      return Buffer.concat([R, bigIntToLE(S)]);
+    };
+
+    it('rejects a signature whose R is a small-order point', () => {
+      const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+      const msg = Buffer.from('message');
+      const sig = identityRSignature(privateKey, publicKey, msg);
+
+      // Whether the backend accepts this signature on its own differs between
+      // OpenSSL versions, so only the result through verify is asserted.
+      expect(isValidEd25519Signature(sig)).toBe(false);
+      expect(verify(msg, publicKey, sig)).toBe(false);
+    });
+
+    it('rejects signatures of the wrong length', () => {
+      const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+      const msg = Buffer.from('message');
+      const sig = sign(null, msg, privateKey);
+      expect(isValidEd25519Signature(sig)).toBe(true);
+      expect(verify(msg, publicKey, sig.subarray(0, 63))).toBe(false);
+      expect(
+        verify(msg, publicKey, Buffer.concat([sig, Buffer.alloc(1)]))
+      ).toBe(false);
+    });
   });
 
   it('does not affect EC or RSA keys', () => {

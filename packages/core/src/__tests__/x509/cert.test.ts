@@ -318,6 +318,20 @@ describe('X509Certificate', () => {
       });
     });
 
+    describe('when the issuer has a small-order Ed25519 key', () => {
+      it('throws', () => {
+        const issuer = {
+          publicKey: Buffer.from(
+            '302a300506032b6570032100' + '01' + '00'.repeat(31),
+            'hex'
+          ),
+        } as X509Certificate;
+        expect(() => leafCert.verify(issuer)).toThrow(
+          /invalid Ed25519 public key/
+        );
+      });
+    });
+
     describe('when the issuer is NOT provided', () => {
       describe('when the certificate is self-signed', () => {
         it('returns true', () => {

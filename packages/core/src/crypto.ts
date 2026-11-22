@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import crypto, { BinaryLike } from 'crypto';
-import { isValidEd25519Key } from './ed25519';
+import { isValidEd25519Key, isValidEd25519Signature } from './ed25519';
 export type { KeyObject } from 'crypto';
 
 export function createPublicKey(
@@ -68,6 +68,12 @@ export function verify(
     if (!isValidEd25519Key(keyObject)) {
       return false;
     }
+    if (
+      keyObject.asymmetricKeyType === 'ed25519' &&
+      !isValidEd25519Signature(signature)
+    ) {
+      return false;
+    }
 
     let verificationAlgorithm = algorithm;
     if (verificationAlgorithm === undefined) {
@@ -78,7 +84,7 @@ export function verify(
       }
     }
 
-    return crypto.verify(verificationAlgorithm, data, key, signature);
+    return crypto.verify(verificationAlgorithm, data, keyObject, signature);
   } catch (e) {
     /* istanbul ignore next */
     return false;

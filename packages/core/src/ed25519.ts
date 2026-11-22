@@ -50,6 +50,15 @@ export function isValidEd25519Key(key: KeyObject): boolean {
   return isValidEd25519Point(spki.subarray(12));
 }
 
+// The R component of a signature is held to the same point checks as the
+// public key. A small-order R is never produced by a conforming signer, and
+// cofactored and cofactorless verifiers can disagree on such a signature.
+export function isValidEd25519Signature(signature: Uint8Array): boolean {
+  return (
+    signature.length === 64 && isValidEd25519Point(signature.subarray(0, 32))
+  );
+}
+
 export function isValidEd25519Point(encoded: Uint8Array): boolean {
   if (encoded.length !== 32) {
     return false;

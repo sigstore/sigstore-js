@@ -217,6 +217,27 @@ describe('MessageSignatureContent with Ed25519 keys', () => {
     expect(subject.verifySignature(key.publicKey)).toBe(false);
   });
 
+  describe('when the artifact is empty', () => {
+    const empty = Buffer.alloc(0);
+
+    it('verifies a signature over the empty artifact', () => {
+      const emptySig = crypto.sign(null, empty, key.privateKey);
+      expect(
+        build(empty, emptySig, HashAlgorithm.SHA2_256).verifySignature(
+          key.publicKey
+        )
+      ).toBe(true);
+    });
+
+    it('rejects a signature over different contents', () => {
+      expect(
+        build(empty, signature, HashAlgorithm.SHA2_256).verifySignature(
+          key.publicKey
+        )
+      ).toBe(false);
+    });
+  });
+
   it('identity point key is rejected', () => {
     const smallOrderKey = crypto.createPublicKey({
       key: Buffer.from(
