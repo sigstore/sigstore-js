@@ -1,5 +1,14 @@
 # @sigstore/verify
 
+## 4.1.4
+
+### Patch Changes
+
+- 207277d: Validate Ed25519 public keys and the R component of Ed25519 signatures, rejecting small-order, non-canonical and off-curve points. Support Ed25519 message signatures by verifying them over the full artifact.
+- Updated dependencies [3154029]
+- Updated dependencies [207277d]
+  - @sigstore/core@4.0.2
+
 ## 4.1.3
 
 ### Patch Changes
