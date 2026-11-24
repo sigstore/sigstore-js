@@ -13,6 +13,8 @@ permissions:
 jobs:
   sign-verify:
     name: Sign/Verify Artifact
+    # Fork PRs don't get an OIDC token, so signing can't work there.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -48,6 +50,8 @@ jobs:
 
   sign-verify-mock:
     name: Sign/Verify Artifact (Mock Stack)
+    # Fork PRs don't get an OIDC token, so signing can't work there.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -101,6 +105,8 @@ jobs:
 
   sign-verify-staging:
     name: Sign/Verify Artifact (Staging)
+    # Fork PRs don't get an OIDC token, so signing can't work there.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: read
