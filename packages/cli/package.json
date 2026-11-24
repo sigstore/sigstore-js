@@ -33,13 +33,13 @@
   },
   "dependencies": {
     "@oclif/color": "^1.0.13",
-    "@oclif/core": "^5.1.11",
-    "@oclif/plugin-help": "^7.0.6",
+    "@oclif/core": "^5.1.12",
+    "@oclif/plugin-help": "^7.0.10",
     "@sigstore/bundle": "^5.0.1",
     "@sigstore/oci": "^0.8.0",
     "@sigstore/sign": "^5.1.0",
     "open": "^11.0.4",
-    "openid-client": "^6.8.8",
+    "openid-client": "^6.9.1",
     "sigstore": "^5.0.1"
   },
   "devDependencies": {
