@@ -13,11 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-const base = require('../../jest.config.base')
+const base = require('../../jest.config.base');
 
 module.exports = {
   ...base,
   displayName: 'sign',
-  setupFilesAfterEnv: ['@sigstore/jest/all'],
+  setupFilesAfterEnv: [...base.setupFilesAfterEnv, '@sigstore/jest/all'],
   testPathIgnorePatterns: ['<rootDir>/dist/'],
 };

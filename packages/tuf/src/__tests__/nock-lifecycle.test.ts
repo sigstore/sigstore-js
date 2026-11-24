@@ -18,15 +18,21 @@ import net from 'net';
 import nock from 'nock';
 
 describe('restoreNock', () => {
-  it('restores the TUF mock interceptor without affecting another Nock version', () => {
+  it('restores the shared TUF mock interceptor', () => {
+    nock.restore();
     const originalConnect = net.Socket.prototype.connect;
-    const mockRepo: typeof import('@tufjs/repo-mock') =
-      require('@tufjs/repo-mock');
+    nock.activate();
+    const mockRepo: typeof import('@tufjs/repo-mock') = require('@tufjs/repo-mock');
     const scope = mockRepo.default([]);
 
     try {
+      expect(
+        require.resolve('nock', {
+          paths: [require.resolve('@tufjs/repo-mock')],
+        })
+      ).toBe(require.resolve('nock'));
       expect(net.Socket.prototype.connect).not.toBe(originalConnect);
-      expect(nock.isActive()).toBe(true);
+      expect(nock.isActive()).toBe(false);
     } finally {
       try {
         scope.teardown();
@@ -39,7 +45,8 @@ describe('restoreNock', () => {
     expect(nock.isActive()).toBe(true);
   });
 
-  it('restores a CommonJS Nock instance', () => {
+  it('restores the directly resolved Nock instance', () => {
+    nock.activate();
     try {
       expect(nock.isActive()).toBe(true);
       restoreNock(require.resolve('nock'));

@@ -1,10 +1,11 @@
 module.exports = {
+  setupFilesAfterEnv: [require.resolve('./jest.setup')],
   transform: {
     '^.+\\.(t|[cm]?j)s$': [
       '@swc/jest',
       {
         jsc: {
-          target: "es2021",
+          target: 'es2021',
         },
       },
     ],

@@ -18,6 +18,6 @@ const base = require('../../jest.config.base');
 module.exports = {
   ...base,
   displayName: 'tuf',
-  setupFilesAfterEnv: ['@sigstore/jest/all'],
+  setupFilesAfterEnv: [...base.setupFilesAfterEnv, '@sigstore/jest/all'],
   testPathIgnorePatterns: ['<rootDir>/dist/'],
 };
