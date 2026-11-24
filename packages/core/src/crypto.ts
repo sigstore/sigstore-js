@@ -14,25 +14,37 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import crypto, { BinaryLike } from 'crypto';
+import {
+  assertValidEd25519Key,
+  isEd25519Key,
+  isValidEd25519Key,
+  isValidEd25519Signature,
+} from './ed25519';
 export type { KeyObject } from 'crypto';
 
 export function createPublicKey(
   key: string | Buffer,
   type: 'spki' | 'pkcs1' = 'spki'
 ): crypto.KeyObject {
+  let keyObject: crypto.KeyObject;
   if (typeof key === 'string') {
     if (key.startsWith('-----')) {
-      return crypto.createPublicKey(key);
+      keyObject = crypto.createPublicKey(key);
     } else {
-      return crypto.createPublicKey({
+      keyObject = crypto.createPublicKey({
         key: Buffer.from(key, 'base64'),
         format: 'der',
         type: type,
       });
     }
   } else {
-    return crypto.createPublicKey({ key, format: 'der', type: type });
+    keyObject = crypto.createPublicKey({ key, format: 'der', type: type });
   }
+
+  if (isEd25519Key(keyObject)) {
+    assertValidEd25519Key(keyObject);
+  }
+  return keyObject;
 }
 
 export function digest(algorithm: string, ...data: BinaryLike[]): Buffer {
@@ -56,19 +68,27 @@ export function verify(
   // The try/catch is to work around an issue in Node 14.x where verify throws
   // an error in some scenarios if the signature is invalid.
   try {
+    const keyObject =
+      key instanceof crypto.KeyObject ? key : crypto.createPublicKey(key);
+    // Keys may be constructed outside of createPublicKey, so the Ed25519 point
+    // checks are repeated here.
+    if (
+      isEd25519Key(keyObject) &&
+      (!isValidEd25519Key(keyObject) || !isValidEd25519Signature(signature))
+    ) {
+      return false;
+    }
+
     let verificationAlgorithm = algorithm;
     if (verificationAlgorithm === undefined) {
-      const keyType =
-        key instanceof crypto.KeyObject
-          ? key.asymmetricKeyType
-          : crypto.createPublicKey(key).asymmetricKeyType;
+      const keyType = keyObject.asymmetricKeyType;
       // Preserve key-specific defaults for EdDSA and restricted RSA-PSS keys.
       if (keyType === 'ec' || keyType === 'rsa') {
         verificationAlgorithm = 'sha256';
       }
     }
 
-    return crypto.verify(verificationAlgorithm, data, key, signature);
+    return crypto.verify(verificationAlgorithm, data, keyObject, signature);
   } catch (e) {
     /* istanbul ignore next */
     return false;
