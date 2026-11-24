@@ -1,5 +1,12 @@
 # @sigstore/core
 
+## 4.0.2
+
+### Patch Changes
+
+- 3154029: Default to SHA-256 for `rsa` and `ec` keys when no verification digest is provided. Preserve the existing digest selection for EdDSA and RSA-PSS keys.
+- 207277d: Validate Ed25519 public keys and the R component of Ed25519 signatures, rejecting small-order, non-canonical and off-curve points. Support Ed25519 message signatures by verifying them over the full artifact.
+
 ## 4.0.1
 
 ### Patch Changes
