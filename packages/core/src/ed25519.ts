@@ -36,11 +36,25 @@ const ED25519_SMALL_ORDER_Y = new Set<bigint>([
   ED25519_P - ED25519_ORDER_8_Y,
 ]);
 
-export function isValidEd25519Key(key: KeyObject): boolean {
-  if (key.asymmetricKeyType !== 'ed25519') {
-    return true;
-  }
+export function isEd25519Key(key: KeyObject): boolean {
+  return key.asymmetricKeyType === 'ed25519';
+}
 
+// RFC 8032 verification does not require the public key to be a canonically
+// encoded point of large order, and crypto backends differ in whether they
+// accept such keys. They are refused here so the result does not depend on the
+// backend. The key must be an Ed25519 key (see isEd25519Key).
+export function assertValidEd25519Key(key: KeyObject): void {
+  if (!isValidEd25519Key(key)) {
+    throw new Error(
+      'invalid Ed25519 public key: small-order, non-canonical or off-curve point'
+    );
+  }
+}
+
+// Checks the point encoded in an Ed25519 key. The key must be an Ed25519 key
+// (see isEd25519Key).
+export function isValidEd25519Key(key: KeyObject): boolean {
   const spki = key.export({ format: 'der', type: 'spki' });
   /* istanbul ignore if */
   if (spki.length !== 44) {

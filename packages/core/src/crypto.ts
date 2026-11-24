@@ -14,7 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import crypto, { BinaryLike } from 'crypto';
-import { isValidEd25519Key, isValidEd25519Signature } from './ed25519';
+import {
+  assertValidEd25519Key,
+  isEd25519Key,
+  isValidEd25519Key,
+  isValidEd25519Signature,
+} from './ed25519';
 export type { KeyObject } from 'crypto';
 
 export function createPublicKey(
@@ -36,7 +41,9 @@ export function createPublicKey(
     keyObject = crypto.createPublicKey({ key, format: 'der', type: type });
   }
 
-  assertValidEd25519Key(keyObject);
+  if (isEd25519Key(keyObject)) {
+    assertValidEd25519Key(keyObject);
+  }
   return keyObject;
 }
 
@@ -65,12 +72,9 @@ export function verify(
       key instanceof crypto.KeyObject ? key : crypto.createPublicKey(key);
     // Keys may be constructed outside of createPublicKey, so the Ed25519 point
     // checks are repeated here.
-    if (!isValidEd25519Key(keyObject)) {
-      return false;
-    }
     if (
-      keyObject.asymmetricKeyType === 'ed25519' &&
-      !isValidEd25519Signature(signature)
+      isEd25519Key(keyObject) &&
+      (!isValidEd25519Key(keyObject) || !isValidEd25519Signature(signature))
     ) {
       return false;
     }
@@ -97,17 +101,5 @@ export function bufferEqual(a: Buffer, b: Buffer): boolean {
   } catch {
     /* istanbul ignore next */
     return false;
-  }
-}
-
-// RFC 8032 verification does not require the public key to be a canonically
-// encoded point of large order, and crypto backends differ in whether they
-// accept such keys. They are refused here so the result does not depend on the
-// backend.
-function assertValidEd25519Key(key: crypto.KeyObject): void {
-  if (!isValidEd25519Key(key)) {
-    throw new Error(
-      'invalid Ed25519 public key: small-order, non-canonical or off-curve point'
-    );
   }
 }
