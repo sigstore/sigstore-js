@@ -50,6 +50,7 @@ export type SignOptions = {
   identityToken?: string;
   rekorURL?: string;
   tlogUpload?: boolean;
+  fetchOnConflict?: boolean;
   tsaServerURL?: string;
   legacyCompatibility?: boolean;
 } & FetchOptions;
@@ -186,7 +187,7 @@ function initWitnesses(options: SignOptions): Witness[] {
       new RekorWitness({
         rekorBaseURL: options.rekorURL,
         entryType: options.legacyCompatibility ? 'intoto' : 'dsse',
-        fetchOnConflict: false,
+        fetchOnConflict: options.fetchOnConflict ?? false,
         retry: options.retry ?? DEFAULT_RETRY,
         timeout: options.timeout ?? DEFAULT_TIMEOUT,
       })

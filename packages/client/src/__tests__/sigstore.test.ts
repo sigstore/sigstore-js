@@ -19,6 +19,7 @@ import { mockFulcio, mockRekor, mockTSA } from '@sigstore/mock';
 import { VerificationError } from '@sigstore/verify';
 import { fromPartial } from '@total-typescript/shoehorn';
 import mocktuf, { Target } from '@tufjs/repo-mock';
+import nock from 'nock';
 import { attest, createVerifier, sign, verify } from '../sigstore';
 import * as invalidBundles from './__fixtures__/bundles/invalid';
 import * as validBundles from './__fixtures__/bundles/valid';
@@ -153,6 +154,70 @@ describe('signAttestation (non-legacy)', () => {
     expect(
       bundle.verificationMaterial.timestampVerificationData?.rfc3161Timestamps
     ).toHaveLength(1);
+  });
+});
+
+describe('attest when the Rekor entry already exists', () => {
+  const payload = Buffer.from('Hello, world!');
+  const payloadType = 'text/plain';
+  const uuid =
+    '69e5a0c1663ee4452674a5c9d5050d866c2ee31e2faaf79913aea7cc27293cf6';
+  const logIndex = 2513258;
+
+  beforeEach(async () => {
+    await mockFulcio({ baseURL: fulcioURL });
+
+    // Simulates a retried create request for an entry Rekor already committed
+    nock(rekorURL)
+      .post('/api/v1/log/entries')
+      .reply(409, {}, { Location: `/api/v1/log/entries/${uuid}` });
+
+    nock(rekorURL)
+      .get(`/api/v1/log/entries/${uuid}`)
+      .reply(200, {
+        [uuid]: {
+          body: Buffer.from(
+            JSON.stringify({ apiVersion: '0.0.1', kind: 'dsse', spec: {} })
+          ).toString('base64'),
+          integratedTime: 1654015743,
+          logID:
+            'c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d',
+          logIndex,
+          verification: {
+            signedEntryTimestamp:
+              'MEUCIQD6CD7ZNLUipFoxzmSL/L8Ewic4SRkXN77UjfJZ7d/wAAIgatokSuX9Rg0iWxAgSfHMtcsagtDCQalU5IvXdQ+yLEA=',
+          },
+        },
+      });
+  });
+
+  afterEach(() => nock.cleanAll());
+
+  const options: SignOptions = {
+    fulcioURL,
+    rekorURL,
+    identityProvider: idp,
+    retry: 0,
+  };
+
+  it('throws an error by default', async () => {
+    await expect(attest(payload, payloadType, options)).rejects.toMatchObject({
+      code: 'TLOG_CREATE_ENTRY_ERROR',
+    });
+  });
+
+  describe('when fetchOnConflict is true', () => {
+    it('returns a bundle with the existing tlog entry', async () => {
+      const bundle = await attest(payload, payloadType, {
+        ...options,
+        fetchOnConflict: true,
+      });
+
+      expect(bundle.verificationMaterial.tlogEntries).toHaveLength(1);
+      expect(bundle.verificationMaterial.tlogEntries[0].logIndex).toBe(
+        logIndex.toString()
+      );
+    });
   });
 });
 
