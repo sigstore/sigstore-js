@@ -278,6 +278,101 @@ describe('getRegistryCredentials', () => {
       expect(creds).toEqual({ username, password });
     });
   });
+
+  describe('when DOCKER_CONFIG points at a custom directory', () => {
+    const username = 'custom-user';
+    const password = 'custom-pass';
+    let customRoot: string;
+    let previousDockerConfig: string | undefined;
+
+    beforeEach(() => {
+      previousDockerConfig = process.env.DOCKER_CONFIG;
+      customRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oci-docker-config-'));
+      fs.writeFileSync(
+        path.join(customRoot, 'config.json'),
+        JSON.stringify({
+          auths: {
+            [registryName]: {
+              auth: Buffer.from(`${username}:${password}`).toString('base64'),
+            },
+          },
+        })
+      );
+      process.env.DOCKER_CONFIG = customRoot;
+    });
+
+    afterEach(() => {
+      if (previousDockerConfig === undefined) {
+        delete process.env.DOCKER_CONFIG;
+      } else {
+        process.env.DOCKER_CONFIG = previousDockerConfig;
+      }
+      fs.rmSync(customRoot, { recursive: true, force: true });
+    });
+
+    it('reads credentials from $DOCKER_CONFIG/config.json', () => {
+      const creds = getRegistryCredentials(imageName);
+
+      expect(creds).toEqual({ username, password });
+    });
+
+    it('does not fall back to $HOME/.docker when DOCKER_CONFIG is set', () => {
+      // Default home config still has credentials from other tests' shared tempDir;
+      // ensure we would have found them if we fell back, then assert custom wins.
+      fs.writeFileSync(
+        path.join(tempDir, '.docker', 'config.json'),
+        JSON.stringify({
+          auths: {
+            [registryName]: {
+              auth: Buffer.from('home-user:home-pass').toString('base64'),
+            },
+          },
+        })
+      );
+
+      const creds = getRegistryCredentials(imageName);
+
+      expect(creds).toEqual({ username, password });
+    });
+  });
+
+  describe('when DOCKER_CONFIG is set but the config file is missing', () => {
+    let customRoot: string;
+    let previousDockerConfig: string | undefined;
+
+    beforeEach(() => {
+      previousDockerConfig = process.env.DOCKER_CONFIG;
+      customRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oci-docker-config-missing-'));
+      process.env.DOCKER_CONFIG = customRoot;
+    });
+
+    afterEach(() => {
+      if (previousDockerConfig === undefined) {
+        delete process.env.DOCKER_CONFIG;
+      } else {
+        process.env.DOCKER_CONFIG = previousDockerConfig;
+      }
+      fs.rmSync(customRoot, { recursive: true, force: true });
+    });
+
+    it('throws rather than falling back to $HOME/.docker', () => {
+      fs.writeFileSync(
+        path.join(tempDir, '.docker', 'config.json'),
+        JSON.stringify({
+          auths: {
+            [registryName]: {
+              auth: Buffer.from('home-user:home-pass').toString('base64'),
+            },
+          },
+        })
+      );
+
+      expect(() => getRegistryCredentials(imageName)).toThrow(
+        /no credential file found/i
+      );
+    });
+  });
+
 });
 
 describe('toBasicAuth', () => {
